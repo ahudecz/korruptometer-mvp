@@ -10,7 +10,11 @@
     "./relative-time": "./src/relative-time.ts",
     "./cursor": "./src/cursor.ts",
     "./ratelimit": "./src/ratelimit.ts",
-    "./schemas/cases": "./src/schemas/cases.ts"
+    "./encryption": "./src/encryption.ts",
+    "./turnstile": "./src/turnstile.ts",
+    "./sealed-box": "./src/sealed-box.ts",
+    "./schemas/cases": "./src/schemas/cases.ts",
+    "./schemas/submission": "./src/schemas/submission.ts"
   },
   "scripts": {
     "lint": "eslint src",

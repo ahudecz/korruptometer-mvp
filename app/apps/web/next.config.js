@@ -13,7 +13,9 @@ const ContentSecurityPolicy = [
     : "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
-  "connect-src 'self' https://*.ingest.sentry.io https://*.ingest.de.sentry.io",
+  isDev
+    ? "connect-src 'self' http://127.0.0.1:54421 ws: http: https://*.ingest.sentry.io https://*.ingest.de.sentry.io"
+    : "connect-src 'self' https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://*.supabase.co",
   "img-src 'self' data:",
   "object-src 'none'",
 ];

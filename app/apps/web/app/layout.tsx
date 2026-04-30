@@ -35,14 +35,14 @@ export default function RootLayout({
                   <Link href="/galeria">Galéria</Link>
                 </li>
                 <li>
-                  <Link href="/hamarosan">Hírek</Link>
+                  <Link href="/hirek">Hírek</Link>
                 </li>
                 <li>
                   <Link href="/hamarosan">Módszertan</Link>
                 </li>
               </ul>
             </nav>
-            <Link href="/hamarosan" className="nav-cta">
+            <Link href="/bejelentes" className="nav-cta">
               Bejelentés
             </Link>
           </div>

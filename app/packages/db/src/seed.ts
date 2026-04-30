@@ -20,6 +20,7 @@ import { sql } from 'drizzle-orm';
 import * as schema from './schema';
 import {
   cases,
+  editors,
   kpiSnapshots,
   newsArticles,
   rogueProfiles,
@@ -241,6 +242,26 @@ async function main() {
         bySector,
       },
     });
+
+  // Bootstrap admin editor (idempotent — re-running seed never duplicates).
+  const bootstrapEmail = process.env.BOOTSTRAP_ADMIN_EMAIL;
+  if (bootstrapEmail) {
+    console.log(`🌱 seeding bootstrap admin: ${bootstrapEmail}`);
+    await db
+      .insert(editors)
+      .values({
+        email: bootstrapEmail,
+        displayName: 'Bootstrap admin',
+        role: 'admin',
+        active: true,
+      })
+      .onConflictDoUpdate({
+        target: editors.email,
+        set: { role: 'admin', active: true },
+      });
+  } else {
+    console.warn('⚠️  BOOTSTRAP_ADMIN_EMAIL not set — admin queue will reject all sign-ins');
+  }
 
   console.log(`✅ seed complete: ${CASE_DATA.length} cases, ${SOURCE_DATA.length} sources, ${ARTICLE_SEED.length} articles, 1 KPI snapshot`);
   await conn.end();

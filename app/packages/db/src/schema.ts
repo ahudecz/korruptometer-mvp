@@ -154,12 +154,209 @@ export const kpiSnapshots = pgTable('KpiSnapshot', {
   bySector: jsonb('bySector').notNull(),
 });
 
+// ─── Phase 2: submissions + admin ─────────────────────────────────────────
+
+export const submissionStatusEnum = pgEnum('submission_status', [
+  'received',
+  'in_review',
+  'approved',
+  'rejected',
+  'duplicate',
+]);
+
+export const virusScanStatusEnum = pgEnum('virus_scan_status', [
+  'pending',
+  'clean',
+  'infected',
+  'error',
+]);
+
+export const editorRoleEnum = pgEnum('editor_role', ['admin', 'editor']);
+
+export const submissions = pgTable(
+  'Submission',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    ref: text('ref').notNull().unique(),
+    suspectName: text('suspectName').notNull(),
+    suspectPosition: text('suspectPosition'),
+    suspectRegion: text('suspectRegion'),
+    period: text('period'),
+    crimes: text('crimes').array().notNull(),
+    estimatedAmount: bigint('estimatedAmount', { mode: 'bigint' }),
+    summary: text('summary'),
+    sourceUrls: text('sourceUrls').array().notNull().default(sql`ARRAY[]::text[]`),
+    anonymous: boolean('anonymous').notNull().default(true),
+    allowContact: boolean('allowContact').notNull().default(false),
+    reporterEmailEnc: text('reporterEmailEnc'),
+    reporterNameEnc: text('reporterNameEnc'),
+    status: submissionStatusEnum('status').notNull().default('received'),
+    purgePiiAt: timestamp('purgePiiAt', { withTimezone: true }),
+    createdCaseId: text('createdCaseId').references(() => cases.id, {
+      onDelete: 'set null',
+    }),
+    bodyCipher: text('bodyCipher'),
+    reporterEmailCipher: text('reporterEmailCipher'),
+    reporterNameCipher: text('reporterNameCipher'),
+    recipientFingerprints: text('recipientFingerprints').array(),
+    createdAt: timestamp('createdAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updatedAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    statusCreatedIdx: index('Submission_status_createdAt_idx').on(
+      t.status,
+      t.createdAt,
+    ),
+    purgeIdx: index('Submission_purgePiiAt_idx').on(t.purgePiiAt),
+  }),
+);
+
+export const submissionAttachments = pgTable(
+  'SubmissionAttachment',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    submissionId: uuid('submissionId')
+      .notNull()
+      .references(() => submissions.id, { onDelete: 'cascade' }),
+    storageKey: text('storageKey').notNull(),
+    fileName: text('fileName').notNull(),
+    mimeType: text('mimeType').notNull(),
+    sizeBytes: bigint('sizeBytes', { mode: 'number' }).notNull(),
+    virusScanStatus: virusScanStatusEnum('virusScanStatus')
+      .notNull()
+      .default('pending'),
+    virusScanDetail: text('virusScanDetail'),
+    createdAt: timestamp('createdAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    submissionIdx: index('SubmissionAttachment_submissionId_idx').on(
+      t.submissionId,
+    ),
+  }),
+);
+
+export const editors = pgTable('Editor', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  email: text('email').notNull().unique(),
+  displayName: text('displayName'),
+  role: editorRoleEnum('role').notNull().default('editor'),
+  active: boolean('active').notNull().default(true),
+  createdAt: timestamp('createdAt', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const editorKeys = pgTable('EditorKey', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  editorId: uuid('editorId')
+    .notNull()
+    .references(() => editors.id, { onDelete: 'cascade' }),
+  publicKey: text('publicKey').notNull(),
+  fingerprint: text('fingerprint').notNull(),
+  revokedAt: timestamp('revokedAt', { withTimezone: true }),
+  createdAt: timestamp('createdAt', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const auditLogs = pgTable(
+  'AuditLog',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    actorEditorId: uuid('actorEditorId').references(() => editors.id, {
+      onDelete: 'set null',
+    }),
+    action: text('action').notNull(),
+    entityType: text('entityType').notNull(),
+    entityId: text('entityId').notNull(),
+    detail: jsonb('detail'),
+    at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    actorAtIdx: index('AuditLog_actorAt_idx').on(t.actorEditorId, t.at),
+    entityIdx: index('AuditLog_entity_idx').on(t.entityType, t.entityId, t.at),
+  }),
+);
+
+export const dsrKindEnum = pgEnum('dsr_kind', ['access', 'deletion']);
+export const dsrStatusEnum = pgEnum('dsr_status', [
+  'received',
+  'verified',
+  'fulfilled',
+  'closed',
+]);
+
+export const dsrRequests = pgTable('DsrRequest', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  subjectEmailHash: text('subjectEmailHash').notNull(),
+  kind: dsrKindEnum('kind').notNull(),
+  status: dsrStatusEnum('status').notNull().default('received'),
+  slaDeadline: timestamp('slaDeadline', { withTimezone: true }).notNull(),
+  assignedEditorId: uuid('assignedEditorId').references(() => editors.id, {
+    onDelete: 'set null',
+  }),
+  notes: text('notes'),
+  createdAt: timestamp('createdAt', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// ─── Phase 3: scraper observability ───────────────────────────────────────
+
+export const scraperRunStatusEnum = pgEnum('scraper_run_status', [
+  'running',
+  'success',
+  'failure',
+]);
+
+export const scraperRuns = pgTable(
+  'ScraperRun',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    sourceId: uuid('sourceId')
+      .notNull()
+      .references(() => sources.id, { onDelete: 'cascade' }),
+    startedAt: timestamp('startedAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    finishedAt: timestamp('finishedAt', { withTimezone: true }),
+    status: scraperRunStatusEnum('status').notNull().default('running'),
+    articlesFound: integer('articlesFound').notNull().default(0),
+    articlesNew: integer('articlesNew').notNull().default(0),
+    errorMessage: text('errorMessage'),
+  },
+  (t) => ({
+    sourceStartIdx: index('ScraperRun_sourceId_startedAt_idx').on(
+      t.sourceId,
+      t.startedAt,
+    ),
+  }),
+);
+
+export const workerHeartbeats = pgTable('WorkerHeartbeat', {
+  id: text('id').primaryKey().default('singleton'),
+  at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type Case = typeof cases.$inferSelect;
 export type NewCase = typeof cases.$inferInsert;
 export type RogueProfile = typeof rogueProfiles.$inferSelect;
 export type NewsArticle = typeof newsArticles.$inferSelect;
 export type Source = typeof sources.$inferSelect;
 export type KpiSnapshot = typeof kpiSnapshots.$inferSelect;
+export type Submission = typeof submissions.$inferSelect;
+export type SubmissionAttachment = typeof submissionAttachments.$inferSelect;
+export type Editor = typeof editors.$inferSelect;
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type EditorKey = typeof editorKeys.$inferSelect;
+export type ScraperRun = typeof scraperRuns.$inferSelect;
+export type DsrRequest = typeof dsrRequests.$inferSelect;
 export type SectorBreakdown = { name: string; value: number }[];
 
 // Use placate-typescript export for the singleton cap (no client cares but Drizzle plays nice).
