@@ -1,0 +1,3 @@
+# Schema and migrations require explicit review.
+/app/packages/db/schema.ts        @ahudecz
+/app/supabase/migrations/**       @ahudecz

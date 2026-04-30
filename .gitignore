@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Next.js / Turborepo / Vite caches
+.next/
+.turbo/
+dist/
+out/
+build/
+.vercel/
+
+# Supabase local
+app/supabase/.branches/
+app/supabase/.temp/
+
+# TypeScript / tooling caches
+*.tsbuildinfo
+.eslintcache
+
+# Test artefacts
+coverage/
+playwright-report/
+test-results/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
