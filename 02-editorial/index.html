@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>A Krónika — Korrupciós Dosszié · Magyarország</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,30..100&family=Spectral:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #f4ecd8;
+    --paper-2: #ede2c5;
+    --ink: #1a1614;
+    --ink-2: #3d342d;
+    --muted: #7a6b5a;
+    --line: #c9bb9a;
+    --line-soft: #ddd0b3;
+    --oxblood: #7a1f2b;
+    --oxblood-deep: #5a131c;
+    --ochre: #c8a86b;
+    --ochre-deep: #a08344;
+    --moss: #5c6f3d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "Spectral", Georgia, serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 17px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(ellipse at top left, rgba(160,131,68,0.08), transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(122,31,43,0.05), transparent 50%);
+  }
+
+  /* paper grain */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence baseFrequency='0.85' numOctaves='2' /><feColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.3 0 0 0 0 0.2 0 0 0 0.06 0' /></filter><rect width='100%' height='100%' filter='url(%23n)' /></svg>");
+    mix-blend-mode: multiply;
+  }
+  body > * { position: relative; z-index: 2; }
+
+  ::selection { background: var(--oxblood); color: var(--paper); }
+
+  /* ============ MASTHEAD ============ */
+  .masthead {
+    border-bottom: 3px double var(--ink);
+    padding: 22px 0 14px;
+    text-align: center;
+    background: var(--paper);
+  }
+  .masthead-row {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 40px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+  }
+  .masthead-meta {
+    text-align: left;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--ink-2);
+    text-transform: uppercase;
+  }
+  .masthead-meta.right { text-align: right; }
+  .masthead-meta div + div { margin-top: 2px; }
+  .masthead-title {
+    font-family: "Fraunces", serif;
+    font-weight: 900;
+    font-variation-settings: "opsz" 144, "SOFT" 30;
+    font-size: clamp(48px, 7vw, 96px);
+    letter-spacing: -0.02em;
+    line-height: 0.9;
+    color: var(--ink);
+    font-style: italic;
+  }
+  .masthead-sub {
+    font-family: "Fraunces", serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 6px;
+    letter-spacing: 0.08em;
+  }
+  .masthead-nav {
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+    padding: 10px 0;
+    margin-top: 14px;
+  }
+  .masthead-nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 36px;
+    flex-wrap: wrap;
+    padding: 0 20px;
+  }
+  .masthead-nav a {
+    color: var(--ink);
+    text-decoration: none;
+    font-family: "Fraunces", serif;
+    font-weight: 500;
+    font-size: 13px;
+    font-variation-settings: "opsz" 14;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    transition: color .15s;
+  }
+  .masthead-nav a:hover { color: var(--oxblood); }
+
+  /* ============ HERO ============ */
+  .hero {
+    max-width: 1300px;
+    margin: 60px auto;
+    padding: 0 40px;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 60px;
+    align-items: end;
+  }
+  .hero-left .kicker {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--oxblood);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .kicker::before {
+    content: "❖";
+    color: var(--ochre-deep);
+    font-size: 14px;
+  }
+  .hero-headline {
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    font-variation-settings: "opsz" 144, "SOFT" 30;
+    font-size: clamp(46px, 5.5vw, 84px);
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    margin-bottom: 24px;
+  }
+  .hero-headline em {
+    font-style: italic;
+    color: var(--oxblood);
+    font-variation-settings: "opsz" 144;
+  }
+  .hero-deck {
+    font-family: "Fraunces", serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: 22px;
+    line-height: 1.4;
+    color: var(--ink-2);
+    max-width: 540px;
+    border-left: 2px solid var(--oxblood);
+    padding-left: 22px;
+  }
+  .hero-byline {
+    margin-top: 32px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .hero-byline strong { color: var(--ink); font-weight: 500; }
+
+  /* ============ DOSSIER STAMP ============ */
+  .dossier-card {
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    padding: 36px 40px;
+    position: relative;
+    box-shadow:
+      0 1px 0 var(--paper),
+      0 2px 0 var(--line),
+      0 3px 0 var(--paper),
+      0 4px 0 var(--line),
+      4px 8px 30px rgba(26,22,20,0.12);
+  }
+  .dossier-card::before {
+    content: "BIZALMAS";
+    position: absolute;
+    top: 18px;
+    right: 24px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    color: var(--oxblood);
+    border: 1.5px solid var(--oxblood);
+    padding: 4px 10px;
+    transform: rotate(3deg);
+    opacity: 0.7;
+  }
+  .dossier-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .dossier-id {
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--ink);
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 18px;
+  }
+  .dossier-row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--line-soft);
+    font-size: 14px;
+  }
+  .dossier-row:last-child { border-bottom: 0; }
+  .dossier-row .k {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    align-self: center;
+  }
+  .dossier-row .v {
+    font-family: "Fraunces", serif;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .dossier-row .v.big {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--oxblood);
+  }
+
+  /* ============ STATS / CHARTS ============ */
+  .stats {
+    background: var(--paper-2);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 80px 0;
+    margin: 60px 0;
+  }
+  .stats-inner {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+  .stats-head {
+    text-align: center;
+    margin-bottom: 70px;
+    position: relative;
+  }
+  .stats-eyebrow {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    color: var(--oxblood);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: inline-block;
+    border: 1px solid var(--oxblood);
+    padding: 4px 14px;
+  }
+  .stats-title {
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-variation-settings: "opsz" 144;
+    font-style: italic;
+    font-size: clamp(36px, 4.5vw, 56px);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+  }
+  .stat-block {
+    text-align: center;
+    position: relative;
+  }
+  .stat-block svg {
+    overflow: visible;
+    width: 100%;
+    max-width: 380px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+  .stat-block .center-num {
+    font-family: "Fraunces", serif;
+    font-weight: 800;
+    font-variation-settings: "opsz" 144;
+    font-size: 56px;
+    fill: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .stat-block .center-cap {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    fill: var(--muted);
+    text-transform: uppercase;
+  }
+  .stat-block .annot {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-size: 13px;
+    fill: var(--ink-2);
+  }
+  .stat-block .annot.bold {
+    font-weight: 700;
+    font-style: normal;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    fill: var(--ink);
+  }
+  .stat-block .annot-line {
+    stroke: var(--ink-2);
+    stroke-width: 1;
+    fill: none;
+  }
+  .stat-block .stat-cap {
+    margin-top: 30px;
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.5;
+  }
+  .stat-block h3 {
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    font-variation-settings: "opsz" 144;
+    font-style: italic;
+    font-size: 28px;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+  .stat-block .stat-headline {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--oxblood);
+    text-transform: uppercase;
+    margin-bottom: 30px;
+  }
+
+  /* ============ REGISTRY (database) ============ */
+  .registry {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 60px 40px;
+  }
+  .registry-head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 40px;
+    align-items: end;
+    margin-bottom: 40px;
+    border-bottom: 3px double var(--ink);
+    padding-bottom: 30px;
+  }
+  .registry-head h2 {
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    font-variation-settings: "opsz" 144;
+    font-size: clamp(40px, 5vw, 64px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+  }
+  .registry-head h2 em { font-style: italic; color: var(--oxblood); }
+  .registry-head .meta {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-align: right;
+  }
+
+  .filters {
+    display: grid;
+    grid-template-columns: 2fr repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 30px;
+  }
+  .filter {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .filter label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .filter input,
+  .filter select {
+    font-family: "Spectral", serif;
+    font-size: 16px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-bottom: 2px solid var(--ink);
+    border-top: 0; border-left: 0; border-right: 0;
+    padding: 10px 0 8px;
+    color: var(--ink);
+    outline: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: none;
+  }
+  .filter select { padding-right: 18px; }
+  .filter input:focus,
+  .filter select:focus { border-bottom-color: var(--oxblood); }
+  .filter input::placeholder { color: var(--muted); font-style: italic; }
+  .filter.search input {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-size: 22px;
+    border-bottom-width: 3px;
+  }
+
+  .registry-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+  }
+  .registry-count {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-size: 17px;
+    color: var(--ink-2);
+  }
+  .registry-count strong { font-style: normal; color: var(--oxblood); font-weight: 700; }
+  .sort-controls {
+    display: flex;
+    gap: 14px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .sort-controls span { color: var(--muted); }
+  .sort-controls button {
+    background: transparent;
+    border: 0;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+    border-bottom: 1px solid transparent;
+    padding: 0;
+  }
+  .sort-controls button.active { color: var(--oxblood); border-bottom-color: var(--oxblood); }
+
+  .registry-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
+  }
+  .reg-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--oxblood);
+    padding: 26px 28px;
+    position: relative;
+    transition: transform .2s, box-shadow .2s;
+    cursor: pointer;
+  }
+  .reg-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 8px 30px rgba(26,22,20,0.1);
+  }
+  .reg-card.s-lezarva { border-left-color: var(--moss); }
+  .reg-card.s-folyamatban { border-left-color: var(--ochre-deep); }
+  .reg-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+    gap: 16px;
+  }
+  .reg-id {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .reg-status {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1px solid;
+  }
+  .reg-status.lezarva { color: var(--moss); border-color: var(--moss); }
+  .reg-status.vad { color: var(--oxblood); border-color: var(--oxblood); }
+  .reg-status.folyamatban { color: var(--ochre-deep); border-color: var(--ochre-deep); }
+  .reg-name {
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    font-variation-settings: "opsz" 60;
+    font-size: 28px;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+  .reg-pos {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-size: 15px;
+    color: var(--ink-2);
+    margin-bottom: 18px;
+  }
+  .reg-figures {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    border-top: 1px solid var(--line-soft);
+    padding-top: 14px;
+  }
+  .reg-figure .l {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .reg-figure .v {
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+  }
+  .reg-figure .v.money { color: var(--oxblood); }
+  .reg-figure .v small {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-left: 2px;
+  }
+  .reg-tags {
+    margin-top: 14px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .reg-tag {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    background: var(--paper-2);
+    padding: 3px 8px;
+    border-radius: 2px;
+  }
+
+  /* ============ PRESS / NEWS ============ */
+  .press {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 80px 0;
+    position: relative;
+  }
+  .press::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n2'><feTurbulence baseFrequency='0.85' numOctaves='2' /><feColorMatrix values='0 0 0 0 1 0 0 0 0 0.95 0 0 0 0 0.85 0 0 0 0.05 0' /></filter><rect width='100%' height='100%' filter='url(%23n2)' /></svg>");
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  .press > * { position: relative; }
+  .press-inner {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+  .press-head {
+    text-align: center;
+    border-bottom: 2px solid var(--paper);
+    padding-bottom: 30px;
+    margin-bottom: 50px;
+  }
+  .press-mast {
+    font-family: "Fraunces", serif;
+    font-weight: 800;
+    font-variation-settings: "opsz" 144;
+    font-style: italic;
+    font-size: clamp(40px, 5vw, 64px);
+    line-height: 1;
+    color: var(--paper);
+  }
+  .press-mast em { color: var(--ochre); font-style: italic; }
+  .press-sub {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    color: var(--ochre);
+    text-transform: uppercase;
+    margin-top: 12px;
+  }
+  .press-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+  }
+  .press-col {
+    padding: 0 28px;
+    border-right: 1px solid rgba(244,236,216,0.18);
+  }
+  .press-col:first-child { padding-left: 0; }
+  .press-col:last-child { border-right: 0; padding-right: 0; }
+  .press-item {
+    padding: 22px 0;
+    border-bottom: 1px solid rgba(244,236,216,0.18);
+  }
+  .press-item:first-child { padding-top: 0; }
+  .press-item:last-child { border-bottom: 0; }
+  .press-item .stamp {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--ochre);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .press-item .stamp .src { color: rgba(244,236,216,0.6); }
+  .press-item h4 {
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-variation-settings: "opsz" 60;
+    font-size: 22px;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    color: var(--paper);
+  }
+  .press-item p {
+    font-family: "Spectral", serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(244,236,216,0.7);
+  }
+  .press-item.lead h4 { font-size: 28px; line-height: 1.15; }
+  .press-item.lead .drop {
+    font-family: "Fraunces", serif;
+    font-weight: 800;
+    font-style: italic;
+    font-size: 64px;
+    line-height: 0.85;
+    float: left;
+    margin: 6px 12px 0 0;
+    color: var(--ochre);
+  }
+
+  /* ============ MOBILE PREVIEW ============ */
+  .mobile {
+    background: var(--paper-2);
+    padding: 90px 40px;
+    border-top: 3px double var(--ink);
+  }
+  .mobile-inner {
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+  .mobile-head {
+    text-align: center;
+    margin-bottom: 60px;
+  }
+  .mobile-head h2 {
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    font-variation-settings: "opsz" 144;
+    font-style: italic;
+    font-size: clamp(38px, 5vw, 56px);
+    margin-bottom: 10px;
+  }
+  .mobile-head h2 em { color: var(--oxblood); }
+  .mobile-head p {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    color: var(--muted);
+    font-size: 18px;
+  }
+  .phones {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .phone {
+    background: var(--ink);
+    border-radius: 38px;
+    padding: 14px;
+    aspect-ratio: 9/19;
+    box-shadow: 0 30px 60px rgba(26,22,20,0.25);
+    overflow: hidden;
+    position: relative;
+  }
+  .phone::before {
+    content: "";
+    position: absolute;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 6px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 4px;
+    z-index: 5;
+  }
+  .phone-screen {
+    background: var(--paper);
+    border-radius: 28px;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    padding: 38px 16px 70px;
+  }
+  .phone-mast {
+    text-align: center;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+  }
+  .phone-mast .mt {
+    font-family: "Fraunces", serif;
+    font-weight: 800;
+    font-style: italic;
+    font-size: 22px;
+    line-height: 0.9;
+  }
+  .phone-mast .ms {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 7px;
+    letter-spacing: 0.22em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+  .ph-headline {
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    font-style: italic;
+    font-size: 18px;
+    line-height: 1.05;
+    margin-bottom: 12px;
+  }
+  .ph-headline em { color: var(--oxblood); }
+  .ph-stat-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 10px 0;
+  }
+  .ph-stat .pv {
+    font-family: "Fraunces", serif;
+    font-weight: 800;
+    font-size: 20px;
+    line-height: 1;
+    color: var(--oxblood);
+  }
+  .ph-stat .pl {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 7px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .ph-search {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    color: var(--muted);
+    font-size: 12px;
+    border: 1px solid var(--line);
+    border-bottom: 2px solid var(--ink);
+    padding: 6px 10px;
+    margin-bottom: 12px;
+  }
+  .ph-card {
+    background: var(--paper-2);
+    border-left: 3px solid var(--oxblood);
+    padding: 8px 10px;
+    margin-bottom: 7px;
+  }
+  .ph-card.lz { border-left-color: var(--moss); }
+  .ph-card.fl { border-left-color: var(--ochre-deep); }
+  .ph-card .pn {
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    font-size: 12px;
+  }
+  .ph-card .pp {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 7px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .ph-card .pv {
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    font-size: 11px;
+    color: var(--oxblood);
+    float: right;
+  }
+  .ph-news {
+    font-family: "Fraunces", serif;
+    font-size: 11px;
+    line-height: 1.2;
+    border-bottom: 1px solid var(--line);
+    padding: 8px 0;
+  }
+  .ph-news .pt {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 7px;
+    letter-spacing: 0.18em;
+    color: var(--oxblood);
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .phone-tabs {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--paper);
+    border-top: 2px solid var(--ink);
+    padding: 8px 12px 18px;
+    display: flex;
+    justify-content: space-around;
+  }
+  .phone-tabs span {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .phone-tabs span.active { color: var(--oxblood); font-weight: 700; }
+  .phone-cap {
+    text-align: center;
+    margin-top: 18px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ============ FOOT ============ */
+  footer {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 60px 40px 30px;
+    border-top: 8px solid var(--oxblood);
+  }
+  .foot-inner {
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+  .foot-top {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 50px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid rgba(244,236,216,0.2);
+  }
+  .foot-top h4 {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ochre);
+    margin-bottom: 16px;
+  }
+  .foot-top ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .foot-top a { font-family: "Fraunces", serif; font-style: italic; color: rgba(244,236,216,0.7); font-size: 14px; text-decoration: none; }
+  .foot-top a:hover { color: var(--paper); }
+  .foot-bot {
+    padding-top: 24px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: rgba(244,236,216,0.5);
+    line-height: 1.7;
+  }
+  .foot-bot strong { color: var(--ochre); }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 1100px) {
+    .hero { grid-template-columns: 1fr; gap: 40px; }
+    .stats-grid { grid-template-columns: 1fr; gap: 80px; }
+    .registry-grid { grid-template-columns: 1fr; }
+    .press-grid { grid-template-columns: 1fr 1fr; }
+    .press-col:nth-child(2) { border-right: 0; }
+    .filters { grid-template-columns: 1fr 1fr; }
+    .foot-top { grid-template-columns: 1fr 1fr; }
+    .phones { grid-template-columns: 1fr 1fr; max-width: 600px; }
+    .phones > div:nth-child(3) { display: none; }
+  }
+  @media (max-width: 720px) {
+    .masthead-row { grid-template-columns: 1fr; gap: 8px; }
+    .masthead-meta, .masthead-meta.right { text-align: center; }
+    .masthead-nav ul { gap: 14px; }
+    .masthead-nav a { font-size: 11px; letter-spacing: 0.1em; }
+    .hero { padding: 0 20px; margin: 30px auto; }
+    .hero-headline { font-size: 12vw; }
+    .stats { padding: 50px 0; margin: 30px 0; }
+    .stats-inner { padding: 0 20px; }
+    .registry { padding: 40px 20px; }
+    .registry-head { grid-template-columns: 1fr; gap: 12px; }
+    .registry-head .meta { text-align: left; }
+    .filters { grid-template-columns: 1fr; gap: 10px; }
+    .press-inner { padding: 0 20px; }
+    .press-grid { grid-template-columns: 1fr; }
+    .press-col { border-right: 0; padding: 0; }
+    .mobile { padding: 50px 20px; }
+    .phones { grid-template-columns: 1fr; max-width: 280px; }
+    .phones > div:nth-child(2),
+    .phones > div:nth-child(3) { display: none; }
+    .foot-top { grid-template-columns: 1fr; gap: 30px; }
+    footer { padding: 40px 20px 24px; }
+    .dossier-card { padding: 24px 22px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-row">
+    <div class="masthead-meta">
+      <div>2026.04.30. — 17. évf. № 132</div>
+      <div>Budapest · Pénteki kiadás</div>
+    </div>
+    <div>
+      <h1 class="masthead-title">A Krónika</h1>
+      <div class="masthead-sub">— korrupciós dosszié —</div>
+    </div>
+    <div class="masthead-meta right">
+      <div>Időjárás: 16°C, derült</div>
+      <div>Naplemente: 19:42</div>
+    </div>
+  </div>
+  <nav class="masthead-nav">
+    <ul>
+      <li><a href="#hero">Vezető</a></li>
+      <li><a href="#stats">Mérleg</a></li>
+      <li><a href="#registry">Lajstrom</a></li>
+      <li><a href="#press">Sajtó</a></li>
+      <li><a href="#mobile">Mobil</a></li>
+      <li><a href="#about">Módszertan</a></li>
+    </ul>
+  </nav>
+</header>
+
+<section class="hero" id="hero">
+  <div class="hero-left">
+    <div class="kicker">Vezető riport · Korrupciós dosszié № 132</div>
+    <h1 class="hero-headline">Amit a számok <em>megőriznek,</em> a feledés sem törölhet.</h1>
+    <p class="hero-deck">Tizenkét eset, ötvennégy év börtön, ötvenmilliárd forint kár — a magyarországi korrupció dokumentált mérlegét nyitott levéltárba helyeztük.</p>
+    <p class="hero-byline">— Szerkesztette: <strong>A. Krónika szerkesztősége</strong> · Adatok zárva: 2026.04.30. 09:42 · CC-BY-SA 4.0</p>
+  </div>
+  <aside class="dossier-card">
+    <div class="dossier-label">Aktuális vezető ügy</div>
+    <div class="dossier-id">Dossier № KM-004</div>
+    <div class="dossier-row"><span class="k">Alany</span><span class="v">T. László</span></div>
+    <div class="dossier-row"><span class="k">Pozíció</span><span class="v">Volt miniszteri biztos</span></div>
+    <div class="dossier-row"><span class="k">Régió</span><span class="v">Hajdú-Bihar</span></div>
+    <div class="dossier-row"><span class="k">Vád</span><span class="v">Hivatali visszaélés, közbeszerzési csalás</span></div>
+    <div class="dossier-row"><span class="k">Kár</span><span class="v big">6,8 Mrd Ft</span></div>
+    <div class="dossier-row"><span class="k">Várható</span><span class="v">9 év szabadságvesztés</span></div>
+    <div class="dossier-row"><span class="k">Státusz</span><span class="v" style="color:var(--oxblood); font-weight:700;">Vádemelés folyamatban — 2021 óta</span></div>
+  </aside>
+</section>
+
+<section class="stats" id="stats">
+  <div class="stats-inner">
+    <div class="stats-head">
+      <span class="stats-eyebrow">Az ország mérlege · 2017–2023</span>
+      <h2 class="stats-title">A nyilvántartott <em>kár</em> és <em>büntetés</em>.</h2>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-block">
+        <div class="stat-headline">I. Tabló — Pénzügyi kár szektor szerint</div>
+        <h3>Ötven és négy tized milliárd forint.</h3>
+        <svg viewBox="0 0 380 360" id="pie-money"></svg>
+        <p class="stat-cap">A halmozott kár megoszlása szektorok szerint. Az állami nagyvállalatok és az EU-pályázati keretek dominálnak a felderített ügyekben.</p>
+      </div>
+      <div class="stat-block">
+        <div class="stat-headline">II. Tabló — Szabadságvesztés sectorok szerint</div>
+        <h3>Hetvenöt esztendő rács mögött.</h3>
+        <svg viewBox="0 0 380 360" id="pie-prison"></svg>
+        <p class="stat-cap">Halmozott börtönévek a vádemelt és lezárt ügyekben — átlagosan 6,3 év elítéltenként, melyből hatra a fellebbviteli bíróság már jogerős pecsétet helyezett.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="registry" id="registry">
+  <div class="registry-head">
+    <h2>A <em>Lajstrom.</em><br/>Tizenkét nyitott dosszié.</h2>
+    <div class="meta">Frissítve · 2026.04.30. 09:42<br/>Forrás: nyilvános bírósági iratok<br/>Fiktív tesztadatok</div>
+  </div>
+
+  <div class="filters">
+    <div class="filter search">
+      <label for="q">— Keresés a lajstromban —</label>
+      <input id="q" type="search" placeholder="Név, pozíció, kulcsszó…" />
+    </div>
+    <div class="filter">
+      <label for="f-status">Státusz</label>
+      <select id="f-status">
+        <option value="">Mindegyik</option>
+        <option>Lezárva</option>
+        <option>Vádemelés</option>
+        <option>Folyamatban</option>
+      </select>
+    </div>
+    <div class="filter">
+      <label for="f-region">Régió</label>
+      <select id="f-region"><option value="">Összes</option></select>
+    </div>
+    <div class="filter">
+      <label for="f-amount">Min. kár</label>
+      <select id="f-amount">
+        <option value="0">Bármilyen</option>
+        <option value="500000000">≥ 500 M</option>
+        <option value="1000000000">≥ 1 Mrd</option>
+        <option value="5000000000">≥ 5 Mrd</option>
+        <option value="10000000000">≥ 10 Mrd</option>
+      </select>
+    </div>
+    <div class="filter">
+      <label for="f-sector">Szektor</label>
+      <select id="f-sector"><option value="">Összes</option></select>
+    </div>
+  </div>
+
+  <div class="registry-meta">
+    <div class="registry-count"><strong id="count">12</strong> találat — <em>tizenkét</em> tartalomból</div>
+    <div class="sort-controls">
+      <span>Rendezés:</span>
+      <button data-sort="amount" class="active">Kár</button>
+      <button data-sort="years">Évek</button>
+      <button data-sort="year">Dátum</button>
+    </div>
+  </div>
+
+  <div class="registry-grid" id="grid"></div>
+</section>
+
+<section class="press" id="press">
+  <div class="press-inner">
+    <div class="press-head">
+      <h2 class="press-mast">A <em>napi sajtó</em> — válogatás</h2>
+      <div class="press-sub">— Élő hírfolyam · Frissítve percenként —</div>
+    </div>
+    <div class="press-grid">
+      <div class="press-col">
+        <div class="press-item lead">
+          <div class="stamp"><span>★ Vezércikk · 2 órája</span><span class="src">Telex.hu</span></div>
+          <h4>Új vádemelés a Vasút-modernizációs projekt kapcsán: 6,8 milliárd forintos kár dokumentálva</h4>
+          <p><span class="drop">A</span> nyomozóhatóság szerdán emelt vádat T. László volt miniszteri biztos és négy társa ellen. A Magas-fokú Korrupciós Csoport vádirata szerint a 2018–2021 közötti közbeszerzési pályázatok rendszerszintű manipulálása zajlott, mintegy 6,8 milliárd forint értékű kárt okozva az államnak.</p>
+        </div>
+        <div class="press-item">
+          <div class="stamp"><span>EU · tegnap</span><span class="src">Magyar Hang</span></div>
+          <h4>EU-s csalás miatt elbocsátották a minisztériumi főosztályvezetőt</h4>
+          <p>A belső ellenőrzés jelezte az 1,8 milliárd forintos elszámolási hiányt, amely 17 különböző pályázathoz kapcsolódik.</p>
+        </div>
+      </div>
+      <div class="press-col">
+        <div class="press-item">
+          <div class="stamp"><span>Bíróság · 5 órája</span><span class="src">444.hu</span></div>
+          <h4>Helybenhagyta a 8 éves börtönbüntetést a másodfok</h4>
+          <p>A Fővárosi Ítélőtábla helyben hagyta az elsőfokú ítéletet K. Zoltán korábbi államtitkár ügyében; a védelem felülvizsgálati kérelmet nyújtott be.</p>
+        </div>
+        <div class="press-item">
+          <div class="stamp"><span>Vizsgálat · 8 órája</span><span class="src">HVG</span></div>
+          <h4>Vizsgálat indul az M0 körgyűrű építési közbeszerzésében</h4>
+          <p>Az Európai Csalás Elleni Hivatal (OLAF) lefolytatja előzetes vizsgálatát a 12 milliárdos pályázat ügyében, miután három alvállalkozó visszalépett.</p>
+        </div>
+        <div class="press-item">
+          <div class="stamp"><span>Letartóztatás · tegnap</span><span class="src">Átlátszó</span></div>
+          <h4>Letartóztatták a regionális fejlesztési ügynökség vezetőjét</h4>
+          <p>A 2022-es kórházfejlesztési ügyhöz kapcsolódó, fiktív számlák miatt indított nyomozás újabb fejleménye.</p>
+        </div>
+      </div>
+      <div class="press-col">
+        <div class="press-item">
+          <div class="stamp"><span>Tanúkihallgatás · 11 órája</span><span class="src">Népszava</span></div>
+          <h4>Új tanú állt elő a 2019-es kórházfejlesztési ügyben</h4>
+          <p>Egy korábbi belső pénzügyi ellenőr nyilatkozott — a meghallgatás zárt ülésen folyik péntektől.</p>
+        </div>
+        <div class="press-item">
+          <div class="stamp"><span>Önkormányzat · 2 napja</span><span class="src">RTL Híradó</span></div>
+          <h4>Polgármesteri vagyonbevallás ellentmondásosnak bizonyult</h4>
+          <p>Az ÁSZ vizsgálatot indított, miután három egymást követő évben tűntek el milliárdos pályázati keretek.</p>
+        </div>
+        <div class="press-item">
+          <div class="stamp"><span>Vélemény · 3 napja</span><span class="src">Mérce</span></div>
+          <h4>Mit tanulhatunk tizenkét dossziéből? — szerkesztőségi jegyzet</h4>
+          <p>A korrupciós ügyek közös szerkezete: nem személyek, hanem rendszerek. Vezércikk a heti összegzésünkben.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="mobile" id="mobile">
+  <div class="mobile-inner">
+    <div class="mobile-head">
+      <h2>A <em>zsebben hordható</em> krónika.</h2>
+      <p>Ugyanaz a dosszié, ugyanaz a szigor — egy hüvelykujjnyi területen.</p>
+    </div>
+    <div class="phones">
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-mast">
+              <div class="mt">A Krónika</div>
+              <div class="ms">— Korrupciós dosszié —</div>
+            </div>
+            <div class="ph-headline">Amit a számok <em>megőriznek</em>, a feledés sem törölhet.</div>
+            <div class="ph-stat-row">
+              <div class="ph-stat">
+                <div class="pv">50,4 <small style="font-size:11px; color:var(--muted); font-weight:400;">Mrd</small></div>
+                <div class="pl">Kár · Ft</div>
+              </div>
+              <div class="ph-stat">
+                <div class="pv">75 <small style="font-size:11px; color:var(--muted); font-weight:400;">év</small></div>
+                <div class="pl">Börtön</div>
+              </div>
+            </div>
+            <div class="ph-search">Keresés a lajstromban…</div>
+            <div class="ph-card"><span class="pv">12,5 Mrd</span><div class="pn">S. Péter</div><div class="pp">Cégvezető · 2018</div></div>
+            <div class="ph-card lz"><span class="pv">9,4 Mrd</span><div class="pn">B. Krisztián</div><div class="pp">EU tanácsadó · 2017</div></div>
+            <div class="ph-card"><span class="pv">6,8 Mrd</span><div class="pn">T. László</div><div class="pp">Min. biztos · 2021</div></div>
+            <div class="ph-card fl"><span class="pv">2,1 Mrd</span><div class="pn">P. Bence</div><div class="pp">Főosztályvez. · 2021</div></div>
+            <div class="phone-tabs"><span class="active">Vezető</span><span>Lajstrom</span><span>Sajtó</span><span>Több</span></div>
+          </div>
+        </div>
+        <div class="phone-cap">I. Címlap</div>
+      </div>
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-mast">
+              <div class="mt">Lajstrom</div>
+              <div class="ms">— 12 nyitott dosszié —</div>
+            </div>
+            <div class="ph-search">Név vagy pozíció…</div>
+            <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:10px;">
+              <span style="font-family:'JetBrains Mono',monospace; font-size:7px; padding:2px 6px; border:1px solid var(--oxblood); color:var(--oxblood); letter-spacing:0.16em; text-transform:uppercase;">Vádemelés</span>
+              <span style="font-family:'JetBrains Mono',monospace; font-size:7px; padding:2px 6px; border:1px solid var(--moss); color:var(--moss); letter-spacing:0.16em; text-transform:uppercase;">Lezárva</span>
+              <span style="font-family:'JetBrains Mono',monospace; font-size:7px; padding:2px 6px; border:1px solid var(--ochre-deep); color:var(--ochre-deep); letter-spacing:0.16em; text-transform:uppercase;">Folyamatban</span>
+            </div>
+            <div class="ph-card"><span class="pv">6,8 Mrd</span><div class="pn">T. László</div><div class="pp">Hajdú-Bihar · 9 év</div></div>
+            <div class="ph-card"><span class="pv">5,6 Mrd</span><div class="pn">H. Tamás</div><div class="pp">Borsod · 7 év</div></div>
+            <div class="ph-card lz"><span class="pv">12,5 Mrd</span><div class="pn">S. Péter</div><div class="pp">Budapest · 12 év</div></div>
+            <div class="ph-card lz"><span class="pv">9,4 Mrd</span><div class="pn">B. Krisztián</div><div class="pp">Budapest · 11 év</div></div>
+            <div class="ph-card fl"><span class="pv">850 M</span><div class="pn">N. Imre</div><div class="pp">Pest · 3 év</div></div>
+            <div class="phone-tabs"><span>Vezető</span><span class="active">Lajstrom</span><span>Sajtó</span><span>Több</span></div>
+          </div>
+        </div>
+        <div class="phone-cap">II. Lajstrom</div>
+      </div>
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-mast">
+              <div class="mt">Sajtó</div>
+              <div class="ms">— Élő hírfolyam —</div>
+            </div>
+            <div class="ph-news">
+              <div class="pt">★ Vezércikk · 2 órája</div>
+              <div>Új vádemelés a Vasút-modernizációs projekt kapcsán</div>
+            </div>
+            <div class="ph-news">
+              <div class="pt">Bíróság · 5 órája</div>
+              <div>Helybenhagyta a 8 éves börtönbüntetést a másodfok</div>
+            </div>
+            <div class="ph-news">
+              <div class="pt">Vizsgálat · 8 órája</div>
+              <div>OLAF vizsgálat indul az M0 közbeszerzésben</div>
+            </div>
+            <div class="ph-news">
+              <div class="pt">EU · tegnap</div>
+              <div>Elbocsátották a minisztériumi főosztályvezetőt</div>
+            </div>
+            <div class="ph-news">
+              <div class="pt">Tanú · 11 órája</div>
+              <div>Új tanú állt elő a 2019-es kórházfejlesztési ügyben</div>
+            </div>
+            <div class="ph-news">
+              <div class="pt">Önkormányzat · 2 napja</div>
+              <div>Vagyonbevallási ellentmondás miatt vizsgálat</div>
+            </div>
+            <div class="phone-tabs"><span>Vezető</span><span>Lajstrom</span><span class="active">Sajtó</span><span>Több</span></div>
+          </div>
+        </div>
+        <div class="phone-cap">III. Sajtó</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer id="about">
+  <div class="foot-inner">
+    <div class="foot-top">
+      <div>
+        <h4>A Krónika</h4>
+        <p style="font-family:Fraunces,serif; font-style:italic; color:rgba(244,236,216,0.7); font-size:15px; line-height:1.55; max-width:340px;">Független szerkesztőség, közösségi finanszírozású dosszié-projekt. Nyilvános források alapján dolgozunk; minden adatunk visszakövethető bírósági iratokra és sajtóra.</p>
+      </div>
+      <div>
+        <h4>Tartalom</h4>
+        <ul>
+          <li><a href="#">Módszertan</a></li>
+          <li><a href="#">Lábjegyzetek</a></li>
+          <li><a href="#">Forráshivatkozások</a></li>
+          <li><a href="#">Levéltár (CSV)</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Szerkesztőség</h4>
+        <ul>
+          <li><a href="#">Rólunk</a></li>
+          <li><a href="#">Stáb</a></li>
+          <li><a href="#">Sajtószoba</a></li>
+          <li><a href="#">Mecénások</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Kapcsolat</h4>
+        <ul>
+          <li><a href="#">Bejelentés</a></li>
+          <li><a href="#">Kódolt csatorna</a></li>
+          <li><a href="#">Forrásvédelem</a></li>
+          <li><a href="#">Helyreigazítás</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <strong>Adatvédelmi figyelmeztetés —</strong> Ez egy designtervezeti minta. Minden név, eset, dátum és összeg fiktív, kizárólag bemutatási célokat szolgál. Bármely valós személlyel vagy eseménnyel való egyezés a véletlen műve. © 2026 A Krónika · CC-BY-SA 4.0 · Tervezés mintamű v0.1
+    </div>
+  </div>
+</footer>
+
+<script>
+  const cases = [
+    { id: 'KM-001', name: 'K. Zoltán',     position: 'Volt államtitkár',        amount: 4_200_000_000,  years: 8,  year: 2019, status: 'Vádemelés',   region: 'Budapest',    sector: 'Közbeszerzés' },
+    { id: 'KM-002', name: 'N. Imre',       position: 'Polgármester',            amount: 850_000_000,    years: 3,  year: 2020, status: 'Folyamatban', region: 'Pest',        sector: 'Önkormányzat' },
+    { id: 'KM-003', name: 'S. Péter',      position: 'Cégvezető',               amount: 12_500_000_000, years: 12, year: 2018, status: 'Lezárva',     region: 'Budapest',    sector: 'Állami vállalat' },
+    { id: 'KM-004', name: 'T. László',     position: 'Volt miniszteri biztos',  amount: 6_800_000_000,  years: 9,  year: 2021, status: 'Vádemelés',   region: 'Hajdú-Bihar', sector: 'Közbeszerzés' },
+    { id: 'KM-005', name: 'V. Gábor',      position: 'Önkormányzati képviselő', amount: 320_000_000,    years: 2,  year: 2022, status: 'Folyamatban', region: 'Csongrád',    sector: 'Önkormányzat' },
+    { id: 'KM-006', name: 'B. Krisztián',  position: 'EU pályázati tanácsadó',  amount: 9_400_000_000,  years: 11, year: 2017, status: 'Lezárva',     region: 'Budapest',    sector: 'EU pályázat' },
+    { id: 'KM-007', name: 'H. Tamás',      position: 'Állami vállalat igazgató',amount: 5_600_000_000,  years: 7,  year: 2020, status: 'Vádemelés',   region: 'Borsod',      sector: 'Állami vállalat' },
+    { id: 'KM-008', name: 'M. Eszter',     position: 'Közbeszerzési referens',  amount: 180_000_000,    years: 1,  year: 2023, status: 'Folyamatban', region: 'Budapest',    sector: 'Közbeszerzés' },
+    { id: 'KM-009', name: 'F. Csaba',      position: 'Volt képviselő',          amount: 7_200_000_000,  years: 10, year: 2019, status: 'Lezárva',     region: 'Győr-Moson',  sector: 'EU pályázat' },
+    { id: 'KM-010', name: 'P. Bence',      position: 'Min. főosztályvezető',    amount: 2_100_000_000,  years: 5,  year: 2021, status: 'Vádemelés',   region: 'Budapest',    sector: 'EU pályázat' },
+    { id: 'KM-011', name: 'R. Andrea',     position: 'Kórházigazgató',          amount: 480_000_000,    years: 3,  year: 2022, status: 'Folyamatban', region: 'Veszprém',    sector: 'Egészségügy' },
+    { id: 'KM-012', name: 'D. Ákos',       position: 'Iparkamarai vezető',      amount: 1_350_000_000,  years: 4,  year: 2020, status: 'Lezárva',     region: 'Fejér',       sector: 'Egyéb' }
+  ];
+
+  // Annotated pie chart with leader lines
+  function polarToCartesian(cx, cy, r, angle) {
+    const rad = (angle - 90) * Math.PI / 180;
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+  }
+  function arcPath(cx, cy, r, a1, a2) {
+    const s = polarToCartesian(cx, cy, r, a2);
+    const e = polarToCartesian(cx, cy, r, a1);
+    const large = a2 - a1 <= 180 ? 0 : 1;
+    return `M ${cx} ${cy} L ${s.x} ${s.y} A ${r} ${r} 0 ${large} 0 ${e.x} ${e.y} Z`;
+  }
+  function fmtFt(n) {
+    if (n >= 1e9) return (n/1e9).toFixed(1).replace('.', ',') + ' Mrd';
+    if (n >= 1e6) return (n/1e6).toFixed(0) + ' M';
+    return n.toLocaleString('hu-HU');
+  }
+
+  function buildAnnotPie(svgId, data, palette, centerNum, centerCap, unitFn) {
+    const svg = document.getElementById(svgId);
+    svg.innerHTML = '';
+    const cx = 190, cy = 180, r = 110;
+    const total = data.reduce((s, d) => s + d.value, 0);
+    let angle = 0;
+
+    // background ring
+    const bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    bg.setAttribute('cx', cx); bg.setAttribute('cy', cy);
+    bg.setAttribute('r', r + 8);
+    bg.setAttribute('fill', 'none');
+    bg.setAttribute('stroke', 'var(--line)');
+    bg.setAttribute('stroke-width', 1);
+    bg.setAttribute('stroke-dasharray', '2 4');
+    svg.appendChild(bg);
+
+    data.forEach((d, i) => {
+      const span = (d.value / total) * 360;
+      const a1 = angle, a2 = angle + span;
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', arcPath(cx, cy, r, a1, a2));
+      path.setAttribute('fill', palette[i % palette.length]);
+      path.setAttribute('stroke', 'var(--paper-2)');
+      path.setAttribute('stroke-width', '1.5');
+      svg.appendChild(path);
+
+      // leader line + label
+      const mid = (a1 + a2) / 2;
+      const labelR = r + 18;
+      const outerR = r + 50;
+      const p1 = polarToCartesian(cx, cy, r + 4, mid);
+      const p2 = polarToCartesian(cx, cy, labelR, mid);
+      const p3 = polarToCartesian(cx, cy, outerR, mid);
+      const isRight = Math.cos((mid - 90) * Math.PI / 180) > 0;
+      const tx = isRight ? p3.x + 4 : p3.x - 4;
+      const anchor = isRight ? 'start' : 'end';
+
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      line.setAttribute('d', `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y} L ${p3.x} ${p3.y}`);
+      line.setAttribute('class', 'annot-line');
+      svg.appendChild(line);
+
+      const t1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t1.setAttribute('x', tx); t1.setAttribute('y', p3.y - 2);
+      t1.setAttribute('text-anchor', anchor);
+      t1.setAttribute('class', 'annot bold');
+      t1.textContent = unitFn(d.value);
+      svg.appendChild(t1);
+
+      const t2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t2.setAttribute('x', tx); t2.setAttribute('y', p3.y + 12);
+      t2.setAttribute('text-anchor', anchor);
+      t2.setAttribute('class', 'annot');
+      t2.textContent = d.name;
+      svg.appendChild(t2);
+
+      angle = a2;
+    });
+
+    // center hole
+    const hole = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    hole.setAttribute('cx', cx); hole.setAttribute('cy', cy);
+    hole.setAttribute('r', 58);
+    hole.setAttribute('fill', 'var(--paper-2)');
+    svg.appendChild(hole);
+
+    const tNum = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    tNum.setAttribute('x', cx); tNum.setAttribute('y', cy + 6);
+    tNum.setAttribute('text-anchor', 'middle');
+    tNum.setAttribute('class', 'center-num');
+    tNum.textContent = centerNum;
+    svg.appendChild(tNum);
+
+    const tCap = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    tCap.setAttribute('x', cx); tCap.setAttribute('y', cy + 26);
+    tCap.setAttribute('text-anchor', 'middle');
+    tCap.setAttribute('class', 'center-cap');
+    tCap.textContent = centerCap;
+    svg.appendChild(tCap);
+  }
+
+  function aggregate(field) {
+    const map = {};
+    cases.forEach(c => { map[c.sector] = (map[c.sector] || 0) + c[field]; });
+    return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+  }
+
+  const moneyData = aggregate('amount');
+  const prisonData = aggregate('years');
+  const palette1 = ['#7a1f2b', '#a08344', '#5c6f3d', '#3d342d', '#c8a86b', '#7a6b5a'];
+  const palette2 = ['#5a131c', '#a08344', '#5c6f3d', '#3d342d', '#c8a86b', '#7a6b5a'];
+
+  buildAnnotPie('pie-money', moneyData, palette1, '50,4', 'MRD FT', v => fmtFt(v) + ' Ft');
+  buildAnnotPie('pie-prison', prisonData, palette2, '75', 'ÉV', v => v + ' év');
+
+  // Registry rendering
+  const grid = document.getElementById('grid');
+  const regionSel = document.getElementById('f-region');
+  const sectorSel = document.getElementById('f-sector');
+  [...new Set(cases.map(c => c.region))].sort().forEach(r => {
+    regionSel.insertAdjacentHTML('beforeend', `<option>${r}</option>`);
+  });
+  [...new Set(cases.map(c => c.sector))].sort().forEach(s => {
+    sectorSel.insertAdjacentHTML('beforeend', `<option>${s}</option>`);
+  });
+
+  let sortKey = 'amount';
+  function statusClass(s) {
+    if (s === 'Lezárva') return 'lezarva';
+    if (s === 'Vádemelés') return 'vad';
+    return 'folyamatban';
+  }
+  function cardClass(s) {
+    if (s === 'Lezárva') return 's-lezarva';
+    if (s === 'Folyamatban') return 's-folyamatban';
+    return '';
+  }
+
+  function render() {
+    const q = document.getElementById('q').value.trim().toLowerCase();
+    const status = document.getElementById('f-status').value;
+    const region = document.getElementById('f-region').value;
+    const sector = document.getElementById('f-sector').value;
+    const minAmt = +document.getElementById('f-amount').value;
+
+    const filtered = cases.filter(c => {
+      if (q && !(`${c.name} ${c.position} ${c.sector} ${c.region}`.toLowerCase().includes(q))) return false;
+      if (status && c.status !== status) return false;
+      if (region && c.region !== region) return false;
+      if (sector && c.sector !== sector) return false;
+      if (c.amount < minAmt) return false;
+      return true;
+    }).sort((a, b) => b[sortKey] - a[sortKey]);
+
+    document.getElementById('count').textContent = filtered.length;
+    grid.innerHTML = filtered.map(c => `
+      <article class="reg-card ${cardClass(c.status)}">
+        <div class="reg-card-head">
+          <div class="reg-id">Dosszié № ${c.id}</div>
+          <div class="reg-status ${statusClass(c.status)}">${c.status}</div>
+        </div>
+        <div class="reg-name">${c.name}</div>
+        <div class="reg-pos">${c.position}, ${c.region} · ${c.year}</div>
+        <div class="reg-figures">
+          <div class="reg-figure">
+            <div class="l">Dokumentált kár</div>
+            <div class="v money">${fmtFt(c.amount)} <small>Ft</small></div>
+          </div>
+          <div class="reg-figure">
+            <div class="l">Kiszabva / várható</div>
+            <div class="v">${c.years} <small>év</small></div>
+          </div>
+        </div>
+        <div class="reg-tags">
+          <span class="reg-tag">${c.sector}</span>
+          <span class="reg-tag">${c.region}</span>
+          <span class="reg-tag">${c.year}</span>
+        </div>
+      </article>
+    `).join('');
+  }
+
+  ['q', 'f-status', 'f-region', 'f-amount', 'f-sector'].forEach(id => {
+    document.getElementById(id).addEventListener('input', render);
+    document.getElementById(id).addEventListener('change', render);
+  });
+  document.querySelectorAll('.sort-controls button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sort-controls button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      sortKey = btn.dataset.sort;
+      render();
+    });
+  });
+  render();
+</script>
+</body>
+</html>

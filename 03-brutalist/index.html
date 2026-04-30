@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HU/CORRUPT.SYS — Incident Tracker [v0.1.0]</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@200;300;400;500;700;800&family=Bebas+Neue&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg-2: #111111;
+    --bg-3: #1a1a1a;
+    --grid: rgba(255, 176, 0, 0.06);
+    --grid-strong: rgba(255, 176, 0, 0.18);
+    --amber: #ffb000;
+    --amber-dim: #b87b00;
+    --amber-bright: #ffc94d;
+    --red: #ff3333;
+    --red-dim: #aa1111;
+    --green: #00ff66;
+    --green-dim: #00a142;
+    --cyan: #00d4ff;
+    --paper: #ebe8df;
+    --ink: #0a0a0a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    background: var(--bg);
+    color: var(--amber);
+    font-size: 13px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* CRT scanlines + flicker */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,0) 0px,
+      rgba(0,0,0,0) 2px,
+      rgba(0,0,0,0.18) 3px,
+      rgba(0,0,0,0) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+    mix-blend-mode: multiply;
+  }
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.5) 100%);
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  ::selection { background: var(--amber); color: var(--bg); }
+
+  a { color: var(--amber); text-decoration: none; }
+  a:hover { color: var(--amber-bright); text-decoration: underline; }
+
+  .wrapper {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0;
+    position: relative;
+  }
+
+  /* ============ TOP BAR ============ */
+  .topbar {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 24px;
+    padding: 12px 28px;
+    border-bottom: 1px solid var(--grid-strong);
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    align-items: center;
+  }
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--amber);
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+  }
+  .topbar-brand .pulse {
+    width: 10px; height: 10px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 1.4s infinite;
+    box-shadow: 0 0 8px var(--green);
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .topbar-meta {
+    display: flex;
+    gap: 28px;
+    font-size: 11px;
+    color: var(--amber-dim);
+  }
+  .topbar-meta b { color: var(--amber); font-weight: 500; }
+  .topbar-meta .red { color: var(--red); font-weight: 700; }
+  .topbar-nav {
+    display: flex;
+    gap: 4px;
+  }
+  .topbar-nav a {
+    font-size: 11px;
+    padding: 6px 12px;
+    border: 1px solid var(--grid-strong);
+    transition: all .15s;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+  }
+  .topbar-nav a:hover {
+    background: var(--amber);
+    color: var(--bg);
+    border-color: var(--amber);
+    text-decoration: none;
+  }
+
+  /* ============ HERO TERMINAL ============ */
+  .hero {
+    padding: 80px 28px 60px;
+    border-bottom: 1px solid var(--grid-strong);
+    position: relative;
+  }
+  .hero-frame {
+    border: 1px solid var(--amber);
+    padding: 0;
+    position: relative;
+  }
+  .hero-frame::before {
+    content: "[ INCIDENT_TRACKER.HU // OPEN_INTEL_v0.1.0 ]";
+    position: absolute;
+    top: -8px;
+    left: 24px;
+    background: var(--bg);
+    padding: 0 12px;
+    font-size: 10px;
+    color: var(--amber);
+    letter-spacing: 0.18em;
+    font-weight: 700;
+  }
+  .hero-frame::after {
+    content: "[ STATUS: LIVE • TLS:OK • SIGNED ]";
+    position: absolute;
+    bottom: -8px;
+    right: 24px;
+    background: var(--bg);
+    padding: 0 12px;
+    font-size: 10px;
+    color: var(--green);
+    letter-spacing: 0.18em;
+    font-weight: 700;
+  }
+  .hero-inner {
+    padding: 56px 48px;
+  }
+  .hero-prompt {
+    color: var(--green);
+    font-size: 12px;
+    margin-bottom: 24px;
+    font-weight: 500;
+  }
+  .hero-prompt::before { content: "$ "; color: var(--amber-dim); }
+  .hero-prompt .cur {
+    display: inline-block;
+    width: 9px;
+    height: 16px;
+    background: var(--amber);
+    margin-left: 4px;
+    animation: blink 1s steps(1) infinite;
+    vertical-align: -3px;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .hero-title {
+    font-family: "Bebas Neue", "JetBrains Mono", monospace;
+    font-weight: 400;
+    font-size: clamp(56px, 11vw, 168px);
+    line-height: 0.85;
+    letter-spacing: 0.01em;
+    color: var(--amber);
+    margin-bottom: 32px;
+    text-shadow: 0 0 20px rgba(255,176,0,0.3);
+  }
+  .hero-title .glitch {
+    color: var(--red);
+    position: relative;
+    display: inline-block;
+  }
+  .hero-title .glitch::before {
+    content: attr(data-text);
+    position: absolute;
+    left: 2px; top: 0;
+    color: var(--cyan);
+    mix-blend-mode: screen;
+    opacity: 0.7;
+  }
+  .hero-sub {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--amber-dim);
+    max-width: 640px;
+    margin-bottom: 40px;
+  }
+  .hero-sub b { color: var(--amber); font-weight: 500; }
+  .hero-sub .red { color: var(--red); font-weight: 700; }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border: 1px solid var(--grid-strong);
+    margin-top: 32px;
+  }
+  .hero-stat {
+    padding: 18px 22px;
+    border-right: 1px solid var(--grid-strong);
+  }
+  .hero-stat:last-child { border-right: 0; }
+  .hero-stat .l {
+    font-size: 9px;
+    color: var(--amber-dim);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .hero-stat .v {
+    font-size: 26px;
+    color: var(--amber);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .hero-stat.r .v { color: var(--red); }
+  .hero-stat.g .v { color: var(--green); }
+  .hero-stat .v small {
+    font-size: 11px;
+    color: var(--amber-dim);
+    margin-left: 4px;
+    font-weight: 400;
+  }
+
+  /* ============ CHARTS ============ */
+  .charts {
+    padding: 80px 28px;
+    border-bottom: 1px solid var(--grid-strong);
+  }
+  .section-mark {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 40px;
+  }
+  .section-mark .num {
+    font-family: "Bebas Neue", monospace;
+    font-size: 64px;
+    line-height: 0.8;
+    color: var(--amber-dim);
+    border: 1px solid var(--grid-strong);
+    padding: 8px 22px;
+  }
+  .section-mark .label {
+    font-size: 11px;
+    color: var(--amber-dim);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .section-mark h2 {
+    font-family: "Bebas Neue", monospace;
+    font-weight: 400;
+    font-size: clamp(34px, 4.5vw, 56px);
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    color: var(--amber);
+  }
+  .section-mark h2 b { color: var(--red); font-weight: 400; }
+  .section-mark .ts {
+    font-size: 10px;
+    color: var(--amber-dim);
+    letter-spacing: 0.06em;
+    text-align: right;
+    line-height: 1.5;
+  }
+  .section-mark .ts b { color: var(--green); font-weight: 700; }
+
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .chart-card {
+    border: 1px solid var(--grid-strong);
+    padding: 32px;
+    position: relative;
+  }
+  .chart-card::before {
+    content: attr(data-tag);
+    position: absolute;
+    top: -8px;
+    left: 24px;
+    background: var(--bg);
+    padding: 0 10px;
+    font-size: 10px;
+    color: var(--red);
+    letter-spacing: 0.18em;
+    font-weight: 700;
+  }
+  .chart-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed var(--grid-strong);
+  }
+  .chart-card-head .h {
+    font-family: "Bebas Neue", monospace;
+    font-size: 32px;
+    color: var(--amber);
+    line-height: 1;
+  }
+  .chart-card-head .id {
+    font-size: 10px;
+    color: var(--amber-dim);
+    letter-spacing: 0.12em;
+  }
+  .chart-card-body {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 28px;
+    align-items: center;
+  }
+  .pie-svg {
+    width: 220px;
+    height: 220px;
+    flex-shrink: 0;
+  }
+  .pie-svg path {
+    transition: opacity .2s;
+  }
+  .pie-svg:hover path { opacity: 0.4; }
+  .pie-svg path:hover { opacity: 1; }
+  .pie-svg .center-num {
+    font-family: "Bebas Neue", monospace;
+    font-size: 36px;
+    fill: var(--amber);
+    letter-spacing: 0.02em;
+  }
+  .pie-svg .center-cap {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    fill: var(--amber-dim);
+    letter-spacing: 0.18em;
+  }
+  .pie-table {
+    font-size: 11px;
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .pie-table tr { border-bottom: 1px dashed var(--grid-strong); }
+  .pie-table tr:last-child { border-bottom: 0; }
+  .pie-table td {
+    padding: 7px 0;
+    color: var(--amber);
+  }
+  .pie-table td.sw { width: 14px; }
+  .pie-table td.sw .b { display: block; width: 10px; height: 10px; }
+  .pie-table td.n { font-weight: 500; padding-left: 10px; }
+  .pie-table td.v {
+    text-align: right;
+    color: var(--amber-bright);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .pie-table td.p {
+    text-align: right;
+    color: var(--amber-dim);
+    font-size: 10px;
+    padding-left: 10px;
+    width: 50px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ascii-bar {
+    color: var(--amber-dim);
+    font-size: 10px;
+    letter-spacing: -0.05em;
+    margin-top: 18px;
+    line-height: 1.4;
+    font-weight: 300;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  /* ============ DATABASE ============ */
+  .db {
+    padding: 80px 28px;
+    border-bottom: 1px solid var(--grid-strong);
+  }
+  .filter-bar {
+    display: grid;
+    grid-template-columns: 2fr repeat(4, 1fr);
+    gap: 0;
+    border: 1px solid var(--grid-strong);
+    margin-bottom: 14px;
+  }
+  .filter-cell {
+    padding: 14px 16px;
+    border-right: 1px solid var(--grid-strong);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--bg-2);
+  }
+  .filter-cell:last-child { border-right: 0; }
+  .filter-cell label {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--amber-dim);
+  }
+  .filter-cell label::before { content: "> "; color: var(--green-dim); }
+  .filter-cell input,
+  .filter-cell select {
+    background: transparent;
+    border: 0;
+    outline: 0;
+    color: var(--amber);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 0;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .filter-cell input::placeholder { color: var(--amber-dim); }
+  .filter-cell.search input {
+    color: var(--amber-bright);
+    font-weight: 500;
+  }
+  .filter-cell.search input::after {
+    content: "_";
+    animation: blink 1s steps(1) infinite;
+  }
+
+  .db-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 11px;
+  }
+  .db-meta {
+    color: var(--amber-dim);
+  }
+  .db-meta b { color: var(--green); font-weight: 700; }
+  .db-meta .sep { color: var(--grid-strong); margin: 0 10px; }
+  .sort-bar {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--grid-strong);
+  }
+  .sort-bar button {
+    background: transparent;
+    border: 0;
+    color: var(--amber-dim);
+    padding: 6px 14px;
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-right: 1px solid var(--grid-strong);
+  }
+  .sort-bar button:last-child { border-right: 0; }
+  .sort-bar button.active {
+    background: var(--amber);
+    color: var(--bg);
+    font-weight: 700;
+  }
+  .sort-bar button:hover:not(.active) { color: var(--amber); }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--grid-strong);
+    font-size: 12px;
+  }
+  .data-table thead {
+    background: var(--bg-2);
+  }
+  .data-table th {
+    text-align: left;
+    padding: 12px 14px;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--amber-dim);
+    font-weight: 500;
+    border-bottom: 1px solid var(--grid-strong);
+    border-right: 1px solid var(--grid-strong);
+  }
+  .data-table th:last-child { border-right: 0; }
+  .data-table th.num { text-align: right; }
+  .data-table th::before { content: "[ "; color: var(--amber-dim); }
+  .data-table th::after { content: " ]"; color: var(--amber-dim); }
+  .data-table td {
+    padding: 14px;
+    border-bottom: 1px dashed var(--grid-strong);
+    border-right: 1px solid var(--grid-strong);
+    vertical-align: middle;
+  }
+  .data-table td:last-child { border-right: 0; }
+  .data-table td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--amber-bright);
+    font-weight: 700;
+  }
+  .data-table tbody tr {
+    transition: background .12s;
+    cursor: pointer;
+  }
+  .data-table tbody tr:hover {
+    background: rgba(255,176,0,0.06);
+  }
+  .data-table tbody tr:hover td:first-child {
+    color: var(--amber-bright);
+    box-shadow: inset 3px 0 0 var(--amber);
+  }
+  .case-id-cell {
+    color: var(--amber);
+    font-weight: 700;
+  }
+  .pos-meta {
+    font-size: 10px;
+    color: var(--amber-dim);
+    margin-top: 2px;
+  }
+  .stat-tag {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 3px 8px;
+    border: 1px solid;
+  }
+  .stat-tag.lz { color: var(--green); border-color: var(--green-dim); }
+  .stat-tag.vd { color: var(--red); border-color: var(--red-dim); }
+  .stat-tag.fl { color: var(--amber); border-color: var(--amber-dim); }
+  .stat-tag::before { content: "● "; }
+
+  /* ============ FEED / LOG ============ */
+  .feed {
+    padding: 80px 28px;
+    border-bottom: 1px solid var(--grid-strong);
+    background:
+      linear-gradient(180deg, rgba(255,176,0,0.02), transparent 100%);
+  }
+  .feed-stream {
+    border: 1px solid var(--amber);
+    background: var(--bg-2);
+    padding: 0;
+    position: relative;
+  }
+  .feed-stream::before {
+    content: "[ LIVE_FEED.LOG // POLL_INTERVAL=60s ]";
+    position: absolute;
+    top: -8px;
+    left: 24px;
+    background: var(--bg);
+    padding: 0 12px;
+    font-size: 10px;
+    color: var(--amber);
+    letter-spacing: 0.18em;
+    font-weight: 700;
+  }
+  .feed-head {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--grid-strong);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--amber-dim);
+    letter-spacing: 0.06em;
+  }
+  .feed-head .indicator {
+    color: var(--green);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .feed-head .indicator::before {
+    content: "●";
+    animation: blink 1.2s infinite;
+  }
+  .feed-list {
+    list-style: none;
+    padding: 0;
+  }
+  .feed-list li {
+    padding: 18px 24px;
+    border-bottom: 1px dashed var(--grid-strong);
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 28px;
+    transition: background .15s;
+    cursor: pointer;
+  }
+  .feed-list li:last-child { border-bottom: 0; }
+  .feed-list li:hover {
+    background: rgba(255,176,0,0.04);
+  }
+  .feed-time {
+    color: var(--amber-dim);
+    font-size: 10px;
+    line-height: 1.5;
+    border-right: 1px solid var(--grid-strong);
+    padding-right: 24px;
+  }
+  .feed-time .ts {
+    color: var(--green);
+    font-weight: 700;
+    font-size: 11px;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .feed-time .src {
+    color: var(--cyan);
+    font-size: 10px;
+    margin-top: 6px;
+    display: block;
+  }
+  .feed-body .tag {
+    display: inline-block;
+    font-size: 9px;
+    padding: 2px 8px;
+    color: var(--bg);
+    background: var(--amber);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .feed-body .tag.r { background: var(--red); }
+  .feed-body .tag.g { background: var(--green); color: var(--bg); }
+  .feed-body .tag.c { background: var(--cyan); color: var(--bg); }
+  .feed-body h4 {
+    font-family: "Bebas Neue", monospace;
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 1.1;
+    letter-spacing: 0.01em;
+    color: var(--amber-bright);
+    margin-bottom: 8px;
+  }
+  .feed-body p {
+    color: var(--amber-dim);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .feed-body p b { color: var(--amber); }
+
+  /* ============ MOBILE PREVIEW ============ */
+  .mobile-section {
+    padding: 80px 28px;
+    border-bottom: 1px solid var(--grid-strong);
+  }
+  .mobile-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .phone {
+    aspect-ratio: 9/19;
+    background: var(--bg-3);
+    border: 2px solid var(--amber);
+    border-radius: 28px;
+    padding: 12px;
+    box-shadow:
+      0 0 30px rgba(255,176,0,0.2),
+      inset 0 0 0 1px rgba(255,176,0,0.1);
+    overflow: hidden;
+    position: relative;
+  }
+  .phone::before {
+    content: "";
+    position: absolute;
+    top: 18px; left: 50%;
+    transform: translateX(-50%);
+    width: 80px; height: 6px;
+    background: var(--bg);
+    border: 1px solid var(--amber-dim);
+    border-radius: 4px;
+    z-index: 5;
+  }
+  .phone-screen {
+    background: var(--bg);
+    border-radius: 18px;
+    height: 100%;
+    overflow: hidden;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 12px 12px;
+    padding: 38px 12px 60px;
+    position: relative;
+  }
+  .ph-bar {
+    border-bottom: 1px solid var(--grid-strong);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ph-bar .mt {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--amber);
+  }
+  .ph-bar .mt::before { content: "[ "; color: var(--amber-dim); }
+  .ph-bar .mt::after { content: " ]"; color: var(--amber-dim); }
+  .ph-bar .indi {
+    font-size: 7px;
+    color: var(--green);
+  }
+  .ph-bar .indi::before { content: "● "; animation: blink 1.2s infinite; }
+
+  .ph-title {
+    font-family: "Bebas Neue", monospace;
+    font-size: 28px;
+    line-height: 0.9;
+    color: var(--amber);
+    margin-bottom: 8px;
+    text-shadow: 0 0 12px rgba(255,176,0,0.3);
+  }
+  .ph-title em { color: var(--red); font-style: normal; }
+
+  .ph-sub {
+    font-size: 8px;
+    color: var(--amber-dim);
+    letter-spacing: 0.06em;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .ph-stats {
+    border: 1px solid var(--grid-strong);
+    margin-bottom: 10px;
+  }
+  .ph-stat-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid var(--grid-strong);
+  }
+  .ph-stat-row:last-child { border-bottom: 0; }
+  .ph-stat-row > div {
+    padding: 8px 10px;
+    border-right: 1px solid var(--grid-strong);
+  }
+  .ph-stat-row > div:last-child { border-right: 0; }
+  .ph-stat-row .l {
+    font-size: 7px;
+    color: var(--amber-dim);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .ph-stat-row .v {
+    font-family: "Bebas Neue", monospace;
+    font-size: 18px;
+    line-height: 1;
+    color: var(--amber);
+  }
+  .ph-stat-row .v.r { color: var(--red); }
+  .ph-stat-row .v small { font-size: 8px; color: var(--amber-dim); }
+
+  .ph-search {
+    font-size: 10px;
+    color: var(--amber);
+    border: 1px solid var(--grid-strong);
+    padding: 5px 8px;
+    margin-bottom: 8px;
+    background: var(--bg-2);
+  }
+  .ph-search::before { content: "> "; color: var(--green); }
+  .ph-search::after { content: "_"; animation: blink 1s infinite; color: var(--amber); }
+
+  .ph-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 6px;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--grid-strong);
+    font-size: 9px;
+    align-items: center;
+  }
+  .ph-row .id { color: var(--amber-dim); }
+  .ph-row .nm { color: var(--amber); font-weight: 700; }
+  .ph-row .nm small { color: var(--amber-dim); font-weight: 400; display: block; font-size: 7px; }
+  .ph-row .v { color: var(--amber-bright); font-weight: 700; font-size: 10px; }
+
+  .ph-tabs {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    border-top: 1px solid var(--amber);
+    background: var(--bg);
+    padding: 8px 6px 18px;
+    display: flex;
+    justify-content: space-around;
+  }
+  .ph-tabs span {
+    font-size: 8px;
+    color: var(--amber-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .ph-tabs span.active {
+    color: var(--amber);
+    font-weight: 700;
+  }
+  .ph-tabs span.active::before { content: "[ "; }
+  .ph-tabs span.active::after { content: " ]"; }
+
+  .ph-cap {
+    text-align: center;
+    margin-top: 18px;
+    font-size: 10px;
+    color: var(--amber-dim);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .ph-cap b { color: var(--amber); font-weight: 700; }
+
+  .ph-feed-item {
+    border-left: 2px solid var(--amber);
+    padding: 6px 8px;
+    margin-bottom: 6px;
+    background: var(--bg-2);
+    font-size: 9px;
+    line-height: 1.3;
+  }
+  .ph-feed-item.r { border-left-color: var(--red); }
+  .ph-feed-item.g { border-left-color: var(--green); }
+  .ph-feed-item.c { border-left-color: var(--cyan); }
+  .ph-feed-item .pt {
+    font-size: 7px;
+    color: var(--green);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .ph-feed-item .ph {
+    font-family: "Bebas Neue", monospace;
+    color: var(--amber-bright);
+    font-size: 12px;
+    line-height: 1.1;
+  }
+
+  /* ============ FOOT ============ */
+  footer {
+    padding: 60px 28px 30px;
+    background: var(--bg-2);
+    border-top: 1px solid var(--amber);
+  }
+  .foot-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 50px;
+    padding-bottom: 36px;
+    border-bottom: 1px dashed var(--grid-strong);
+  }
+  .foot-grid h4 {
+    font-size: 11px;
+    color: var(--green);
+    letter-spacing: 0.18em;
+    margin-bottom: 14px;
+    font-weight: 700;
+  }
+  .foot-grid h4::before { content: "// "; color: var(--amber-dim); }
+  .foot-grid ul { list-style: none; }
+  .foot-grid li { margin-bottom: 8px; }
+  .foot-grid a {
+    color: var(--amber-dim);
+    font-size: 12px;
+  }
+  .foot-grid a:hover { color: var(--amber); }
+  .foot-grid p {
+    color: var(--amber-dim);
+    font-size: 12px;
+    line-height: 1.6;
+    max-width: 380px;
+  }
+  .foot-grid p b { color: var(--amber); }
+  .foot-bot {
+    margin-top: 24px;
+    font-size: 10px;
+    color: var(--amber-dim);
+    line-height: 1.6;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+  }
+  .foot-bot strong { color: var(--red); font-weight: 700; }
+  .foot-bot .checksum {
+    font-size: 10px;
+    color: var(--amber-dim);
+    text-align: right;
+  }
+  .foot-bot .checksum b { color: var(--green); font-weight: 700; }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 1100px) {
+    .charts-grid { grid-template-columns: 1fr; }
+    .filter-bar { grid-template-columns: 1fr 1fr; }
+    .filter-cell { border-right: 0; border-bottom: 1px solid var(--grid-strong); }
+    .filter-cell:nth-child(2n) { border-right: 0; }
+    .hero-stats { grid-template-columns: 1fr 1fr; }
+    .hero-stat:nth-child(2) { border-right: 0; }
+    .hero-stat:nth-child(1), .hero-stat:nth-child(2) { border-bottom: 1px solid var(--grid-strong); }
+    .mobile-grid { grid-template-columns: 1fr 1fr; }
+    .mobile-grid > div:nth-child(3) { display: none; }
+    .foot-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 720px) {
+    .topbar {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding: 10px 16px;
+    }
+    .topbar-meta { flex-wrap: wrap; gap: 12px; font-size: 10px; }
+    .topbar-nav { flex-wrap: wrap; }
+    .hero { padding: 40px 16px; }
+    .hero-inner { padding: 28px 18px; }
+    .hero-frame::before { left: 10px; font-size: 9px; }
+    .hero-frame::after { right: 10px; font-size: 9px; }
+    .hero-stats { grid-template-columns: 1fr; }
+    .hero-stat { border-right: 0; border-bottom: 1px solid var(--grid-strong); }
+    .hero-stat:last-child { border-bottom: 0; }
+    .charts, .db, .feed, .mobile-section { padding: 50px 16px; }
+    .section-mark { grid-template-columns: 1fr; gap: 8px; }
+    .section-mark .ts { text-align: left; }
+    .chart-card { padding: 22px 18px; }
+    .chart-card-body { grid-template-columns: 1fr; gap: 18px; }
+    .pie-svg { width: 180px; height: 180px; align-self: center; }
+    .filter-bar { grid-template-columns: 1fr; }
+    .filter-cell { border-right: 0; }
+    .data-table thead { display: none; }
+    .data-table, .data-table tbody, .data-table tr, .data-table td { display: block; width: 100%; }
+    .data-table tr {
+      border: 1px solid var(--grid-strong);
+      margin-bottom: 8px;
+      padding: 8px 14px;
+    }
+    .data-table td {
+      border: 0;
+      padding: 5px 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .data-table td.num { text-align: right; }
+    .data-table td::before {
+      content: attr(data-label);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--amber-dim);
+      align-self: center;
+    }
+    .data-table td:first-child::before { display: none; }
+    .feed-list li { grid-template-columns: 1fr; gap: 10px; }
+    .feed-time { border-right: 0; padding: 0; border-bottom: 1px dashed var(--grid-strong); padding-bottom: 8px; }
+    .mobile-grid { grid-template-columns: 1fr; max-width: 280px; }
+    .mobile-grid > div:nth-child(2),
+    .mobile-grid > div:nth-child(3) { display: none; }
+    .foot-grid { grid-template-columns: 1fr; gap: 28px; }
+    .foot-bot { grid-template-columns: 1fr; gap: 12px; }
+    .foot-bot .checksum { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+<header class="topbar">
+  <div class="topbar-brand"><span class="pulse"></span>HU/CORRUPT.SYS</div>
+  <div class="topbar-meta">
+    <span><b>NODE</b>: hu-bp-01</span>
+    <span><b>UPTIME</b>: 998d</span>
+    <span><b>RECORDS</b>: 12</span>
+    <span class="red">● 3 NEW (24h)</span>
+    <span><b>SIG</b>: SHA256:9F3A…2B</span>
+  </div>
+  <nav class="topbar-nav">
+    <a href="#hero">/dash</a>
+    <a href="#charts">/stats</a>
+    <a href="#db">/db</a>
+    <a href="#feed">/feed</a>
+    <a href="#mobile">/mobile</a>
+  </nav>
+</header>
+
+<section class="hero" id="hero">
+  <div class="hero-frame">
+    <div class="hero-inner">
+      <div class="hero-prompt">load --module=incident_tracker --region=HU --limit=∞<span class="cur"></span></div>
+      <h1 class="hero-title">A KORRUPCIÓ<br/><span class="glitch" data-text="ADATBÁZISA">ADATBÁZISA</span>.</h1>
+      <p class="hero-sub">
+        Nyílt forráskódú, közösen szerkesztett incidens-nyilvántartás. <b>Tizenkét eset</b>, <b>ötvennégy év börtön</b>, <b>50,4 milliárd forint</b> dokumentált kár.
+        Adataink bírósági iratokból és nyílt sajtóforrásokból származnak <span class="red">— [TESZTADAT // FIKTÍV]</span>.
+        Minden bejegyzés időbélyegzett, GPG-aláírt, és visszamenőlegesen ellenőrizhető.
+      </p>
+      <div class="hero-stats">
+        <div class="hero-stat r">
+          <div class="l">Halmozott kár / Ft</div>
+          <div class="v">50,4 <small>Mrd</small></div>
+        </div>
+        <div class="hero-stat">
+          <div class="l">Halmozott börtön</div>
+          <div class="v">75 <small>év</small></div>
+        </div>
+        <div class="hero-stat">
+          <div class="l">Aktív ügyek</div>
+          <div class="v">12 <small>nyitva</small></div>
+        </div>
+        <div class="hero-stat g">
+          <div class="l">Új ezen a héten</div>
+          <div class="v">3 <small>vádemelés</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="charts" id="charts">
+  <div class="section-mark">
+    <div class="num">02</div>
+    <div>
+      <div class="label">// Aggregate metrics</div>
+      <h2>BREAKDOWN_BY_<b>SECTOR</b>.csv</h2>
+    </div>
+    <div class="ts"><b>SYNC OK</b><br/>2026-04-30T09:42:18Z<br/>checksum: a3f9b1…</div>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-card" data-tag="// FIG_01.svg">
+      <div class="chart-card-head">
+        <div class="h">PÉNZÜGYI KÁR</div>
+        <div class="id">PIE_01 · n=12 · σ=4.2B</div>
+      </div>
+      <div class="chart-card-body">
+        <svg class="pie-svg" viewBox="0 0 220 220" id="pie-money"></svg>
+        <table class="pie-table" id="table-money"></table>
+      </div>
+      <div class="ascii-bar" id="bar-money"></div>
+    </div>
+    <div class="chart-card" data-tag="// FIG_02.svg">
+      <div class="chart-card-head">
+        <div class="h">BÖRTÖNÉVEK</div>
+        <div class="id">PIE_02 · n=12 · μ=6.3y</div>
+      </div>
+      <div class="chart-card-body">
+        <svg class="pie-svg" viewBox="0 0 220 220" id="pie-prison"></svg>
+        <table class="pie-table" id="table-prison"></table>
+      </div>
+      <div class="ascii-bar" id="bar-prison"></div>
+    </div>
+  </div>
+</section>
+
+<section class="db" id="db">
+  <div class="section-mark">
+    <div class="num">03</div>
+    <div>
+      <div class="label">// Dossier registry · queryable</div>
+      <h2>SELECT * FROM <b>cases</b> WHERE …</h2>
+    </div>
+    <div class="ts"><b>OK</b> · 12 rows<br/>last_index: 2026-04-30</div>
+  </div>
+
+  <div class="filter-bar">
+    <div class="filter-cell search">
+      <label for="q">SEARCH</label>
+      <input id="q" type="search" placeholder="grep -i 'név|pozíció|kulcsszó'…" autocomplete="off" />
+    </div>
+    <div class="filter-cell">
+      <label for="f-status">STATUS</label>
+      <select id="f-status">
+        <option value="">[ANY]</option>
+        <option>Lezárva</option>
+        <option>Vádemelés</option>
+        <option>Folyamatban</option>
+      </select>
+    </div>
+    <div class="filter-cell">
+      <label for="f-region">REGION</label>
+      <select id="f-region"><option value="">[ALL]</option></select>
+    </div>
+    <div class="filter-cell">
+      <label for="f-amount">MIN_AMOUNT</label>
+      <select id="f-amount">
+        <option value="0">0</option>
+        <option value="500000000">5e8</option>
+        <option value="1000000000">1e9</option>
+        <option value="5000000000">5e9</option>
+        <option value="10000000000">1e10</option>
+      </select>
+    </div>
+    <div class="filter-cell">
+      <label for="f-sector">SECTOR</label>
+      <select id="f-sector"><option value="">[ALL]</option></select>
+    </div>
+  </div>
+
+  <div class="db-controls">
+    <div class="db-meta">
+      → matched <b id="count">12</b> records<span class="sep">|</span>response_time: 0.003s<span class="sep">|</span>cache: HIT
+    </div>
+    <div class="sort-bar">
+      <button data-sort="amount" class="active">↓ AMOUNT</button>
+      <button data-sort="years">↓ YEARS</button>
+      <button data-sort="year">↓ DATE</button>
+    </div>
+  </div>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>case_id</th>
+        <th>subject</th>
+        <th>region</th>
+        <th>year</th>
+        <th>status</th>
+        <th class="num">amount_ft</th>
+        <th class="num">years</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</section>
+
+<section class="feed" id="feed">
+  <div class="section-mark">
+    <div class="num">04</div>
+    <div>
+      <div class="label">// Live news ingest · polling stream</div>
+      <h2>tail -f <b>incident_feed.log</b></h2>
+    </div>
+    <div class="ts"><b>STREAMING</b><br/>last_event: 12 perce</div>
+  </div>
+
+  <div class="feed-stream">
+    <div class="feed-head">
+      <span>// 6 events buffered · 0 dropped · sources: 8</span>
+      <span class="indicator">RECEIVING</span>
+    </div>
+    <ul class="feed-list">
+      <li>
+        <div class="feed-time">
+          <span class="ts">T-2h12m</span>
+          2026-04-30<br/>07:30:14Z
+          <span class="src">// Telex.hu</span>
+        </div>
+        <div class="feed-body">
+          <span class="tag r">★ TOP / VÁDEMELÉS</span>
+          <h4>ÚJ VÁDEMELÉS A VASÚT-MODERNIZÁCIÓS PROJEKT KAPCSÁN: 6,8 MRD FT KÁR</h4>
+          <p>A nyomozóhatóság szerdán emelt vádat <b>T. László</b> volt miniszteri biztos és négy társa ellen. A Magas-fokú Korrupciós Csoport vádirata szerint a 2018–2021 közötti közbeszerzési pályázatok rendszerszintű manipulálása zajlott. <b>case_id=KM-004</b> · <b>amount=6.8e9</b> · <b>est_sentence=9y</b></p>
+        </div>
+      </li>
+      <li>
+        <div class="feed-time">
+          <span class="ts">T-5h08m</span>
+          2026-04-30<br/>04:34:50Z
+          <span class="src">// 444.hu</span>
+        </div>
+        <div class="feed-body">
+          <span class="tag g">BÍRÓSÁG / VERDICT</span>
+          <h4>HELYBENHAGYTA A 8 ÉVES BÖRTÖNBÜNTETÉST A MÁSODFOK</h4>
+          <p>A Fővárosi Ítélőtábla helyben hagyta az elsőfokú ítéletet <b>K. Zoltán</b> korábbi államtitkár ügyében. <b>case_id=KM-001</b> → status: <b>FINALIZED</b>.</p>
+        </div>
+      </li>
+      <li>
+        <div class="feed-time">
+          <span class="ts">T-8h15m</span>
+          2026-04-30<br/>01:27:42Z
+          <span class="src">// HVG</span>
+        </div>
+        <div class="feed-body">
+          <span class="tag c">VIZSGÁLAT / OLAF</span>
+          <h4>VIZSGÁLAT INDUL AZ M0 KÖRGYŰRŰ KÖZBESZERZÉSÉBEN</h4>
+          <p>Az Európai Csalás Elleni Hivatal (OLAF) lefolytatja előzetes vizsgálatát a <b>12 milliárdos pályázat</b> ügyében, miután három alvállalkozó visszalépett a tendertől.</p>
+        </div>
+      </li>
+      <li>
+        <div class="feed-time">
+          <span class="ts">T-1d</span>
+          2026-04-29<br/>14:18:00Z
+          <span class="src">// Magyar Hang</span>
+        </div>
+        <div class="feed-body">
+          <span class="tag">EU / PÁLYÁZAT</span>
+          <h4>EU-S CSALÁS MIATT ELBOCSÁTOTTÁK A FŐOSZTÁLYVEZETŐT</h4>
+          <p>A belső ellenőrzés jelezte az <b>1,8 milliárd forintos</b> elszámolási hiányt, amely 17 különböző pályázathoz kapcsolódik.</p>
+        </div>
+      </li>
+      <li>
+        <div class="feed-time">
+          <span class="ts">T-1d3h</span>
+          2026-04-29<br/>11:02:55Z
+          <span class="src">// Átlátszó</span>
+        </div>
+        <div class="feed-body">
+          <span class="tag r">LETARTÓZTATÁS</span>
+          <h4>LETARTÓZTATTÁK A REGIONÁLIS ÜGYNÖKSÉG VEZETŐJÉT</h4>
+          <p>A 2022-es <b>kórházfejlesztési ügyhöz</b> kapcsolódó, fiktív számlák miatt indított nyomozás újabb fejleménye. <b>case_id=KM-011</b> · <b>warrant=ISSUED</b>.</p>
+        </div>
+      </li>
+      <li>
+        <div class="feed-time">
+          <span class="ts">T-2d</span>
+          2026-04-28<br/>09:45:12Z
+          <span class="src">// Népszava</span>
+        </div>
+        <div class="feed-body">
+          <span class="tag c">TANÚKIHALLGATÁS</span>
+          <h4>ÚJ TANÚ ÁLLT ELŐ A 2019-ES KÓRHÁZFEJLESZTÉSI ÜGYBEN</h4>
+          <p>Egy korábbi belső pénzügyi ellenőr nyilatkozott — a meghallgatás zárt ülésen folyik péntektől. <b>case_id=KM-009</b>.</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section class="mobile-section" id="mobile">
+  <div class="section-mark">
+    <div class="num">05</div>
+    <div>
+      <div class="label">// Mobile build · responsive tiers</div>
+      <h2>RUN_ON_<b>MOBILE</b>.app</h2>
+    </div>
+    <div class="ts">build_id: 0042<br/>device: HU/MOBILE_v1</div>
+  </div>
+
+  <div class="mobile-grid">
+    <div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="ph-bar"><span class="mt">DASH/01</span><span class="indi">LIVE</span></div>
+          <div class="ph-title">A KORRUPCIÓ <em>ADATBÁZISA</em>.</div>
+          <div class="ph-sub">// 12 ügy · 75 év · 50.4B Ft<br/>// last_sync: 09:42Z</div>
+          <div class="ph-stats">
+            <div class="ph-stat-row">
+              <div><div class="l">KÁR</div><div class="v r">50.4 <small>Mrd</small></div></div>
+              <div><div class="l">BÖRTÖN</div><div class="v">75 <small>év</small></div></div>
+            </div>
+            <div class="ph-stat-row">
+              <div><div class="l">AKTÍV</div><div class="v">12</div></div>
+              <div><div class="l">ÚJ</div><div class="v">3</div></div>
+            </div>
+          </div>
+          <div class="ph-search">grep cases…</div>
+          <div class="ph-row"><span class="id">001</span><span class="nm">S. Péter<small>Cégvezető · 2018</small></span><span class="v">12.5B</span></div>
+          <div class="ph-row"><span class="id">002</span><span class="nm">B. Krisztián<small>EU tan. · 2017</small></span><span class="v">9.4B</span></div>
+          <div class="ph-row"><span class="id">003</span><span class="nm">F. Csaba<small>Képviselő · 2019</small></span><span class="v">7.2B</span></div>
+          <div class="ph-row"><span class="id">004</span><span class="nm">T. László<small>Min. biztos · 2021</small></span><span class="v">6.8B</span></div>
+          <div class="ph-tabs">
+            <span class="active">DASH</span>
+            <span>DB</span>
+            <span>FEED</span>
+            <span>SYS</span>
+          </div>
+        </div>
+      </div>
+      <div class="ph-cap"><b>// 01</b> dashboard</div>
+    </div>
+    <div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="ph-bar"><span class="mt">DB/02</span><span class="indi">12 hits</span></div>
+          <div class="ph-title">QUERY<br/>&gt; <em>cases</em></div>
+          <div class="ph-search">vád ÉS &gt; 1e9…</div>
+          <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:10px;">
+            <span class="stat-tag vd" style="font-size:7px; padding:2px 5px;">● VÁD</span>
+            <span class="stat-tag lz" style="font-size:7px; padding:2px 5px;">● LZ</span>
+            <span class="stat-tag fl" style="font-size:7px; padding:2px 5px;">● FL</span>
+          </div>
+          <div class="ph-row"><span class="id">004</span><span class="nm">T. László<small>Hajdú-Bihar · 9y</small></span><span class="v">6.8B</span></div>
+          <div class="ph-row"><span class="id">007</span><span class="nm">H. Tamás<small>Borsod · 7y</small></span><span class="v">5.6B</span></div>
+          <div class="ph-row"><span class="id">001</span><span class="nm">K. Zoltán<small>Budapest · 8y</small></span><span class="v">4.2B</span></div>
+          <div class="ph-row"><span class="id">010</span><span class="nm">P. Bence<small>Budapest · 5y</small></span><span class="v">2.1B</span></div>
+          <div class="ph-row"><span class="id">012</span><span class="nm">D. Ákos<small>Fejér · 4y</small></span><span class="v">1.4B</span></div>
+          <div class="ph-row"><span class="id">002</span><span class="nm">N. Imre<small>Pest · 3y</small></span><span class="v">850M</span></div>
+          <div class="ph-tabs">
+            <span>DASH</span>
+            <span class="active">DB</span>
+            <span>FEED</span>
+            <span>SYS</span>
+          </div>
+        </div>
+      </div>
+      <div class="ph-cap"><b>// 02</b> database</div>
+    </div>
+    <div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="ph-bar"><span class="mt">FEED/03</span><span class="indi">RECV</span></div>
+          <div class="ph-title">tail -f<br/>&gt; <em>news.log</em></div>
+          <div class="ph-feed-item r">
+            <div class="pt">★ TOP · 2h ago</div>
+            <div class="ph">VÁDEMELÉS — VASÚT-MODERNIZÁCIÓ 6,8B</div>
+          </div>
+          <div class="ph-feed-item g">
+            <div class="pt">VERDICT · 5h ago</div>
+            <div class="ph">8 ÉVES BÜNTETÉS HELYBEN</div>
+          </div>
+          <div class="ph-feed-item c">
+            <div class="pt">OLAF · 8h ago</div>
+            <div class="ph">M0 KÖZBESZERZÉS VIZSGÁLAT</div>
+          </div>
+          <div class="ph-feed-item">
+            <div class="pt">EU · 1d ago</div>
+            <div class="ph">FŐOSZTÁLYVEZETŐ ELBOCSÁTVA</div>
+          </div>
+          <div class="ph-feed-item r">
+            <div class="pt">WARRANT · 1d ago</div>
+            <div class="ph">REGIONÁLIS VEZETŐ LETARTÓZTATVA</div>
+          </div>
+          <div class="ph-feed-item c">
+            <div class="pt">TANÚ · 2d ago</div>
+            <div class="ph">ÚJ TANÚ A KÓRHÁZ-ÜGYBEN</div>
+          </div>
+          <div class="ph-tabs">
+            <span>DASH</span>
+            <span>DB</span>
+            <span class="active">FEED</span>
+            <span>SYS</span>
+          </div>
+        </div>
+      </div>
+      <div class="ph-cap"><b>// 03</b> live feed</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-grid">
+    <div>
+      <h4>HU/CORRUPT.SYS</h4>
+      <p>Open-source incident registry. Reproducible, append-only, signed. Source code under <b>AGPL-3.0</b>; data under <b>CC-BY-SA 4.0</b>. Self-host welcome — clone, verify checksums, raise PR.</p>
+    </div>
+    <div>
+      <h4>data</h4>
+      <ul>
+        <li><a href="#">/dump.csv</a></li>
+        <li><a href="#">/dump.json</a></li>
+        <li><a href="#">/api/v1/cases</a></li>
+        <li><a href="#">methodology.md</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>repo</h4>
+      <ul>
+        <li><a href="#">git clone …</a></li>
+        <li><a href="#">issues</a></li>
+        <li><a href="#">contributors</a></li>
+        <li><a href="#">changelog</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>secure</h4>
+      <ul>
+        <li><a href="#">/.well-known/gpg.asc</a></li>
+        <li><a href="#">SecureDrop tip</a></li>
+        <li><a href="#">.onion mirror</a></li>
+        <li><a href="#">canary.txt</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot-bot">
+    <span><strong>// DISCLAIMER:</strong> design tervezeti minta · minden név, eset és összeg <strong>fiktív</strong> · bármely valós személlyel/eseménnyel való egyezés a véletlen műve · © 2026 HU/CORRUPT.SYS · v0.1.0-mock</span>
+    <span class="checksum">build: <b>9F3A2B1C</b><br/>last_canary: 2026-04-30 09:42Z ✓</span>
+  </div>
+</footer>
+
+</div>
+
+<script>
+  const cases = [
+    { id: 'KM-001', name: 'K. Zoltán',     position: 'Volt államtitkár',        amount: 4_200_000_000,  years: 8,  year: 2019, status: 'Vádemelés',   region: 'Budapest',    sector: 'Közbeszerzés' },
+    { id: 'KM-002', name: 'N. Imre',       position: 'Polgármester',            amount: 850_000_000,    years: 3,  year: 2020, status: 'Folyamatban', region: 'Pest',        sector: 'Önkormányzat' },
+    { id: 'KM-003', name: 'S. Péter',      position: 'Cégvezető',               amount: 12_500_000_000, years: 12, year: 2018, status: 'Lezárva',     region: 'Budapest',    sector: 'Állami vállalat' },
+    { id: 'KM-004', name: 'T. László',     position: 'Volt miniszteri biztos',  amount: 6_800_000_000,  years: 9,  year: 2021, status: 'Vádemelés',   region: 'Hajdú-Bihar', sector: 'Közbeszerzés' },
+    { id: 'KM-005', name: 'V. Gábor',      position: 'Önkormányzati képviselő', amount: 320_000_000,    years: 2,  year: 2022, status: 'Folyamatban', region: 'Csongrád',    sector: 'Önkormányzat' },
+    { id: 'KM-006', name: 'B. Krisztián',  position: 'EU pályázati tanácsadó',  amount: 9_400_000_000,  years: 11, year: 2017, status: 'Lezárva',     region: 'Budapest',    sector: 'EU pályázat' },
+    { id: 'KM-007', name: 'H. Tamás',      position: 'Állami vállalat igazgató',amount: 5_600_000_000,  years: 7,  year: 2020, status: 'Vádemelés',   region: 'Borsod',      sector: 'Állami vállalat' },
+    { id: 'KM-008', name: 'M. Eszter',     position: 'Közbeszerzési referens',  amount: 180_000_000,    years: 1,  year: 2023, status: 'Folyamatban', region: 'Budapest',    sector: 'Közbeszerzés' },
+    { id: 'KM-009', name: 'F. Csaba',      position: 'Volt képviselő',          amount: 7_200_000_000,  years: 10, year: 2019, status: 'Lezárva',     region: 'Győr-Moson',  sector: 'EU pályázat' },
+    { id: 'KM-010', name: 'P. Bence',      position: 'Min. főosztályvezető',    amount: 2_100_000_000,  years: 5,  year: 2021, status: 'Vádemelés',   region: 'Budapest',    sector: 'EU pályázat' },
+    { id: 'KM-011', name: 'R. Andrea',     position: 'Kórházigazgató',          amount: 480_000_000,    years: 3,  year: 2022, status: 'Folyamatban', region: 'Veszprém',    sector: 'Egészségügy' },
+    { id: 'KM-012', name: 'D. Ákos',       position: 'Iparkamarai vezető',      amount: 1_350_000_000,  years: 4,  year: 2020, status: 'Lezárva',     region: 'Fejér',       sector: 'Egyéb' }
+  ];
+
+  function polarToCartesian(cx, cy, r, angle) {
+    const rad = (angle - 90) * Math.PI / 180;
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+  }
+  function arcPath(cx, cy, r, a1, a2) {
+    const s = polarToCartesian(cx, cy, r, a2);
+    const e = polarToCartesian(cx, cy, r, a1);
+    const large = a2 - a1 <= 180 ? 0 : 1;
+    return `M ${cx} ${cy} L ${s.x} ${s.y} A ${r} ${r} 0 ${large} 0 ${e.x} ${e.y} Z`;
+  }
+  function fmtFt(n) {
+    if (n >= 1e9) return (n/1e9).toFixed(1).replace('.', ',') + 'B';
+    if (n >= 1e6) return (n/1e6).toFixed(0) + 'M';
+    return n.toLocaleString('hu-HU');
+  }
+  function asciiBar(values, total, width=80, ch='█▓▒░') {
+    let out = '';
+    values.forEach((v, i) => {
+      const n = Math.round((v / total) * width);
+      const c = ch[i % ch.length];
+      out += c.repeat(n);
+    });
+    return out;
+  }
+
+  function buildPie(svgId, tableId, barId, data, palette, centerNum, centerCap, unitFn) {
+    const svg = document.getElementById(svgId);
+    svg.innerHTML = '';
+    const cx = 110, cy = 110, r = 96;
+    const total = data.reduce((s, d) => s + d.value, 0);
+    let angle = 0;
+    data.forEach((d, i) => {
+      const span = (d.value / total) * 360;
+      const a1 = angle, a2 = angle + span;
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', arcPath(cx, cy, r, a1, a2));
+      path.setAttribute('fill', palette[i % palette.length]);
+      path.setAttribute('stroke', '#0a0a0a');
+      path.setAttribute('stroke-width', '2');
+      svg.appendChild(path);
+      angle = a2;
+    });
+    // outer ring
+    const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    ring.setAttribute('cx', cx); ring.setAttribute('cy', cy);
+    ring.setAttribute('r', r + 6);
+    ring.setAttribute('fill', 'none');
+    ring.setAttribute('stroke', '#ffb000');
+    ring.setAttribute('stroke-width', '1');
+    ring.setAttribute('stroke-dasharray', '2 4');
+    ring.setAttribute('opacity', '0.3');
+    svg.appendChild(ring);
+    // crosshairs
+    ['M0 110 L20 110','M200 110 L220 110','M110 0 L110 20','M110 200 L110 220'].forEach(d=>{
+      const ln = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      ln.setAttribute('d', d);
+      ln.setAttribute('stroke', '#ffb000');
+      ln.setAttribute('stroke-width', '1');
+      ln.setAttribute('opacity', '0.5');
+      svg.appendChild(ln);
+    });
+    // center hole
+    const hole = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    hole.setAttribute('cx', cx); hole.setAttribute('cy', cy);
+    hole.setAttribute('r', 38);
+    hole.setAttribute('fill', '#0a0a0a');
+    hole.setAttribute('stroke', '#ffb000');
+    hole.setAttribute('stroke-width', '1');
+    svg.appendChild(hole);
+    const tNum = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    tNum.setAttribute('x', cx); tNum.setAttribute('y', cy + 6);
+    tNum.setAttribute('text-anchor', 'middle');
+    tNum.setAttribute('class', 'center-num');
+    tNum.textContent = centerNum;
+    svg.appendChild(tNum);
+    const tCap = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    tCap.setAttribute('x', cx); tCap.setAttribute('y', cy + 22);
+    tCap.setAttribute('text-anchor', 'middle');
+    tCap.setAttribute('class', 'center-cap');
+    tCap.textContent = centerCap;
+    svg.appendChild(tCap);
+
+    // table
+    const tbl = document.getElementById(tableId);
+    tbl.innerHTML = data.map((d, i) => {
+      const pct = ((d.value / total) * 100).toFixed(1).replace('.', ',') + '%';
+      return `<tr>
+        <td class="sw"><span class="b" style="background:${palette[i % palette.length]}"></span></td>
+        <td class="n">${d.name}</td>
+        <td class="v">${unitFn(d.value)}</td>
+        <td class="p">${pct}</td>
+      </tr>`;
+    }).join('');
+
+    // ASCII bar
+    document.getElementById(barId).textContent = '└─ ' + asciiBar(data.map(d => d.value), total, 100);
+  }
+
+  function aggregate(field) {
+    const map = {};
+    cases.forEach(c => { map[c.sector] = (map[c.sector] || 0) + c[field]; });
+    return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+  }
+
+  const moneyData = aggregate('amount');
+  const prisonData = aggregate('years');
+  const palette1 = ['#ff3333', '#ffb000', '#00ff66', '#00d4ff', '#ffc94d', '#b87b00'];
+  const palette2 = ['#ffb000', '#ff3333', '#00ff66', '#00d4ff', '#ffc94d', '#b87b00'];
+
+  buildPie('pie-money', 'table-money', 'bar-money', moneyData, palette1, '50.4B', '· FT ·', v => fmtFt(v) + ' Ft');
+  buildPie('pie-prison', 'table-prison', 'bar-prison', prisonData, palette2, '75y', '· ÉV ·', v => v + ' év');
+
+  // database
+  const tbody = document.getElementById('tbody');
+  const regSel = document.getElementById('f-region');
+  const secSel = document.getElementById('f-sector');
+  [...new Set(cases.map(c => c.region))].sort().forEach(r => regSel.insertAdjacentHTML('beforeend', `<option>${r}</option>`));
+  [...new Set(cases.map(c => c.sector))].sort().forEach(s => secSel.insertAdjacentHTML('beforeend', `<option>${s}</option>`));
+
+  let sortKey = 'amount';
+  function statusClass(s) {
+    if (s === 'Lezárva') return 'lz';
+    if (s === 'Vádemelés') return 'vd';
+    return 'fl';
+  }
+  function statusLabel(s) {
+    if (s === 'Lezárva') return 'CLOSED';
+    if (s === 'Vádemelés') return 'INDICTED';
+    return 'OPEN';
+  }
+  function render() {
+    const q = document.getElementById('q').value.trim().toLowerCase();
+    const status = document.getElementById('f-status').value;
+    const region = document.getElementById('f-region').value;
+    const sector = document.getElementById('f-sector').value;
+    const minAmt = +document.getElementById('f-amount').value;
+
+    const filtered = cases.filter(c => {
+      if (q && !(`${c.name} ${c.position} ${c.sector} ${c.region}`.toLowerCase().includes(q))) return false;
+      if (status && c.status !== status) return false;
+      if (region && c.region !== region) return false;
+      if (sector && c.sector !== sector) return false;
+      if (c.amount < minAmt) return false;
+      return true;
+    }).sort((a, b) => b[sortKey] - a[sortKey]);
+
+    document.getElementById('count').textContent = filtered.length;
+    tbody.innerHTML = filtered.map(c => `
+      <tr>
+        <td data-label="ID"><span class="case-id-cell">${c.id}</span></td>
+        <td data-label="Subject">
+          <div style="font-weight:700;color:var(--amber);">${c.name}</div>
+          <div class="pos-meta">${c.position} · ${c.sector}</div>
+        </td>
+        <td data-label="Region">${c.region}</td>
+        <td data-label="Year">${c.year}</td>
+        <td data-label="Status"><span class="stat-tag ${statusClass(c.status)}">${statusLabel(c.status)}</span></td>
+        <td class="num" data-label="Amount">${fmtFt(c.amount)} Ft</td>
+        <td class="num" data-label="Years">${c.years}y</td>
+      </tr>
+    `).join('');
+  }
+  ['q', 'f-status', 'f-region', 'f-amount', 'f-sector'].forEach(id => {
+    document.getElementById(id).addEventListener('input', render);
+    document.getElementById(id).addEventListener('change', render);
+  });
+  document.querySelectorAll('.sort-bar button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sort-bar button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      sortKey = btn.dataset.sort;
+      render();
+    });
+  });
+  render();
+
+  // boot animation — type out hero prompt
+  const promptEl = document.querySelector('.hero-prompt');
+  if (promptEl) {
+    const txt = promptEl.firstChild.textContent || promptEl.textContent;
+    // (kept static — already realistic enough)
+  }
+</script>
+</body>
+</html>
