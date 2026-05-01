@@ -3,7 +3,7 @@ import { sql } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const db = getDb();

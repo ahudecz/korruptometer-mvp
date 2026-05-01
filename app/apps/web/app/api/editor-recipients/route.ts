@@ -3,7 +3,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 /**
  * Public-half of the editor recipient list (Phase 4 / T191). Returns the

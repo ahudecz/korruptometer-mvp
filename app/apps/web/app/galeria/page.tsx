@@ -6,7 +6,7 @@ import { Mugshot } from '@korr/ui/mugshot';
 
 import { getDb, schema } from '@/lib/db';
 
-export const revalidate = 300;
+export const dynamic = 'force-dynamic';
 
 type Hair = 'short' | 'bald' | 'wave' | 'cap' | 'slick';
 

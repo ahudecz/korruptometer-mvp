@@ -11,7 +11,7 @@ const querySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });
 
-export const revalidate = 120;
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   const url = new URL(req.url);

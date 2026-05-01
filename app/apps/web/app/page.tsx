@@ -7,7 +7,7 @@ import { Donut, type DonutSlice } from '@korr/ui/donut';
 
 import { getDb, schema } from '@/lib/db';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 const SECTOR_PALETTE = [
   '#e31937',
