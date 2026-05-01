@@ -7,7 +7,7 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 
 type State =
   | { kind: 'idle' }
-  | { kind: 'pending' }
+  | { kind: 'pending'; email?: string }
   | { kind: 'sent'; email: string }
   | { kind: 'verified' }
   | { kind: 'err'; message: string };
@@ -41,7 +41,7 @@ export function LoginForm({
   async function verifyCode(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (state.kind !== 'sent') return;
-    setState({ kind: 'pending' });
+    setState({ kind: 'pending', email: state.email });
     const fd = new FormData(e.currentTarget);
     const token = String(fd.get('code') ?? '').trim();
     const supabase = createSupabaseBrowserClient();
@@ -62,8 +62,8 @@ export function LoginForm({
     return <p>Bejelentkezve. Átirányítás…</p>;
   }
 
-  if (state.kind === 'sent' || (state.kind === 'pending' && 'email' in state)) {
-    const email = 'email' in state ? state.email : '';
+  if (state.kind === 'sent' || (state.kind === 'pending' && state.email)) {
+    const email = state.email ?? '';
     return (
       <form onSubmit={verifyCode} className="db-toolbar" style={{ display: 'grid', gap: 12 }}>
         <p style={{ fontSize: 14 }}>

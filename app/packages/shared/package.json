@@ -13,6 +13,10 @@
     "./encryption": "./src/encryption.ts",
     "./turnstile": "./src/turnstile.ts",
     "./sealed-box": "./src/sealed-box.ts",
+    "./storage": "./src/storage.ts",
+    "./virus-scan": "./src/virus-scan.ts",
+    "./slack": "./src/slack.ts",
+    "./sealed-box-monitor": "./src/sealed-box-monitor.ts",
     "./schemas/cases": "./src/schemas/cases.ts",
     "./schemas/submission": "./src/schemas/submission.ts"
   },

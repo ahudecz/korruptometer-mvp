@@ -62,7 +62,7 @@ export async function POST(req: Request) {
 
   const contentType = req.headers.get('content-type') ?? '';
   let parsedFields: Record<string, unknown> = {};
-  let attachments: { storageKey: string; fileName: string; mimeType: string; sizeBytes: number; data: ArrayBuffer }[] = [];
+  const attachments: { storageKey: string; fileName: string; mimeType: string; sizeBytes: number; data: ArrayBuffer }[] = [];
 
   if (contentType.includes('multipart/form-data')) {
     const form = await req.formData();

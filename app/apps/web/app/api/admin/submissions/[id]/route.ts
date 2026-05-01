@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { requireEditor } from '@/lib/admin/auth';
 import { getDb, schema } from '@/lib/db';
+import { inngest } from '@/inngest/client';
 
 const bodySchema = z.object({
   action: z.enum(['in_review', 'approve', 'reject', 'duplicate']),
@@ -98,6 +99,13 @@ export async function PATCH(
     entityId: id,
     detail: { fromStatus: submission.status, toStatus: nextStatus, createdCaseId },
   });
+
+  if (action === 'approve' || action === 'reject' || action === 'duplicate') {
+    await inngest.send({
+      name: 'kpi.recompute',
+      data: { reason: `submission.${action}` },
+    });
+  }
 
   return NextResponse.json({ ok: true, status: nextStatus, createdCaseId });
 }

@@ -126,7 +126,7 @@ export default async function AdminSubmissionPage({
         </p>
       )}
 
-      {(reporterEmail || reporterName) && (
+      {reporterEmail || reporterName ? (
         <>
           <h4 style={{ marginTop: 24, marginBottom: 8 }}>
             Elérhetőség (titkosítva tárolva)
@@ -149,7 +149,22 @@ export default async function AdminSubmissionPage({
             örökre megőrzi.
           </p>
         </>
-      )}
+      ) : submission.allowContact ? (
+        // T106 — PII purged state. The audit log keeps the pii.read rows even
+        // after the underlying Submission has been purged (FR-054).
+        <>
+          <h4 style={{ marginTop: 24, marginBottom: 8 }}>Elérhetőség</h4>
+          <div
+            className="empty-state"
+            style={{ textAlign: 'left', padding: 16 }}
+            role="status"
+          >
+            A reporter PII-jét a megőrzési szabály alapján töröltük. A
+            korábbi <code>pii.read</code> AuditLog-bejegyzések megmaradtak —
+            a hozzáférési előzmény követhető marad.
+          </div>
+        </>
+      ) : null}
 
       {(submission.sourceUrls ?? []).length > 0 && (
         <>

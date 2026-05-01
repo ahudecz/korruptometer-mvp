@@ -4,3 +4,7 @@ export * from './cursor';
 export * from './encryption';
 export * from './turnstile';
 export * from './sealed-box';
+export * from './storage';
+export * from './virus-scan';
+export * from './slack';
+export * from './sealed-box-monitor';

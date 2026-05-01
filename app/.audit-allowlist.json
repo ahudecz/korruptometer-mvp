@@ -1,0 +1,9 @@
+{
+  "$schema": "https://example.com/audit-allowlist.schema.json",
+  "policy": {
+    "max_age_days": 90,
+    "review_owner": "@korr/security",
+    "review_doc": "app/docs/dependabot-policy.md"
+  },
+  "allowlist": {}
+}

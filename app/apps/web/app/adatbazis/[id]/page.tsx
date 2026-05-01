@@ -39,6 +39,7 @@ export default async function CasePage({
       sourceUrl: newsArticles.sourceUrl,
       publishedAt: newsArticles.publishedAt,
       tag: newsArticles.tag,
+      linkOverridden: newsArticles.linkOverridden,
       sourceSlug: sources.slug,
       sourceName: sources.name,
     })
@@ -166,11 +167,21 @@ export default async function CasePage({
                   </div>
                   <strong>{a.headline}</strong>
                   <p style={{ color: 'var(--muted)', fontSize: 14 }}>{a.excerpt}</p>
-                  {a.tag && (
-                    <span className="pill" style={{ alignSelf: 'flex-start' }}>
-                      {a.tag}
+                  <div style={{ display: 'flex', gap: 8, alignSelf: 'flex-start', flexWrap: 'wrap' }}>
+                    {a.tag && <span className="pill">{a.tag}</span>}
+                    {/* T159 — auto-linked vs editor-linked badge keyed off linkOverridden */}
+                    <span
+                      className="pill"
+                      style={{
+                        background: a.linkOverridden ? 'var(--accent)' : 'var(--surface)',
+                        color: a.linkOverridden ? 'white' : 'var(--muted)',
+                        fontSize: 11,
+                      }}
+                      aria-label={a.linkOverridden ? 'Szerkesztő által csatolt' : 'Automatikus illesztés'}
+                    >
+                      {a.linkOverridden ? 'szerkesztő által csatolt' : 'auto-csatolt'}
                     </span>
-                  )}
+                  </div>
                 </a>
               ))}
             </div>

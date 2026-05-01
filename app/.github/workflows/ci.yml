@@ -1,0 +1,102 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '10.28.1'
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: app
+    env:
+      # Test-time defaults — production secrets live in Vercel + Supabase Vault.
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+      DIRECT_URL: postgres://postgres:postgres@localhost:5432/postgres
+      NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: anon-test
+      SUPABASE_SERVICE_ROLE_KEY: service-test
+      PII_ENC_KEY: ci-test-key-do-not-deploy
+      INNGEST_DEV: '1'
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+          cache-dependency-path: app/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+
+      - name: typecheck
+        run: pnpm typecheck
+      - name: lint
+        run: pnpm lint
+
+      # Vitest covers: format snapshots (T018), cursor-stability (T029),
+      # ratelimit envelope (T055/T083), aggregator-link (T154/T155),
+      # KPI rollup (T160/T161), retention sweep (T118), DSR (T177-T180).
+      - name: test (vitest)
+        run: pnpm test
+
+      - name: build
+        run: pnpm --filter @korr/web build
+
+      # Postgres-stat snapshot for the SC-006 burst.
+      - name: pnpm audit (prod-only, allowlist-aware)
+        run: |
+          pnpm audit --prod --json > audit-output.json || true
+          node -e "const j=require('./audit-output.json');const a=require('./.audit-allowlist.json');const allow=new Set(Object.keys(a.allowlist||{}));const advs=Object.values(j.advisories||{});const blocking=advs.filter(adv=>!allow.has(String(adv.id)));if(blocking.length){console.error('Unallowed advisories:',blocking.map(a=>a.id));process.exit(1)}else{console.log('audit clean')}"
+
+      # Playwright + axe — run against `next start` because the dev server's
+      # CSP differs from production.
+      - name: playwright install
+        run: pnpm --filter @korr/web exec playwright install --with-deps chromium
+      - name: e2e + axe
+        run: |
+          pnpm --filter @korr/web start &
+          SERVER_PID=$!
+          # wait for /healthz to come up
+          for i in {1..30}; do curl -fsS http://localhost:3000/healthz && break || sleep 2; done
+          pnpm --filter @korr/web test:e2e
+          kill $SERVER_PID || true
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
+
+      - name: log-retention drift check
+        run: pnpm tsx scripts/audit-log-retention.ts || true
+
+      - name: scrape→aggregate cycle latency artefact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-aggregate-latency
+          path: app/apps/web/test-output/scrape-aggregate-latency.json
+          if-no-files-found: ignore
+
+      - name: playwright traces (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: app/apps/web/test-results
+          if-no-files-found: ignore

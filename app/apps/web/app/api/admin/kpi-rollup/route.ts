@@ -5,20 +5,30 @@ import { sql } from 'drizzle-orm';
 import { requireEditor } from '@/lib/admin/auth';
 import { KPI_ROLLUP_LOCK } from '@korr/db/locks';
 import { getDb, schema } from '@/lib/db';
+import { inngest } from '@/inngest/client';
 
 /**
- * Synchronous wrapper for aggregate.kpi-rollup (T163). Phase 3 will trigger
- * this through Inngest hourly + on every approve/reject/duplicate; here it
- * is invokable from /admin so editors can force a recompute.
+ * /admin endpoint to force a KPI recompute. The hourly recompute and the
+ * post-mutation recompute both run via the aggregate.kpi-rollup Inngest
+ * function (T163). This route enqueues a kpi.recompute event so the same
+ * code path runs, then optionally executes the rollup synchronously when
+ * `?wait=1` is passed (handy for editors who want immediate feedback).
  *
- * Holds pg_advisory_xact_lock(KPI_ROLLUP_LOCK) so concurrent invocations
- * serialise (FR-068).
+ * The synchronous path holds pg_advisory_xact_lock(KPI_ROLLUP_LOCK) so it
+ * still serialises against the Inngest function (FR-068).
  */
-export async function POST() {
+export async function POST(req: Request) {
   try {
     await requireEditor();
   } catch {
     return NextResponse.json({ error: 'unauthorised' }, { status: 401 });
+  }
+
+  await inngest.send({ name: 'kpi.recompute', data: { reason: 'admin-force' } });
+
+  const url = new URL(req.url);
+  if (url.searchParams.get('wait') !== '1') {
+    return NextResponse.json({ ok: true, queued: true });
   }
 
   const db = getDb();

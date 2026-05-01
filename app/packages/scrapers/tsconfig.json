@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "outDir": "dist",
+    "rootDir": "."
+  },
+  "include": ["src/**/*", "__fixtures__/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

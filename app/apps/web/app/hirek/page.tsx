@@ -1,9 +1,11 @@
 import Link from 'next/link';
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 
 import { fmtDate } from '@korr/shared/format';
 
 import { getDb, schema } from '@/lib/db';
+
+import { NewsFilters } from './news-filters';
 
 export const revalidate = 120;
 
@@ -14,9 +16,18 @@ export default async function HirekPage({
 }) {
   const sp = await searchParams;
   const db = getDb();
-  const filters = [];
+
+  const filters = [] as ReturnType<typeof eq>[];
   if (sp.tag) filters.push(eq(schema.newsArticles.tag, sp.tag));
   if (sp.featured === '1') filters.push(eq(schema.newsArticles.featured, true));
+  if (sp.outlet) filters.push(eq(schema.sources.slug, sp.outlet));
+
+  const where =
+    filters.length === 0
+      ? undefined
+      : filters.length === 1
+        ? filters[0]
+        : and(...filters);
 
   const rows = await db
     .select({
@@ -33,22 +44,38 @@ export default async function HirekPage({
     })
     .from(schema.newsArticles)
     .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId))
-    .where(filters.length === 0 ? undefined : filters[0])
+    .where(where)
     .orderBy(desc(schema.newsArticles.publishedAt))
     .limit(40);
+
+  // Distinct tags + outlet list for the filter dropdowns. Both are reads of
+  // small tables so the s-maxage=120 cache absorbs them.
+  const tagRows = await db
+    .selectDistinct({ tag: schema.newsArticles.tag })
+    .from(schema.newsArticles)
+    .where(sql`${schema.newsArticles.tag} IS NOT NULL`);
+  const tags = tagRows.map((r) => r.tag).filter((t): t is string => !!t);
+
+  const outletRows = await db
+    .select({ slug: schema.sources.slug, name: schema.sources.name })
+    .from(schema.sources)
+    .where(eq(schema.sources.enabled, true));
 
   return (
     <section className="section">
       <div className="section-eyebrow">Hírek</div>
       <h2>Magyar korrupciós hírfolyam.</h2>
       <p className="lede">
-        A Telex, 444, HVG, Magyar Hang és Átlátszó kiadványaiból ízléssel
-        válogatott korrupciós cikkek. A Phase 3 scraper minden 30 percben
-        frissít — most a seed-fixture-ből adódó cikkeket látod.
+        A Telex, 444, HVG, Magyar Hang és Átlátszó kiadványaiból válogatott
+        korrupciós cikkek. A scraper minden 30 percben frissít.
       </p>
 
+      <NewsFilters tags={tags} outlets={outletRows} />
+
       {rows.length === 0 ? (
-        <div className="empty-state">Nincs még híranyag az adatbázisban.</div>
+        <div className="empty-state" style={{ marginTop: 16 }}>
+          Nincs találat a megadott szűrőkre.
+        </div>
       ) : (
         <div className="news-list" style={{ marginTop: 16 }}>
           {rows.map((a) => (
