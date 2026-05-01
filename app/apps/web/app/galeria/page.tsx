@@ -9,6 +9,7 @@ import { getDb, schema } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 type Hair = 'short' | 'bald' | 'wave' | 'cap' | 'slick';
+type Detention = 'loose' | 'wanted' | 'busted' | 'pretrial' | 'investig';
 
 export default async function GaleriaPage() {
   const db = getDb();
@@ -22,56 +23,95 @@ export default async function GaleriaPage() {
     .limit(10);
 
   return (
-    <section className="section">
-      <div className="section-eyebrow">Rogues’ Gallery</div>
-      <h2>A 10 legdrágább ügy.</h2>
-      <p className="lede">
-        Az adatbázis tíz legnagyobb érintett összegű ügye — érintettek
-        állapotcímkéivel és vád­állomásukkal. A mugshot determinisztikus SVG: ugyanaz az
-        ügy mindig pontosan ugyanezt a képet hozza vissza.
-      </p>
+    <section className="rogues" id="rogues">
+      <div className="rogues-inner">
+        <div className="section-head">
+          <div className="section-num">02 / Galéria</div>
+          <h2 className="section-title">A tíz legnagyobb.</h2>
+        </div>
+        <p className="rogues-deck">
+          A legtöbbet ellopó tíz alany — sorrendben, dokumentált kár szerint. Aki{' '}
+          <span className="red">rács mögött van</span>, BUSTED. Aki <b>menekül</b>,
+          körözött. Aki szabadlábon várja a tárgyalást, megtalálható.
+        </p>
 
-      <div className="rogues-grid">
-        {rows.map(({ case: c, rogue: r }, idx) => (
-          <article key={c.id} className="rogue">
-            <div className="rogue-rank">
-              <span>№ {String(idx + 1).padStart(2, '0')}</span>
-              <span className="case-id">{c.id}</span>
-            </div>
-            <Link
-              href={`/adatbazis/${c.id}`}
-              className={`rogue-mug ${r?.detention === 'busted' ? 'desat' : ''}`}
-              style={{ display: 'block' }}
-            >
-              <Mugshot
-                caseId={c.id}
-                name={c.name}
-                variant={r?.variant ?? 0}
-                glasses={r?.glasses ?? false}
-                hair={(r?.hair as Hair) ?? 'short'}
-                detention={r?.detention ?? 'loose'}
-              />
-              <div className={`status-strip ${r?.detention ?? 'loose'}`}>
-                {r?.detentionLabel ?? '—'}
-              </div>
-            </Link>
-            <div className="rogue-name">{c.name}</div>
-            <div className="rogue-pos">
-              {c.position} · {c.region} · {c.caseYear}
-            </div>
-            <div className="rogue-tags">
-              {(r?.crimes ?? []).map((cr) => (
-                <span key={cr} className="tag">
-                  {cr}
-                </span>
-              ))}
-            </div>
-            <div className="rogue-amount">
-              <span className="lbl">Gyanúsítva</span>
-              <span className="val">{fmtFt(c.amount)}</span>
-            </div>
-          </article>
-        ))}
+        <div className="rogues-key">
+          <div className="k">
+            <span className="dot busted"></span> Elítélve · börtönben
+          </div>
+          <div className="k">
+            <span className="dot pretrial"></span> Előzetes letartóztatásban
+          </div>
+          <div className="k">
+            <span className="dot loose"></span> Szabadlábon · tárgyalás alatt
+          </div>
+          <div className="k">
+            <span className="dot wanted"></span> Körözött · menekül
+          </div>
+          <div className="k">
+            <span className="dot investig"></span> Vizsgálat alatt
+          </div>
+        </div>
+
+        <div className="rogues-grid">
+          {rows.map(({ case: c, rogue: r }, idx) => {
+            const detention: Detention = (r?.detention as Detention) ?? 'loose';
+            const isBusted = detention === 'busted';
+            const isWanted = detention === 'wanted';
+            const rank = String(idx + 1).padStart(2, '0');
+            return (
+              <Link
+                key={c.id}
+                href={`/adatbazis/${c.id}`}
+                className={`rogue r-${detention}`}
+                style={{ display: 'block', color: 'inherit', textDecoration: 'none' }}
+              >
+                <div className="rogue-rank">
+                  <span>№ {rank}</span>
+                  <span className="id">{c.id}</span>
+                </div>
+                <div className={`rogue-mug ${isBusted ? 'desat' : ''}`}>
+                  <div className="corner-tag">
+                    № {c.id} / {rank}
+                  </div>
+                  <Mugshot
+                    caseId={c.id}
+                    name={c.name}
+                    variant={r?.variant ?? 0}
+                    glasses={r?.glasses ?? false}
+                    hair={(r?.hair as Hair) ?? 'short'}
+                    detention={detention}
+                  />
+                  {isBusted && (
+                    <>
+                      <div className="stamp">BUSTED</div>
+                      <div className="face-cross"></div>
+                    </>
+                  )}
+                  {isWanted && <div className="stamp small">WANTED</div>}
+                  <div className={`status-strip ${detention}`}>
+                    {r?.detentionLabel ?? '—'}
+                  </div>
+                </div>
+                <div className="rogue-name">{c.name}</div>
+                <div className="rogue-pos">
+                  {c.position} · {c.region} · {c.caseYear}
+                </div>
+                <div className="rogue-tags">
+                  {(r?.crimes ?? []).slice(0, 3).map((cr) => (
+                    <span key={cr} className="tag">
+                      {cr}
+                    </span>
+                  ))}
+                </div>
+                <div className="rogue-amount">
+                  <span className="lbl">Gyanúsítva</span>
+                  <span className="val">{fmtFt(c.amount)}</span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

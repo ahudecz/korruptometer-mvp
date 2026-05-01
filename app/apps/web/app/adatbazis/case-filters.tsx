@@ -1,23 +1,20 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useTransition, type FormEvent } from 'react';
 
 import type { CaseQuery } from '@korr/shared/schemas/cases';
 import type { SortValue } from '@korr/shared/cursor';
 
 const STATUS_OPTIONS = ['', 'Lezárva', 'Vádemelés', 'Folyamatban'] as const;
-const SECTOR_OPTIONS = [
-  '',
-  'Közbeszerzés',
-  'Önkormányzat',
-  'Állami vállalat',
-  'EU pályázat',
-  'Egészségügy',
-  'Egyéb',
-] as const;
-
-const SORT_VALUES: SortValue[] = ['amount_desc', 'amount_asc', 'year_desc', 'name_asc'];
+const AMOUNT_OPTIONS: Array<[string, string]> = [
+  ['0', '0 Ft'],
+  ['500000000', '500 M Ft'],
+  ['1000000000', '1 Mrd Ft'],
+  ['5000000000', '5 Mrd Ft'],
+  ['10000000000', '10 Mrd Ft'],
+];
+const YEAR_OPTIONS = ['', '2017', '2018', '2019', '2020', '2021', '2022', '2023'];
 
 type Props = {
   regions: string[];
@@ -25,137 +22,113 @@ type Props = {
   sortLabels: Record<SortValue, string>;
 };
 
-export function CaseFilters({ regions, initial, sortLabels }: Props) {
+export function CaseFilters({ regions, initial }: Props) {
   const router = useRouter();
-  const search = useSearchParams();
   const [pending, startTransition] = useTransition();
 
   function buildHref(form: HTMLFormElement, opts: { reset?: boolean } = {}) {
+    if (opts.reset) return '/adatbazis';
     const next = new URLSearchParams();
-    if (opts.reset) {
-      return '/adatbazis';
-    }
     const fd = new FormData(form);
     for (const [k, v] of fd.entries()) {
       const val = String(v).trim();
-      if (val !== '') next.set(k, val);
+      if (val !== '' && val !== '0') next.set(k, val);
     }
-    // Drop the cursor — we're reissuing the query from page 1.
     next.delete('cursor');
     return `/adatbazis${next.toString() ? `?${next.toString()}` : ''}`;
   }
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const href = buildHref(e.currentTarget);
-    startTransition(() => router.push(href));
+    startTransition(() => router.push(buildHref(e.currentTarget)));
   }
 
-  function onReset(e: FormEvent<HTMLFormElement>) {
-    const form = e.currentTarget;
-    setTimeout(() => {
-      startTransition(() => router.push(buildHref(form, { reset: true })));
-    }, 0);
+  function onChange(e: FormEvent<HTMLFormElement>) {
+    const target = e.target as HTMLElement;
+    if (target instanceof HTMLSelectElement) {
+      startTransition(() => router.push(buildHref(e.currentTarget)));
+    }
+  }
+
+  function onReset(form: HTMLFormElement) {
+    form.reset();
+    startTransition(() => router.push(buildHref(form, { reset: true })));
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      onReset={onReset}
-      aria-label="Adatbázis szűrése"
-      role="search"
-      style={{ marginTop: 16 }}
-    >
-      <div className="db-toolbar">
-        <input
-          type="search"
-          name="q"
-          placeholder="Keresés (név, pozíció, régió)…"
-          defaultValue={initial.q ?? ''}
-          aria-label="Keresés"
-        />
-        <select name="status" defaultValue={initial.status ?? ''} aria-label="Státusz">
-          {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>
-              {s === '' ? 'Bármilyen státusz' : s}
-            </option>
-          ))}
-        </select>
-        <select name="region" defaultValue={initial.region ?? ''} aria-label="Régió">
-          <option value="">Bármilyen régió</option>
-          {regions.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
-          ))}
-        </select>
-        <select name="sector" defaultValue={initial.sector ?? ''} aria-label="Szektor">
-          {SECTOR_OPTIONS.map((s) => (
-            <option key={s} value={s}>
-              {s === '' ? 'Bármilyen szektor' : s}
-            </option>
-          ))}
-        </select>
-        <input
-          type="number"
-          name="minAmount"
-          min={0}
-          placeholder="Min. kár (Ft)"
-          defaultValue={initial.minAmount ?? ''}
-          aria-label="Minimum kár"
-        />
-        <button type="submit" className="btn btn-primary" disabled={pending}>
-          Szűrés
+    <form onSubmit={onSubmit} onChange={onChange} aria-label="Adatbázis szűrése" role="search">
+      <div className="db-controls">
+        <div className="db-control search">
+          <label htmlFor="q">Keresés</label>
+          <input
+            id="q"
+            name="q"
+            type="search"
+            placeholder="Név, pozíció, kulcsszó…"
+            defaultValue={initial.q ?? ''}
+            autoComplete="off"
+          />
+        </div>
+        <div className="db-control">
+          <label htmlFor="f-status">Státusz</label>
+          <select id="f-status" name="status" defaultValue={initial.status ?? ''}>
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s} value={s}>
+                {s === '' ? 'Mindegyik' : s}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="db-control">
+          <label htmlFor="f-region">Régió</label>
+          <select id="f-region" name="region" defaultValue={initial.region ?? ''}>
+            <option value="">Összes régió</option>
+            {regions.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="db-control">
+          <label htmlFor="f-amount">Min. kár</label>
+          <select
+            id="f-amount"
+            name="minAmount"
+            defaultValue={String(initial.minAmount ?? 0)}
+          >
+            {AMOUNT_OPTIONS.map(([v, label]) => (
+              <option key={v} value={v}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="db-control">
+          <label htmlFor="f-year">Évtől</label>
+          <select
+            id="f-year"
+            name="caseYearFrom"
+            defaultValue={String(initial.caseYearFrom ?? '')}
+          >
+            <option value="">Összes év</option>
+            {YEAR_OPTIONS.filter(Boolean).map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button
+          type="button"
+          className="db-control btn"
+          onClick={(e) => onReset(e.currentTarget.form!)}
+          disabled={pending}
+        >
+          <span>{pending ? 'Frissít…' : 'Szűrők törlése'}</span>
         </button>
       </div>
-
-      <div className="db-toolbar" style={{ marginBottom: 12 }}>
-        <input
-          type="number"
-          name="minSentenceYears"
-          min={0}
-          placeholder="Min. börtönévek"
-          defaultValue={initial.minSentenceYears ?? ''}
-          aria-label="Minimum kiszabott évek"
-        />
-        <input
-          type="number"
-          name="caseYearFrom"
-          min={1990}
-          max={2100}
-          placeholder="Évtől"
-          defaultValue={initial.caseYearFrom ?? ''}
-          aria-label="Ettől az évtől"
-        />
-        <input
-          type="number"
-          name="caseYearTo"
-          min={1990}
-          max={2100}
-          placeholder="Évig"
-          defaultValue={initial.caseYearTo ?? ''}
-          aria-label="Eddig az évig"
-        />
-        <select name="sort" defaultValue={initial.sort} aria-label="Rendezés">
-          {SORT_VALUES.map((sv) => (
-            <option key={sv} value={sv}>
-              {sortLabels[sv]}
-            </option>
-          ))}
-        </select>
-        <input
-          type="hidden"
-          name="limit"
-          defaultValue={initial.limit ?? 20}
-          aria-hidden
-        />
-        {pending && <span style={{ alignSelf: 'center', color: 'var(--muted)' }}>Frissítés…</span>}
-        <button type="reset" className="btn btn-ghost">
-          Töröld a szűrőket
-        </button>
-      </div>
-
-      <input type="hidden" name="ts" value={search.get('ts') ?? ''} aria-hidden />
+      <input type="hidden" name="sort" value={initial.sort} />
     </form>
   );
 }

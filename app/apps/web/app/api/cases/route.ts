@@ -139,6 +139,8 @@ function orderByForSort(t: typeof schema.cases, sort: SortValue) {
       return [desc(t.amount), asc(t.id)];
     case 'amount_asc':
       return [asc(t.amount), asc(t.id)];
+    case 'sentence_desc':
+      return [desc(t.sentenceYears), asc(t.id)];
     case 'year_desc':
       return [desc(t.caseYear), asc(t.id)];
     case 'name_asc':
@@ -151,6 +153,8 @@ function orderClause(t: typeof schema.cases, sort: SortValue): SQL {
     case 'amount_desc':
     case 'amount_asc':
       return sql`(${t.amount}, ${t.id})`;
+    case 'sentence_desc':
+      return sql`(${t.sentenceYears}, ${t.id})`;
     case 'year_desc':
       return sql`(${t.caseYear}, ${t.id})`;
     case 'name_asc':
@@ -159,14 +163,16 @@ function orderClause(t: typeof schema.cases, sort: SortValue): SQL {
 }
 
 function tieBreakOperator(sort: SortValue): SQL {
-  return sort === 'amount_desc' || sort === 'year_desc' ? sql`<` : sql`>`;
+  return sort === 'amount_desc' || sort === 'year_desc' || sort === 'sentence_desc'
+    ? sql`<`
+    : sql`>`;
 }
 
 function sortKeyLiteral(sort: SortValue, value: string | number): SQL {
   if (sort === 'amount_desc' || sort === 'amount_asc') {
     return sql`${BigInt(String(value))}`;
   }
-  if (sort === 'year_desc') {
+  if (sort === 'year_desc' || sort === 'sentence_desc') {
     return sql`${Number(value)}`;
   }
   return sql`${String(value)}`;
@@ -174,12 +180,14 @@ function sortKeyLiteral(sort: SortValue, value: string | number): SQL {
 
 function cursorKeyValue(
   sort: SortValue,
-  row: { amount: bigint; caseYear: number; name: string },
+  row: { amount: bigint; sentenceYears: number; caseYear: number; name: string },
 ): string | number {
   switch (sort) {
     case 'amount_desc':
     case 'amount_asc':
       return row.amount.toString();
+    case 'sentence_desc':
+      return row.sentenceYears;
     case 'year_desc':
       return row.caseYear;
     case 'name_asc':

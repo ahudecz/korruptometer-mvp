@@ -8,6 +8,7 @@ import { z } from 'zod';
 export const SORT_VALUES = [
   'amount_desc',
   'amount_asc',
+  'sentence_desc',
   'year_desc',
   'name_asc',
 ] as const;
@@ -53,11 +54,22 @@ export function decodeCursor(token: string | null | undefined): CursorPayload | 
   }
 }
 
-export function sortKeyFor(sort: SortValue, row: { amount: bigint | number; caseYear: number; name: string; id: string }): string | number {
+export function sortKeyFor(
+  sort: SortValue,
+  row: {
+    amount: bigint | number;
+    sentenceYears: number;
+    caseYear: number;
+    name: string;
+    id: string;
+  },
+): string | number {
   switch (sort) {
     case 'amount_desc':
     case 'amount_asc':
       return typeof row.amount === 'bigint' ? row.amount.toString() : row.amount;
+    case 'sentence_desc':
+      return row.sentenceYears;
     case 'year_desc':
       return row.caseYear;
     case 'name_asc':

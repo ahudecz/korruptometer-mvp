@@ -3,12 +3,6 @@
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useTransition } from 'react';
 
-/**
- * T153 — `/hirek` filter UI. URL search-params are the only filter source so
- * the filtered URL is bit-for-bit reproducible across browser contexts (the
- * same SC-007 contract as `/adatbazis`).
- */
-
 export function NewsFilters({
   tags,
   outlets,
@@ -37,34 +31,27 @@ export function NewsFilters({
   }
 
   return (
-    <div
-      role="region"
-      aria-label="Hírszűrők"
-      style={{
-        display: 'flex',
-        gap: 12,
-        marginTop: 16,
-        flexWrap: 'wrap',
-        alignItems: 'center',
-      }}
-    >
-      <label style={{ display: 'flex', flexDirection: 'column', fontSize: 12 }}>
-        <span>Forrás</span>
+    <div className="db-controls" role="region" aria-label="Hírszűrők">
+      <div className="db-control search">
+        <label htmlFor="news-outlet">Forrás</label>
         <select
+          id="news-outlet"
           value={currentOutlet}
           onChange={(e) => update({ outlet: e.target.value || undefined })}
+          style={{ color: '#fff' }}
         >
-          <option value="">Mind</option>
+          <option value="">Minden forrás</option>
           {outlets.map((o) => (
             <option key={o.slug} value={o.slug}>
               {o.name}
             </option>
           ))}
         </select>
-      </label>
-      <label style={{ display: 'flex', flexDirection: 'column', fontSize: 12 }}>
-        <span>Címke</span>
+      </div>
+      <div className="db-control">
+        <label htmlFor="news-tag">Címke</label>
         <select
+          id="news-tag"
           value={currentTag}
           onChange={(e) => update({ tag: e.target.value || undefined })}
         >
@@ -75,16 +62,38 @@ export function NewsFilters({
             </option>
           ))}
         </select>
-      </label>
-      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
-        <input
-          type="checkbox"
-          checked={currentFeatured}
-          onChange={(e) => update({ featured: e.target.checked ? '1' : undefined })}
-        />
-        Csak kiemeltek
-      </label>
-      {isPending && <span style={{ fontSize: 12, color: 'var(--muted)' }}>frissítés…</span>}
+      </div>
+      <div className="db-control">
+        <label htmlFor="news-featured">Kiemeltek</label>
+        <select
+          id="news-featured"
+          value={currentFeatured ? '1' : ''}
+          onChange={(e) => update({ featured: e.target.value || undefined })}
+        >
+          <option value="">Mind</option>
+          <option value="1">Csak kiemeltek</option>
+        </select>
+      </div>
+      <div className="db-control" style={{ alignSelf: 'center' }}>
+        <label>&nbsp;</label>
+        <span style={{ fontSize: 11, color: 'var(--muted)', letterSpacing: '0.12em' }}>
+          {isPending ? 'Frissítés…' : `${tags.length} címke`}
+        </span>
+      </div>
+      <div className="db-control" style={{ alignSelf: 'center' }}>
+        <label>&nbsp;</label>
+        <span />
+      </div>
+      <button
+        type="button"
+        className="db-control btn"
+        onClick={() => {
+          const params = new URLSearchParams();
+          startTransition(() => router.replace(pathname + (params.toString() ? `?${params}` : '')));
+        }}
+      >
+        <span>Szűrők törlése</span>
+      </button>
     </div>
   );
 }

@@ -16,7 +16,8 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 const SORT_LABELS: Record<SortValue, string> = {
   amount_desc: 'Kár (legnagyobb)',
   amount_asc: 'Kár (legkisebb)',
-  year_desc: 'Év (legfrissebb)',
+  sentence_desc: 'Évek (legtöbb)',
+  year_desc: 'Dátum (legfrissebb)',
   name_asc: 'Név (A–Z)',
 };
 
@@ -82,20 +83,28 @@ export default async function AdatbazisPage({
   const hasMore = rows.length > params.limit;
   const page = hasMore ? rows.slice(0, params.limit) : rows;
   const last = page[page.length - 1];
-  const nextCursor = hasMore && last
-    ? encodeCursor({
-        s: params.sort,
-        k:
-          params.sort === 'amount_desc' || params.sort === 'amount_asc'
-            ? last.amount.toString()
-            : params.sort === 'year_desc'
-              ? last.caseYear
-              : last.name,
-        id: last.id,
-      })
-    : null;
+  const nextCursor =
+    hasMore && last
+      ? encodeCursor({
+          s: params.sort,
+          k:
+            params.sort === 'amount_desc' || params.sort === 'amount_asc'
+              ? last.amount.toString()
+              : params.sort === 'sentence_desc'
+                ? last.sentenceYears
+                : params.sort === 'year_desc'
+                  ? last.caseYear
+                  : last.name,
+          id: last.id,
+        })
+      : null;
 
-  // Distinct regions for the dropdown.
+  // Count total cases (for the meta line)
+  const totalRows = await db
+    .select({ c: sql<number>`count(*)::int` })
+    .from(cases);
+  const totalCases = totalRows[0]?.c ?? 0;
+
   const regionRows = await db
     .selectDistinct({ region: cases.region })
     .from(cases)
@@ -103,21 +112,45 @@ export default async function AdatbazisPage({
   const regions = regionRows.map((r) => r.region);
 
   return (
-    <section className="section">
-      <div className="section-eyebrow">Adatbázis</div>
-      <h2>Korrupciós ügyek nyomon követése</h2>
-      <p className="lede">
-        Szűrhetsz név, régió, szektor, státusz, érintett összeg és kiszabott
-        börtönévek alapján. A találatok URL-be is bele vannak építve, így
-        megosztható.
-      </p>
+    <section className="section" id="database">
+      <div className="section-head">
+        <div className="section-num">03 / Adatbázis</div>
+        <h2 className="section-title">Az ügyek nyilvántartása.</h2>
+      </div>
 
       <CaseFilters regions={regions} initial={params} sortLabels={SORT_LABELS} />
 
-      <div style={{ margin: '12px 0', color: 'var(--muted)', fontSize: 13 }}>
-        <strong>{fmtNumber(page.length)}</strong> találat
-        {hasMore ? ' (folytatható)' : ''} ·{' '}
-        <span>Rendezés: {SORT_LABELS[params.sort]}</span>
+      <div className="db-meta">
+        <div className="db-count">
+          <strong>{fmtNumber(page.length)}</strong> találat {fmtNumber(totalCases)} ügyből
+          {hasMore ? ' (folytatható)' : ''}
+        </div>
+        <div className="db-sort">
+          <a href={updateSort(flat, 'amount_desc')}>
+            <button
+              type="button"
+              className={params.sort === 'amount_desc' ? 'active' : ''}
+            >
+              Kár ↓
+            </button>
+          </a>
+          <a href={updateSort(flat, 'sentence_desc')}>
+            <button
+              type="button"
+              className={params.sort === 'sentence_desc' ? 'active' : ''}
+            >
+              Évek ↓
+            </button>
+          </a>
+          <a href={updateSort(flat, 'year_desc')}>
+            <button
+              type="button"
+              className={params.sort === 'year_desc' ? 'active' : ''}
+            >
+              Dátum ↓
+            </button>
+          </a>
+        </div>
       </div>
 
       {page.length === 0 ? (
@@ -126,58 +159,64 @@ export default async function AdatbazisPage({
           összeget vagy az évszakaszt.
         </div>
       ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table className="case-table">
-            <thead>
-              <tr>
-                <th>Ügy</th>
-                <th>Pozíció</th>
-                <th>Régió</th>
-                <th>Év</th>
-                <th>Státusz</th>
-                <th style={{ textAlign: 'right' }}>Kár</th>
-                <th style={{ textAlign: 'right' }}>Évek</th>
-              </tr>
-            </thead>
-            <tbody>
-              {page.map((c) => (
-                <tr key={c.id}>
-                  <td data-label="Ügy">
-                    <div className="case-id">{c.id}</div>
-                    <Link
-                      href={`/adatbazis/${c.id}`}
-                      className="case-name"
-                      style={{ color: 'var(--ink)' }}
-                    >
-                      {c.name}
-                    </Link>
-                  </td>
-                  <td data-label="Pozíció" style={{ fontSize: 14, color: 'var(--ink)' }}>
+        <table className="db-table">
+          <thead>
+            <tr>
+              <th>Ügy</th>
+              <th>Pozíció</th>
+              <th>Régió</th>
+              <th>Év</th>
+              <th>Státusz</th>
+              <th className="num">Kár (Ft)</th>
+              <th className="num">Évek</th>
+            </tr>
+          </thead>
+          <tbody>
+            {page.map((c) => (
+              <tr key={c.id}>
+                <td data-label="Ügy">
+                  <div className="case-id">{c.id}</div>
+                  <Link href={`/adatbazis/${c.id}`} className="case-name">
+                    {c.name}
+                  </Link>
+                </td>
+                <td data-label="Pozíció">
+                  <div style={{ fontSize: 14, color: 'var(--ink)' }}>
                     {c.position}
-                  </td>
-                  <td data-label="Régió">{c.region}</td>
-                  <td data-label="Év">{c.caseYear}</td>
-                  <td data-label="Státusz">
-                    <span className={statusPillClass(c.status)}>{c.status}</span>
-                  </td>
-                  <td className="num" data-label="Kár">
-                    {fmtFt(c.amount)}
-                  </td>
-                  <td className="num" data-label="Évek">
-                    {fmtNumber(c.sentenceYears)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                </td>
+                <td data-label="Régió">{c.region}</td>
+                <td data-label="Év">{c.caseYear}</td>
+                <td data-label="Státusz">
+                  <span className={statusPillClass(c.status)}>{c.status}</span>
+                </td>
+                <td className="num" data-label="Kár">
+                  {fmtFt(c.amount)}
+                </td>
+                <td className="num" data-label="Évek">
+                  {fmtNumber(c.sentenceYears)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
 
       {nextCursor && (
         <div style={{ marginTop: 24, textAlign: 'center' }}>
           <Link
             href={`/adatbazis?${nextCursorHref(flat, nextCursor)}`}
-            className="btn btn-ghost"
+            style={{
+              display: 'inline-block',
+              background: 'var(--ink)',
+              color: '#fff',
+              padding: '14px 28px',
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              textDecoration: 'none',
+            }}
           >
             További találatok →
           </Link>
@@ -193,6 +232,8 @@ function orderByFor(t: typeof schema.cases, sort: SortValue) {
       return [desc(t.amount), asc(t.id)];
     case 'amount_asc':
       return [asc(t.amount), asc(t.id)];
+    case 'sentence_desc':
+      return [desc(t.sentenceYears), asc(t.id)];
     case 'year_desc':
       return [desc(t.caseYear), asc(t.id)];
     case 'name_asc':
@@ -211,4 +252,17 @@ function nextCursorHref(
   }
   params.set('cursor', cursor);
   return params.toString();
+}
+
+function updateSort(
+  current: Record<string, string | undefined>,
+  next: SortValue,
+): string {
+  const params = new URLSearchParams();
+  for (const [k, v] of Object.entries(current)) {
+    if (k === 'sort' || k === 'cursor' || v === undefined || v === '') continue;
+    params.set(k, v);
+  }
+  params.set('sort', next);
+  return `/adatbazis?${params.toString()}`;
 }

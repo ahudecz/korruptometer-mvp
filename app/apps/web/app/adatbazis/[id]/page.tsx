@@ -10,6 +10,23 @@ import { getDb, schema } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 type Hair = 'short' | 'bald' | 'wave' | 'cap' | 'slick';
+type Detention = 'loose' | 'wanted' | 'busted' | 'pretrial' | 'investig';
+
+function statusPillClass(s: string): string {
+  if (s === 'Lezárva') return 'pill lezarva';
+  if (s === 'Vádemelés') return 'pill vad';
+  return 'pill folyamatban';
+}
+
+function fmtRelative(d: Date): string {
+  const diff = Date.now() - d.getTime();
+  const h = Math.floor(diff / 3_600_000);
+  if (h < 1) return 'most';
+  if (h < 24) return `${h} órája`;
+  if (h < 48) return 'tegnap';
+  const days = Math.floor(h / 24);
+  return `${days} napja`;
+}
 
 export default async function CasePage({
   params,
@@ -20,9 +37,7 @@ export default async function CasePage({
   const db = getDb();
   const { cases, rogueProfiles, newsArticles, sources } = schema;
 
-  const caseRow = await db.query.cases.findFirst({
-    where: eq(cases.id, id),
-  });
+  const caseRow = await db.query.cases.findFirst({ where: eq(cases.id, id) });
   if (!caseRow) {
     notFound();
   }
@@ -48,55 +63,52 @@ export default async function CasePage({
     .where(eq(newsArticles.relatedCaseId, id))
     .orderBy(newsArticles.publishedAt);
 
-  return (
-    <article className="section">
-      <div style={{ marginBottom: 16, fontSize: 12, color: 'var(--muted)' }}>
-        <Link href="/adatbazis">← Adatbázis</Link>
-      </div>
-      <div className="section-eyebrow">Ügy {caseRow.id}</div>
-      <h2>{caseRow.name}</h2>
-      <p className="lede">
-        {caseRow.position} · {caseRow.region} · {caseRow.caseYear} ·{' '}
-        <span
-          className={
-            caseRow.status === 'Lezárva'
-              ? 'pill lezarva'
-              : caseRow.status === 'Vádemelés'
-                ? 'pill vad'
-                : 'pill folyamatban'
-          }
-          style={{ marginLeft: 4 }}
-        >
-          {caseRow.status}
-        </span>
-      </p>
+  const detention: Detention = (profile?.detention as Detention) ?? 'loose';
+  const isBusted = detention === 'busted';
+  const isWanted = detention === 'wanted';
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(220px, 280px) 1fr',
-          gap: 32,
-          alignItems: 'start',
-          marginTop: 24,
-        }}
-      >
-        <div className="rogue" style={{ overflow: 'hidden' }}>
+  return (
+    <article className="case-detail">
+      <Link href="/adatbazis" className="back-link">
+        ← Adatbázis
+      </Link>
+      <div className="hero-eyebrow" style={{ marginBottom: 16 }}>
+        Ügy {caseRow.id}
+      </div>
+      <h1>{caseRow.name}</h1>
+      <div className="meta">
+        <span>{caseRow.position}</span>
+        <span style={{ color: 'var(--line-strong)' }}>·</span>
+        <span>{caseRow.region}</span>
+        <span style={{ color: 'var(--line-strong)' }}>·</span>
+        <span>{caseRow.caseYear}</span>
+        <span className={statusPillClass(caseRow.status)}>{caseRow.status}</span>
+      </div>
+
+      <div className="case-detail-grid">
+        <div className={`rogue r-${detention}`} style={{ background: 'var(--ink)', color: '#fff' }}>
           <div className="rogue-rank">
             <span>{caseRow.id}</span>
-            <span>{caseRow.region}</span>
+            <span className="id">{caseRow.region}</span>
           </div>
-          <div className={`rogue-mug ${profile?.detention === 'busted' ? 'desat' : ''}`}>
+          <div className={`rogue-mug ${isBusted ? 'desat' : ''}`}>
+            <div className="corner-tag">{caseRow.id}</div>
             <Mugshot
               caseId={caseRow.id}
               name={caseRow.name}
               variant={profile?.variant ?? 0}
               glasses={profile?.glasses ?? false}
               hair={(profile?.hair as Hair) ?? 'short'}
-              detention={profile?.detention ?? 'loose'}
+              detention={detention}
             />
-            <div className={`status-strip ${profile?.detention ?? 'loose'}`}>
-              {profile?.detentionLabel ?? '—'}
-            </div>
+            {isBusted && (
+              <>
+                <div className="stamp">BUSTED</div>
+                <div className="face-cross"></div>
+              </>
+            )}
+            {isWanted && <div className="stamp small">WANTED</div>}
+            <div className={`status-strip ${detention}`}>{profile?.detentionLabel ?? '—'}</div>
           </div>
           <div className="rogue-name">{caseRow.name}</div>
           <div className="rogue-pos">
@@ -116,43 +128,46 @@ export default async function CasePage({
         </div>
 
         <div>
-          <div className="kpi-grid" style={{ marginBottom: 32 }}>
-            <div className="kpi">
+          <div className="case-stat-row">
+            <div className="case-stat">
               <div className="label">Érintett összeg</div>
               <div className="value">{fmtFt(caseRow.amount)}</div>
             </div>
-            <div className="kpi">
+            <div className="case-stat">
               <div className="label">Szabadságvesztés</div>
-              <div className="value">
-                {fmtNumber(caseRow.sentenceYears)} év
-              </div>
+              <div className="value">{fmtNumber(caseRow.sentenceYears)} év</div>
             </div>
-            <div className="kpi">
+          </div>
+          <div className="case-stat-row">
+            <div className="case-stat">
               <div className="label">Szektor</div>
-              <div className="value" style={{ fontSize: 22 }}>
+              <div className="value" style={{ fontSize: 24 }}>
                 {caseRow.sector}
               </div>
             </div>
-            <div className="kpi">
+            <div className="case-stat">
               <div className="label">Évszám</div>
               <div className="value">{caseRow.caseYear}</div>
             </div>
           </div>
 
           {profile?.extraStatus && (
-            <div className="empty-state" style={{ textAlign: 'left' }}>
-              <strong>Aktuális helyzet:</strong> {profile.extraStatus}
+            <div className="submission-assurance" style={{ marginTop: 32 }}>
+              <strong>Aktuális helyzet</strong>
+              {profile.extraStatus}
             </div>
           )}
 
-          <h3 style={{ marginTop: 32, marginBottom: 12 }}>Kapcsolódó hírek</h3>
+          <div className="section-num" style={{ marginTop: 56, marginBottom: 24 }}>
+            Kapcsolódó hírek
+          </div>
           {articles.length === 0 ? (
-            <p style={{ color: 'var(--muted)' }}>
-              Még nincs hozzárendelt cikk. A hírfolyam-illesztés csak a Phase 3
-              után kapcsolja össze automatikusan a cikkeket az ügyekkel.
+            <p style={{ color: 'var(--muted)', fontSize: 14 }}>
+              Még nincs hozzárendelt cikk. A hírfolyam-illesztés a Phase 3 után
+              automatikusan kapcsolja össze a cikkeket az ügyekkel.
             </p>
           ) : (
-            <div className="news-list">
+            <div className="news-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
               {articles.map((a) => (
                 <a
                   key={a.id}
@@ -162,26 +177,16 @@ export default async function CasePage({
                   rel="noopener noreferrer"
                 >
                   <div className="news-meta">
-                    <span>{a.sourceName ?? a.sourceSlug ?? '—'}</span>
-                    <span>{fmtDate(a.publishedAt)}</span>
+                    <span className="news-tag">{a.tag ?? a.sourceName ?? 'Hír'}</span>
+                    <span className="news-time">{fmtRelative(a.publishedAt)}</span>
                   </div>
-                  <strong>{a.headline}</strong>
-                  <p style={{ color: 'var(--muted)', fontSize: 14 }}>{a.excerpt}</p>
-                  <div style={{ display: 'flex', gap: 8, alignSelf: 'flex-start', flexWrap: 'wrap' }}>
-                    {a.tag && <span className="pill">{a.tag}</span>}
-                    {/* T159 — auto-linked vs editor-linked badge keyed off linkOverridden */}
-                    <span
-                      className="pill"
-                      style={{
-                        background: a.linkOverridden ? 'var(--accent)' : 'var(--surface)',
-                        color: a.linkOverridden ? 'white' : 'var(--muted)',
-                        fontSize: 11,
-                      }}
-                      aria-label={a.linkOverridden ? 'Szerkesztő által csatolt' : 'Automatikus illesztés'}
-                    >
-                      {a.linkOverridden ? 'szerkesztő által csatolt' : 'auto-csatolt'}
-                    </span>
-                  </div>
+                  <h3 className="news-headline">{a.headline}</h3>
+                  <p className="news-excerpt">{a.excerpt}</p>
+                  <span className="news-source">
+                    {a.sourceName ?? a.sourceSlug ?? 'Forrás'}
+                    {a.linkOverridden ? ' · szerk.' : ''}
+                  </span>
+                  <span style={{ display: 'none' }}>{fmtDate(a.publishedAt)}</span>
                 </a>
               ))}
             </div>

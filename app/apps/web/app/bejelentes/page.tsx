@@ -1,31 +1,43 @@
-import { SubmissionForm } from './submission-form';
-import { TrustCopy } from './trust-copy';
+import { MockupSubmissionForm } from '../_home/submission-form';
 
 export const dynamic = 'force-dynamic';
 
 export default function BejelentesPage() {
   return (
-    <section className="section">
-      <div className="section-eyebrow">Bejelentés</div>
-      <h2>Tájékoztass minket egy korrupciós ügyről.</h2>
-      <p className="lede">
-        A bejelentésedet a szerkesztőség olvassa át; ami megalapozott, az új
-        ügyként kerül az adatbázisba. Csak akkor adj meg személyes elérhetőséget,
-        ha visszahívást szeretnél — egyébként az űrlap teljesen anonim.
-      </p>
-      <div
-        style={{
-          background: 'var(--surface)',
-          border: '1px solid var(--line)',
-          borderRadius: 14,
-          padding: 18,
-          marginBottom: 24,
-        }}
-      >
-        <strong style={{ display: 'block', marginBottom: 8 }}>Mit őrzünk meg, mit nem:</strong>
-        <TrustCopy />
+    <section className="submission" id="submission" style={{ borderTop: 0 }}>
+      <div className="submission-inner">
+        <div className="submission-left">
+          <div className="section-num">05 / Bejelentés</div>
+          <h2>
+            Hiányzik egy <em>név</em>?<br />
+            Tedd be a galériába.
+          </h2>
+          <p>
+            Ha tudsz olyan ügyről, ami még nem szerepel az adatbázisban, küldd
+            el. Minden bejelentést egy független szerkesztő ellenőriz közforrások
+            alapján — közbeszerzési adatbázisok, bírósági iratok, sajtótermékek.
+          </p>
+          <p>
+            Csak <b>nyilvános források</b> alapján publikálunk. Ha bizonyíték
+            nélküli pletykát küldesz, az nem jelenik meg a galériában.
+          </p>
+          <div className="submission-assurance">
+            <strong>Forrásvédelem</strong>
+            Beérkezésed végpont-titkosítva tároljuk. Az IP-címedet nem rögzítjük.
+            Anonim bejelentés esetén nincs olyan adat, amely rád mutatna. Súlyosan
+            bizalmas anyagokhoz használj{' '}
+            <a
+              href="/hamarosan"
+              style={{ color: 'var(--accent)', textDecoration: 'underline' }}
+            >
+              SecureDrop
+            </a>{' '}
+            csatornát.
+          </div>
+        </div>
+
+        <MockupSubmissionForm />
       </div>
-      <SubmissionForm />
     </section>
   );
 }

@@ -6,9 +6,9 @@ import { SiteFooter } from '@korr/ui/site-footer';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Korruptométer — Magyarországi korrupció nyomon követése',
+  title: 'KORRUPTOMÉTER — Magyarországi korrupció nyomon követése',
   description:
-    'Független, közhitelű adatbázis a magyarországi korrupcióról: ügyek, vádlottak, pénzmozgás, médiavisszhang.',
+    'Független, közforrású adatbázis a Magyarországon dokumentált korrupciós ügyekről. Minden eset nyomon követhető a vádemeléstől az ítéletig — adatokra, nem szólamokra alapozva.',
   metadataBase: new URL('http://localhost:3000'),
 };
 
@@ -21,32 +21,38 @@ export default function RootLayout({
         <a className="skip-link" href="#fooldal">
           Ugrás a fő tartalomra
         </a>
-        <header className="nav" role="banner">
+        <nav className="nav" role="banner">
           <div className="nav-inner">
             <Link href="/" className="brand">
               Korruptométer
             </Link>
-            <nav aria-label="Fő navigáció">
-              <ul className="nav-links">
-                <li>
-                  <Link href="/adatbazis">Adatbázis</Link>
-                </li>
-                <li>
-                  <Link href="/galeria">Galéria</Link>
-                </li>
-                <li>
-                  <Link href="/hirek">Hírek</Link>
-                </li>
-                <li>
-                  <Link href="/hamarosan">Módszertan</Link>
-                </li>
-              </ul>
-            </nav>
+            <ul className="nav-links" aria-label="Fő navigáció">
+              <li>
+                <Link href="/#dashboard">Áttekintés</Link>
+              </li>
+              <li>
+                <Link href="/galeria">Galéria</Link>
+              </li>
+              <li>
+                <Link href="/adatbazis">Adatbázis</Link>
+              </li>
+              <li>
+                <Link href="/hirek">Hírek</Link>
+              </li>
+              <li>
+                <Link href="/bejelentes">Bejelentés</Link>
+              </li>
+            </ul>
             <Link href="/bejelentes" className="nav-cta">
-              Bejelentés
+              Bejelentés tétele
             </Link>
+            <button className="hamburger" aria-label="Menu" type="button">
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
           </div>
-        </header>
+        </nav>
         <main id="fooldal">{children}</main>
         <SiteFooter />
       </body>

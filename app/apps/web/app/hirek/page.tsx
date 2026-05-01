@@ -1,13 +1,21 @@
 import Link from 'next/link';
 import { and, desc, eq, sql } from 'drizzle-orm';
 
-import { fmtDate } from '@korr/shared/format';
-
 import { getDb, schema } from '@/lib/db';
 
 import { NewsFilters } from './news-filters';
 
 export const revalidate = 120;
+
+function fmtRelative(d: Date): string {
+  const diff = Date.now() - d.getTime();
+  const h = Math.floor(diff / 3_600_000);
+  if (h < 1) return 'most';
+  if (h < 24) return `${h} órája`;
+  if (h < 48) return 'tegnap';
+  const days = Math.floor(h / 24);
+  return `${days} napja`;
+}
 
 export default async function HirekPage({
   searchParams,
@@ -48,8 +56,6 @@ export default async function HirekPage({
     .orderBy(desc(schema.newsArticles.publishedAt))
     .limit(40);
 
-  // Distinct tags + outlet list for the filter dropdowns. Both are reads of
-  // small tables so the s-maxage=120 cache absorbs them.
   const tagRows = await db
     .selectDistinct({ tag: schema.newsArticles.tag })
     .from(schema.newsArticles)
@@ -61,52 +67,72 @@ export default async function HirekPage({
     .from(schema.sources)
     .where(eq(schema.sources.enabled, true));
 
+  const featured = rows.find((a) => a.featured) ?? rows[0];
+  const rest = rows.filter((a) => a.id !== featured?.id);
+
   return (
-    <section className="section">
-      <div className="section-eyebrow">Hírek</div>
-      <h2>Magyar korrupciós hírfolyam.</h2>
-      <p className="lede">
-        A Telex, 444, HVG, Magyar Hang és Átlátszó kiadványaiból válogatott
-        korrupciós cikkek. A scraper minden 30 percben frissít.
-      </p>
-
-      <NewsFilters tags={tags} outlets={outletRows} />
-
-      {rows.length === 0 ? (
-        <div className="empty-state" style={{ marginTop: 16 }}>
-          Nincs találat a megadott szűrőkre.
+    <div className="news-section-wrap">
+      <section className="section" id="news">
+        <div className="section-head">
+          <div className="section-num">04 / Hírfolyam</div>
+          <h2 className="section-title">Élő riportok az ügyekről.</h2>
         </div>
-      ) : (
-        <div className="news-list" style={{ marginTop: 16 }}>
-          {rows.map((a) => (
-            <a
-              className="news-card"
-              key={a.id}
-              href={a.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <div className="news-meta">
-                <span>{a.sourceName ?? a.sourceSlug}</span>
-                <span>{fmtDate(a.publishedAt)}</span>
-              </div>
-              <strong>{a.headline}</strong>
-              <p style={{ color: 'var(--muted)', fontSize: 14 }}>{a.excerpt}</p>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                {a.tag && <span className="pill">{a.tag}</span>}
+
+        <NewsFilters tags={tags} outlets={outletRows} />
+
+        {rows.length === 0 ? (
+          <div className="empty-state" style={{ marginTop: 32 }}>
+            Nincs találat a megadott szűrőkre.
+          </div>
+        ) : (
+          <div className="news-grid" style={{ marginTop: 32 }}>
+            {featured && (
+              <a
+                href={featured.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="news-card feature"
+              >
+                <div className="news-meta">
+                  <span className="news-tag">★ Kiemelt</span>
+                  <span className="news-time">{fmtRelative(featured.publishedAt)}</span>
+                </div>
+                <h3 className="news-headline">{featured.headline}</h3>
+                <p className="news-excerpt">{featured.excerpt}</p>
+                <span className="news-source">{featured.sourceName ?? featured.sourceSlug ?? 'Forrás'}</span>
+              </a>
+            )}
+            {rest.map((a) => (
+              <a
+                key={a.id}
+                href={a.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="news-card"
+              >
+                <div className="news-meta">
+                  <span className="news-tag">{a.tag ?? 'Hír'}</span>
+                  <span className="news-time">{fmtRelative(a.publishedAt)}</span>
+                </div>
+                <h3 className="news-headline">{a.headline}</h3>
+                <p className="news-excerpt">{a.excerpt}</p>
                 {a.relatedCaseId && (
                   <Link
                     href={`/adatbazis/${a.relatedCaseId}`}
-                    style={{ fontSize: 12, color: 'var(--accent)' }}
+                    className="news-source"
+                    style={{ color: 'var(--accent)' }}
                   >
                     Kapcsolódó ügy: {a.relatedCaseId}
                   </Link>
                 )}
-              </div>
-            </a>
-          ))}
-        </div>
-      )}
-    </section>
+                {!a.relatedCaseId && (
+                  <span className="news-source">{a.sourceName ?? a.sourceSlug ?? 'Forrás'}</span>
+                )}
+              </a>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
   );
 }

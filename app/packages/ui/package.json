@@ -8,6 +8,8 @@
     ".": "./src/index.ts",
     "./donut": "./src/Donut.tsx",
     "./mugshot": "./src/Mugshot.tsx",
+    "./pie3d": "./src/Pie3D.tsx",
+    "./ticker": "./src/Ticker.tsx",
     "./site-footer": "./src/site-footer.tsx"
   },
   "scripts": {
