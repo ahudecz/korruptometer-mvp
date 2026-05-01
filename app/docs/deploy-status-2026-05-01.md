@@ -3,102 +3,96 @@
 Snapshot of what's been provisioned for Korruptométer's first production
 deploy and what remains. Source of truth for the next deploy session.
 
-## Live URLs
+## Live
 
-| Resource | URL |
-|----------|-----|
+| Resource | URL / ID |
+|----------|----------|
 | GitHub repo | https://github.com/ahudecz/korruptometer-mvp (private, default branch `main`) |
 | Vercel project | https://vercel.com/attilas-projects-55bd7268/korruptometer |
-| Production deploy | https://korruptometer.vercel.app |
+| Production deploy | **https://korruptometer.vercel.app** ← homepage shows real KPIs |
 | Auto-deploy on | every push to `main` |
+| Supabase project | `korruptometer` (ref `ndqmbinasykkaqmpplnt`, region `eu-west-1`) — all 5 migrations applied, seeded with 12 cases / 5 sources / 6 articles / 1 KPI snapshot / 1 admin |
+| Sentry project | https://konvenient.sentry.io/projects/korruptometer (own DSN, isolated within konvenient org) |
+| Cloudflare Turnstile | widget `korruptometer`, hostname `korruptometer.vercel.app` |
+| Inngest custom env | `korruptometer` (slug `korruptometer-02e97c6e`) — own event + signing keys |
 
-`/hamarosan` works ✓ (no DB needed). Every other page returns
-`Application error: server-side exception` because no `DATABASE_URL` is set
-yet — see "Blocked" below.
+## Vendor decisions
 
-## Provisioned (this session)
+Per "don't reuse, create new ones": every vendor resource above is a **new
+project / env / widget** within the user's existing accounts. Org-level
+billing still rolls up to konvenient/ahudecz, but events, errors, signatures,
+and rate-limit counters are isolated.
 
-| # | Step | State |
-|---|------|-------|
-| Repo | private GitHub repo `ahudecz/korruptometer-mvp` | ✓ |
-| Repo | `001-korruptometer-mvp` + `main` branches pushed | ✓ |
-| Vercel | project `korruptometer` created via `vercel link` | ✓ |
-| Vercel | project linked to GitHub repo, auto-deploy on `main` | ✓ |
-| Vercel | `rootDirectory = app/apps/web`, monorepo install/build commands set | ✓ |
-| Vercel | 11 env vars × 2 envs = 22 set (locally-generated secrets + defaults) | ✓ |
-| Build | force-dynamic added to 8 DB-touching routes so build doesn't need `DATABASE_URL` | ✓ |
-| Build | first successful production deploy at sha `36ab6c2` | ✓ |
-| Robots | T243 — robots.txt audit for all 5 outlets, all feed paths allowed | ✓ |
-| Secrets | `PII_ENC_KEY`, `INTERNAL_REVALIDATE_SECRET`, `CI_DBSTAT_TOKEN`, db-password generated locally at `/tmp/korr-prod-secrets.txt` | ✓ |
-
-## Vercel env vars set
+## Vercel env vars set (production + preview)
 
 ```
-PII_ENC_KEY                          (32B base64, generated locally)
-INTERNAL_REVALIDATE_SECRET           (32B hex, generated locally)
-CI_DBSTAT_TOKEN                      (32B hex, generated locally)
-SUPABASE_STORAGE_BUCKET_SUBMISSIONS  submissions
-SUPABASE_STORAGE_BUCKET_PUBLIC       public-assets
-BOOTSTRAP_ADMIN_EMAIL                ahudecz@gmail.com
-SUBMISSIONS_SEALED_BOX_ENABLED       false
-LINK_AUTO_THRESHOLD                  0.55
-LINK_REVIEW_THRESHOLD                0.40
-LINK_AGGREGATOR_CONCURRENCY          4
-SEALED_BOX_ROW_BUDGET_BYTES          1048576
+DATABASE_URL                          (Supabase pooler URL)
+DIRECT_URL                            (Supabase direct URL)
+NEXT_PUBLIC_SUPABASE_URL              https://ndqmbinasykkaqmpplnt.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY         (208 chars)
+SUPABASE_SERVICE_ROLE_KEY             (219 chars)
+SUPABASE_STORAGE_BUCKET_SUBMISSIONS   submissions
+SUPABASE_STORAGE_BUCKET_PUBLIC        public-assets
+
+PII_ENC_KEY                           (32B base64, generated locally)
+INTERNAL_REVALIDATE_SECRET            (32B hex, generated locally)
+CI_DBSTAT_TOKEN                       (32B hex, generated locally)
+
+INNGEST_EVENT_KEY                     (own event key for korruptometer env)
+INNGEST_SIGNING_KEY                   signkey-test-c9e6...
+
+SENTRY_DSN                            https://dbdae4ff…@o4510906182270976.ingest.de.sentry.io/4511314102190160
+NEXT_PUBLIC_SENTRY_DSN                (same)
+
+TURNSTILE_SITE_KEY                    0x4AAAAAADG4-eh6IhpnSxYj
+TURNSTILE_SECRET                      0x4AAAAAADG4-…
+
+WEBAUTHN_RP_ID                        korruptometer.vercel.app
+WEBAUTHN_RP_NAME                      Korruptométer
+WEBAUTHN_ORIGIN                       https://korruptometer.vercel.app
+
+BOOTSTRAP_ADMIN_EMAIL                 ahudecz@gmail.com
+SUBMISSIONS_SEALED_BOX_ENABLED        false (Phase 2 path)
+LINK_AUTO_THRESHOLD                   0.55
+LINK_REVIEW_THRESHOLD                 0.40
+LINK_AGGREGATOR_CONCURRENCY           4
+SEALED_BOX_ROW_BUDGET_BYTES           1048576
 ```
 
-All set for both `production` and `preview` environments.
+## Verified end-to-end
 
-## Blocked
+| Endpoint | Status |
+|----------|--------|
+| `/` | 200, hero KPIs render (50,9 Mrd Ft total damage, 75 prison years, 8 active cases) |
+| `/healthz` | 200, `{"status":"ok"}` |
+| `/api/stats` | returns real data with correct shape |
+| `/api/cases?limit=2` | returns seeded `KM-003`, `KM-006` rows |
 
-| # | Vendor | Why blocked | Resolution |
-|---|--------|-------------|------------|
-| 1 | **Supabase** | `ahudecz's Org` is at the 2-active-free-projects cap (5 existing projects) | Pause one of `culture-compass` / `diageo-insight-spark` / `FINANCE-PLANNER` / `po-toolkit` / `inbox-to-action` in the dashboard, OR upgrade the org to Pro. Then re-run `npx supabase projects create korruptometer --org-id ejagogcdbrymkppgszqc --region eu-west-1 --db-password "$(grep DB_PASS /tmp/korr-prod-secrets.txt \| cut -d= -f2-)"` |
-| 2 | **Inngest** | Free tier has only one production env, owned by konvenient. Reusing keys would route Korruptométer events into konvenient's dashboard | Decision needed: (a) reuse konvenient's prod env (mixed observability) or (b) wait for a new env when budget allows |
-| 3 | **Sentry** | Open org is `konvenient` — its DSN routes to konvenient's project | Decision needed: same trade-off as Inngest |
-| 4 | **Cloudflare Turnstile** | Site widget needs a "site name" + domain whitelist click | One dashboard click — ready to do this whenever you're at the keyboard |
-| 5 | **Cloudmersive** | No account | Sign up free tier, paste API key |
-| 6 | **Slack incoming webhook** | No webhook URL provisioned in the editor channel | One dashboard click in the Slack workspace |
-| 7 | **Upstash Redis** | No account | Sign up, create REST DB |
-| 8 | **Better Stack** | No account | Sign up, create 6 monitors per `app/docs/observability.md` |
+## Inngest sync — pending
 
-## Resume sequence (after Supabase block resolved)
+`POST /api/admin/_internal/run-retention-sweep` and the cron functions
+need Inngest to register the deployed app via `https://korruptometer.vercel.app/api/inngest`.
+The first sync attempt failed signature verification — fixed by removing
+`INNGEST_ENV` (custom envs route by signing key only). Retry from
+https://app.inngest.com/env/korruptometer-02e97c6e/apps/sync-new with
+`https://korruptometer.vercel.app/api/inngest` after the next deploy
+completes.
 
-```sh
-# 1. Create Supabase project
-export SUPABASE_ACCESS_TOKEN=$(grep '^SUPABASE_ACCESS_TOKEN=' /home/attilah/Coding/inbox_to_action/.env.local | cut -d= -f2-)
-export DB_PASS=$(grep '^DB_PASS=' /tmp/korr-prod-secrets.txt | cut -d= -f2-)
-npx supabase projects create korruptometer --org-id ejagogcdbrymkppgszqc --region eu-west-1 --db-password "$DB_PASS"
+## Still missing (no account)
 
-# 2. Capture the new project ref → REF
-# 3. Link locally
-npx supabase link --project-ref REF
-npx supabase db push   # applies app/supabase/migrations/0001..0010
+| Vendor | Required for | Workaround until provisioned |
+|--------|--------------|-------------------------------|
+| Cloudmersive | virus-scan in `submission.intake` | attachments stay `pending` (banner shows in admin); see `app/docs/virus-scan.md` |
+| Upstash Redis | distributed rate limiting | falls back to per-process in-memory limiter — not safe for multi-region |
+| Slack incoming webhook | editor channel digests | every `postSlackDigest` call no-ops with a logged reason |
+| Better Stack | DLQ-depth alerts | nothing fires when an Inngest queue stalls |
 
-# 4. Pull the env vars to Vercel
-NEXT_PUBLIC_SUPABASE_URL=https://REF.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<from dashboard, Project Settings → API>
-SUPABASE_SERVICE_ROLE_KEY=<same>
-DATABASE_URL=postgresql://postgres.REF:$DB_PASS@aws-0-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1
-DIRECT_URL=postgresql://postgres.REF:$DB_PASS@aws-0-eu-west-1.pooler.supabase.com:5432/postgres
+The MVP runs without these — they gate Phase-2/3 features (submissions,
+scrapers' silent-rot alerting). Site is fully functional for read-only
+public traffic right now.
 
-# 5. Push env vars (loop pattern from this session)
+## Next steps when you're back at the keyboard
 
-# 6. Seed
-DATABASE_URL=$DIRECT_URL pnpm --filter @korr/db db:seed
-
-# 7. Trigger Vercel redeploy (auto-fires on next push)
-git commit --allow-empty -m "chore: trigger redeploy after Supabase wiring" && git push
-```
-
-## What's still in-scope for a working MVP after Supabase
-
-The deploy URL will go from "Application error" to working public site once
-DATABASE_URL is set. To unblock:
-
-* **Submissions (US 5–9):** Cloudflare Turnstile + Cloudmersive + Slack webhook + Upstash + Inngest decision.
-* **Scrapers (US 10–14):** Inngest decision + Sentry decision + Better Stack.
-* **Sealed-box (US 15–19):** Optional — flag stays off until ready.
-
-For the **read-only public MVP**, only Supabase is required. Everything
-else is Phase-2+ and can land later.
+1. Confirm the Inngest sync (one click on the dashboard after deploy `6297242`+ is live).
+2. Optionally sign up for Cloudmersive / Upstash / Slack webhook / Better Stack and paste keys via `vercel env add`.
+3. Run `pnpm --filter @korr/web exec playwright test` against the prod URL to capture the Phase-1 launch-gate evidence.
