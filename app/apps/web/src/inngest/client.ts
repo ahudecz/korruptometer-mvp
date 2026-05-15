@@ -12,6 +12,8 @@ export type Events = {
   'submissions.rotate-seal': { data: { triggeredBy: string } };
   'worker.heartbeat': { data: Record<string, never> };
   'auditlog.partition-maintenance': { data: Record<string, never> };
+  'kmonitor.discover-tags': { data: Record<string, never> };
+  'kmonitor.traverse-tag': { data: { candidateId: string; slug: string } };
 };
 
 export const inngest = new Inngest({

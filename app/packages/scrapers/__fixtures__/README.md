@@ -33,3 +33,24 @@ curl -A "Korruptometer-Bot/1.0 (+https://korruptometer.hu/scraper)" \
   carry stable `<title>`, `<link>`, `<pubDate>`, `<description>` fields
   that haven't changed in 20 years.
 - All five spec-mandated outlets publish RSS (verified 2026-05-01).
+
+## K-Monitor discovery fixtures
+
+`kmonitor/` holds HTML captures of `adatbazis.k-monitor.hu` (2026-05-10),
+used by `src/kmonitor-discovery.test.ts`:
+
+| File                              | Source                                                              |
+| --------------------------------- | ------------------------------------------------------------------- |
+| `hirek-index.html`                | `https://adatbazis.k-monitor.hu/hirek` (301-target of `/cimkek/`)   |
+| `tag-nav-vizsgalat.html`          | `https://adatbazis.k-monitor.hu/adatbazis/cimkek/nav-vizsgalat`     |
+| `tag-lounge-design-kft.html`      | `https://adatbazis.k-monitor.hu/adatbazis/cimkek/lounge-design-kft` |
+| `tag-fidesz.html`                 | `https://adatbazis.k-monitor.hu/adatbazis/cimkek/fidesz`            |
+
+K-Monitor's `robots.txt` blocks `ClaudeBot`/`GPTBot` outright; refresh
+these fixtures only with a non-bot UA. The fetch command pattern:
+
+```sh
+curl -L -A "Korruptometer-Bot/1.0 (+https://korruptometer.hu/scraper)" \
+     -o packages/scrapers/__fixtures__/kmonitor/tag-<slug>.html \
+     "https://adatbazis.k-monitor.hu/adatbazis/cimkek/<slug>"
+```

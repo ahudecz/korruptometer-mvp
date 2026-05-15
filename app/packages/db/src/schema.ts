@@ -128,6 +128,7 @@ export const newsArticles = pgTable(
     linkConfidence: integer('linkConfidence'),
     linkOverridden: boolean('linkOverridden').notNull().default(false),
     featured: boolean('featured').notNull().default(false),
+    viaArchive: boolean('viaArchive').notNull().default(false),
     createdAt: timestamp('createdAt', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -344,6 +345,186 @@ export const workerHeartbeats = pgTable('WorkerHeartbeat', {
   at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ─── Phase 3: K-Monitor case discovery (FR-076..080) ──────────────────────
+
+export const kmonitorApprovalStateEnum = pgEnum('kmonitor_approval_state', [
+  'pending',
+  'approved',
+  'rejected',
+]);
+
+export const kMonitorPersonCandidates = pgTable(
+  'KMonitorPersonCandidate',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    /** Name as rendered in kmdb_base persons[]. */
+    displayName: text('displayName').notNull(),
+    /** Lowercased, accent-stripped key for dedup. */
+    normalizedName: text('normalizedName').notNull().unique(),
+    /** Total kmdb_base articles mentioning this person. */
+    mentionCount: integer('mentionCount').notNull().default(0),
+    /** Subset of mentionCount where at least one HUF amount was extracted. */
+    articleCountWithAmount: integer('articleCountWithAmount').notNull().default(0),
+    /** Median HUF amount across articles-with-amount. Legacy — superseded by p50. */
+    medianAmountHuf: bigint('medianAmountHuf', { mode: 'bigint' }),
+    /** 75th-percentile amount. Legacy. */
+    p75AmountHuf: bigint('p75AmountHuf', { mode: 'bigint' }),
+    /** 1st percentile — the floor of credible amounts attributed to this person. */
+    p1AmountHuf: bigint('p1AmountHuf', { mode: 'bigint' }),
+    /** 10th percentile — conservative floor. */
+    p10AmountHuf: bigint('p10AmountHuf', { mode: 'bigint' }),
+    /** 50th percentile — median; identical to `medianAmountHuf` going forward. */
+    p50AmountHuf: bigint('p50AmountHuf', { mode: 'bigint' }),
+    /** 90th percentile — upper-typical figure. */
+    p90AmountHuf: bigint('p90AmountHuf', { mode: 'bigint' }),
+    /** 99th percentile — the headline-figure ceiling. */
+    p99AmountHuf: bigint('p99AmountHuf', { mode: 'bigint' }),
+    /** Top topics from per-article `others[]` rolled up: [{topic, count}]. */
+    topTopics: jsonb('topTopics'),
+    /** Single biggest mentioned amount. Often noisy. */
+    maxAmountHuf: bigint('maxAmountHuf', { mode: 'bigint' }),
+    /** Top co-occurring institutions as [{institution, count}]. */
+    topInstitutions: jsonb('topInstitutions'),
+    /** Top co-occurring persons as [{person, count}]. */
+    topPersons: jsonb('topPersons'),
+    /** Up to 5 evidence URLs: [{newsId, sourceUrl, title}]. */
+    sampleArticles: jsonb('sampleArticles'),
+    /** LLM-refined HUF amount (Slice 10 — Haiku 4.5 with structured output). */
+    llmAmountHuf: bigint('llmAmountHuf', { mode: 'bigint' }),
+    /** Self-reported confidence 0..1 from the LLM. */
+    llmConfidence: integer('llmConfidence'),
+    /** Short evidence quote / rationale from the LLM. */
+    llmEvidence: text('llmEvidence'),
+    /** Set to now() on each LLM pass — null means 'not yet checked'. */
+    llmCheckedAt: timestamp('llmCheckedAt', { withTimezone: true }),
+    firstSeenAt: timestamp('firstSeenAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    lastSeenAt: timestamp('lastSeenAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    approvalState: kmonitorApprovalStateEnum('approvalState')
+      .notNull()
+      .default('pending'),
+    caseId: text('caseId').references(() => cases.id, { onDelete: 'set null' }),
+    /** Timestamp of the most recent approve/reject decision; null while pending. */
+    decidedAt: timestamp('decidedAt', { withTimezone: true }),
+    /** Editor who made the most recent approve/reject decision; null while pending. */
+    decidedBy: uuid('decidedBy').references(() => editors.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: timestamp('createdAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updatedAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    approvalIdx: index('KMonitorPersonCandidate_approvalState_idx').on(
+      t.approvalState,
+    ),
+    mentionIdx: index('KMonitorPersonCandidate_mentionCount_idx').on(
+      t.mentionCount,
+    ),
+    decidedAtIdx: index('KMonitorPersonCandidate_decidedAt_idx').on(t.decidedAt),
+  }),
+);
+
+/**
+ * One row per unique kmdb_base article. Articles link many-to-many to
+ * KMonitorPersonCandidate through KMonitorPersonArticle. We store the
+ * editorially-relevant slice of kmdb_base — not the full body — so the
+ * admin side-panel can show evidence URLs, topics, and the extracted HUF
+ * amount without re-fetching from Hugging Face.
+ */
+export const kMonitorArticles = pgTable(
+  'KMonitorArticle',
+  {
+    newsId: integer('newsId').primaryKey(),
+    sourceUrl: text('sourceUrl').notNull().default(''),
+    archiveUrl: text('archiveUrl'),
+    title: text('title').notNull().default(''),
+    pubTime: timestamp('pubTime', { withTimezone: true }),
+    /** Largest HUF amount extracted from the article text (regex). */
+    amountHuf: bigint('amountHuf', { mode: 'bigint' }),
+    /** Newspaper as recorded by kmdb_base (e.g. "Telex", "444"). */
+    newspaper: text('newspaper'),
+    /** K-Monitor's coarse `category` field. */
+    category: text('category'),
+    /** Topic tags from kmdb_base `others[]` — építőipar, sport, energia, etc. */
+    topics: jsonb('topics'),
+    institutions: jsonb('institutions'),
+    places: jsonb('places'),
+    importedAt: timestamp('importedAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    pubTimeIdx: index('KMonitorArticle_pubTime_idx').on(t.pubTime),
+    newspaperIdx: index('KMonitorArticle_newspaper_idx').on(t.newspaper),
+  }),
+);
+
+/**
+ * Person ↔ article join. amountHuf duplicates KMonitorArticle.amountHuf
+ * for ordering convenience (so the side-panel "top 20 by claimed amount"
+ * query is a simple sort on this join row).
+ */
+export const kMonitorPersonArticles = pgTable(
+  'KMonitorPersonArticle',
+  {
+    personId: uuid('personId')
+      .notNull()
+      .references(() => kMonitorPersonCandidates.id, { onDelete: 'cascade' }),
+    newsId: integer('newsId')
+      .notNull()
+      .references(() => kMonitorArticles.newsId, { onDelete: 'cascade' }),
+    amountHuf: bigint('amountHuf', { mode: 'bigint' }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.personId, t.newsId] }),
+    personAmountIdx: index('KMonitorPersonArticle_personId_amount_idx').on(
+      t.personId,
+      t.amountHuf,
+    ),
+  }),
+);
+
+export const kMonitorTagCandidates = pgTable(
+  'KMonitorTagCandidate',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    slug: text('slug').notNull().unique(),
+    firstSeenAt: timestamp('firstSeenAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    lastSeenAt: timestamp('lastSeenAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    approvalState: kmonitorApprovalStateEnum('approvalState')
+      .notNull()
+      .default('pending'),
+    caseId: text('caseId').references(() => cases.id, { onDelete: 'set null' }),
+    articleCount: integer('articleCount').notNull().default(0),
+    lastTraversedAt: timestamp('lastTraversedAt', { withTimezone: true }),
+    createdAt: timestamp('createdAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updatedAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    approvalIdx: index('KMonitorTagCandidate_approvalState_idx').on(
+      t.approvalState,
+    ),
+    firstSeenIdx: index('KMonitorTagCandidate_firstSeenAt_idx').on(
+      t.firstSeenAt,
+    ),
+  }),
+);
+
 export type Case = typeof cases.$inferSelect;
 export type NewCase = typeof cases.$inferInsert;
 export type RogueProfile = typeof rogueProfiles.$inferSelect;
@@ -357,6 +538,14 @@ export type AuditLog = typeof auditLogs.$inferSelect;
 export type EditorKey = typeof editorKeys.$inferSelect;
 export type ScraperRun = typeof scraperRuns.$inferSelect;
 export type DsrRequest = typeof dsrRequests.$inferSelect;
+export type KMonitorTagCandidate = typeof kMonitorTagCandidates.$inferSelect;
+export type NewKMonitorTagCandidate = typeof kMonitorTagCandidates.$inferInsert;
+export type KMonitorPersonCandidate = typeof kMonitorPersonCandidates.$inferSelect;
+export type NewKMonitorPersonCandidate = typeof kMonitorPersonCandidates.$inferInsert;
+export type KMonitorArticle = typeof kMonitorArticles.$inferSelect;
+export type NewKMonitorArticle = typeof kMonitorArticles.$inferInsert;
+export type KMonitorPersonArticle = typeof kMonitorPersonArticles.$inferSelect;
+export type NewKMonitorPersonArticle = typeof kMonitorPersonArticles.$inferInsert;
 export type SectorBreakdown = { name: string; value: number }[];
 
 // Use placate-typescript export for the singleton cap (no client cares but Drizzle plays nice).

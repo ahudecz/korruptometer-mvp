@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KORRUPTOMÉTER — Admin · K-Monitor érintett személyek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600;700;800&family=Archivo+Narrow:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #171a20;
+    --ink-2: #393c41;
+    --muted: #5c5e62;
+    --line: #e6e6e6;
+    --line-strong: #cccccc;
+    --accent: #e31937;
+    --accent-soft: #fee5e8;
+    --surface: #f4f4f4;
+
+    --state-pending: #8b5a00;
+    --state-pending-bg: #fff7e6;
+    --state-pending-border: #f3d99c;
+    --state-approved: #0a5c2e;
+    --state-approved-bg: #e6f5ec;
+    --state-approved-border: #b8dec5;
+    --state-rejected: #c41530;
+    --state-rejected-bg: var(--accent-soft);
+    --state-rejected-border: #f7c8d0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: "Archivo", -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-weight: 400;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection { background: var(--ink); color: var(--bg); }
+
+  button { font-family: inherit; }
+
+  /* ============ NAV ============ */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 14px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 40px;
+  }
+  .brand {
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand::before {
+    content: "";
+    width: 9px; height: 9px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .brand-sep {
+    width: 1px;
+    height: 18px;
+    background: var(--line-strong);
+  }
+  .brand-context {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .nav-links {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+    margin-left: 20px;
+  }
+  .nav-links a {
+    font-size: 12px;
+    color: var(--ink-2);
+    text-decoration: none;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color .2s;
+    padding-bottom: 4px;
+    border-bottom: 1px solid transparent;
+  }
+  .nav-links a.is-active {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-user {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-left: auto;
+  }
+  .nav-user .who {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .nav-user .who strong { color: var(--ink); font-weight: 700; }
+  .nav-logout {
+    background: transparent;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .nav-logout:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+  /* ============ PAGE HEADER ============ */
+  .page {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+  .page-head {
+    padding: 40px 0 28px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 40px;
+    align-items: end;
+    border-bottom: 1px solid var(--line);
+  }
+  .page-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .page-eyebrow::before {
+    content: "";
+    width: 28px;
+    height: 1px;
+    background: var(--accent);
+  }
+  .page-title {
+    font-weight: 800;
+    font-size: clamp(40px, 5.4vw, 72px);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+    margin-bottom: 16px;
+  }
+  .page-sub {
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 720px;
+    line-height: 1.55;
+  }
+  .page-sub strong { color: var(--ink); font-weight: 600; }
+  .page-sub code {
+    font-family: "Archivo Narrow", monospace;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--surface);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+  .page-meta {
+    text-align: right;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1.7;
+  }
+  .page-meta strong { color: var(--ink); font-weight: 700; }
+  .page-meta .dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ============ STAT RIBBON ============ */
+  .stat-ribbon {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .stat-cell {
+    background: #fff;
+    padding: 24px 28px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+  }
+  .stat-cell .label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .stat-cell .value {
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-cell .delta {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+  .stat-cell .delta strong.up { color: var(--accent); font-weight: 700; }
+  .stat-cell .delta strong.flat { color: var(--ink-2); font-weight: 700; }
+  .stat-cell.is-accent .value { color: var(--accent); }
+  .stat-cell .swatch {
+    position: absolute;
+    top: 24px;
+    right: 28px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .swatch.s-pending { background: var(--state-pending); }
+  .swatch.s-approved { background: var(--state-approved); }
+  .swatch.s-rejected { background: var(--state-rejected); }
+
+  /* ============ TOOLBAR ============ */
+  .toolbar {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr 1fr auto;
+    gap: 1px;
+    background: var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .tb-cell {
+    background: #fff;
+    padding: 14px 20px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative;
+  }
+  .tb-cell label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .tb-cell input,
+  .tb-cell select {
+    border: 0;
+    outline: 0;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    background: transparent;
+    padding: 0;
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .tb-cell.search {
+    background: var(--ink);
+    color: #fff;
+  }
+  .tb-cell.search label { color: rgba(255,255,255,0.55); }
+  .tb-cell.search input { color: #fff; }
+  .tb-cell.search input::placeholder { color: rgba(255,255,255,0.4); }
+  .tb-cell select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%235c5e62' d='M0 0l5 6 5-6z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 0 center;
+    padding-right: 16px;
+  }
+  .tb-cell.action {
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 28px;
+    transition: background .2s;
+    flex-direction: row;
+    gap: 10px;
+  }
+  .tb-cell.action:hover { background: #c41530; }
+  .tb-cell.action span {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .tb-cell.action::after {
+    content: "→";
+    font-size: 16px;
+  }
+
+  /* ============ SUBSTRIP (pills + counts) ============ */
+  .substrip {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 16px 0 18px;
+    flex-wrap: wrap;
+  }
+  .state-pills {
+    display: flex;
+    gap: 6px;
+  }
+  .state-pill {
+    background: transparent;
+    border: 1px solid var(--line-strong);
+    padding: 7px 14px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+    cursor: pointer;
+    border-radius: 999px;
+    transition: all .15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .state-pill .count {
+    font-family: "Archivo Narrow", monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0;
+  }
+  .state-pill:hover {
+    border-color: var(--ink);
+  }
+  .state-pill.is-active {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+  .state-pill.is-active .count { color: rgba(255,255,255,0.65); }
+  .state-pill .swatch {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+  }
+  .substrip-meta {
+    margin-left: auto;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .substrip-meta strong { color: var(--ink); font-weight: 700; }
+  .substrip-meta .pager {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .pager button {
+    width: 26px;
+    height: 26px;
+    border: 1px solid var(--line-strong);
+    background: #fff;
+    color: var(--ink);
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1;
+    transition: all .15s;
+  }
+  .pager button:hover {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+
+  /* ============ WORKBENCH ============ */
+  .workbench {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(420px, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 48px;
+  }
+  .wb-pane { background: #fff; min-width: 0; }
+
+  /* ============ LIST PANE ============ */
+  .list-head {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 2.4fr) minmax(120px, 1fr) minmax(120px, 1fr) 110px;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line-strong);
+    background: #fff;
+  }
+  .list-head .th {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .list-head .th.num { text-align: right; }
+  .list-scroll {
+    max-height: calc(100vh - 220px);
+    overflow-y: auto;
+  }
+  .list-row {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 2.4fr) minmax(120px, 1fr) minmax(120px, 1fr) 110px;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    transition: background .12s;
+    position: relative;
+  }
+  .list-row:hover { background: var(--surface); }
+  .list-row.is-selected {
+    background: var(--accent-soft);
+  }
+  .list-row.is-selected::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+  }
+  .list-row.is-hidden { display: none; }
+
+  .rank {
+    font-family: "Archivo Narrow", monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    text-align: right;
+  }
+  .person {
+    min-width: 0;
+  }
+  .person .name {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .person .meta {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  .person .meta strong { color: var(--ink); font-weight: 700; }
+  .person .meta .sep {
+    width: 2px;
+    height: 2px;
+    background: var(--line-strong);
+    border-radius: 50%;
+  }
+
+  .p50 {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .p50 small {
+    display: block;
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+  .p50.empty { color: var(--muted); font-weight: 500; }
+
+  .tag-cell {
+    min-width: 0;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    padding: 4px 8px;
+    border: 1px solid var(--line-strong);
+    border-radius: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .tag.empty {
+    border-color: var(--line);
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .state-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    border-radius: 999px;
+    border: 1px solid;
+    justify-self: end;
+  }
+  .state-badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+  .state-badge.pending {
+    color: var(--state-pending);
+    background: var(--state-pending-bg);
+    border-color: var(--state-pending-border);
+  }
+  .state-badge.pending .dot { background: var(--state-pending); }
+  .state-badge.approved {
+    color: var(--state-approved);
+    background: var(--state-approved-bg);
+    border-color: var(--state-approved-border);
+  }
+  .state-badge.approved .dot { background: var(--state-approved); }
+  .state-badge.rejected {
+    color: var(--state-rejected);
+    background: var(--state-rejected-bg);
+    border-color: var(--state-rejected-border);
+  }
+  .state-badge.rejected .dot { background: var(--state-rejected); }
+
+  /* ============ DETAIL PANE ============ */
+  .detail {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    max-height: calc(100vh - 90px);
+    overflow-y: auto;
+    position: sticky;
+    top: 64px;
+  }
+  .detail-empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 32px;
+    text-align: center;
+  }
+  .detail-empty p {
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    max-width: 280px;
+    line-height: 1.6;
+  }
+  .detail-empty .icon {
+    font-size: 32px;
+    color: var(--line-strong);
+    margin-bottom: 16px;
+  }
+
+  .detail-head {
+    padding: 28px 32px 24px;
+    border-bottom: 1px solid var(--line);
+    background: #fff;
+    position: relative;
+  }
+  .detail-rank {
+    font-family: "Archivo Narrow", monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .detail-name {
+    font-weight: 800;
+    font-size: 32px;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    margin-bottom: 12px;
+  }
+  .detail-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+  .detail-meta strong { color: var(--ink); font-weight: 700; }
+  .detail-meta .sep {
+    width: 3px;
+    height: 3px;
+    background: var(--line-strong);
+    border-radius: 50%;
+  }
+  .detail-close {
+    position: absolute;
+    top: 22px;
+    right: 22px;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--line-strong);
+    background: #fff;
+    color: var(--ink);
+    cursor: pointer;
+    border-radius: 50%;
+    font-size: 14px;
+    line-height: 1;
+    transition: all .15s;
+  }
+  .detail-close:hover {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+
+  .detail-section {
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--line);
+  }
+  .detail-section h4 {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .detail-section h4 .aside {
+    font-family: "Archivo Narrow", monospace;
+    font-weight: 600;
+    color: var(--ink-2);
+    letter-spacing: 0.06em;
+  }
+
+  /* ====== CHART ====== */
+  .chart {
+    background: var(--surface);
+    border-radius: 4px;
+    padding: 18px 18px 14px;
+  }
+  .chart-callout {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .chart-callout .median {
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .chart-callout .median small {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .chart-callout .spread {
+    font-size: 11px;
+    text-align: right;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 1.45;
+    font-variant-numeric: tabular-nums;
+  }
+  .chart-callout .spread strong { color: var(--ink); font-weight: 700; }
+  .chart svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .chart .axis { stroke: var(--line-strong); stroke-width: 1; }
+  .chart .grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 3; }
+  .chart .range { stroke: var(--ink); stroke-width: 1.5; opacity: 0.18; }
+  .chart .ibr { stroke: var(--ink); stroke-width: 3; }
+  .chart .marker { stroke: #fff; stroke-width: 1.5; }
+  .chart .marker.median { fill: var(--accent); }
+  .chart .marker.outer { fill: var(--ink); }
+  .chart .marker.iqr { fill: var(--ink); }
+  .chart .tick-label {
+    font-family: "Archivo Narrow", monospace;
+    font-size: 10px;
+    fill: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .chart .marker-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    fill: var(--ink-2);
+  }
+  .chart .marker-label.median { fill: var(--accent); }
+
+  /* ====== TAG GRID ====== */
+  .tag-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border: 1px solid var(--line-strong);
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink);
+    background: #fff;
+    transition: background .12s;
+  }
+  .chip:hover { background: var(--surface); }
+  .chip .n {
+    font-family: "Archivo Narrow", monospace;
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .chip.accent { background: var(--accent-soft); border-color: #f7c8d0; color: var(--accent); }
+  .chip.accent .n { color: #c41530; }
+
+  /* ====== ARTICLES ====== */
+  .articles {
+    display: flex;
+    flex-direction: column;
+  }
+  .article {
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: start;
+  }
+  .article:first-child { border-top: 0; padding-top: 0; }
+  .article-title {
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.35;
+    color: var(--ink);
+    text-decoration: none;
+    letter-spacing: -0.005em;
+  }
+  .article-title:hover { color: var(--accent); }
+  .article-meta {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .article-meta .source {
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 10px;
+  }
+  .article-meta .archive {
+    color: var(--muted);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--line-strong);
+  }
+  .article-meta .archive:hover { color: var(--ink); border-bottom-color: var(--ink); }
+  .article-amount {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--accent);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    text-align: right;
+  }
+  .article-amount.empty { color: var(--muted); font-weight: 500; }
+
+  .article-more {
+    margin-top: 16px;
+    background: transparent;
+    border: 1px solid var(--line-strong);
+    padding: 9px 16px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all .15s;
+    align-self: flex-start;
+  }
+  .article-more:hover {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+
+  /* ====== DECISION BAND ====== */
+  .decision {
+    padding: 24px 32px 32px;
+    background: var(--ink);
+    color: #fff;
+  }
+  .decision h4 {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 14px;
+  }
+  .decision .caseid {
+    margin-bottom: 16px;
+  }
+  .decision .caseid label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 4px;
+    display: block;
+  }
+  .decision .caseid input {
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.14);
+    padding: 10px 14px;
+    color: #fff;
+    font-family: "Archivo Narrow", monospace;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    border-radius: 3px;
+    outline: 0;
+    transition: border-color .12s;
+  }
+  .decision .caseid input:focus { border-color: var(--accent); }
+  .decision .caseid input::placeholder { color: rgba(255,255,255,0.3); }
+  .decision-buttons {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 6px;
+  }
+  .dbtn {
+    border: 0;
+    padding: 14px 16px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .dbtn .key {
+    font-family: "Archivo Narrow", monospace;
+    font-size: 9px;
+    background: rgba(255,255,255,0.12);
+    padding: 2px 5px;
+    border-radius: 2px;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0;
+    font-weight: 600;
+  }
+  .dbtn.primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .dbtn.primary:hover { background: #c41530; }
+  .dbtn.primary .key { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.85); }
+  .dbtn.secondary {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+  }
+  .dbtn.secondary:hover { background: rgba(255,255,255,0.16); }
+  .dbtn.ghost {
+    background: transparent;
+    color: rgba(255,255,255,0.75);
+    border: 1px solid rgba(255,255,255,0.16);
+  }
+  .dbtn.ghost:hover { border-color: rgba(255,255,255,0.4); color: #fff; }
+
+  .decision-foot {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 10px;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .decision-foot strong { color: rgba(255,255,255,0.85); font-weight: 700; }
+
+  /* ============ PAGE FOOTER ============ */
+  .page-foot {
+    border-top: 1px solid var(--line);
+    padding: 24px 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .page-foot strong { color: var(--ink); font-weight: 700; }
+  .shortcuts {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .shortcuts .sc {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .shortcuts kbd {
+    font-family: "Archivo Narrow", monospace;
+    font-size: 10px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--ink);
+    letter-spacing: 0;
+    font-weight: 700;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 1100px) {
+    .workbench { grid-template-columns: 1fr; }
+    .detail { position: static; max-height: none; }
+    .stat-ribbon { grid-template-columns: repeat(2, 1fr); }
+    .toolbar { grid-template-columns: 1fr; }
+    .list-head, .list-row { grid-template-columns: 32px 1fr 100px; }
+    .list-head .th.hide-sm, .list-row .hide-sm { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="brand">Korruptométer</a>
+    <span class="brand-sep"></span>
+    <span class="brand-context">Admin · Ügyirat-kezelő</span>
+    <ul class="nav-links">
+      <li><a href="#">Ügyek</a></li>
+      <li><a href="#" class="is-active">K-Monitor személyek</a></li>
+      <li><a href="#">Címkék</a></li>
+      <li><a href="#">Cikkek</a></li>
+      <li><a href="#">Jelentések</a></li>
+    </ul>
+    <div class="nav-user">
+      <span class="who">Bejelentkezve mint <strong>ahudecz</strong></span>
+      <button class="nav-logout">Kilépés</button>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- ============ PAGE HEADER ============ -->
+  <header class="page-head">
+    <div>
+      <div class="page-eyebrow">Adminisztráció · K-Monitor adatbázis</div>
+      <h1 class="page-title">Érintett<br/>személyek</h1>
+      <p class="page-sub">
+        A K-Monitor <code>kmdb_base</code> adatbázisban (cc-by-sa-4.0) szereplő
+        nevek átnézése, jóváhagyása, vagy elutasítása. Az összegek a cikkek
+        szövegéből kinyert HUF értékek <strong>p1 / p10 / p50 / p90 / p99</strong>
+        percentilisei — log skálán ábrázolva a részletes panelben.
+      </p>
+    </div>
+    <div class="page-meta">
+      <span class="dot"></span><strong>Élő</strong> kapcsolat<br/>
+      Utolsó szinkron <strong>2026-05-15 09:14</strong><br/>
+      Adatfrissítés <strong>napi 04:00</strong>
+    </div>
+  </header>
+
+  <!-- ============ STATS ============ -->
+  <section class="stat-ribbon">
+    <div class="stat-cell">
+      <span class="label">Összes jelölt</span>
+      <span class="value">1 247</span>
+      <span class="delta"><strong class="up">+18</strong> az elmúlt 24 órában</span>
+    </div>
+    <div class="stat-cell">
+      <span class="label">Sorban áll</span>
+      <span class="swatch s-pending"></span>
+      <span class="value">89</span>
+      <span class="delta"><strong class="flat">~ 4 nap</strong> átlagos átfutás</span>
+    </div>
+    <div class="stat-cell">
+      <span class="label">Jóváhagyott</span>
+      <span class="swatch s-approved"></span>
+      <span class="value">803</span>
+      <span class="delta">64,4% összes jelölt aránya</span>
+    </div>
+    <div class="stat-cell">
+      <span class="label">Elutasítva</span>
+      <span class="swatch s-rejected"></span>
+      <span class="value">355</span>
+      <span class="delta">28,5% homonim/névrokon</span>
+    </div>
+    <div class="stat-cell is-accent">
+      <span class="label">Medián tét (összes)</span>
+      <span class="value">1,8 <small style="font-size:0.5em; color: var(--muted); font-weight:500; letter-spacing: 0.04em;">Mrd Ft</small></span>
+      <span class="delta">Jóváhagyott esetek p50 értéke</span>
+    </div>
+  </section>
+
+  <!-- ============ TOOLBAR ============ -->
+  <section class="toolbar">
+    <div class="tb-cell search">
+      <label>Név keresése</label>
+      <input id="search" type="search" placeholder="Mészáros, Tiborcz, Rogán…" autocomplete="off" />
+    </div>
+    <div class="tb-cell">
+      <label>Téma</label>
+      <select>
+        <option>— mind —</option>
+        <option>közbeszerzés</option>
+        <option>EU-s pályázat</option>
+        <option>Paks II</option>
+        <option>állami megrendelés</option>
+        <option>ingatlan</option>
+        <option>vagyonnyilatkozat</option>
+        <option>építőipar</option>
+        <option>médiacég</option>
+      </select>
+    </div>
+    <div class="tb-cell">
+      <label>Intézmény</label>
+      <select>
+        <option>— mind —</option>
+        <option>MVM</option>
+        <option>NIF</option>
+        <option>Magyar Falu Program</option>
+        <option>BMSK</option>
+        <option>Paksi Atomerőmű</option>
+        <option>Magyar Posta</option>
+      </select>
+    </div>
+    <div class="tb-cell">
+      <label>Rendezés</label>
+      <select>
+        <option>Említések szerint ↓</option>
+        <option>Medián (p50) ↓</option>
+        <option>Legutóbbi említés</option>
+        <option>Név szerint A–Z</option>
+      </select>
+    </div>
+    <button class="tb-cell action"><span>Szűr</span></button>
+  </section>
+
+  <!-- ============ SUBSTRIP ============ -->
+  <div class="substrip">
+    <div class="state-pills" id="state-pills">
+      <button class="state-pill is-active" data-state="all">Mind <span class="count">1 247</span></button>
+      <button class="state-pill" data-state="pending"><span class="swatch" style="background: var(--state-pending);"></span>Sorban <span class="count">89</span></button>
+      <button class="state-pill" data-state="approved"><span class="swatch" style="background: var(--state-approved);"></span>Jóváhagyott <span class="count">803</span></button>
+      <button class="state-pill" data-state="rejected"><span class="swatch" style="background: var(--state-rejected);"></span>Elutasítva <span class="count">355</span></button>
+    </div>
+    <div class="substrip-meta">
+      <span><strong id="visible-count">15</strong> / <strong>1 247</strong> személy</span>
+      <span class="pager">
+        Oldal <strong>1</strong> / <strong>84</strong>
+        <button aria-label="Előző">‹</button>
+        <button aria-label="Következő">›</button>
+      </span>
+    </div>
+  </div>
+
+  <!-- ============ WORKBENCH ============ -->
+  <main class="workbench">
+
+    <!-- ============ LIST PANE ============ -->
+    <section class="wb-pane list-pane">
+      <div class="list-head">
+        <div class="th num">#</div>
+        <div class="th">Név · említések</div>
+        <div class="th num">Medián tét</div>
+        <div class="th hide-sm">Vezető téma</div>
+        <div class="th hide-sm" style="text-align:right;">Állapot</div>
+      </div>
+      <div class="list-scroll" id="list-scroll">
+        <!-- rows injected via JS -->
+      </div>
+    </section>
+
+    <!-- ============ DETAIL PANE ============ -->
+    <aside class="wb-pane detail" id="detail">
+      <!-- content injected via JS -->
+    </aside>
+  </main>
+
+  <!-- ============ PAGE FOOTER ============ -->
+  <div class="page-foot">
+    <div class="shortcuts">
+      <span class="sc"><kbd>↑</kbd><kbd>↓</kbd> Léptetés</span>
+      <span class="sc"><kbd>A</kbd> Jóváhagyás</span>
+      <span class="sc"><kbd>R</kbd> Elutasít</span>
+      <span class="sc"><kbd>D</kbd> Halaszt</span>
+      <span class="sc"><kbd>/</kbd> Keresés</span>
+      <span class="sc"><kbd>⌘</kbd><kbd>K</kbd> Paranccsor</span>
+    </div>
+    <div>
+      Forrás <strong>K-Monitor · kmdb_base</strong> · CC-BY-SA-4.0 ·
+      build <strong>v0.4.2</strong>
+    </div>
+  </div>
+
+</div><!-- /.page -->
+
+<script>
+// ====== Sample data (realistic Hungarian K-Monitor candidates) =================
+const PERSONS = [
+  {
+    id: 'p001', rank: 1, name: 'Mészáros Lőrinc',
+    mentions: 487, articlesWithAmount: 312,
+    p1: 12_000_000, p10: 180_000_000, p50: 12_400_000_000, p90: 84_000_000_000, p99: 410_000_000_000,
+    state: 'pending', caseId: null,
+    topTopic: 'közbeszerzés', topInst: 'MVM',
+    topics: [['közbeszerzés', 187], ['Paks II', 88], ['Felcsút', 64], ['EU-s pályázat', 52], ['M85', 31]],
+    institutions: [['MVM', 94], ['NIF', 71], ['BMSK', 42], ['Magyar Falu Program', 28]],
+    persons: [['Tiborcz István', 38], ['Garancsi István', 22], ['Rogán Antal', 14]],
+    articles: [
+      { title: 'Újabb 12 milliárdot kap Mészáros cége a Paks II projektben', source: 'Magyar Hang', date: '2025-11-12', amount: 12_400_000_000, archive: true },
+      { title: 'Mészáros vállalata nyerte el az M85-ös autóút bővítését', source: '444.hu', date: '2025-10-04', amount: 8_900_000_000, archive: true },
+      { title: 'Felcsút új sportlétesítménye állami pénzből épül', source: 'Telex', date: '2025-08-22', amount: 1_800_000_000, archive: true },
+      { title: 'Mészáros tulajdoni háttér: offshore-szálak Cipruson', source: 'Direkt36', date: '2025-07-15', amount: null, archive: true },
+      { title: 'Új közbeszerzési győztes a Mészáros-csoport', source: 'HVG', date: '2025-06-03', amount: 2_300_000_000, archive: false },
+    ],
+    totalArticles: 312,
+  },
+  {
+    id: 'p002', rank: 2, name: 'Tiborcz István',
+    mentions: 312, articlesWithAmount: 198,
+    p1: 8_000_000, p10: 92_000_000, p50: 8_900_000_000, p90: 42_000_000_000, p99: 180_000_000_000,
+    state: 'pending', caseId: null,
+    topTopic: 'ingatlan', topInst: 'NIF',
+    topics: [['ingatlan', 92], ['EU-s pályázat', 71], ['közvilágítás', 54], ['turizmus', 33]],
+    institutions: [['NIF', 64], ['Magyar Falu Program', 31], ['MTÜ', 22]],
+    persons: [['Mészáros Lőrinc', 38], ['Orbán Viktor', 19]],
+    articles: [
+      { title: 'Tiborcz cég nyerte a közvilágítási tendert 8,9 milliárdért', source: '444.hu', date: '2025-10-22', amount: 8_900_000_000, archive: true },
+      { title: 'EU-Lex eljárás a BDPST-ügyben — új fejlemények', source: 'Telex', date: '2025-09-14', amount: null, archive: true },
+      { title: 'Tiborcz-ingatlanok Budán: 4 milliárd forintos portfólió', source: 'G7', date: '2025-08-04', amount: 4_100_000_000, archive: false },
+    ],
+    totalArticles: 198,
+  },
+  {
+    id: 'p003', rank: 3, name: 'Rogán Antal',
+    mentions: 298, articlesWithAmount: 142,
+    p1: 4_000_000, p10: 28_000_000, p50: 2_100_000_000, p90: 18_000_000_000, p99: 95_000_000_000,
+    state: 'approved', caseId: 'KM-2024-018',
+    topTopic: 'vagyonnyilatkozat', topInst: 'KKM',
+    topics: [['vagyonnyilatkozat', 72], ['letelepedési kötvény', 58], ['kormányzati kommunikáció', 41]],
+    institutions: [['KKM', 41], ['MTVA', 28]],
+    persons: [['Habony Árpád', 24], ['Orbán Viktor', 17]],
+    articles: [
+      { title: 'Rogán Antal vagyongyarapodása 2024-ben', source: 'Átlátszó', date: '2025-12-01', amount: 2_100_000_000, archive: true },
+      { title: 'Letelepedési kötvény: új adatok kerültek nyilvánosságra', source: 'Direkt36', date: '2025-09-18', amount: 18_000_000_000, archive: true },
+    ],
+    totalArticles: 142,
+  },
+  {
+    id: 'p004', rank: 4, name: 'Schadl György',
+    mentions: 264, articlesWithAmount: 187,
+    p1: 1_200_000, p10: 18_000_000, p50: 1_800_000_000, p90: 12_000_000_000, p99: 38_000_000_000,
+    state: 'approved', caseId: 'KM-2024-009',
+    topTopic: 'végrehajtói kar', topInst: 'MBVK',
+    topics: [['végrehajtói kar', 142], ['korrupció', 88], ['pénzmosás', 41]],
+    institutions: [['MBVK', 142], ['NAV', 18]],
+    persons: [['Völner Pál', 64]],
+    articles: [
+      { title: 'Schadl-Völner ügy: ítélet előtti összegzés', source: 'HVG', date: '2025-11-08', amount: 1_800_000_000, archive: true },
+    ],
+    totalArticles: 187,
+  },
+  {
+    id: 'p005', rank: 5, name: 'Várhelyi Olivér',
+    mentions: 187, articlesWithAmount: 64,
+    p1: 800_000, p10: 12_000_000, p50: 920_000_000, p90: 8_400_000_000, p99: 24_000_000_000,
+    state: 'pending', caseId: null,
+    topTopic: 'EU-bővítés', topInst: 'EU Bizottság',
+    topics: [['EU-bővítés', 88], ['Nyugat-Balkán', 41], ['EU-s pályázat', 28]],
+    institutions: [['EU Bizottság', 78], ['KKM', 24]],
+    persons: [['Szijjártó Péter', 18]],
+    articles: [
+      { title: 'Várhelyi szerepe a szerbiai befektetésekben', source: 'Telex', date: '2025-10-14', amount: 920_000_000, archive: true },
+    ],
+    totalArticles: 64,
+  },
+  {
+    id: 'p006', rank: 6, name: 'Lázár János',
+    mentions: 178, articlesWithAmount: 124,
+    p1: 2_000_000, p10: 24_000_000, p50: 1_200_000_000, p90: 14_000_000_000, p99: 58_000_000_000,
+    state: 'pending', caseId: null,
+    topTopic: 'MÁV', topInst: 'MÁV',
+    topics: [['MÁV', 62], ['építőipar', 41], ['Hódmezővásárhely', 28]],
+    institutions: [['MÁV', 62], ['NIF', 31]],
+    persons: [['Mészáros Lőrinc', 14]],
+    articles: [
+      { title: 'MÁV-csere: nem teljesítettek határidőre szerződő partnerek', source: '444.hu', date: '2025-09-22', amount: 1_200_000_000, archive: true },
+    ],
+    totalArticles: 124,
+  },
+  {
+    id: 'p007', rank: 7, name: 'Polt Péter',
+    mentions: 156, articlesWithAmount: 8,
+    p1: null, p10: null, p50: null, p90: null, p99: null,
+    state: 'rejected', caseId: null,
+    topTopic: 'ügyészség', topInst: 'Legfőbb Ügyészség',
+    topics: [['ügyészség', 124], ['eljárás-megszüntetés', 41]],
+    institutions: [['Legfőbb Ügyészség', 124]],
+    persons: [],
+    articles: [],
+    totalArticles: 8,
+  },
+  {
+    id: 'p008', rank: 8, name: 'Süli János',
+    mentions: 142, articlesWithAmount: 98,
+    p1: 18_000_000, p10: 220_000_000, p50: 4_200_000_000, p90: 38_000_000_000, p99: 124_000_000_000,
+    state: 'approved', caseId: 'KM-2024-031',
+    topTopic: 'Paks II', topInst: 'Paksi Atomerőmű',
+    topics: [['Paks II', 124], ['atomenergia', 88], ['Roszatom', 41]],
+    institutions: [['Paksi Atomerőmű', 88], ['MVM', 41]],
+    persons: [['Mészáros Lőrinc', 28]],
+    articles: [
+      { title: 'Paks II: új ütemterv 2026 első felére', source: 'Telex', date: '2025-11-02', amount: 4_200_000_000, archive: true },
+    ],
+    totalArticles: 98,
+  },
+  {
+    id: 'p009', rank: 9, name: 'Matolcsy Ádám',
+    mentions: 134, articlesWithAmount: 74,
+    p1: 1_000_000, p10: 12_000_000, p50: 720_000_000, p90: 4_200_000_000, p99: 18_000_000_000,
+    state: 'pending', caseId: null,
+    topTopic: 'MNB-alapítvány', topInst: 'MNB',
+    topics: [['MNB-alapítvány', 88], ['ingatlan', 28]],
+    institutions: [['MNB', 88]],
+    persons: [['Matolcsy György', 41]],
+    articles: [
+      { title: 'MNB-alapítványi vagyon: új befektetések 2025-ben', source: 'G7', date: '2025-09-12', amount: 720_000_000, archive: true },
+    ],
+    totalArticles: 74,
+  },
+  {
+    id: 'p010', rank: 10, name: 'Szijjártó Péter',
+    mentions: 119, articlesWithAmount: 41,
+    p1: 600_000, p10: 8_000_000, p50: 540_000_000, p90: 3_800_000_000, p99: 12_000_000_000,
+    state: 'pending', caseId: null,
+    topTopic: 'külföldi befektetés', topInst: 'KKM',
+    topics: [['külföldi befektetés', 64], ['vadászati szövetség', 28], ['kisteherautó', 14]],
+    institutions: [['KKM', 64], ['HIPA', 28]],
+    persons: [['Várhelyi Olivér', 18]],
+    articles: [
+      { title: 'Szijjártó Eurázsia-szerződései: új részletek', source: 'Direkt36', date: '2025-08-28', amount: 540_000_000, archive: true },
+    ],
+    totalArticles: 41,
+  },
+  {
+    id: 'p011', rank: 11, name: 'Habony Árpád',
+    mentions: 108, articlesWithAmount: 52,
+    p1: 800_000, p10: 6_400_000, p50: 380_000_000, p90: 2_800_000_000, p99: 9_400_000_000,
+    state: 'approved', caseId: 'KM-2024-044',
+    topTopic: 'médiacég', topInst: 'KESMA',
+    topics: [['médiacég', 64], ['állami megrendelés', 28]],
+    institutions: [['KESMA', 41], ['MTVA', 28]],
+    persons: [['Rogán Antal', 24]],
+    articles: [],
+    totalArticles: 52,
+  },
+  {
+    id: 'p012', rank: 12, name: 'Garancsi István',
+    mentions: 97, articlesWithAmount: 71,
+    p1: 14_000_000, p10: 180_000_000, p50: 6_200_000_000, p90: 32_000_000_000, p99: 88_000_000_000,
+    state: 'pending', caseId: null,
+    topTopic: 'M4 autópálya', topInst: 'NIF',
+    topics: [['M4', 41], ['kosárlabda', 22], ['építőipar', 18]],
+    institutions: [['NIF', 41], ['MKOSZ', 22]],
+    persons: [['Mészáros Lőrinc', 22]],
+    articles: [],
+    totalArticles: 71,
+  },
+  {
+    id: 'p013', rank: 13, name: 'Bayer Zsolt',
+    mentions: 64, articlesWithAmount: 18,
+    p1: null, p10: 4_000_000, p50: 38_000_000, p90: 180_000_000, p99: 420_000_000,
+    state: 'rejected', caseId: null,
+    topTopic: 'állami megrendelés', topInst: 'MTVA',
+    topics: [['állami megrendelés', 41], ['médiacég', 18]],
+    institutions: [['MTVA', 28]],
+    persons: [],
+    articles: [],
+    totalArticles: 18,
+  },
+  {
+    id: 'p014', rank: 14, name: 'Kósa Lajos',
+    mentions: 58, articlesWithAmount: 41,
+    p1: 1_200_000, p10: 18_000_000, p50: 1_100_000_000, p90: 8_400_000_000, p99: 28_000_000_000,
+    state: 'approved', caseId: 'KM-2024-052',
+    topTopic: 'vagyonosodás', topInst: 'MVM',
+    topics: [['vagyonosodás', 41], ['MVM', 18]],
+    institutions: [['MVM', 18]],
+    persons: [],
+    articles: [],
+    totalArticles: 41,
+  },
+  {
+    id: 'p015', rank: 15, name: 'Andy Vajna (örökösök)',
+    mentions: 76, articlesWithAmount: 28,
+    p1: 8_000_000, p10: 84_000_000, p50: 2_100_000_000, p90: 14_000_000_000, p99: 38_000_000_000,
+    state: 'pending', caseId: null,
+    topTopic: 'TV2 Csoport', topInst: 'TV2',
+    topics: [['TV2 Csoport', 41], ['médiapiac', 22]],
+    institutions: [['TV2', 41]],
+    persons: [],
+    articles: [],
+    totalArticles: 28,
+  },
+];
+
+// ====== Helpers ================================================================
+function fmtFt(v) {
+  if (v == null) return '—';
+  if (v >= 1e12) return (v / 1e12).toLocaleString('hu-HU', { maximumFractionDigits: 1 }) + ' E Ft';
+  if (v >= 1e9) return (v / 1e9).toLocaleString('hu-HU', { maximumFractionDigits: 1 }) + ' Mrd Ft';
+  if (v >= 1e6) return Math.round(v / 1e6).toLocaleString('hu-HU') + ' M Ft';
+  return v.toLocaleString('hu-HU') + ' Ft';
+}
+function fmtNum(v) { return v == null ? '—' : v.toLocaleString('hu-HU'); }
+function fmtRank(i) { return String(i).padStart(3, '0'); }
+function stateLabel(s) { return { pending: 'Sorban', approved: 'Jóváhagyva', rejected: 'Elutasítva' }[s]; }
+
+// ====== List rendering =========================================================
+const listScroll = document.getElementById('list-scroll');
+
+function renderList(items, selectedId) {
+  listScroll.innerHTML = items.map((p) => {
+    const stateCls = p.state;
+    return `
+      <div class="list-row ${p.id === selectedId ? 'is-selected' : ''}" data-id="${p.id}" data-state="${p.state}">
+        <div class="rank">${fmtRank(p.rank)}</div>
+        <div class="person">
+          <div class="name">${p.name}</div>
+          <div class="meta">
+            <span><strong>${fmtNum(p.mentions)}</strong> említés</span>
+            <span class="sep"></span>
+            <span><strong>${fmtNum(p.articlesWithAmount)}</strong> cikk összeggel</span>
+            ${p.persons[0] ? `<span class="sep"></span><span>együtt: <strong>${p.persons[0][0]}</strong></span>` : ''}
+          </div>
+        </div>
+        <div class="p50 ${p.p50 == null ? 'empty' : ''}">
+          ${fmtFt(p.p50)}
+          <small>medián tét</small>
+        </div>
+        <div class="tag-cell hide-sm">
+          ${p.topTopic ? `<span class="tag">${p.topTopic}</span>` : '<span class="tag empty">—</span>'}
+        </div>
+        <div class="hide-sm" style="justify-self:end;">
+          <span class="state-badge ${stateCls}"><span class="dot"></span>${stateLabel(p.state)}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('visible-count').textContent = items.length;
+}
+
+// ====== Detail rendering =======================================================
+const detailEl = document.getElementById('detail');
+
+function renderEmpty() {
+  detailEl.innerHTML = `
+    <div class="detail-empty">
+      <div>
+        <div class="icon">◌</div>
+        <p>Válassz egy nevet a bal oldali listából — itt jelenik meg a részletes adatlap, a sajtóban dokumentált összegek eloszlása és a döntési műveletek.</p>
+      </div>
+    </div>
+  `;
+}
+
+function renderChart(p) {
+  const MIN = 1e6, MAX = 1e12;
+  const W = 360, H = 90;
+  const PADL = 18, PADR = 18, AY = H - 28;
+  const usable = W - PADL - PADR;
+  const logMin = Math.log10(MIN), logMax = Math.log10(MAX);
+  const x = (v) => {
+    if (v == null) return null;
+    const t = (Math.log10(v) - logMin) / (logMax - logMin);
+    return PADL + Math.max(0, Math.min(1, t)) * usable;
+  };
+  const ticks = [1e6, 1e7, 1e8, 1e9, 1e10, 1e11, 1e12];
+  const tickLabel = (n) => {
+    if (n >= 1e12) return '1 E';
+    if (n >= 1e9) return (n / 1e9) + ' Mrd';
+    if (n >= 1e6) return (n / 1e6) + ' M';
+    return String(n);
+  };
+  const markers = [
+    { key: 'p1', label: 'p1', cls: 'outer' },
+    { key: 'p10', label: 'p10', cls: 'iqr' },
+    { key: 'p50', label: 'p50', cls: 'median' },
+    { key: 'p90', label: 'p90', cls: 'iqr' },
+    { key: 'p99', label: 'p99', cls: 'outer' },
+  ];
+  const x1 = x(p.p1), x99 = x(p.p99), x10 = x(p.p10), x90 = x(p.p90);
+
+  return `
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Eloszlási percentilisek">
+      ${ticks.map((t) => {
+        const tx = x(t);
+        if (tx == null) return '';
+        return `
+          <line class="grid" x1="${tx}" x2="${tx}" y1="6" y2="${AY}" />
+          <text class="tick-label" x="${tx}" y="${AY + 12}" text-anchor="middle">${tickLabel(t)}</text>
+        `;
+      }).join('')}
+      <line class="axis" x1="${PADL}" x2="${W - PADR}" y1="${AY}" y2="${AY}" />
+      ${(x1 != null && x99 != null) ? `<line class="range" x1="${x1}" x2="${x99}" y1="${AY - 24}" y2="${AY - 24}" />` : ''}
+      ${(x10 != null && x90 != null) ? `<line class="ibr" x1="${x10}" x2="${x90}" y1="${AY - 24}" y2="${AY - 24}" />` : ''}
+      ${markers.map((m) => {
+        const cx = x(p[m.key]);
+        if (cx == null) return '';
+        const r = m.cls === 'median' ? 5 : 3.5;
+        return `
+          <circle class="marker ${m.cls}" cx="${cx}" cy="${AY - 24}" r="${r}" />
+          <text class="marker-label ${m.cls === 'median' ? 'median' : ''}" x="${cx}" y="${AY - 33}" text-anchor="middle">${m.label}</text>
+        `;
+      }).join('')}
+    </svg>
+  `;
+}
+
+function renderDetail(p) {
+  const hasAmt = p.p50 != null;
+  detailEl.innerHTML = `
+    <header class="detail-head">
+      <div class="detail-rank">Dosszié · ${fmtRank(p.rank)} / 1 247</div>
+      <h2 class="detail-name">${p.name}</h2>
+      <div class="detail-meta">
+        <span><strong>${fmtNum(p.mentions)}</strong> említés</span>
+        <span class="sep"></span>
+        <span><strong>${fmtNum(p.articlesWithAmount)}</strong> cikk konkrét összeggel</span>
+        <span class="sep"></span>
+        <span class="state-badge ${p.state}"><span class="dot"></span>${stateLabel(p.state)}</span>
+        ${p.caseId ? `<span class="sep"></span><code style="font-family: 'Archivo Narrow', monospace; background: var(--surface); padding: 2px 6px; border-radius: 3px; font-size: 11px; color: var(--ink);">${p.caseId}</code>` : ''}
+      </div>
+      <button class="detail-close" onclick="select(null)" aria-label="Bezár">✕</button>
+    </header>
+
+    <section class="detail-section">
+      <h4>Sajtóban dokumentált összegek <span class="aside">log skála · HUF</span></h4>
+      ${hasAmt ? `
+        <div class="chart">
+          <div class="chart-callout">
+            <div>
+              <small>Medián (p50)</small>
+              <div class="median">${fmtFt(p.p50)}</div>
+            </div>
+            <div class="spread">
+              p10–p90 között<br/>
+              <strong>${fmtFt(p.p10)}</strong> → <strong>${fmtFt(p.p90)}</strong>
+            </div>
+          </div>
+          ${renderChart(p)}
+        </div>
+      ` : `
+        <div style="padding: 14px 16px; background: var(--surface); border-radius: 4px; font-size: 12px; color: var(--muted); letter-spacing: 0.04em;">Nincsenek számszerű összegek a cikkekben — döntés indokolt egyéb szempontok szerint.</div>
+      `}
+    </section>
+
+    ${p.topics.length ? `
+      <section class="detail-section">
+        <h4>Vezető témák <span class="aside">${p.topics.length} kategória</span></h4>
+        <div class="tag-group">
+          ${p.topics.map((t, i) => `<span class="chip ${i === 0 ? 'accent' : ''}">${t[0]}<span class="n">${t[1]}</span></span>`).join('')}
+        </div>
+      </section>
+    ` : ''}
+
+    ${p.institutions.length ? `
+      <section class="detail-section">
+        <h4>Intézményi kötődés</h4>
+        <div class="tag-group">
+          ${p.institutions.map((t) => `<span class="chip">${t[0]}<span class="n">${t[1]}</span></span>`).join('')}
+        </div>
+      </section>
+    ` : ''}
+
+    ${p.persons.length ? `
+      <section class="detail-section">
+        <h4>Gyakori együtt-említettek</h4>
+        <div class="tag-group">
+          ${p.persons.map((t) => `<span class="chip">${t[0]}<span class="n">${t[1]}</span></span>`).join('')}
+        </div>
+      </section>
+    ` : ''}
+
+    ${p.articles.length ? `
+      <section class="detail-section">
+        <h4>Cikkek <span class="aside">${fmtNum(p.totalArticles)} db · összeg szerint ↓</span></h4>
+        <div class="articles">
+          ${p.articles.map((a) => `
+            <div class="article">
+              <div>
+                <a class="article-title" href="#" onclick="return false;">${a.title}</a>
+                <div class="article-meta">
+                  <span class="source">${a.source}</span>
+                  <span>${a.date}</span>
+                  ${a.archive ? `<a class="archive" href="#" onclick="return false;">archive.org</a>` : ''}
+                </div>
+              </div>
+              <div class="article-amount ${a.amount == null ? 'empty' : ''}">${fmtFt(a.amount)}</div>
+            </div>
+          `).join('')}
+        </div>
+        ${p.totalArticles > p.articles.length ? `<button class="article-more">További cikkek (${fmtNum(p.totalArticles - p.articles.length)})</button>` : ''}
+      </section>
+    ` : ''}
+
+    <div class="decision">
+      <h4>Döntés</h4>
+      <div class="caseid">
+        <label>Ügyirat (case-id)</label>
+        <input type="text" placeholder="KM-2026-… (automatikusan generálva jóváhagyásnál)" value="${p.caseId || ''}" />
+      </div>
+      <div class="decision-buttons">
+        <button class="dbtn primary">Jóváhagyás <span class="key">A</span></button>
+        <button class="dbtn secondary">Elutasít <span class="key">R</span></button>
+        <button class="dbtn ghost">Halaszt <span class="key">D</span></button>
+      </div>
+      <div class="decision-foot">
+        <span>Utolsó döntés: <strong>—</strong></span>
+        <span>Szerkesztő: <strong>ahudecz</strong></span>
+      </div>
+    </div>
+  `;
+}
+
+// ====== State ==================================================================
+let stateFilter = 'all';
+let selectedId = 'p001';
+
+function visible() {
+  if (stateFilter === 'all') return PERSONS;
+  return PERSONS.filter((p) => p.state === stateFilter);
+}
+
+function select(id) {
+  selectedId = id;
+  renderList(visible(), selectedId);
+  if (id) {
+    const p = PERSONS.find((x) => x.id === id);
+    if (p) renderDetail(p); else renderEmpty();
+  } else {
+    renderEmpty();
+  }
+}
+
+// ====== Wire-up ================================================================
+document.getElementById('state-pills').addEventListener('click', (e) => {
+  const btn = e.target.closest('.state-pill');
+  if (!btn) return;
+  document.querySelectorAll('.state-pill').forEach((b) => b.classList.remove('is-active'));
+  btn.classList.add('is-active');
+  stateFilter = btn.dataset.state;
+  // pick first visible if current selection drops out
+  const vis = visible();
+  const stillThere = vis.find((p) => p.id === selectedId);
+  if (!stillThere) selectedId = vis[0]?.id ?? null;
+  select(selectedId);
+});
+
+listScroll.addEventListener('click', (e) => {
+  const row = e.target.closest('.list-row');
+  if (!row) return;
+  select(row.dataset.id);
+});
+
+document.getElementById('search').addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  const items = visible().filter((p) => !q || p.name.toLowerCase().includes(q));
+  renderList(items, selectedId);
+});
+
+// Initial render
+select(selectedId);
+</script>
+
+</body>
+</html>

@@ -6,10 +6,19 @@ import {
   NotSignedInError,
   requireEditor,
 } from '@/lib/admin/auth';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 
+import { AdminTabs } from './admin-tabs';
+import { SignOutButton } from './sign-out-button';
 import { StaleBanner } from './stale-banner';
 
 export const dynamic = 'force-dynamic';
+
+async function signOut() {
+  'use server';
+  const supabase = await createSupabaseServerClient();
+  await supabase.auth.signOut();
+}
 
 export default async function AdminLayout({
   children,
@@ -17,10 +26,12 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   let email = '';
+  let displayName = '';
   let role = '';
   try {
     const session = await requireEditor();
     email = session.email;
+    displayName = session.editor.displayName ?? email.split('@')[0] ?? email;
     role = session.editor.role;
   } catch (err) {
     if (err instanceof NotSignedInError) {
@@ -44,44 +55,53 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="section" style={{ paddingTop: 24 }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 16,
-          gap: 16,
-          flexWrap: 'wrap',
-        }}
-      >
-        <div>
-          <div className="section-eyebrow">Admin</div>
-          <h2 style={{ marginBottom: 4 }}>Szerkesztői felület</h2>
-          <p style={{ color: 'var(--muted)', fontSize: 14 }}>
-            Bejelentkezve: <strong>{email}</strong> · szerep:{' '}
-            <span className="pill">{role}</span>
-          </p>
+    <>
+      <nav className="admin-nav" aria-label="Admin">
+        <div className="admin-nav-inner">
+          <Link href="/admin" className="admin-brand">
+            Korruptométer
+          </Link>
+          <span className="admin-brand-sep" aria-hidden />
+          <span className="admin-brand-context">Admin · Ügyirat-kezelő</span>
+          <AdminTabs />
+          <div className="admin-user">
+            <span className="who">
+              Bejelentkezve mint <strong>{displayName}</strong> · <code>{role}</code>
+            </span>
+            <SignOutButton signOut={signOut} />
+          </div>
         </div>
-        <nav aria-label="Admin navigáció">
-          <ul style={{ display: 'flex', gap: 12, listStyle: 'none' }}>
-            <li>
-              <Link href="/admin">Sor</Link>
-            </li>
-            <li>
-              <Link href="/admin/scraper-runs">Scraperek</Link>
-            </li>
-            <li>
-              <Link href="/admin/dsr">DSR</Link>
-            </li>
-            <li>
-              <Link href="/admin/editors">Szerkesztők</Link>
-            </li>
-          </ul>
-        </nav>
+      </nav>
+
+      <div className="admin-page">
+        <StaleBanner />
+        {children}
+
+        <footer className="admin-foot">
+          <div className="shortcuts">
+            <span className="sc">
+              <kbd>↑</kbd>
+              <kbd>↓</kbd> Léptetés
+            </span>
+            <span className="sc">
+              <kbd>A</kbd> Jóváhagyás
+            </span>
+            <span className="sc">
+              <kbd>R</kbd> Elutasít
+            </span>
+            <span className="sc">
+              <kbd>D</kbd> Halaszt
+            </span>
+            <span className="sc">
+              <kbd>/</kbd> Keresés
+            </span>
+          </div>
+          <div>
+            Forrás <strong>K-Monitor · kmdb_base</strong> · CC-BY-SA-4.0 ·{' '}
+            <strong>{email}</strong>
+          </div>
+        </footer>
       </div>
-      <StaleBanner />
-      {children}
-    </div>
+    </>
   );
 }

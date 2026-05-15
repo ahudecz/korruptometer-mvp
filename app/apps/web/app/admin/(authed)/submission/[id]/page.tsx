@@ -12,6 +12,24 @@ import { SubmissionActions } from './submission-actions';
 
 export const dynamic = 'force-dynamic';
 
+type Status = 'received' | 'in_review' | 'approved' | 'rejected' | 'duplicate';
+
+const STATUS_LABEL: Record<Status, string> = {
+  received: 'Beérkezett',
+  in_review: 'Vizsgálat alatt',
+  approved: 'Jóváhagyva',
+  rejected: 'Elutasítva',
+  duplicate: 'Duplikátum',
+};
+
+const STATUS_BADGE: Record<Status, 'pending' | 'approved' | 'rejected'> = {
+  received: 'pending',
+  in_review: 'pending',
+  approved: 'approved',
+  rejected: 'rejected',
+  duplicate: 'rejected',
+};
+
 export default async function AdminSubmissionPage({
   params,
 }: {
@@ -52,155 +70,215 @@ export default async function AdminSubmissionPage({
   }
 
   const sealedBoxOnly = !submission.summary && !!submission.bodyCipher;
+  const status = submission.status as Status;
 
   return (
     <>
-      <p style={{ marginTop: 16, fontSize: 13 }}>
-        <Link href="/admin">← Vissza a sorhoz</Link>
-      </p>
-      <h3 style={{ marginTop: 8 }}>{submission.ref}</h3>
-      <p className="lede" style={{ marginBottom: 16 }}>
-        Beérkezett: {fmtDate(submission.createdAt)} · Állapot:{' '}
-        <strong>{submission.status}</strong>
-      </p>
-
-      <div className="kpi-grid">
-        <div className="kpi">
-          <div className="label">Gyanúsított</div>
-          <div className="value" style={{ fontSize: 22 }}>
-            {submission.suspectName}
+      <header className="admin-head">
+        <div>
+          <div className="admin-eyebrow">
+            <Link href="/admin" style={{ color: 'inherit' }}>
+              ← Vissza a sorhoz
+            </Link>
+            {'  ·  '}Bejelentés
           </div>
+          <h1
+            className="admin-title"
+            style={{ fontFamily: 'Archivo Narrow, monospace', fontSize: 'clamp(36px, 4vw, 56px)' }}
+          >
+            {submission.ref}
+          </h1>
+          <p className="admin-sub">
+            Beérkezett <strong>{fmtDate(submission.createdAt)}</strong>. Forrás:{' '}
+            {submission.anonymous ? 'névtelen bejelentő' : 'azonosítható bejelentő'}
+            {submission.bodyCipher && (
+              <>
+                {' · '}
+                <strong>sealed-box</strong> mód aktív
+              </>
+            )}
+            .
+          </p>
         </div>
-        {submission.suspectPosition && (
-          <div className="kpi">
-            <div className="label">Pozíció</div>
-            <div className="value" style={{ fontSize: 18 }}>
-              {submission.suspectPosition}
-            </div>
-          </div>
-        )}
-        {submission.suspectRegion && (
-          <div className="kpi">
-            <div className="label">Régió</div>
-            <div className="value" style={{ fontSize: 18 }}>
-              {submission.suspectRegion}
-            </div>
-          </div>
-        )}
-        {submission.estimatedAmount !== null && submission.estimatedAmount !== undefined && (
-          <div className="kpi">
-            <div className="label">Becsült érintett</div>
-            <div className="value" style={{ fontSize: 22 }}>
-              {fmtFt(submission.estimatedAmount)}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <h4 style={{ marginTop: 24, marginBottom: 8 }}>Cselekmények</h4>
-      <div className="rogue-tags" style={{ padding: 0 }}>
-        {(submission.crimes ?? []).map((c) => (
-          <span className="tag" key={c}>
-            {c}
+        <div className="admin-meta" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+          <span className={`state-badge ${STATUS_BADGE[status]}`}>
+            <span className="dot" />
+            {STATUS_LABEL[status] ?? status}
           </span>
-        ))}
-      </div>
-
-      <h4 style={{ marginTop: 24, marginBottom: 8 }}>Összefoglaló</h4>
-      {sealedBoxOnly ? (
-        <div className="empty-state" style={{ textAlign: 'left' }}>
-          Sealed-box mód aktív — a tartalom titkosítva, csak a böngészőben
-          olvasható egy szerkesztői privát kulccsal. (Phase 4 teljes UI a US15
-          implementációja után érhető el.)
+          <span>Szerkesztő: <strong>{session.email}</strong></span>
         </div>
-      ) : (
-        <p
-          style={{
-            background: 'var(--surface)',
-            padding: 16,
-            borderRadius: 12,
-            whiteSpace: 'pre-wrap',
-          }}
-        >
-          {submission.summary ?? '(üres)'}
-        </p>
+      </header>
+
+      <section className="stat-ribbon" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+        <div className="stat-cell">
+          <span className="label">Gyanúsított</span>
+          <span className="value" style={{ fontSize: 22 }}>
+            {submission.suspectName}
+          </span>
+          <span className="delta">A bejelentésben szereplő név</span>
+        </div>
+        <div className="stat-cell">
+          <span className="label">Pozíció</span>
+          <span className="value" style={{ fontSize: 16, fontWeight: 600 }}>
+            {submission.suspectPosition ?? '—'}
+          </span>
+          <span className="delta">{submission.suspectPosition ? 'megadva' : 'nincs megadva'}</span>
+        </div>
+        <div className="stat-cell">
+          <span className="label">Régió</span>
+          <span className="value" style={{ fontSize: 16, fontWeight: 600 }}>
+            {submission.suspectRegion ?? '—'}
+          </span>
+          <span className="delta">{submission.suspectRegion ? 'megadva' : 'nincs megadva'}</span>
+        </div>
+        <div className="stat-cell is-accent">
+          <span className="label">Becsült érintett</span>
+          <span className="value" style={{ fontSize: 26 }}>
+            {submission.estimatedAmount != null ? fmtFt(submission.estimatedAmount) : '—'}
+          </span>
+          <span className="delta">A bejelentés szerinti összeg</span>
+        </div>
+      </section>
+
+      <section className="detail-section" style={{ padding: '28px 0', borderBottom: 0 }}>
+        <h4>Cselekmények</h4>
+        <div className="chip-group">
+          {(submission.crimes ?? []).length === 0 ? (
+            <span className="chip" style={{ color: 'var(--muted)' }}>
+              Nincs megjelölve
+            </span>
+          ) : (
+            (submission.crimes ?? []).map((c) => (
+              <span className="chip" key={c}>
+                {c}
+              </span>
+            ))
+          )}
+        </div>
+      </section>
+
+      <section className="detail-section" style={{ padding: '0 0 28px', borderBottom: 0 }}>
+        <h4>Összefoglaló</h4>
+        {sealedBoxOnly ? (
+          <div className="chart-empty">
+            Sealed-box mód aktív — a tartalom titkosítva, csak a böngészőben
+            olvasható egy szerkesztői privát kulccsal. (Phase 4 teljes UI a US15
+            implementációja után érhető el.)
+          </div>
+        ) : (
+          <p
+            style={{
+              background: 'var(--surface)',
+              padding: 16,
+              borderRadius: 4,
+              whiteSpace: 'pre-wrap',
+              fontSize: 14,
+              lineHeight: 1.6,
+            }}
+          >
+            {submission.summary ?? '(üres)'}
+          </p>
+        )}
+      </section>
+
+      {(reporterEmail || reporterName || submission.allowContact) && (
+        <section className="detail-section" style={{ padding: '0 0 28px', borderBottom: 0 }}>
+          <h4>
+            Elérhetőség <span className="aside">titkosítva tárolva</span>
+          </h4>
+          {reporterEmail || reporterName ? (
+            <>
+              <div className="chip-group">
+                {reporterName && (
+                  <span className="chip">
+                    Név: <strong style={{ marginLeft: 4 }}>{reporterName}</strong>
+                  </span>
+                )}
+                {reporterEmail && (
+                  <span className="chip">
+                    E-mail: <strong style={{ marginLeft: 4 }}>{reporterEmail}</strong>
+                  </span>
+                )}
+              </div>
+              <p style={{ color: 'var(--muted)', fontSize: 12, marginTop: 12 }}>
+                Ennek az olvasásnak a tényét a <code>pii.read</code> AuditLog-bejegyzés
+                örökre megőrzi.
+              </p>
+            </>
+          ) : (
+            <div className="chart-empty" role="status">
+              A reporter PII-jét a megőrzési szabály alapján töröltük. A
+              korábbi <code>pii.read</code> AuditLog-bejegyzések megmaradtak —
+              a hozzáférési előzmény követhető marad.
+            </div>
+          )}
+        </section>
       )}
 
-      {reporterEmail || reporterName ? (
-        <>
-          <h4 style={{ marginTop: 24, marginBottom: 8 }}>
-            Elérhetőség (titkosítva tárolva)
-          </h4>
-          <p style={{ fontSize: 14 }}>
-            {reporterName && (
-              <>
-                <strong>Név:</strong> {reporterName}
-                <br />
-              </>
-            )}
-            {reporterEmail && (
-              <>
-                <strong>E-mail:</strong> {reporterEmail}
-              </>
-            )}
-          </p>
-          <p style={{ color: 'var(--muted)', fontSize: 12, marginTop: 8 }}>
-            Ennek az olvasásnak a tényét a <code>pii.read</code> AuditLog-bejegyzés
-            örökre megőrzi.
-          </p>
-        </>
-      ) : submission.allowContact ? (
-        // T106 — PII purged state. The audit log keeps the pii.read rows even
-        // after the underlying Submission has been purged (FR-054).
-        <>
-          <h4 style={{ marginTop: 24, marginBottom: 8 }}>Elérhetőség</h4>
-          <div
-            className="empty-state"
-            style={{ textAlign: 'left', padding: 16 }}
-            role="status"
-          >
-            A reporter PII-jét a megőrzési szabály alapján töröltük. A
-            korábbi <code>pii.read</code> AuditLog-bejegyzések megmaradtak —
-            a hozzáférési előzmény követhető marad.
-          </div>
-        </>
-      ) : null}
-
       {(submission.sourceUrls ?? []).length > 0 && (
-        <>
-          <h4 style={{ marginTop: 24, marginBottom: 8 }}>Megadott források</h4>
-          <ul style={{ paddingLeft: 24 }}>
+        <section className="detail-section" style={{ padding: '0 0 28px', borderBottom: 0 }}>
+          <h4>
+            Megadott források <span className="aside">{(submission.sourceUrls ?? []).length} db</span>
+          </h4>
+          <ul style={{ paddingLeft: 20, lineHeight: 1.7, fontSize: 13 }}>
             {(submission.sourceUrls ?? []).map((u) => (
-              <li key={u}>
+              <li key={u} style={{ wordBreak: 'break-all' }}>
                 <a href={u} target="_blank" rel="noopener noreferrer">
                   {u}
                 </a>
               </li>
             ))}
           </ul>
-        </>
+        </section>
       )}
 
       {attachments.length > 0 && (
-        <>
-          <h4 style={{ marginTop: 24, marginBottom: 8 }}>Csatolmányok ({attachments.length})</h4>
-          <ul style={{ paddingLeft: 24 }}>
-            {attachments.map((a) => (
-              <li key={a.id} style={{ fontSize: 14 }}>
-                {a.fileName} ({Math.round(a.sizeBytes / 1024)} KB) ·{' '}
-                vírus-szkenelés: <strong>{a.virusScanStatus}</strong>
-              </li>
-            ))}
-          </ul>
-          <p style={{ color: 'var(--muted)', fontSize: 12 }}>
+        <section className="detail-section" style={{ padding: '0 0 28px', borderBottom: 0 }}>
+          <h4>
+            Csatolmányok <span className="aside">{attachments.length} db</span>
+          </h4>
+          <table className="case-table" style={{ marginTop: 8 }}>
+            <thead>
+              <tr>
+                <th>Fájl</th>
+                <th>Méret</th>
+                <th>Vírus-szkenelés</th>
+              </tr>
+            </thead>
+            <tbody>
+              {attachments.map((a) => (
+                <tr key={a.id}>
+                  <td data-label="Fájl">{a.fileName}</td>
+                  <td data-label="Méret">{Math.round(a.sizeBytes / 1024)} KB</td>
+                  <td data-label="Vírus-szkenelés">
+                    <span
+                      className={`state-badge ${
+                        a.virusScanStatus === 'clean'
+                          ? 'approved'
+                          : a.virusScanStatus === 'pending'
+                            ? 'pending'
+                            : 'rejected'
+                      }`}
+                    >
+                      <span className="dot" />
+                      {a.virusScanStatus}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p style={{ color: 'var(--muted)', fontSize: 12, marginTop: 12 }}>
             A <code>pending</code> státuszú csatolmányok letöltése csak a
             Cloudmersive jóváhagyás után engedélyezett.
           </p>
-        </>
+        </section>
       )}
 
-      <h4 style={{ marginTop: 24, marginBottom: 8 }}>Akciók</h4>
-      <SubmissionActions submissionId={submission.id} status={submission.status} />
+      <section className="detail-section" style={{ padding: '0 0 60px', borderBottom: 0 }}>
+        <h4>Akciók</h4>
+        <SubmissionActions submissionId={submission.id} status={submission.status} />
+      </section>
     </>
   );
 }

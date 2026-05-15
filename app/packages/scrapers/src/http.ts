@@ -53,13 +53,16 @@ function parseRobots(text: string): string[] {
   return disallow;
 }
 
-async function ensureRobots(host: string): Promise<RobotsCache> {
+async function ensureRobots(
+  host: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<RobotsCache> {
   const cached = robotsByHost.get(host);
   if (cached && Date.now() - cached.fetchedAt < ROBOTS_TTL_MS) return cached;
   await ensureGap(host);
   let text = '';
   try {
-    const res = await fetch(`https://${host}/robots.txt`, {
+    const res = await fetchImpl(`https://${host}/robots.txt`, {
       headers: { 'User-Agent': USER_AGENT },
     });
     if (res.ok) text = await res.text();
@@ -82,6 +85,17 @@ export class HttpDisallowedByRobotsError extends Error {
   }
 }
 
+export class HttpStatusError extends Error {
+  readonly status: number;
+  readonly url: string;
+  constructor(status: number, url: string) {
+    super(`http ${status} ${url}`);
+    this.name = 'HttpStatusError';
+    this.status = status;
+    this.url = url;
+  }
+}
+
 export type HttpGetOptions = {
   signal?: AbortSignal;
   // Allow tests to swap fetch out without monkey-patching globalThis.
@@ -91,12 +105,11 @@ export type HttpGetOptions = {
 export async function httpGet(url: string, opts: HttpGetOptions = {}): Promise<string> {
   const target = new URL(url);
   const host = target.hostname;
-  const robots = await ensureRobots(host);
+  const fetchImpl = opts.fetchImpl ?? fetch;
+  const robots = await ensureRobots(host, fetchImpl);
   if (disallowed(target.pathname, robots.disallow)) {
     throw new HttpDisallowedByRobotsError(url);
   }
-
-  const fetchImpl = opts.fetchImpl ?? fetch;
   let attempt = 0;
   let lastErr: unknown;
   while (attempt < MAX_RETRIES) {
@@ -111,10 +124,18 @@ export async function httpGet(url: string, opts: HttpGetOptions = {}): Promise<s
       }
       // Retry on 5xx and 429; surface 4xx (other than 429) immediately.
       if (res.status !== 429 && res.status < 500) {
-        throw new Error(`http ${res.status} ${url}`);
+        throw new HttpStatusError(res.status, url);
       }
-      lastErr = new Error(`http ${res.status} ${url}`);
+      lastErr = new HttpStatusError(res.status, url);
     } catch (err) {
+      // Bail immediately on non-retryable status errors (4xx, non-429).
+      if (
+        err instanceof HttpStatusError &&
+        err.status !== 429 &&
+        err.status < 500
+      ) {
+        throw err;
+      }
       lastErr = err;
     }
     attempt += 1;
@@ -127,4 +148,31 @@ export async function httpGet(url: string, opts: HttpGetOptions = {}): Promise<s
 export function _resetHttpStateForTests() {
   lastHitByHost.clear();
   robotsByHost.clear();
+}
+
+/**
+ * Fetch `primaryUrl`; if the primary returns 404/410, fall back to
+ * `archiveUrl` (if provided) — used by the K-Monitor discovery worker
+ * (FR-080) for articles whose primary outlet has rotated/removed the
+ * canonical URL but K-Monitor preserved a Wayback snapshot.
+ */
+export async function httpGetWithArchiveFallback(
+  primaryUrl: string,
+  archiveUrl: string | null,
+  opts: HttpGetOptions = {},
+): Promise<{ html: string; viaArchive: boolean }> {
+  try {
+    const html = await httpGet(primaryUrl, opts);
+    return { html, viaArchive: false };
+  } catch (err) {
+    if (
+      archiveUrl &&
+      err instanceof HttpStatusError &&
+      (err.status === 404 || err.status === 410)
+    ) {
+      const html = await httpGet(archiveUrl, opts);
+      return { html, viaArchive: true };
+    }
+    throw err;
+  }
 }

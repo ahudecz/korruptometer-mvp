@@ -18,9 +18,12 @@
     "db:push": "drizzle-kit push",
     "db:check": "drizzle-kit check",
     "db:seed": "tsx src/seed.ts",
-    "db:seed-scrapers": "tsx src/seed-scrapers.ts"
+    "db:seed-scrapers": "tsx src/seed-scrapers.ts",
+    "kmdb:upsert": "tsx src/kmdb-upsert.ts",
+    "kmdb:llm-tighten": "tsx src/kmdb-llm-tighten.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.95.2",
     "@korr/shared": "workspace:*",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.36.4",
