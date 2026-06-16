@@ -11,6 +11,10 @@ const parser = new XMLParser({
   textNodeName: '#text',
 });
 
+type RawMediaContent =
+  | { '@_url'?: string; '@_medium'?: string }
+  | Array<{ '@_url'?: string; '@_medium'?: string }>;
+
 type RawItem = {
   title?: string | { '#cdata'?: string; '#text'?: string };
   link?: string | { '#text'?: string; '@_href'?: string };
@@ -19,6 +23,9 @@ type RawItem = {
   category?: string | { '#cdata'?: string } | Array<string | { '#cdata'?: string }>;
   'dc:creator'?: string;
   'content:encoded'?: string;
+  'media:content'?: RawMediaContent;
+  'media:thumbnail'?: { '@_url'?: string } | Array<{ '@_url'?: string }>;
+  enclosure?: { '@_url'?: string; '@_type'?: string };
 };
 
 type RawRss = {
@@ -46,6 +53,31 @@ function pickCategory(value: RawItem['category']): string | null {
   const first = Array.isArray(value) ? value[0] : value;
   const text = pickText(first);
   return text.length > 0 ? text : null;
+}
+
+function pickImageUrl(item: RawItem): string | null {
+  // 1. media:content (prefer image medium, else first entry)
+  if (item['media:content']) {
+    const mc = item['media:content'];
+    const arr = Array.isArray(mc) ? mc : [mc];
+    const img = arr.find((m) => m['@_medium'] === 'image') ?? arr[0];
+    if (img?.['@_url']) return img['@_url'];
+  }
+  // 2. media:thumbnail
+  if (item['media:thumbnail']) {
+    const mt = item['media:thumbnail'];
+    const first = Array.isArray(mt) ? mt[0] : mt;
+    if (first?.['@_url']) return first['@_url'];
+  }
+  // 3. enclosure (RSS 2.0 image attachment)
+  if (item.enclosure?.['@_url'] && item.enclosure['@_type']?.startsWith('image/')) {
+    return item.enclosure['@_url'];
+  }
+  // 4. First <img src="..."> in description/content
+  const raw = pickText(item.description) || pickText(item['content:encoded']);
+  const m = raw.match(/<img[^>]+src=["']([^"']+)["']/i);
+  if (m?.[1]) return m[1];
+  return null;
 }
 
 function stripHtml(text: string): string {
@@ -79,7 +111,8 @@ export function parseRss(xml: string): ScrapedArticle[] {
     const excerpt = clipExcerpt(stripHtml(description));
     const publishedAt = parseDate(item.pubDate ?? null) ?? new Date();
     const tag = pickCategory(item.category);
-    out.push({ headline, excerpt, sourceUrl, publishedAt, tag });
+    const imageUrl = pickImageUrl(item);
+    out.push({ headline, excerpt, sourceUrl, publishedAt, tag, imageUrl });
   }
   return out;
 }

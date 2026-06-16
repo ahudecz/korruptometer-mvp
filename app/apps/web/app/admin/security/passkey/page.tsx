@@ -26,7 +26,7 @@ export default function PasskeyPage() {
         publicKey: {
           challenge: crypto.getRandomValues(new Uint8Array(32)),
           rp: {
-            name: 'Korruptométer',
+            name: 'Kegyencjárat',
             id: window.location.hostname,
           },
           user: {

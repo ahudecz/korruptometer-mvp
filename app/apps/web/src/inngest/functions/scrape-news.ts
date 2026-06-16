@@ -1,7 +1,7 @@
 import 'server-only';
 import { eq } from 'drizzle-orm';
 
-import { adapters, canonicalUrl, dedupHash } from '@korr/scrapers';
+import { adapters, canonicalUrl, dedupHash, isRelevant, shouldFeature } from '@korr/scrapers';
 import type { OutletSlug, ScrapedArticle } from '@korr/scrapers';
 import { schema } from '@/lib/db';
 import { getDb } from '@/lib/db';
@@ -52,7 +52,7 @@ export const scrapeNews = inngest.createFunction(
 
         try {
           const scraped = await adapter.crawl();
-          const inserted = await persistArticles(source.id, adapter.queryAllowlist, scraped);
+          const inserted = await persistArticles(source.id, adapter.queryAllowlist, scraped, adapter.relevantByDefault ?? false);
           const finishedAt = new Date();
           await db
             .update(schema.scraperRuns)
@@ -139,10 +139,12 @@ async function persistArticles(
   sourceId: string,
   allowlist: readonly string[],
   scraped: ScrapedArticle[],
+  relevantByDefault: boolean,
 ): Promise<string[]> {
   const db = getDb();
   const insertedIds: string[] = [];
   for (const a of scraped) {
+    if (!relevantByDefault && !isRelevant(a.headline, a.excerpt)) continue;
     const canonical = canonicalUrl(a.sourceUrl, allowlist);
     const hash = dedupHash(canonical);
     const inserted = await db
@@ -155,6 +157,8 @@ async function persistArticles(
         sourceUrlHash: hash,
         publishedAt: a.publishedAt,
         tag: a.tag ?? null,
+        imageUrl: a.imageUrl ?? null,
+        featured: shouldFeature(a.headline, a.excerpt),
       })
       .onConflictDoNothing({ target: schema.newsArticles.sourceUrlHash })
       .returning({ id: schema.newsArticles.id });

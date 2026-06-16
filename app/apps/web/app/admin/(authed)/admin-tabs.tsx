@@ -5,7 +5,10 @@ import { usePathname } from 'next/navigation';
 
 const TABS = [
   { href: '/admin', label: 'Sor' },
+  { href: '/admin/news', label: 'Hírek' },
   { href: '/admin/scraper-runs', label: 'Scraperek' },
+  { href: '/admin/resignations', label: 'Lemondások' },
+  { href: '/admin/media-closures', label: 'Megszűnt-e?' },
   { href: '/admin/kmonitor-persons', label: 'K-Monitor személyek' },
   { href: '/admin/kmonitor-tags', label: 'Címkék' },
   { href: '/admin/dsr', label: 'DSR' },

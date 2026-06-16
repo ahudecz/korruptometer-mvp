@@ -14,6 +14,7 @@ export type Events = {
   'auditlog.partition-maintenance': { data: Record<string, never> };
   'kmonitor.discover-tags': { data: Record<string, never> };
   'kmonitor.traverse-tag': { data: { candidateId: string; slug: string } };
+  'resignation.detect': { data: Record<string, never> };
 };
 
 export const inngest = new Inngest({
