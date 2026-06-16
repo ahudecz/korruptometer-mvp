@@ -10,6 +10,7 @@ export const magyarHang: OutletAdapter = {
   slug: 'magyar-hang',
   homepage: 'https://hang.hu',
   queryAllowlist: [],
+  relevantByDefault: true,
   async crawl(_limit?: number): Promise<ScrapedArticle[]> {
     const xml = await httpGet('https://hang.hu/feed');
     return parseRss(xml);

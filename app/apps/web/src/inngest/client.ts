@@ -94,6 +94,7 @@ export type Events = {
   'investigation.damage-backfill': {
     data: Record<string, never>;
   };
+  'resignation.detect': { data: Record<string, never> };
 };
 
 export const inngest = new Inngest({

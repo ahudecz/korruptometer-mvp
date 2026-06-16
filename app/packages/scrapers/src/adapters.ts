@@ -3,6 +3,16 @@ import { hvg } from './hvg';
 import { magyarHang } from './magyar-hang';
 import { negyNegyNegy } from './444';
 import { telex } from './telex';
+import { hu24 } from './24hu';
+import { kontroll } from './kontroll';
+import { vastagbor } from './vastagbor';
+import { direkt36 } from './direkt36';
+import { valasz } from './valasz';
+import { nepszava } from './nepszava';
+import { jambor } from './jambor';
+import { rtl } from './rtl';
+import { kmonitorNews } from './kmonitor-news';
+import { media1 } from './media1';
 import type { OutletAdapter, OutletSlug } from './types';
 
 export const adapters: Record<OutletSlug, OutletAdapter> = {
@@ -11,6 +21,16 @@ export const adapters: Record<OutletSlug, OutletAdapter> = {
   hvg,
   'magyar-hang': magyarHang,
   atlatszo,
+  '24hu': hu24,
+  kontroll,
+  vastagbor,
+  direkt36,
+  valasz,
+  nepszava,
+  jambor,
+  rtl,
+  'kmonitor-news': kmonitorNews,
+  media1,
 };
 
 export function getAdapter(slug: string): OutletAdapter | null {
@@ -33,8 +53,7 @@ function buildHostIndex(
       if (host.startsWith('www.')) out.set(host.slice(4), slug);
       else out.set(`www.${host}`, slug);
     } catch {
-      // Adapter homepage isn't a parseable URL — ignore and let the slug
-      // route resolution miss this outlet; tests will catch the typo.
+      // ignore
     }
   }
   return out;

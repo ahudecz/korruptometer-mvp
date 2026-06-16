@@ -10,6 +10,7 @@ export { clipExcerpt, EXCERPT_MAX, parseDate } from './parse';
 export { extractFromListing, parseListingHtml } from './extract';
 export { parseRss } from './rss';
 export { adapters, getAdapter, routeOutletByUrl } from './adapters';
+export { isRelevant, shouldFeature } from './relevance';
 export {
   parseKMonitorTagIndex,
   parseKMonitorTagPage,

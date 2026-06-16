@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { asc, desc, eq } from 'drizzle-orm';
+import { asc, count, desc, eq } from 'drizzle-orm';
 
 import { fmtFt, fmtNumber } from '@korr/shared/format';
 import { caseQuerySchema } from '@korr/shared/schemas/cases';
@@ -10,8 +10,10 @@ import { Mugshot } from '@korr/ui/mugshot';
 
 import { getDb, schema } from '@/lib/db';
 import { CaseFilters } from './adatbazis/case-filters';
+import { ResignationsSection } from './_home/resignations-section';
+import { MediaClosuresSection } from './_home/media-closures-section';
 import { HomeMobilePreview } from './_home/mobile-preview';
-import { MockupSubmissionForm } from './_home/submission-form';
+import { SubmissionCTA } from './_home/submission-cta';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,6 +64,27 @@ export default async function HomePage() {
     .orderBy(desc(schema.cases.amount), asc(schema.cases.id))
     .limit(10);
 
+  const topResignations = await db
+    .select()
+    .from(schema.politicalResignations)
+    .orderBy(desc(schema.politicalResignations.pinned), desc(schema.politicalResignations.resignationDate))
+    .limit(10);
+
+  const topClosures = await db
+    .select()
+    .from(schema.mediaClosures)
+    .orderBy(desc(schema.mediaClosures.eventDate))
+    .limit(10);
+
+  const [resignationCountRow] = await db
+    .select({ resignationCount: count() })
+    .from(schema.politicalResignations);
+  const resignationCount = resignationCountRow?.resignationCount ?? 0;
+
+  const [closureCountRow] = await db
+    .select({ closureCount: count() })
+    .from(schema.mediaClosures);
+  const closureCount = closureCountRow?.closureCount ?? 0;
   const recentCases = await db
     .select()
     .from(schema.cases)
@@ -141,19 +164,44 @@ export default async function HomePage() {
     <>
       {/* ───── HERO ───── */}
       <section className="hero" id="dashboard">
-        <div className="hero-eyebrow">2026. második negyedéves jelentés</div>
-        <h1 className="hero-title">
-          Számon
-          <br />
-          tartjuk
-          <br />
-          <em>őket.</em>
-        </h1>
-        <p className="hero-sub">
-          Független, közforrású adatbázis a Magyarországon dokumentált
-          korrupciós ügyekről. Minden eset nyomon követhető a vádemeléstől az
-          ítéletig — adatokra, nem szólamokra alapozva.
-        </p>
+        <div className="hero-inner">
+          <div className="hero-left">
+            <div className="hero-eyebrow">A rendszerváltás adatbázisa</div>
+            <h1 className="hero-title">
+              Számon
+              <br />
+              tartjuk
+              <br />
+              <em>őket.</em>
+            </h1>
+            <p className="hero-sub">
+              Független, közforrású adatbázis a Magyarországon dokumentált
+              korrupciós ügyekről, a 2026. április 12-i rendszerváltás óta történt
+              személyi változásokról és a propaganda megszűnéséről. Minden
+              korrupciós eset nyomon követhető a vádemeléstől az ítéletig —
+              adatokra, nem szólamokra alapozva.
+            </p>
+          </div>
+
+          <div className="hero-stats">
+            <div className="hero-stat">
+              <div className="hero-stat-value">{fmtFt(totalDamage)}</div>
+              <div className="hero-stat-label">Dokumentált kár összesen</div>
+            </div>
+            <div className="hero-stat">
+              <div className="hero-stat-value">{fmtNumber(activeCases)}</div>
+              <div className="hero-stat-label">Dokumentált korrupciós ügy</div>
+            </div>
+            <div className="hero-stat">
+              <div className="hero-stat-value">{fmtNumber(totalPrisonYears)} év</div>
+              <div className="hero-stat-label">Kiszabott börtönbüntetés összesen</div>
+            </div>
+            <div className="hero-stat">
+              <div className="hero-stat-value">{resignationCount + closureCount}</div>
+              <div className="hero-stat-label">Lemondás, kirúgás és bezárás április 12. óta</div>
+            </div>
+          </div>
+        </div>
 
         <div className="stat-grid">
           <div className="stat-card">
@@ -424,37 +472,33 @@ export default async function HomePage() {
         </section>
       </div>
 
+      {/* ───── RESIGNATIONS ───── */}
+      <ResignationsSection resignations={topResignations} />
+
+      {/* ───── MEDIA CLOSURES ───── */}
+      <MediaClosuresSection closures={topClosures} />
+
       {/* ───── SUBMISSION CTA ───── */}
       <section className="submission" id="submission">
         <div className="submission-inner">
           <div className="submission-left">
-            <div className="section-num">05 / Bejelentés</div>
+            <div className="section-num">07 / Bejelentés</div>
             <h2>
               Hiányzik egy <em>név</em>?<br />
-              Tedd be a galériába.
+              Jelents be.
             </h2>
             <p>
-              Ha tudsz olyan ügyről, ami még nem szerepel az adatbázisban, küldd
-              el. Minden bejelentést egy független szerkesztő ellenőriz közforrások
-              alapján — közbeszerzési adatbázisok, bírósági iratok, sajtótermékek.
-            </p>
-            <p>
-              Csak <b>nyilvános források</b> alapján publikálunk. Ha bizonyíték
-              nélküli pletykát küldesz, az nem jelenik meg a galériában.
+              Ha tudsz olyan ügyről, ami még nem szerepel az adatbázisban, küldd el —
+              anonim is megteheted. Minden bejelentést közforrások alapján ellenőrzünk.
             </p>
             <div className="submission-assurance">
               <strong>Forrásvédelem</strong>
-              Beérkezésed végpont-titkosítva tároljuk. Az IP-címedet nem rögzítjük.
-              Anonim bejelentés esetén nincs olyan adat, amely rád mutatna. Súlyosan
-              bizalmas anyagokhoz használj{' '}
-              <a href="/hamarosan" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
-                SecureDrop
-              </a>{' '}
-              csatornát.
+              Az IP-címedet nem rögzítjük. Anonim bejelentés esetén nincs olyan adat,
+              amely rád mutatna.
             </div>
           </div>
 
-          <MockupSubmissionForm />
+          <SubmissionCTA />
         </div>
       </section>
 

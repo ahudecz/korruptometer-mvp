@@ -4,7 +4,7 @@ export function SiteFooter() {
   return (
     <footer className="site-footer" id="methodology" role="contentinfo">
       <div>
-        <h4>Korruptométer</h4>
+        <h4>Kegyencjárat</h4>
         <p>
           Független, közösségi tényfeltáró platform. Adataink nyilvános bírósági
           iratokon és sajtóforrásokon alapulnak.
@@ -64,7 +64,7 @@ export function SiteFooter() {
       <div className="foot-disclaimer">
         <strong>Adatvédelmi figyelmeztetés:</strong> Az adatbázisban szereplő
         ügyek nyilvános bírósági és sajtóforrásokon alapulnak. © {new Date().getFullYear()}{' '}
-        Korruptométer · v0.1
+        Kegyencjárat · v0.1
       </div>
     </footer>
   );

@@ -125,6 +125,7 @@ export const newsArticles = pgTable(
     sourceUrlHash: text('sourceUrlHash').notNull(),
     publishedAt: timestamp('publishedAt', { withTimezone: true }).notNull(),
     tag: text('tag'),
+    imageUrl: text('imageUrl'),
     relatedCaseId: text('relatedCaseId').references(() => cases.id, {
       onDelete: 'set null',
     }),
@@ -1158,3 +1159,71 @@ export type NewInvestigationJobState =
 
 // Use placate-typescript export for the singleton cap (no client cares but Drizzle plays nice).
 export const _unused = sql`1`;
+
+// ─── Political Resignations Tracker ──────────────────────────────────────
+
+export const resignationTypeEnum = pgEnum('resignation_type', [
+  'lemondás',
+  'kirúgás',
+  'felmentés',
+  'egyéb',
+  'Hivatalban van',
+]);
+
+export const politicalResignations = pgTable(
+  'PoliticalResignation',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    position: text('position').notNull(),
+    institution: text('institution').notNull(),
+    resignationType: resignationTypeEnum('resignationType').notNull(),
+    resignationDate: timestamp('resignationDate', { withTimezone: true }).notNull(),
+    description: text('description'),
+    pinned: boolean('pinned').notNull().default(false),
+    sourceUrls: text('sourceUrls').array().notNull().default(sql`ARRAY[]::text[]`),
+    sourceNames: text('sourceNames').array().notNull().default(sql`ARRAY[]::text[]`),
+    relatedCaseId: text('relatedCaseId').references(() => cases.id, { onDelete: 'set null' }),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    resignationDateIdx: index('PoliticalResignation_resignationDate_idx').on(t.resignationDate),
+    institutionIdx: index('PoliticalResignation_institution_idx').on(t.institution),
+    typeIdx: index('PoliticalResignation_resignationType_idx').on(t.resignationType),
+  }),
+);
+
+export type PoliticalResignation = typeof politicalResignations.$inferSelect;
+export type NewPoliticalResignation = typeof politicalResignations.$inferInsert;
+
+// ─── Media Closures Tracker ───────────────────────────────────────────────
+
+export const mediaClosureTypeEnum = pgEnum('media_closure_type', [
+  'megszűnés',
+  'leépítés',
+  'elmaradt esemény',
+  'egyéb',
+]);
+
+export const mediaClosures = pgTable(
+  'MediaClosure',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    eventType: mediaClosureTypeEnum('eventType').notNull(),
+    description: text('description'),
+    eventDate: timestamp('eventDate', { withTimezone: true }).notNull(),
+    sourceUrl: text('sourceUrl'),
+    sourceName: text('sourceName'),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    eventDateIdx: index('MediaClosure_eventDate_idx').on(t.eventDate),
+    typeIdx: index('MediaClosure_eventType_idx').on(t.eventType),
+  }),
+);
+
+export type MediaClosure = typeof mediaClosures.$inferSelect;
+export type NewMediaClosure = typeof mediaClosures.$inferInsert;

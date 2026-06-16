@@ -2,6 +2,7 @@ import 'server-only';
 import { aggregateKpiRollup } from './functions/aggregate-kpi-rollup';
 import { aggregateLinkArticles } from './functions/aggregate-link-articles';
 import { auditlogPartitionMaintenance } from './functions/auditlog-partition-maintenance';
+import { detectResignations } from './functions/detect-resignations';
 import { gdprRetentionSweep } from './functions/gdpr-retention-sweep';
 import { kmonitorDiscoverTags } from './functions/kmonitor-discover-tags';
 import { kmonitorTraverseApprovedTags } from './functions/kmonitor-traverse-approved-tags';
@@ -62,4 +63,5 @@ export const functions = [
   // Addendum: damage→evidence spine.
   investigationDamageRecompute,
   investigationDamageBackfill,
+  detectResignations,
 ];

@@ -2,12 +2,20 @@ import { MockupSubmissionForm } from '../_home/submission-form';
 
 export const dynamic = 'force-dynamic';
 
-export default function BejelentesPage() {
+interface Props {
+  searchParams: Promise<{ name?: string; crimes?: string }>;
+}
+
+export default async function BejelentesPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const initialName = params.name ?? '';
+  const initialCrimes = params.crimes ? params.crimes.split(',') : [];
+
   return (
     <section className="submission" id="submission" style={{ borderTop: 0 }}>
       <div className="submission-inner">
         <div className="submission-left">
-          <div className="section-num">05 / Bejelentés</div>
+          <div className="section-num">07 / Bejelentés</div>
           <h2>
             Hiányzik egy <em>név</em>?<br />
             Tedd be a galériába.
@@ -36,7 +44,7 @@ export default function BejelentesPage() {
           </div>
         </div>
 
-        <MockupSubmissionForm />
+        <MockupSubmissionForm initialName={initialName} initialCrimes={initialCrimes} />
       </div>
     </section>
   );
