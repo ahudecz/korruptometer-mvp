@@ -50,14 +50,8 @@ function headlineKey(headline: string): string {
 }
 
 function ArticleCard({ a, feature }: { a: Article; feature?: boolean }) {
-  return (
-    <a
-      href={a.sourceUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`news-card${feature ? ' feature' : ''}`}
-    >
-      {a.imageUrl && <NewsCardImage src={a.imageUrl} />}
+  const textBody = (
+    <>
       <div className="news-meta">
         <span className="news-tag">{feature ? '★ Kiemelt' : (a.tag ?? 'Hír')}</span>
         <span className="news-time">{fmtRelative(a.publishedAt)}</span>
@@ -76,6 +70,18 @@ function ArticleCard({ a, feature }: { a: Article; feature?: boolean }) {
       ) : (
         <span className="news-source">{a.sourceName ?? a.sourceSlug ?? 'Forrás'}</span>
       )}
+    </>
+  );
+
+  return (
+    <a
+      href={a.sourceUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`news-card${feature ? ' feature' : ''}`}
+    >
+      {a.imageUrl && <NewsCardImage src={a.imageUrl} />}
+      {feature ? <div className="feature-text">{textBody}</div> : textBody}
     </a>
   );
 }
@@ -120,7 +126,10 @@ export function NewsGrid({
     });
   }
 
-  const featured = articles.find((a) => a.featured) ?? null;
+  const featured =
+    articles.find((a) => a.featured && a.imageUrl) ??
+    articles.find((a) => a.featured) ??
+    null;
   const rest = articles.filter((a) => a.id !== featured?.id);
 
   if (articles.length === 0) {

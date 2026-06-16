@@ -8,7 +8,13 @@ const KEYWORDS = [
   'semjén', 'zsolt bácsi', 'tuzson bence', 'tuzson', 'takács péter',
   'szíjjártó péter', 'szíjjártó',
   'mészáros lőrinc', 'mészáros',
+  'hankó balázs', 'hankó',
   'balásy',
+  'matolcsy györgy', 'matolcsy',
+  // Intézmények / ügyek
+  'nka ', 'nemzeti kulturális alap',
+  'mnb ', 'jegybank', 'magyar nemzeti bank',
+  'aranykonvoj',
   // Helyek
   'hatvanpuszta', 'vitnyéd',
   // Pártok, szervezetek
@@ -52,8 +58,9 @@ const FEATURED_KEYWORDS = [
   'korrupció', 'hűtlen kezelés', 'lopás', 'túlárazás',
   'költségvetési csalás', 'sikkaszt', 'veszteget', 'kenőpénz',
   'vádemelés', 'vádirat', 'letartóztatták', 'letartóztatás', 'őrizetbe',
-  // Személyek (mindig kiemelt)
-  'balásy',
+  // Személyek / ügyek (mindig kiemelt)
+  'balásy', 'hankó', 'nka ',
+  'matolcsy', 'mnb ',
 ] as const;
 
 export function shouldFeature(headline: string, excerpt: string): boolean {

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { asc, count, desc, eq } from 'drizzle-orm';
+import { asc, count, desc, eq, ilike, or } from 'drizzle-orm';
 
 import { fmtFt, fmtNumber } from '@korr/shared/format';
 import { caseQuerySchema } from '@korr/shared/schemas/cases';
@@ -14,14 +14,14 @@ import { ResignationsSection } from './_home/resignations-section';
 import { MediaClosuresSection } from './_home/media-closures-section';
 import { HomeMobilePreview } from './_home/mobile-preview';
 import { SubmissionCTA } from './_home/submission-cta';
+import { BigCasesSection, type BigCaseConfig } from './_home/big-cases-section';
+import { GALERIA, type GaleriaDetention, type GaleriaHair } from './_home/galeria-config';
 
 export const dynamic = 'force-dynamic';
 
 const PALETTE_MONEY = ['#e31937', '#171a20', '#5c5e62', '#9b9da1', '#cccccc', '#e6e6e6'];
 const PALETTE_PRISON = ['#171a20', '#e31937', '#5c5e62', '#9b9da1', '#cccccc', '#e6e6e6'];
 
-type Hair = 'short' | 'bald' | 'wave' | 'cap' | 'slick';
-type Detention = 'loose' | 'wanted' | 'busted' | 'pretrial' | 'investig';
 
 type SectorEntry = { name: string; value: number };
 
@@ -57,12 +57,6 @@ export default async function HomePage() {
     where: eq(schema.kpiSnapshots.id, 'singleton'),
   });
 
-  const top10 = await db
-    .select({ case: schema.cases, rogue: schema.rogueProfiles })
-    .from(schema.cases)
-    .leftJoin(schema.rogueProfiles, eq(schema.rogueProfiles.caseId, schema.cases.id))
-    .orderBy(desc(schema.cases.amount), asc(schema.cases.id))
-    .limit(10);
 
   const topResignations = await db
     .select()
@@ -75,6 +69,46 @@ export default async function HomePage() {
     .from(schema.mediaClosures)
     .orderBy(desc(schema.mediaClosures.eventDate))
     .limit(10);
+
+  function articleSelect() {
+    return db.select({
+      id: schema.newsArticles.id,
+      headline: schema.newsArticles.headline,
+      sourceUrl: schema.newsArticles.sourceUrl,
+      publishedAt: schema.newsArticles.publishedAt,
+      sourceName: schema.sources.name,
+    })
+    .from(schema.newsArticles)
+    .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId));
+  }
+
+  const nkaArticles = await articleSelect()
+    .where(eq(schema.newsArticles.tag, 'NKA'))
+    .orderBy(desc(schema.newsArticles.publishedAt))
+    .limit(5);
+
+  const mnbArticles = await articleSelect()
+    .where(eq(schema.newsArticles.tag, 'MNB'))
+    .orderBy(desc(schema.newsArticles.publishedAt))
+    .limit(5);
+
+  const hatvanArticles = await articleSelect()
+    .where(ilike(schema.newsArticles.headline, '%hatvanpuszta%'))
+    .orderBy(desc(schema.newsArticles.publishedAt))
+    .limit(5);
+
+  const aranyArticles = await articleSelect()
+    .where(ilike(schema.newsArticles.headline, '%aranykonvoj%'))
+    .orderBy(desc(schema.newsArticles.publishedAt))
+    .limit(5);
+
+  const lelegArticles = await articleSelect()
+    .where(or(
+      ilike(schema.newsArticles.headline, '%lélegeztetőgép%'),
+      ilike(schema.newsArticles.headline, '%fourcardinal%'),
+    ))
+    .orderBy(desc(schema.newsArticles.publishedAt))
+    .limit(5);
 
   const [{ resignationCount }] = await db
     .select({ resignationCount: count() })
@@ -241,59 +275,54 @@ export default async function HomePage() {
         <div className="rogues-inner">
           <div className="section-head">
             <div className="section-num">02 / Galéria</div>
-            <h2 className="section-title">A tíz legnagyobb.</h2>
+            <h2 className="section-title">10 kiemelt személy.</h2>
           </div>
           <p className="rogues-deck">
-            A legtöbbet ellopó tíz alany — sorrendben, dokumentált kár szerint. Aki{' '}
-            <span className="red">rács mögött van</span>, BUSTED. Aki <b>menekül</b>,
-            körözött. Aki szabadlábon várja a tárgyalást, megtalálható.
+            A közérdeklődésre leginkább számot tartó ügyek és személyek — sajtójelentések és
+            nyilvánosan hozzáférhető dokumentumok alapján. A státuszok a hiteles médiumok
+            cikkei szerint naponta frissülnek.
           </p>
 
           <div className="rogues-key">
             <div className="k">
-              <span className="dot busted"></span> Elítélve · börtönben
+              <span className="dot busted"></span> Jogerősen elítélve
             </div>
             <div className="k">
               <span className="dot pretrial"></span> Előzetes letartóztatásban
             </div>
             <div className="k">
-              <span className="dot loose"></span> Szabadlábon · tárgyalás alatt
+              <span className="dot investig"></span> Feljelentés / nyomozás
             </div>
             <div className="k">
-              <span className="dot wanted"></span> Körözött · menekül
+              <span className="dot loose"></span> Nincs ismert eljárás
             </div>
             <div className="k">
-              <span className="dot investig"></span> Vizsgálat alatt
+              <span className="dot wanted"></span> Körözési parancs kiadva
             </div>
           </div>
 
           <div className="rogues-grid">
-            {top10.map(({ case: c, rogue: r }, idx) => {
-              const detention: Detention = (r?.detention as Detention) ?? 'loose';
+            {GALERIA.slice(0, 10).map((entry, idx) => {
+              const detention = entry.detention as GaleriaDetention;
               const isBusted = detention === 'busted';
               const isWanted = detention === 'wanted';
               const rank = String(idx + 1).padStart(2, '0');
               return (
-                <Link
-                  key={c.id}
-                  href={`/adatbazis/${c.id}`}
-                  className={`rogue r-${detention}`}
-                  style={{ display: 'block', color: 'inherit', textDecoration: 'none' }}
-                >
+                <Link key={entry.id} href={`/galeria/${entry.id}`} className={`rogue r-${detention}`} style={{ display: 'block', color: 'inherit', textDecoration: 'none' }}>
                   <div className="rogue-rank">
                     <span>№ {rank}</span>
-                    <span className="id">{c.id}</span>
+                    <span className="id">{entry.id}</span>
                   </div>
                   <div className={`rogue-mug ${isBusted ? 'desat' : ''}`}>
                     <div className="corner-tag">
-                      № {c.id} / {rank}
+                      № {entry.id} / {rank}
                     </div>
                     <Mugshot
-                      caseId={c.id}
-                      name={c.name}
-                      variant={r?.variant ?? 0}
-                      glasses={r?.glasses ?? false}
-                      hair={(r?.hair as Hair) ?? 'short'}
+                      caseId={entry.id}
+                      name={entry.name}
+                      variant={entry.variant ?? 0}
+                      glasses={entry.glasses ?? false}
+                      hair={(entry.hair as GaleriaHair) ?? 'short'}
                       detention={detention}
                     />
                     {isBusted && (
@@ -302,32 +331,132 @@ export default async function HomePage() {
                         <div className="face-cross"></div>
                       </>
                     )}
-                    {isWanted && <div className="stamp small">WANTED</div>}
+                    {isWanted && <div className="stamp small">KÖRÖZÖTT</div>}
                     <div className={`status-strip ${detention}`}>
-                      {r?.detentionLabel ?? '—'}
+                      {entry.detentionLabel}
                     </div>
                   </div>
-                  <div className="rogue-name">{c.name}</div>
-                  <div className="rogue-pos">
-                    {c.position} · {c.region} · {c.caseYear}
-                  </div>
+                  <div className="rogue-name">{entry.name}</div>
+                  <div className="rogue-pos">{entry.subtitle}</div>
                   <div className="rogue-tags">
-                    {(r?.crimes ?? []).slice(0, 3).map((cr) => (
-                      <span key={cr} className="tag">
-                        {cr}
-                      </span>
+                    {entry.crimes.slice(0, 3).map((cr) => (
+                      <span key={cr} className="tag">{cr}</span>
                     ))}
                   </div>
                   <div className="rogue-amount">
-                    <span className="lbl">Gyanúsítva</span>
-                    <span className="val">{fmtFt(c.amount)}</span>
+                    <span className="lbl">{entry.amountLabel}</span>
+                    <span className="val">{entry.amount}</span>
                   </div>
                 </Link>
               );
             })}
           </div>
+
+          <div className="rogues-footer">
+            <Link href="/galeria" className="rogues-more-btn">
+              Részletes leírások és teljes ügyirat →
+            </Link>
+          </div>
         </div>
       </section>
+
+      {/* ───── BIGGEST CASES ───── */}
+      {(() => {
+        const bigCases: BigCaseConfig[] = [
+          {
+            id: 'nka-botrany',
+            eyebrow: 'Aktív · Nyomozás alatt',
+            title: 'NKA botrány',
+            responsible: 'Hankó Balázs',
+            summary: 'Hankó Balázs volt kulturális miniszter a 2026-os választások előtt szabálytalanul osztott ki milliárdos NKA-támogatásokat. A NAV hűtlen kezelés és költségvetési csalás gyanújával nyomoz — Győrben is indult eljárás. Tarr Zoltán közel 400 millió forintnyi támogatást vont vissza.',
+            videoId: 'NRA-QuItdUA',
+            statusItems: [
+              { icon: '⚖️', label: 'Nyomozás', value: 'NAV — hűtlen kezelés + költségvetési csalás (Győr is)' },
+              { icon: '💰', label: 'Visszaszerzett vagyon', value: '~400 millió Ft' },
+              { icon: '👤', label: 'Felelős', value: 'Hankó Balázs — volt kulturális miniszter' },
+              { icon: '🚪', label: 'Lemondások', value: 'Bús Balázs (alelnök, ápr. 28.) · Báán László (ápr. 30.) · Vidnyánszky Attila (máj. 2.) — mind lemondtak az NKA bizottságból' },
+            ],
+            articleTag: 'NKA',
+            moreUrl: '/hirek?tag=NKA',
+            articles: nkaArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
+          },
+          {
+            id: 'lelegeztetogep',
+            eyebrow: 'Lezáratlan · Nincs felelős',
+            title: 'Lélegeztetőgép-botrány',
+            responsible: 'Takács Péter',
+            videoId: 'DrHUAmHMZBM',
+            summary: '2020-ban a magyar kormány az EU legdrágábban vásárolta a kínai lélegeztetőgépeket — 17 ezer darabot, egységenként 17–20 millió forintért, miközben az EU-s átlag 4 millió volt. A 300 milliárdos ügyletből Orbán főtanácsadójának fivére és Takács Péter sógora milliárdokat vett fel osztalékként. Büntetőeljárás mind a mai napig nincs.',
+            statusItems: [
+              { icon: '💰', label: 'Érintett összeg', value: '~300 milliárd Ft — EU legdrágább lélegeztetőgép-vásárlása' },
+              { icon: '👤', label: 'Érintett', value: 'Takács Péter sógora — 8 Mrd Ft osztalékot vett fel a Fourcardinalból' },
+              { icon: '⚖️', label: 'Státusz', value: 'Nincs büntetőeljárás — KEHI és NAV "nem talált szabálytalanságot"' },
+            ],
+            moreUrl: '/hirek?q=l%C3%A9legeztet%C5%91g%C3%A9p',
+            articles: lelegArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
+          },
+          {
+            id: 'hatvanpuszta',
+            eyebrow: 'Lezáratlan · Nincs eljárás',
+            title: 'Hatvanpuszta',
+            responsible: 'Orbán Viktor',
+            videoId: 'HiW9r1M32ug',
+            summary: 'Orbán Viktor 250 hektáros, ~20 milliárd forintra becsült majorságának valódi tulajdonosa és finanszírozási forrása ismeretlen — az ingatlan értéke összeegyeztethetetlen Orbán nyilvánosan bejelentett vagyonával. A sajtó többször vetette fel a vagyonnyilatkozat megsértését.',
+            statusItems: [
+              { icon: '🏡', label: 'Becsült érték', value: '~20 milliárd Ft · 250 hektár · Vas megye' },
+              { icon: '❓', label: 'Forrás', value: 'Ismeretlen — összeegyeztethetetlen a vagyonnyilatkozattal' },
+              { icon: '⚖️', label: 'Státusz', value: 'Nincs ismert büntetőeljárás' },
+            ],
+            moreUrl: '/hirek?q=hatvanpuszta',
+            articles: hatvanArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
+          },
+          {
+            id: 'aranykonvoj',
+            eyebrow: 'Aktív · Feljelentés benyújtva',
+            title: 'Aranykonvoj-ügy',
+            responsible: 'Orbán Viktor',
+            videoId: 'cLBTdDVztR0',
+            summary: '2026 tavaszán a NAV és a titkosszolgálat megállított egy Ukrajna határán átkelő konvojt, amely aranyat és devizát szállított. Az ügyvéd feljelentése terrorcselekmény-gyanút is tartalmaz. Az ügy közvetlenül az Orbán-körhöz köthető személyekhez vezet.',
+            statusItems: [
+              { icon: '⚖️', label: 'Eljárás', value: 'Feljelentés benyújtva — terrorcselekmény gyanúja is' },
+              { icon: '🏦', label: 'Lefoglalt', value: 'Arany + deviza — pontos összeg nem nyilvános' },
+              { icon: '👤', label: 'Kapcsolat', value: 'Orbán-körhöz köthető személyek érintettségét veti fel az ügyvéd' },
+            ],
+            moreUrl: '/hirek?q=aranykonvoj',
+            articles: aranyArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
+          },
+          {
+            id: 'mnb-botrany',
+            eyebrow: 'Aktív · Nyomozás folyamatban',
+            title: 'MNB botrány',
+            responsible: 'Matolcsy György',
+            videoId: 'bgA0PTDFKlY',
+            summary: 'Matolcsy György az MNB elnökeként 266 milliárd forintot csatornázott alapítványokon keresztül. Az ÁSZ kiszivárgott jelentés-tervezete súlyos vagyonvesztést és szabálytalanságokat tárt fel. Az ügyészség 2026-ban nyomozást indított hűtlen kezelés és más bűncselekmények gyanúja miatt.',
+            statusItems: [
+              { icon: '💰', label: 'Érintett közpénz', value: '266+ milliárd Ft — MNB alapítványokon átfolyva' },
+              { icon: '📋', label: 'Feltárta', value: 'ÁSZ (Állami Számvevőszék) — kiszivárgott jelentés-tervezet' },
+              { icon: '⚖️', label: 'Nyomozás', value: 'Ügyészség 2026-ban indított nyomozást — hűtlen kezelés gyanúja' },
+            ],
+            moreUrl: '/galeria/matolcsy-gyorgy',
+            articles: mnbArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
+          },
+          {
+            id: 'zsolt-bacsi',
+            eyebrow: 'Parlamenti vizsgálóbizottság alakult',
+            title: 'Ki az a Zsolt bácsi?',
+            videoId: 'QXW84vh1hV8',
+            summary: '"Zsolt bácsi" a NER egyházi szárnyának feje — ő koordinálta az egyházi ingatlan-visszaadások, az aránytalanul magas egyházi normatívák és a KDNP mint Fidesz-mellékvállalkozás egész rendszerét. Az Országgyűlés 2026-ban vizsgálóbizottságot alakított az egyházi finanszírozási rendszer átvilágítására.',
+            statusItems: [
+              { icon: '🏛️', label: 'Parlamenti vizsgálóbizottság', value: 'Az Országgyűlés vizsgálóbizottságot alakított az egyházi finanszírozási rendszer átvilágítására' },
+              { icon: '⛪', label: 'Egyházi normatíva-különbözet', value: '30–40%-kal több, mint állami iskoláknak · évente több tízmilliárd Ft' },
+              { icon: '🏠', label: 'Ingatlanvisszaadás', value: 'Milliárd négyzetméternyi állami ingatlan egyházaknak — sokszor bizonyítatlan igény alapján' },
+            ],
+            moreUrl: '/galeria/semjen-zsolt',
+            articles: [],
+          },
+        ];
+        return <BigCasesSection cases={bigCases} />;
+      })()}
 
       {/* ───── DATABASE PREVIEW ───── */}
       <section className="section" id="database">
@@ -502,13 +631,13 @@ export default async function HomePage() {
 
       {/* ───── MOBILE PREVIEW ───── */}
       <HomeMobilePreview
-        topCases={top10.slice(0, 4).map(({ case: c }) => ({
-          id: c.id,
-          name: c.name,
-          position: c.position,
-          region: c.region,
-          caseYear: c.caseYear,
-          amount: fmtFt(c.amount),
+        topCases={GALERIA.slice(0, 4).map((entry) => ({
+          id: entry.id,
+          name: entry.name,
+          position: entry.subtitle,
+          region: '—',
+          caseYear: 2026,
+          amount: entry.amount,
         }))}
         topNews={recentArticles.slice(0, 5).map((a) => ({
           id: a.id,

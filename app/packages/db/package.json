@@ -30,7 +30,12 @@
     "fix-balasy-tags": "tsx src/fix-balasy-tags.ts",
     "admin-fixes": "tsx src/admin-fixes.ts",
     "import-by-name": "tsx src/import-by-name.ts",
-    "add-media1": "tsx src/add-media1-source.ts"
+    "import-nka": "tsx src/import-nka.ts",
+    "import-mnb": "tsx src/import-mnb.ts",
+    "import-nka-extra": "tsx src/import-nka-extra.ts",
+    "add-media1": "tsx src/add-media1-source.ts",
+    "add-portfolio": "tsx src/add-portfolio-source.ts",
+    "add-nka-resignations": "tsx src/add-nka-resignations.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.2",

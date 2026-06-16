@@ -1,117 +1,124 @@
-import Link from 'next/link';
-import { asc, desc, eq } from 'drizzle-orm';
+'use client';
 
-import { fmtFt } from '@korr/shared/format';
+import { useState } from 'react';
+import Link from 'next/link';
 import { Mugshot } from '@korr/ui/mugshot';
 
-import { getDb, schema } from '@/lib/db';
+import { GALERIA, type GaleriaDetention, type GaleriaHair } from '../_home/galeria-config';
 
-export const dynamic = 'force-dynamic';
+const DETENTION_LABELS: Record<string, string> = {
+  busted: 'Jogerősen elítélve',
+  pretrial: 'Előzetes letartóztatásban',
+  investig: 'Feljelentés / nyomozás',
+  loose: 'Nincs ismert eljárás',
+  wanted: 'Körözési parancs kiadva',
+};
 
-type Hair = 'short' | 'bald' | 'wave' | 'cap' | 'slick';
-type Detention = 'loose' | 'wanted' | 'busted' | 'pretrial' | 'investig';
-
-export default async function GaleriaPage() {
-  const db = getDb();
-  const { cases, rogueProfiles } = schema;
-
-  const rows = await db
-    .select({ case: cases, rogue: rogueProfiles })
-    .from(cases)
-    .leftJoin(rogueProfiles, eq(rogueProfiles.caseId, cases.id))
-    .orderBy(desc(cases.amount), asc(cases.id))
-    .limit(10);
+export default function GaleriaPage() {
+  const [selected, setSelected] = useState(0);
+  const active = GALERIA[selected];
 
   return (
-    <section className="rogues" id="rogues">
+    <section className="rogues gal-page" id="galeria">
       <div className="rogues-inner">
         <div className="section-head">
-          <div className="section-num">02 / Galéria</div>
-          <h2 className="section-title">A tíz legnagyobb.</h2>
+          <div className="section-num">/ Galéria</div>
+          <h2 className="section-title">10 kiemelt személy.</h2>
         </div>
         <p className="rogues-deck">
-          A legtöbbet ellopó tíz alany — sorrendben, dokumentált kár szerint. Aki{' '}
-          <span className="red">rács mögött van</span>, BUSTED. Aki <b>menekül</b>,
-          körözött. Aki szabadlábon várja a tárgyalást, megtalálható.
+          Sajtójelentések és nyilvánosan hozzáférhető dokumentumok alapján. A státuszok
+          a hiteles médiumok cikkei szerint frissülnek. Jogerős ítélet hiányában az
+          érintett személyek ártatlannak tekintendők.
         </p>
 
-        <div className="rogues-key">
-          <div className="k">
-            <span className="dot busted"></span> Elítélve · börtönben
-          </div>
-          <div className="k">
-            <span className="dot pretrial"></span> Előzetes letartóztatásban
-          </div>
-          <div className="k">
-            <span className="dot loose"></span> Szabadlábon · tárgyalás alatt
-          </div>
-          <div className="k">
-            <span className="dot wanted"></span> Körözött · menekül
-          </div>
-          <div className="k">
-            <span className="dot investig"></span> Vizsgálat alatt
+        <div className="gal-layout">
+          {/* Left nav */}
+          <nav className="gal-nav">
+            {GALERIA.map((entry, i) => (
+              <button
+                key={entry.id}
+                className={`gal-nav-item${i === selected ? ' active' : ''}`}
+                onClick={() => setSelected(i)}
+              >
+                <span className={`dot ${entry.detention}`} style={{ marginRight: 8, flexShrink: 0 }} />
+                <div className="gal-nav-text">
+                  <div className="gal-nav-name">{entry.name}</div>
+                  <div className="gal-nav-sub">{entry.subtitle.split('·')[0].trim()}</div>
+                </div>
+              </button>
+            ))}
+          </nav>
+
+          {/* Right detail */}
+          <div className="gal-detail">
+            <div className="gal-detail-mug">
+              <div className={`rogue-mug-sm r-${active.detention}`}>
+                {active.photoUrl ? (
+                  <img src={active.photoUrl} alt={active.name} className="gal-photo" />
+                ) : (
+                  <Mugshot
+                    caseId={active.id}
+                    name={active.name}
+                    variant={active.variant ?? 0}
+                    glasses={active.glasses ?? false}
+                    hair={(active.hair as GaleriaHair) ?? 'short'}
+                    detention={active.detention as GaleriaDetention}
+                  />
+                )}
+                <div className={`status-strip ${active.detention}`}>{active.detentionLabel}</div>
+              </div>
+
+              <div className="gal-detail-meta">
+                <div className="gal-detail-name">{active.name}</div>
+                <div className="gal-detail-sub">{active.subtitle}</div>
+                <p className="gal-detail-desc">{active.description}</p>
+
+                <div className="gal-detail-tags">
+                  {active.crimes.slice(0, 3).map(c => (
+                    <span key={c} className="tag">{c}</span>
+                  ))}
+                </div>
+
+                <div className="gal-detail-amount">
+                  <div className="gal-detail-amount-lbl">{active.amountLabel}</div>
+                  <div className="gal-detail-amount-val">{active.amount}</div>
+                </div>
+              </div>
+            </div>
+
+            {active.personCases && active.personCases.length > 0 && (
+              <div className="gal-cases">
+                <div className="gal-cases-label">Feltárt ügyek és gyanúsítások</div>
+                {active.personCases.map((c, i) => (
+                  <div key={i} className="gal-case-row">
+                    <div className="gal-case-title">{c.title}</div>
+                    <p className="gal-case-desc">{c.description}</p>
+                    <div className="gal-case-footer">
+                      {c.estimatedDamage && (
+                        <span className="gal-case-dmg">💰 {c.estimatedDamage}</span>
+                      )}
+                      <div className="gal-case-crimes">
+                        {c.crimeTypes.map(cr => (
+                          <span key={cr} className="tag tag-sm">{cr}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <Link href={`/galeria/${active.id}`} className="big-case-more-btn" style={{ marginTop: 24 }}>
+              Részletek és tények: {active.name} →
+            </Link>
           </div>
         </div>
 
-        <div className="rogues-grid">
-          {rows.map(({ case: c, rogue: r }, idx) => {
-            const detention: Detention = (r?.detention as Detention) ?? 'loose';
-            const isBusted = detention === 'busted';
-            const isWanted = detention === 'wanted';
-            const rank = String(idx + 1).padStart(2, '0');
-            return (
-              <Link
-                key={c.id}
-                href={`/adatbazis/${c.id}`}
-                className={`rogue r-${detention}`}
-                style={{ display: 'block', color: 'inherit', textDecoration: 'none' }}
-              >
-                <div className="rogue-rank">
-                  <span>№ {rank}</span>
-                  <span className="id">{c.id}</span>
-                </div>
-                <div className={`rogue-mug ${isBusted ? 'desat' : ''}`}>
-                  <div className="corner-tag">
-                    № {c.id} / {rank}
-                  </div>
-                  <Mugshot
-                    caseId={c.id}
-                    name={c.name}
-                    variant={r?.variant ?? 0}
-                    glasses={r?.glasses ?? false}
-                    hair={(r?.hair as Hair) ?? 'short'}
-                    detention={detention}
-                  />
-                  {isBusted && (
-                    <>
-                      <div className="stamp">BUSTED</div>
-                      <div className="face-cross"></div>
-                    </>
-                  )}
-                  {isWanted && <div className="stamp small">WANTED</div>}
-                  <div className={`status-strip ${detention}`}>
-                    {r?.detentionLabel ?? '—'}
-                  </div>
-                </div>
-                <div className="rogue-name">{c.name}</div>
-                <div className="rogue-pos">
-                  {c.position} · {c.region} · {c.caseYear}
-                </div>
-                <div className="rogue-tags">
-                  {(r?.crimes ?? []).slice(0, 3).map((cr) => (
-                    <span key={cr} className="tag">
-                      {cr}
-                    </span>
-                  ))}
-                </div>
-                <div className="rogue-amount">
-                  <span className="lbl">Gyanúsítva</span>
-                  <span className="val">{fmtFt(c.amount)}</span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+        <p className="rogues-disclaimer">
+          * Az adatok hiteles médiumok (Telex, 444, HVG, Direkt36, Átlátszó) nyilvánosan
+          hozzáférhető cikkein és dokumentumain alapulnak. A státuszok jogerős ítéletet nem
+          pótolnak. Jogerős ítélet hiányában az érintett személyek ártatlannak tekintendők.
+        </p>
       </div>
     </section>
   );
