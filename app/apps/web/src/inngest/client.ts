@@ -14,6 +14,86 @@ export type Events = {
   'auditlog.partition-maintenance': { data: Record<string, never> };
   'kmonitor.discover-tags': { data: Record<string, never> };
   'kmonitor.traverse-tag': { data: { candidateId: string; slug: string } };
+  // 002-investigation-engine events.
+  'investigation.article.ingested': {
+    data: { articleSource: 'news' | 'kmonitor'; articleId: string };
+  };
+  'investigation.claims.extracted': {
+    data: {
+      articleSource: 'news' | 'kmonitor';
+      articleId: string;
+      claimIds: string[];
+      extractorVersion: string;
+    };
+  };
+  'investigation.xref.requested': {
+    data: {
+      investigationId: string;
+      requestedByEditorId: string;
+      runId: string;
+    };
+  };
+  'investigation.xref.source.completed': {
+    data: {
+      investigationId: string;
+      sourceSystem: string;
+      recordsWritten: number;
+    };
+  };
+  'investigation.hypothesis.requested': {
+    data: {
+      investigationId: string;
+      requestedByEditorId: string;
+      runId: string;
+    };
+  };
+  'investigation.benchmarks.computed': {
+    data: {
+      investigationId: string;
+      dimensionsComputed: string[];
+      outlierCount: number;
+    };
+  };
+  'investigation.score.requested': {
+    data: { investigationId: string; reason: string };
+  };
+  'investigation.promote.public.requested': {
+    data: {
+      investigationId: string;
+      requestedByEditorId: string;
+      expectedUpdatedAt: string;
+    };
+  };
+  'investigation.dsr.deletion.upheld': {
+    data: { dsrRequestId: string; subjectNormalizedName: string };
+  };
+  'investigation.extraction.paused': {
+    data: {
+      day: string;
+      model: string;
+      estimatedHufSpend: string;
+      ceilingHuf: string;
+    };
+  };
+  'investigation.redflags.requested': {
+    data: { investigationId: string };
+  };
+  // Addendum 2026-05-19: Damage→Evidence Spine
+  'investigation.claim.changed': {
+    data: { investigationId: string };
+  };
+  'investigation.external-record.changed': {
+    data: { investigationId: string };
+  };
+  'investigation.redflag.changed': {
+    data: { investigationId: string };
+  };
+  'investigation.benchmark.changed': {
+    data: { investigationId: string };
+  };
+  'investigation.damage-backfill': {
+    data: Record<string, never>;
+  };
 };
 
 export const inngest = new Inngest({

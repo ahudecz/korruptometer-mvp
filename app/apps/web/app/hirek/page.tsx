@@ -103,20 +103,27 @@ export default async function HirekPage({
               </a>
             )}
             {rest.map((a) => (
-              <a
-                key={a.id}
-                href={a.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="news-card"
-              >
-                <div className="news-meta">
-                  <span className="news-tag">{a.tag ?? 'Hír'}</span>
-                  <span className="news-time">{fmtRelative(a.publishedAt)}</span>
-                </div>
-                <h3 className="news-headline">{a.headline}</h3>
-                <p className="news-excerpt">{a.excerpt}</p>
-                {a.relatedCaseId && (
+              <div key={a.id} className="news-card">
+                <a
+                  href={a.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: 'inherit',
+                    textDecoration: 'none',
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <div className="news-meta">
+                    <span className="news-tag">{a.tag ?? 'Hír'}</span>
+                    <span className="news-time">{fmtRelative(a.publishedAt)}</span>
+                  </div>
+                  <h3 className="news-headline">{a.headline}</h3>
+                  <p className="news-excerpt">{a.excerpt}</p>
+                </a>
+                {a.relatedCaseId ? (
                   <Link
                     href={`/adatbazis/${a.relatedCaseId}`}
                     className="news-source"
@@ -124,11 +131,10 @@ export default async function HirekPage({
                   >
                     Kapcsolódó ügy: {a.relatedCaseId}
                   </Link>
-                )}
-                {!a.relatedCaseId && (
+                ) : (
                   <span className="news-source">{a.sourceName ?? a.sourceSlug ?? 'Forrás'}</span>
                 )}
-              </a>
+              </div>
             ))}
           </div>
         )}

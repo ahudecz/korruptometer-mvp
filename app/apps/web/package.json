@@ -12,6 +12,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.95.2",
     "@korr/db": "workspace:*",
     "@korr/shared": "workspace:*",
     "@korr/ui": "workspace:*",

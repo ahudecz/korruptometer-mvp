@@ -2,9 +2,12 @@ import { sql } from 'drizzle-orm';
 import {
   bigint,
   boolean,
+  check,
+  date,
   index,
   integer,
   jsonb,
+  numeric,
   pgEnum,
   pgTable,
   primaryKey,
@@ -547,6 +550,611 @@ export type NewKMonitorArticle = typeof kMonitorArticles.$inferInsert;
 export type KMonitorPersonArticle = typeof kMonitorPersonArticles.$inferSelect;
 export type NewKMonitorPersonArticle = typeof kMonitorPersonArticles.$inferInsert;
 export type SectorBreakdown = { name: string; value: number }[];
+
+// ─── 002-investigation-engine — schema mirror of 0011_investigation_engine.sql ─
+
+export const articleSourceEnum = pgEnum('article_source', [
+  'news',
+  'kmonitor',
+]);
+
+export const corruptionMechanismEnum = pgEnum('corruption_mechanism', [
+  'overpricing',
+  'no_bid',
+  'kickback',
+  'amendment_inflation',
+  'phantom_service',
+  'related_party',
+  'other',
+]);
+
+export const amountBasisEnum = pgEnum('amount_basis', [
+  'stated',
+  'computed',
+  'estimated',
+]);
+
+export const investigationStatusEnum = pgEnum('investigation_status', [
+  'new',
+  'dismissed',
+  'merged',
+]);
+
+export const disclosureTierEnum = pgEnum('disclosure_tier', [
+  'internal',
+  'journalist',
+  'prosecutor',
+  'public',
+]);
+
+export const externalSourceSystemEnum = pgEnum('external_source_system', [
+  'TED',
+  'EKR',
+  'KE',
+  'palyazat',
+  'ecegjegyzek',
+  'opencorporates',
+  'integritas',
+  'olaf',
+  'ksh',
+  'eurostat',
+  'kmonitor',
+  'atlatszo',
+  'webarchive',
+  'manual_opten',
+  'manual_other',
+]);
+
+export const relevanceEnum = pgEnum('relevance', [
+  'corroborates',
+  'contradicts',
+  'context',
+  'benchmark',
+]);
+
+export const evidenceGradeEnum = pgEnum('evidence_grade', [
+  'rumor',
+  'opinion_press',
+  'opposition_politician',
+  'investigative_journalism',
+  'prosecutor_statement',
+  'audit_report',
+  'court_document',
+]);
+
+export const redflagSeverityEnum = pgEnum('redflag_severity', [
+  'low',
+  'medium',
+  'high',
+  'critical',
+]);
+
+export const redflagVerdictEnum = pgEnum('redflag_verdict', [
+  'pass',
+  'fail',
+  'not_applicable',
+]);
+
+export const leadKindEnum = pgEnum('lead_kind', [
+  'hypothesis',
+  'search_lead',
+  'reviewer_question',
+  'escalation',
+  'cluster_ambiguous',
+]);
+
+export const leadStatusEnum = pgEnum('lead_status', [
+  'open',
+  'tested',
+  'resolved',
+  'rejected',
+]);
+
+export const leadActorKindEnum = pgEnum('lead_actor_kind', [
+  'agent',
+  'reviewer',
+  'system',
+]);
+
+export const partyKindEnum = pgEnum('party_kind', ['person', 'entity']);
+
+export const articleExtractionRuns = pgTable(
+  'ArticleExtractionRun',
+  {
+    articleSource: articleSourceEnum('articleSource').notNull(),
+    articleId: text('articleId').notNull(),
+    extractorVersion: text('extractorVersion').notNull(),
+    claimCount: integer('claimCount').notNull(),
+    extractedAt: timestamp('extractedAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    model: text('model').notNull(),
+    inputTokens: integer('inputTokens').notNull(),
+    outputTokens: integer('outputTokens').notNull(),
+    estimatedHufSpend: numeric('estimatedHufSpend', {
+      precision: 14,
+      scale: 2,
+    }).notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({
+      columns: [t.articleSource, t.articleId, t.extractorVersion],
+    }),
+    extractedAtIdx: index('ArticleExtractionRun_article_extractedAt_idx').on(
+      t.articleSource,
+      t.articleId,
+      t.extractedAt,
+    ),
+  }),
+);
+
+export const articleClaims = pgTable(
+  'ArticleClaim',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    articleSource: articleSourceEnum('articleSource').notNull(),
+    articleId: text('articleId').notNull(),
+    claimOrdinal: integer('claimOrdinal').notNull(),
+    extractorVersion: text('extractorVersion').notNull(),
+    mechanism: corruptionMechanismEnum('mechanism').notNull(),
+    allegedAmountHuf: bigint('allegedAmountHuf', { mode: 'bigint' }),
+    amountBasis: amountBasisEnum('amountBasis'),
+    parties: jsonb('parties').notNull(),
+    evidenceQuote: text('evidenceQuote').notNull(),
+    sourceUrl: text('sourceUrl').notNull(),
+    paragraphLocator: text('paragraphLocator').notNull(),
+    model: text('model').notNull(),
+    confidence: integer('confidence').notNull(),
+    createdAt: timestamp('createdAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    idempotencyUq: uniqueIndex('ArticleClaim_idempotency_uq').on(
+      t.articleSource,
+      t.articleId,
+      t.claimOrdinal,
+      t.extractorVersion,
+    ),
+    articleIdx: index('ArticleClaim_article_idx').on(
+      t.articleSource,
+      t.articleId,
+    ),
+  }),
+);
+
+export const investigations = pgTable(
+  'Investigation',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    status: investigationStatusEnum('status').notNull().default('new'),
+    mergedIntoId: uuid('mergedIntoId'),
+    primaryPersonName: text('primaryPersonName'),
+    primaryPersonNormalized: text('primaryPersonNormalized'),
+    primaryEntityName: text('primaryEntityName'),
+    summary: text('summary'),
+    quantityScore: numeric('quantityScore', { precision: 6, scale: 2 })
+      .notNull()
+      .default('0'),
+    qualityScore: evidenceGradeEnum('qualityScore'),
+    disclosureTier: disclosureTierEnum('disclosureTier')
+      .notNull()
+      .default('internal'),
+    publicCaseId: text('publicCaseId').references(() => cases.id, {
+      onDelete: 'set null',
+    }),
+    articleCount: integer('articleCount').notNull().default(0),
+    oldestExternalRecordFetchedAt: timestamp('oldestExternalRecordFetchedAt', {
+      withTimezone: true,
+    }),
+    createdAt: timestamp('createdAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updatedAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    statusIdx: index('Investigation_status_idx').on(t.status),
+    tierStatusIdx: index('Investigation_tier_status_idx').on(
+      t.disclosureTier,
+      t.status,
+    ),
+    refreshPriorityIdx: index('Investigation_refresh_priority_idx').on(
+      t.articleCount,
+      t.oldestExternalRecordFetchedAt,
+    ),
+  }),
+);
+
+export const investigationArticleLinks = pgTable(
+  'InvestigationArticleLink',
+  {
+    investigationId: uuid('investigationId')
+      .notNull()
+      .references(() => investigations.id, { onDelete: 'cascade' }),
+    articleSource: articleSourceEnum('articleSource').notNull(),
+    articleId: text('articleId').notNull(),
+    role: text('role').notNull().default('primary'),
+    createdAt: timestamp('createdAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    pk: primaryKey({
+      columns: [t.investigationId, t.articleSource, t.articleId],
+    }),
+    articleIdx: index('InvestigationArticleLink_article_idx').on(
+      t.articleSource,
+      t.articleId,
+    ),
+  }),
+);
+
+export const externalRecords = pgTable(
+  'ExternalRecord',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    investigationId: uuid('investigationId')
+      .notNull()
+      .references(() => investigations.id, { onDelete: 'cascade' }),
+    sourceSystem: externalSourceSystemEnum('sourceSystem').notNull(),
+    externalId: text('externalId').notNull(),
+    canonicalUrl: text('canonicalUrl').notNull(),
+    fetchedAt: timestamp('fetchedAt', { withTimezone: true }).notNull(),
+    fetchHash: text('fetchHash').notNull(),
+    recordType: text('recordType').notNull(),
+    rawPayload: jsonb('rawPayload').notNull(),
+    relevance: relevanceEnum('relevance'),
+    evidenceGrade: evidenceGradeEnum('evidenceGrade'),
+    createdAt: timestamp('createdAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    uq: uniqueIndex('ExternalRecord_uq').on(
+      t.investigationId,
+      t.sourceSystem,
+      t.externalId,
+    ),
+    sourceFetchedIdx: index('ExternalRecord_source_fetched_idx').on(
+      t.sourceSystem,
+      t.fetchedAt,
+    ),
+    investigationSourceIdx: index('ExternalRecord_investigation_source_idx').on(
+      t.investigationId,
+      t.sourceSystem,
+    ),
+  }),
+);
+
+export const redFlagChecks = pgTable(
+  'RedFlagCheck',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    investigationId: uuid('investigationId')
+      .notNull()
+      .references(() => investigations.id, { onDelete: 'cascade' }),
+    ruleId: text('ruleId').notNull(),
+    severity: redflagSeverityEnum('severity').notNull(),
+    verdict: redflagVerdictEnum('verdict').notNull(),
+    observationHu: text('observationHu').notNull(),
+    supportingRecordIds: uuid('supportingRecordIds')
+      .array()
+      .notNull()
+      .default(sql`'{}'::uuid[]`),
+    evaluatedAt: timestamp('evaluatedAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    ruleUq: uniqueIndex('RedFlagCheck_rule_uq').on(t.investigationId, t.ruleId),
+    severityIdx: index('RedFlagCheck_investigation_severity_idx').on(
+      t.investigationId,
+      t.severity,
+    ),
+  }),
+);
+
+export const investigationLeads = pgTable(
+  'InvestigationLead',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    investigationId: uuid('investigationId')
+      .notNull()
+      .references(() => investigations.id, { onDelete: 'cascade' }),
+    kind: leadKindEnum('kind').notNull(),
+    status: leadStatusEnum('status').notNull().default('open'),
+    question: text('question').notNull(),
+    testedAgainst: jsonb('testedAgainst'),
+    finding: text('finding'),
+    createdBy: leadActorKindEnum('createdBy').notNull(),
+    actorEditorId: uuid('actorEditorId').references(() => editors.id, {
+      onDelete: 'set null',
+    }),
+    capFired: text('capFired'),
+    createdAt: timestamp('createdAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    resolvedAt: timestamp('resolvedAt', { withTimezone: true }),
+  },
+  (t) => ({
+    investigationStatusIdx: index(
+      'InvestigationLead_investigation_status_idx',
+    ).on(t.investigationId, t.status),
+    statusCreatedIdx: index('InvestigationLead_status_createdAt_idx').on(
+      t.status,
+      t.createdAt,
+    ),
+  }),
+);
+
+export const investigationPublicCaseLinks = pgTable(
+  'InvestigationPublicCaseLink',
+  {
+    investigationId: uuid('investigationId')
+      .notNull()
+      .references(() => investigations.id, { onDelete: 'cascade' }),
+    publicCaseId: text('publicCaseId').notNull(),
+    promotedAt: timestamp('promotedAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    depromotedAt: timestamp('depromotedAt', { withTimezone: true }),
+    promotedByEditorId: uuid('promotedByEditorId').references(() => editors.id, {
+      onDelete: 'set null',
+    }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.investigationId, t.publicCaseId] }),
+    historyIdx: index('InvestigationPublicCaseLink_history_idx').on(
+      t.investigationId,
+      t.promotedAt,
+    ),
+  }),
+);
+
+export const benchmarks = pgTable(
+  'Benchmark',
+  {
+    cohortHash: text('cohortHash').primaryKey(),
+    dimension: text('dimension').notNull(),
+    cohortSpec: jsonb('cohortSpec').notNull(),
+    p10: numeric('p10').notNull(),
+    p50: numeric('p50').notNull(),
+    p90: numeric('p90').notNull(),
+    n: integer('n').notNull(),
+    memberRecordIds: uuid('memberRecordIds').array().notNull(),
+    computedAt: timestamp('computedAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    dimensionIdx: index('Benchmark_dimension_computedAt_idx').on(
+      t.dimension,
+      t.computedAt,
+    ),
+  }),
+);
+
+export const dailyLlmUsage = pgTable(
+  'DailyLlmUsage',
+  {
+    day: date('day').notNull(),
+    model: text('model').notNull(),
+    inputTokens: bigint('inputTokens', { mode: 'bigint' }).notNull().default(0n),
+    outputTokens: bigint('outputTokens', { mode: 'bigint' })
+      .notNull()
+      .default(0n),
+    estimatedHufSpend: numeric('estimatedHufSpend', { precision: 14, scale: 2 })
+      .notNull()
+      .default('0'),
+    callCount: integer('callCount').notNull().default(0),
+    firstCallAt: timestamp('firstCallAt', { withTimezone: true }),
+    lastCallAt: timestamp('lastCallAt', { withTimezone: true }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.day, t.model] }),
+    dayIdx: index('DailyLlmUsage_day_idx').on(t.day),
+  }),
+);
+
+export type ArticleExtractionRun = typeof articleExtractionRuns.$inferSelect;
+export type NewArticleExtractionRun =
+  typeof articleExtractionRuns.$inferInsert;
+export type ArticleClaim = typeof articleClaims.$inferSelect;
+export type NewArticleClaim = typeof articleClaims.$inferInsert;
+export type Investigation = typeof investigations.$inferSelect;
+export type NewInvestigation = typeof investigations.$inferInsert;
+export type InvestigationArticleLink =
+  typeof investigationArticleLinks.$inferSelect;
+export type NewInvestigationArticleLink =
+  typeof investigationArticleLinks.$inferInsert;
+export type ExternalRecord = typeof externalRecords.$inferSelect;
+export type NewExternalRecord = typeof externalRecords.$inferInsert;
+export type RedFlagCheck = typeof redFlagChecks.$inferSelect;
+export type NewRedFlagCheck = typeof redFlagChecks.$inferInsert;
+export type InvestigationLead = typeof investigationLeads.$inferSelect;
+export type NewInvestigationLead = typeof investigationLeads.$inferInsert;
+export type InvestigationPublicCaseLink =
+  typeof investigationPublicCaseLinks.$inferSelect;
+export type NewInvestigationPublicCaseLink =
+  typeof investigationPublicCaseLinks.$inferInsert;
+export type Benchmark = typeof benchmarks.$inferSelect;
+export type NewBenchmark = typeof benchmarks.$inferInsert;
+export type DailyLlmUsage = typeof dailyLlmUsage.$inferSelect;
+export type NewDailyLlmUsage = typeof dailyLlmUsage.$inferInsert;
+
+// ─── Addendum 2026-05-19: Damage→Evidence Spine ─────────────────────────────
+// Migration: 0012_damage_evidence_spine.sql
+// Spec: specs/002-investigation-engine/data-model.md §"Addendum 2026-05-19"
+
+export const damageConfidenceEnum = pgEnum('damage_confidence', [
+  'low',
+  'medium',
+  'high',
+]);
+
+export const damageMethodEnum = pgEnum('damage_method', [
+  'benchmark_deviation',
+  'claim_consolidation',
+  'amendment_delta',
+  'industry_estimate',
+]);
+
+export const signalSourceKindEnum = pgEnum('signal_source_kind', [
+  'external_record',
+  'red_flag',
+  'claim_corroboration',
+  'benchmark_deviation',
+]);
+
+export const jobKindEnum = pgEnum('job_kind', [
+  'xref',
+  'redflags',
+  'hypothesis_loop',
+  'benchmarks',
+  'damage_recompute',
+]);
+
+export const jobStateEnum = pgEnum('job_state', [
+  'idle',
+  'running',
+  'done',
+  'failed',
+]);
+
+export const damageEstimates = pgTable(
+  'DamageEstimate',
+  {
+    investigationId: uuid('investigationId')
+      .primaryKey()
+      .references(() => investigations.id, { onDelete: 'cascade' }),
+    totalLowHuf: bigint('totalLowHuf', { mode: 'bigint' }).notNull(),
+    totalHighHuf: bigint('totalHighHuf', { mode: 'bigint' }).notNull(),
+    confidence: damageConfidenceEnum('confidence').notNull(),
+    components: jsonb('components').notNull(),
+    inputsHash: text('inputsHash').notNull(),
+    computedAt: timestamp('computedAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    componentCount: integer('componentCount').generatedAlwaysAs(
+      sql`jsonb_array_length(components)`,
+    ),
+  },
+  (t) => ({
+    computedAtIdx: index('DamageEstimate_computedAt_idx').on(t.computedAt),
+    emptyComponentsIdx: index('DamageEstimate_empty_components_idx')
+      .on(t.investigationId)
+      .where(sql`"componentCount" = 0`),
+    totalsNonneg: check(
+      'DamageEstimate_totals_nonneg',
+      sql`"totalLowHuf" >= 0 AND "totalHighHuf" >= "totalLowHuf"`,
+    ),
+    componentsIsArray: check(
+      'DamageEstimate_components_is_array',
+      sql`jsonb_typeof(components) = 'array'`,
+    ),
+    inputsHashSha256: check(
+      'DamageEstimate_inputsHash_sha256',
+      sql`length("inputsHash") = 64`,
+    ),
+  }),
+);
+
+export const signalContributions = pgTable(
+  'SignalContribution',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    investigationId: uuid('investigationId')
+      .notNull()
+      .references(() => investigations.id, { onDelete: 'cascade' }),
+    sourceKind: signalSourceKindEnum('sourceKind').notNull(),
+    sourceId: text('sourceId').notNull(),
+    baseWeight: numeric('baseWeight', { precision: 4, scale: 2 }).notNull(),
+    stalenessMultiplier: numeric('stalenessMultiplier', {
+      precision: 3,
+      scale: 2,
+    }).notNull(),
+    effectiveWeight: numeric('effectiveWeight', {
+      precision: 5,
+      scale: 2,
+    }).generatedAlwaysAs(sql`"baseWeight" * "stalenessMultiplier"`),
+    addedAt: timestamp('addedAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    investigationIdx: index('SignalContribution_investigation_idx').on(
+      t.investigationId,
+    ),
+    uq: uniqueIndex('SignalContribution_uq').on(
+      t.investigationId,
+      t.sourceKind,
+      t.sourceId,
+    ),
+    sourceIdx: index('SignalContribution_source_idx').on(
+      t.sourceKind,
+      t.sourceId,
+    ),
+    baseWeightRange: check(
+      'SignalContribution_baseWeight_range',
+      sql`"baseWeight" >= 0 AND "baseWeight" <= 5.00`,
+    ),
+    stalenessRange: check(
+      'SignalContribution_staleness_range',
+      sql`"stalenessMultiplier" > 0 AND "stalenessMultiplier" <= 1.00`,
+    ),
+  }),
+);
+
+export const investigationJobStates = pgTable(
+  'InvestigationJobState',
+  {
+    investigationId: uuid('investigationId')
+      .notNull()
+      .references(() => investigations.id, { onDelete: 'cascade' }),
+    jobKind: jobKindEnum('jobKind').notNull(),
+    state: jobStateEnum('state').notNull().default('idle'),
+    startedAt: timestamp('startedAt', { withTimezone: true }),
+    finishedAt: timestamp('finishedAt', { withTimezone: true }),
+    inngestRunId: text('inngestRunId'),
+    summary: text('summary'),
+    errorMessage: text('errorMessage'),
+    updatedAt: timestamp('updatedAt', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.investigationId, t.jobKind] }),
+    runningIdx: index('InvestigationJobState_running_idx')
+      .on(t.investigationId, t.updatedAt)
+      .where(sql`state = 'running'`),
+    startedWhenActive: check(
+      'InvestigationJobState_started_when_active',
+      sql`(state IN ('running', 'done', 'failed')) = ("startedAt" IS NOT NULL)`,
+    ),
+    finishedWhenTerminal: check(
+      'InvestigationJobState_finished_when_terminal',
+      sql`(state IN ('done', 'failed')) = ("finishedAt" IS NOT NULL)`,
+    ),
+    doneHasSummary: check(
+      'InvestigationJobState_done_has_summary',
+      sql`state <> 'done' OR summary IS NOT NULL`,
+    ),
+    failedHasError: check(
+      'InvestigationJobState_failed_has_error',
+      sql`state <> 'failed' OR "errorMessage" IS NOT NULL`,
+    ),
+  }),
+);
+
+export type DamageEstimate = typeof damageEstimates.$inferSelect;
+export type NewDamageEstimate = typeof damageEstimates.$inferInsert;
+export type SignalContribution = typeof signalContributions.$inferSelect;
+export type NewSignalContribution = typeof signalContributions.$inferInsert;
+export type InvestigationJobState = typeof investigationJobStates.$inferSelect;
+export type NewInvestigationJobState =
+  typeof investigationJobStates.$inferInsert;
 
 // Use placate-typescript export for the singleton cap (no client cares but Drizzle plays nice).
 export const _unused = sql`1`;

@@ -15,8 +15,8 @@ import { inngest } from '../client';
  * Triggers:
  *   - hourly cron `0 * * * *`
  *   - kpi.recompute event from admin mutation routes (debounced ≤1×/10s
- *     via Inngest event-key collapsing — same `kpi-recompute` key in a 10s
- *     window collapses to a single run).
+ *     per-function — Inngest collapses repeated triggers within the
+ *     window into a single run).
  *
  * Concurrency is forced to 1 *and* we hold pg_advisory_xact_lock so two
  * runs that race past Inngest's collapse still serialise at the database.
@@ -26,7 +26,7 @@ export const aggregateKpiRollup = inngest.createFunction(
     id: 'aggregate-kpi-rollup',
     name: 'Aggregate / KPI rollup',
     concurrency: { limit: 1 },
-    debounce: { period: '10s', key: 'kpi-recompute' },
+    debounce: { period: '10s' },
   },
   [{ cron: '0 * * * *' }, { event: 'kpi.recompute' }],
   async ({ step }) => {
