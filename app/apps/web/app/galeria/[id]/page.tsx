@@ -1,8 +1,10 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { desc, ilike, or, eq } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
-import { GALERIA } from '../../_home/galeria-config';
+import { Mugshot } from '@korr/ui/mugshot';
+import { GALERIA, type GaleriaDetention, type GaleriaHair } from '../../_home/galeria-config';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,8 +54,8 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     : [];
 
   const detentionColors: Record<string, string> = {
-    investig: '#e8a000',
-    loose: '#5c5e62',
+    investig: '#c9a800',
+    loose: '#4a6a8a',
     pretrial: '#e31937',
     busted: '#e31937',
     wanted: '#e31937',
@@ -66,7 +68,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         <div className="person-hero-inner">
           <div className="person-hero-photo">
             {entry.photoUrl ? (
-              <img src={entry.photoUrl} alt={entry.name} className="person-photo-img" />
+              <img src={entry.photoUrl.startsWith('/') || entry.photoUrl.includes('wikimedia.org') ? entry.photoUrl : `/api/img-proxy?url=${encodeURIComponent(entry.photoUrl)}`} alt={entry.name} className="person-photo-img" />
             ) : (
               <div className="person-photo-placeholder">
                 <span>{entry.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</span>
@@ -78,12 +80,19 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             >
               {entry.detentionLabel}
             </div>
+            {entry.photoCredit && (
+              <div className="photo-credit">Fotó: {entry.photoCredit}</div>
+            )}
           </div>
 
           <div className="person-hero-text">
             <div className="person-hero-eyebrow">10 kiemelt személy</div>
             <h1 className="person-hero-name">{entry.name}</h1>
             <div className="person-hero-sub">{entry.subtitle}</div>
+            <div className="person-hero-amount">
+              <span className="person-hero-amount-lbl">{entry.amountLabel}</span>
+              <span className="person-hero-amount-val">{entry.amount}</span>
+            </div>
             <p className="person-hero-desc">{entry.description}</p>
             <div className="person-hero-tags">
               {entry.crimes.map(c => (
@@ -138,6 +147,16 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                         <span key={cr} className="tag">{cr}</span>
                       ))}
                     </div>
+                    {c.sourceUrl && (
+                      <a
+                        href={c.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="person-case-source"
+                      >
+                        Forrás: {c.sourceLabel ?? 'link'} →
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
@@ -175,6 +194,39 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             Még nincs beindexelt hír ehhez a személyhez — a következő scrape során frissül.
           </div>
         )}
+      </div>
+
+      {/* More persons navigation */}
+      <div className="person-more-section">
+        <div className="person-more-inner">
+          <div className="person-more-label">Többi kiemelt személy</div>
+          <div className="person-more-grid">
+            {GALERIA.filter(e => e.id !== entry.id).map(e => (
+              <Link key={e.id} href={`/galeria/${e.id}`} className="person-more-card">
+                <div className={`person-more-mug r-${e.detention}`}>
+                  {e.photoUrl ? (
+                    <img
+                      src={e.photoUrl.startsWith('/') || e.photoUrl.includes('wikimedia.org') ? e.photoUrl : `/api/img-proxy?url=${encodeURIComponent(e.photoUrl)}`}
+                      alt={e.name}
+                      className="person-more-img"
+                    />
+                  ) : (
+                    <Mugshot
+                      caseId={e.id}
+                      name={e.name}
+                      variant={e.variant ?? 0}
+                      glasses={e.glasses ?? false}
+                      hair={(e.hair as GaleriaHair) ?? 'short'}
+                      detention={e.detention as GaleriaDetention}
+                    />
+                  )}
+                </div>
+                <div className="person-more-name">{e.name}</div>
+                <div className="person-more-sub">{(e.subtitle.split('·')[0] ?? '').trim()}</div>
+              </Link>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

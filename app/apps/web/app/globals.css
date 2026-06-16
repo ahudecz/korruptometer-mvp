@@ -14,6 +14,7 @@
   --accent: #e31937;
   --accent-soft: #fee5e8;
   --surface: #f4f4f4;
+  --pg: 40px;
 }
 
 * {
@@ -284,6 +285,17 @@ button {
   color: var(--muted);
   letter-spacing: 0.08em;
 }
+.stat-card-list-link {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.stat-card-list-link:hover {
+  text-decoration: underline;
+}
 .stat-value {
   font-weight: 700;
   font-size: clamp(44px, 6vw, 88px);
@@ -398,6 +410,28 @@ button {
   letter-spacing: 0.28em;
   color: var(--muted);
 }
+.section-partner-note {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 680px;
+  margin: -40px 0 40px;
+  padding: 14px 18px;
+  border-left: 3px solid rgba(227,25,55,0.3);
+  background: rgba(227,25,55,0.03);
+}
+.section-partner-note strong {
+  color: var(--accent);
+  font-weight: 700;
+}
+.section-partner-note a {
+  color: inherit;
+  text-decoration: none;
+}
+.section-partner-note a:hover strong {
+  text-decoration: underline;
+}
+
 .section-title {
   font-weight: 700;
   font-size: clamp(36px, 5vw, 64px);
@@ -637,10 +671,6 @@ button {
 }
 .news-card.feature {
   grid-row: span 2;
-  display: grid;
-  grid-template-columns: 44% 56%;
-  align-items: stretch;
-  padding: 0;
 }
 .news-card-img {
   margin: -40px -36px 20px;
@@ -654,30 +684,22 @@ button {
   display: block;
 }
 .news-card.feature .news-card-img {
-  margin: 0;
-  height: 100%;
+  height: 480px;
   max-height: none;
-  min-height: 320px;
-  border-radius: 2px 0 0 2px;
-}
-.feature-text {
-  display: flex;
-  flex-direction: column;
-  padding: 36px 36px 36px 40px;
 }
 .news-card.feature .news-headline {
-  font-size: clamp(22px, 2.2vw, 34px);
-  line-height: 1.1;
+  font-size: clamp(26px, 2.8vw, 40px);
+  line-height: 1.08;
   margin-bottom: 20px;
 }
 .news-card.feature .news-excerpt {
-  font-size: 16px;
-  line-height: 1.7;
+  font-size: 17px;
+  line-height: 1.65;
   color: var(--muted);
   margin-bottom: 24px;
-  flex: 1;
   display: block;
   overflow: visible;
+  -webkit-line-clamp: unset;
 }
 .news-meta {
   display: flex;
@@ -1060,15 +1082,15 @@ button {
   background: #6c7280;
 }
 .rogues-key .dot.loose {
-  background: #f6c344;
-  box-shadow: 0 0 8px rgba(246, 195, 68, 0.5);
+  background: #88a4c4;
 }
 .rogues-key .dot.wanted {
   background: var(--accent);
   animation: wanted-pulse 1.2s infinite;
 }
 .rogues-key .dot.investig {
-  background: #88a4c4;
+  background: #f6c344;
+  box-shadow: 0 0 8px rgba(246, 195, 68, 0.5);
 }
 
 @keyframes wanted-pulse {
@@ -1135,6 +1157,13 @@ button {
   display: block;
   width: 100%;
   height: 100%;
+}
+.rogue-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
 }
 
 .stamp {
@@ -1239,11 +1268,11 @@ button {
   background: #6c7280;
 }
 .status-strip.loose {
-  background: #f6c344;
-  color: #1a1614;
+  background: #2a3848;
+  color: #fff;
 }
 .status-strip.loose::before {
-  background: #1a1614;
+  background: #88a4c4;
 }
 .status-strip.wanted {
   background: var(--accent);
@@ -1255,11 +1284,11 @@ button {
   animation: wanted-pulse 1.2s infinite;
 }
 .status-strip.investig {
-  background: #2a3848;
-  color: #fff;
+  background: #f6c344;
+  color: #1a1614;
 }
 .status-strip.investig::before {
-  background: #88a4c4;
+  background: #1a1614;
 }
 @keyframes wanted-strip {
   0%,
@@ -1828,6 +1857,7 @@ button {
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
+  object-position: top;
   display: block;
   border-radius: 2px;
 }
@@ -1935,7 +1965,25 @@ button {
 .gal-case-crimes {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 5px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.gal-case-crimes .tag,
+.gal-case-crimes .tag-sm {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border: 1px solid rgba(227, 25, 55, 0.4);
+  background: rgba(227, 25, 55, 0.07);
+  color: var(--accent);
+  border-radius: 3px;
+  white-space: nowrap;
+  line-height: 1;
 }
 
 .tag-sm {
@@ -1990,7 +2038,7 @@ button {
 
 .person-hero {
   background: var(--ink);
-  padding: 64px var(--pg) 56px;
+  padding: 88px var(--pg) 64px;
 }
 
 .person-hero-inner {
@@ -2006,6 +2054,7 @@ button {
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
+  object-position: top;
   border-radius: 2px;
   display: block;
 }
@@ -2036,6 +2085,12 @@ button {
   text-transform: uppercase;
   color: #fff;
 }
+.photo-credit {
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
 
 .person-hero-eyebrow {
   font-size: 11px;
@@ -2059,7 +2114,34 @@ button {
 .person-hero-sub {
   font-size: 14px;
   color: rgba(255,255,255,0.45);
+  margin-bottom: 16px;
+}
+
+.person-hero-amount {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   margin-bottom: 20px;
+  padding: 12px 16px;
+  background: rgba(227,25,55,0.1);
+  border-left: 3px solid var(--accent);
+  border-radius: 2px;
+  max-width: 400px;
+}
+.person-hero-amount-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.person-hero-amount-val {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  color: #fff;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .person-hero-desc {
@@ -2079,7 +2161,7 @@ button {
 .person-body {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 56px var(--pg) 80px;
+  padding: 96px var(--pg) 80px;
   display: flex;
   flex-direction: column;
   gap: 56px;
@@ -2201,7 +2283,39 @@ button {
 .person-case-crimes {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 6px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.person-case-crimes .tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 1px solid rgba(227, 25, 55, 0.35);
+  background: rgba(227, 25, 55, 0.06);
+  color: var(--accent);
+  border-radius: 3px;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.person-case-source {
+  display: inline-block;
+  margin-top: 10px;
+  width: 100%;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  transition: color 0.15s;
+}
+.person-case-source:hover {
+  color: var(--accent);
 }
 
 /* News on person page */
@@ -2249,6 +2363,93 @@ button {
   text-align: center;
   border: 1px dashed var(--line);
   border-radius: 4px;
+}
+
+/* More persons section (bottom of individual person pages) */
+.person-more-section {
+  border-top: 1px solid var(--line);
+  padding: 64px 0;
+  background: var(--surface);
+}
+
+.person-more-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.person-more-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+
+.person-more-grid {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 16px;
+}
+
+.person-more-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.person-more-card:hover {
+  opacity: 0.75;
+}
+
+.person-more-mug {
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 2px;
+  position: relative;
+  border: 2px solid transparent;
+}
+
+.person-more-mug.r-investig { border-color: var(--accent-soft); }
+.person-more-mug.r-pretrial,
+.person-more-mug.r-busted { border-color: var(--accent); }
+
+.person-more-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+
+.person-more-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.person-more-sub {
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.3;
+}
+
+@media (max-width: 900px) {
+  .person-more-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 500px) {
+  .person-more-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
@@ -2322,6 +2523,216 @@ button {
 }
 .elszamoltatas-more a:hover {
   color: var(--accent);
+}
+.elszamoltatas-sub-heading {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-top: 48px;
+  margin-bottom: 16px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e5e5;
+}
+
+/* ─── Media kártyák ──────────────────────────────────────────────── */
+.media-group {
+  margin-top: 48px;
+}
+.media-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 10px;
+  margin-bottom: 24px;
+}
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+.media-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: box-shadow 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.media-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+}
+.media-card.mc-closed {
+  border: 2.5px solid #e31937;
+  background: #fff8f8;
+}
+.media-card.mc-fired-staff {
+  border: 2.5px solid #e8a000;
+  background: #fffbf2;
+}
+
+/* Gumibélyegző overlay */
+.mc-stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-22deg);
+  font-family: 'Archivo', sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  border: 3.5px solid currentColor;
+  padding: 5px 14px;
+  border-radius: 3px;
+  pointer-events: none;
+  z-index: 10;
+  white-space: nowrap;
+  opacity: 0.72;
+  line-height: 1;
+}
+.media-card.mc-closed .mc-stamp { color: #e31937; }
+.media-card.mc-fired-staff .mc-stamp { color: #c07800; }
+
+.media-card-logo {
+  width: 100%;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #f5f5f5;
+  margin-bottom: 4px;
+  position: relative;
+}
+.media-card-logo.bg-white {
+  background: #fff;
+  border: 1px solid #eee;
+}
+.media-card-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+.media-card.mc-closed .media-card-logo img,
+.media-card.mc-fired-staff .media-card-logo img {
+  filter: grayscale(0.75) opacity(0.8);
+}
+.media-logo-fallback {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 24px;
+  color: var(--muted);
+  letter-spacing: -0.02em;
+}
+.media-card-name {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.media-card.mc-closed .media-card-name { color: #888; }
+.media-card.mc-fired-staff .media-card-name { color: #7a6000; }
+.media-card-editor {
+  font-size: 11px;
+  color: var(--muted);
+}
+.media-card-desc {
+  font-size: 11px;
+  color: var(--ink);
+  line-height: 1.5;
+  opacity: 0.65;
+  flex: 1;
+  margin: 0;
+}
+.media-card-status {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 2px;
+  display: inline-block;
+  margin-top: 4px;
+  align-self: flex-start;
+}
+.media-card-owner {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+/* KPI–03 visszaszerzett vagyon ledger */
+.stat-recovered-list {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.stat-recovered-item {
+  border-top: 1px solid #e5e5e5;
+  padding: 20px 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.stat-recovered-bar {
+  width: 100%;
+  height: 4px;
+  background: #e31937;
+  border-radius: 2px;
+  margin-bottom: 10px;
+}
+.stat-recovered-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.stat-recovered-case {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+.stat-recovered-amt {
+  font-size: 22px;
+  font-weight: 800;
+  color: #e31937;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.stat-recovered-note {
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+.stat-recovered-more {
+  border-top: 1px solid #e5e5e5;
+  padding-top: 16px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* KPI üres állapot */
+.stat-unit-notice {
+  margin-top: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--accent);
+  font-weight: 500;
+  max-width: 340px;
 }
 
 /* Lemondott szekció — bal oldali piros csík */
@@ -3023,7 +3434,6 @@ button {
   .news-card.feature {
     grid-row: span 1;
     grid-column: span 2;
-    grid-template-columns: 42% 58%;
   }
   .db-controls {
     grid-template-columns: 1fr 1fr;
@@ -3110,14 +3520,9 @@ button {
   }
   .news-card.feature {
     grid-column: span 1;
-    grid-template-columns: 1fr;
   }
   .news-card.feature .news-card-img {
-    min-height: 220px;
-    border-radius: 2px 2px 0 0;
-  }
-  .feature-text {
-    padding: 24px 24px 28px;
+    height: 260px;
   }
   .db-controls {
     grid-template-columns: 1fr;

@@ -1,45 +1,62 @@
 const KEYWORDS = [
-  // Személyek
-  'magyar péter', 'polt péter', 'sulyok tamás', 'németh balázs',
-  'pócs jános', 'rétvári bence', 'kapitány istván', 'ruszin-szendi romulusz',
-  'forsthoffer ágnes', 'radnai márk', 'gulyás gergely', 'orbán viktor',
-  'orbán', 'tiborcz istván', 'tiborcz', 'hadházy ákos', 'hadházy',
-  'lázár jános', 'lázár', 'rogán antal', 'rogán', 'semjén zsolt',
-  'semjén', 'zsolt bácsi', 'tuzson bence', 'tuzson', 'takács péter',
+  // Személyek — NER-közeliek és vizsgált politikusok
+  'orbán viktor',
+  'tiborcz istván', 'tiborcz',
+  'hadházy ákos', 'hadházy',
+  'lázár jános',
+  'rogán antal', 'rogán',
+  'semjén zsolt', 'semjén', 'zsolti bácsi', 'zsolt bácsi',
+  'tuzson bence',
+  'takács péter',
   'szíjjártó péter', 'szíjjártó',
-  'mészáros lőrinc', 'mészáros',
+  'mészáros lőrinc',
   'hankó balázs', 'hankó',
-  'balásy',
+  'balásy gyula', 'balásy',
   'matolcsy györgy', 'matolcsy',
+  'bánki erik',
+  'pócs jános', 'rétvári bence', 'gulyás gergely',
+  'sulyok tamás', 'polt péter',
   // Intézmények / ügyek
   'nka ', 'nemzeti kulturális alap',
   'mnb ', 'jegybank', 'magyar nemzeti bank',
   'aranykonvoj',
-  // Helyek
-  'hatvanpuszta', 'vitnyéd',
+  'volvo gate', 'volvo-gate', 'tüke zrt', 'tüke busz',
+  // Helyek / NER-specifikus témák
+  'hatvanpuszta', 'vitnyéd', 'batida',
   // Pártok, szervezetek
-  'fidesz', 'tisza párt', 'tisza-párt', 'mszp', 'dk', 'momentum',
+  'fidesz', 'tisza párt', 'tisza-párt',
   'mcc ', 'mathias corvinus', 'kekva', 'bdpst', 'nke ',
   // Közjogi fogalmak
-  'parlament', 'miniszter', 'miniszterelnök', 'kormány', 'képviselő',
-  'polgármester', 'alpolgármester', 'önkormányzat', 'alkotmánybíróság',
-  'legfőbb ügyész', 'ügyészség', 'köztársasági elnök',
-  // Korrupció, bűnügyek
-  'korrupció', 'korrupt', 'közbeszerzés', 'sikkaszt', 'hűtlen kezelés',
-  'lopás', 'embercsempész', 'költségvetési csalás', 'kenőpénz', 'túlárazás',
-  'vesztegetés', 'zsarolás', 'megvesztegetés', 'visszaélés',
-  'hivatali visszaélés', 'tiltott állami finanszírozás',
-  'feljelentés', 'letartóztat', 'letartóztatás', 'letartóztatták', 'őrizetbe',
-  'vádirat', 'vádemelés', 'bűn', 'bűnvádi', 'nyomozás', 'nyomozati', 'razzia',
-  'terror', 'terrorcselekmény', 'aranykonvoj',
-  'sajtóper', 'eljárás', 'per ', 'peres', 'ítélet', 'titkos szerződés',
-  'kúria', 'államkincstár', 'mutyi',
-  // NER-specifikus
-  'lélegeztetőgép', 'hatvanpuszta', 'pedofil', 'pedofília',
-  'luxusgép', 'luxusyacht', 'akkugyár', 'gyerekbántalmazás',
-  'vezetőszár', 'menekült', 'migráns', 'bevándorló',
-  // Sajtó, média
-  'mediaworks', 'média', 'propaganda',
+  'alkotmánybíróság',
+  'legfőbb ügyész', 'köztársasági elnök',
+  'kúria',
+  // Közbeszerzés — magyar politikai kontextusban specifikus
+  'közbeszerzés',
+  'túlárazás',
+  'mutyi',
+  // NER-specifikus ügyek
+  'lélegeztetőgép',
+  'akkugyár',
+  // Sajtó, média — csak specifikus, NER-közeli cégek/kiadványok
+  'mediaworks',
+  // KESMA csoport — nyomtatott
+  'kesma', 'magyar nemzet', 'pesti srácok', 'világgazdaság',
+  'délmagyarország', 'észak-magyarország', 'kisalföld',
+  'petőfi népe', 'somogyi hírlap', 'zalai hírlap',
+  'vas népe', 'tolnai népújság', 'fejér megyei hírlap',
+  'hajdú-bihari napló', 'békés megyei hírlap',
+  'kelet-magyarország', 'új néplap', 'új dunántúli napló',
+  'szabad föld', 'vasárnap reggel',
+  // KESMA csoport — digitális
+  'origo', 'hír tv', 'hír fm', 'retro rádió',
+  'bama.hu', 'baon.hu', 'beol.hu', 'boon.hu',
+  'borsonline', 'delmagyar.hu', 'duol.hu', 'feol.hu',
+  'haon.hu', 'heol.hu', 'hirvilag.hu', 'kemma.hu',
+  'kisalfold.hu', 'likebalaton.hu', 'mainap.hu',
+  'magyarnemzet.hu', 'nool.hu', 'sonline.hu',
+  'szoljon.hu', 'szon.hu', 'teol.hu',
+  'vaol.hu', 'veol.hu', 'zaol.hu',
+  'newsfeed.hu', 'videa.hu',
 ] as const;
 
 export function isRelevant(headline: string, excerpt: string): boolean {
@@ -54,13 +71,13 @@ const FEATURED_KEYWORDS = [
   'menesztette', 'menesztés', 'visszahívták', 'visszahívás',
   // Médium megszűnés
   'megszűnt', 'megszűnés', 'leáll', 'bezárt', 'bezárás', 'leépítés',
-  // Bűncselekmény
-  'korrupció', 'hűtlen kezelés', 'lopás', 'túlárazás',
-  'költségvetési csalás', 'sikkaszt', 'veszteget', 'kenőpénz',
-  'vádemelés', 'vádirat', 'letartóztatták', 'letartóztatás', 'őrizetbe',
   // Személyek / ügyek (mindig kiemelt)
   'balásy', 'hankó', 'nka ',
   'matolcsy', 'mnb ',
+  // Médiabezárások / újságíró-kirúgások
+  'pesti srácok', 'világgazdaság',
+  // Volvo-gate
+  'volvo gate', 'volvo-gate', 'bánki erik',
 ] as const;
 
 export function shouldFeature(headline: string, excerpt: string): boolean {

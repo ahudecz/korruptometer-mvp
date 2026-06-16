@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { asc, count, desc, eq, ilike, or } from 'drizzle-orm';
+import { asc, count, desc, eq, ilike, or, sql } from 'drizzle-orm';
 
 import { fmtFt, fmtNumber } from '@korr/shared/format';
 import { caseQuerySchema } from '@korr/shared/schemas/cases';
@@ -12,10 +12,10 @@ import { getDb, schema } from '@/lib/db';
 import { CaseFilters } from './adatbazis/case-filters';
 import { ResignationsSection } from './_home/resignations-section';
 import { MediaClosuresSection } from './_home/media-closures-section';
-import { HomeMobilePreview } from './_home/mobile-preview';
 import { SubmissionCTA } from './_home/submission-cta';
 import { BigCasesSection, type BigCaseConfig } from './_home/big-cases-section';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './_home/galeria-config';
+import { NewsCardImage } from './hirek/news-card-image';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,12 +64,6 @@ export default async function HomePage() {
     .orderBy(desc(schema.politicalResignations.pinned), desc(schema.politicalResignations.resignationDate))
     .limit(10);
 
-  const topClosures = await db
-    .select()
-    .from(schema.mediaClosures)
-    .orderBy(desc(schema.mediaClosures.eventDate))
-    .limit(10);
-
   function articleSelect() {
     return db.select({
       id: schema.newsArticles.id,
@@ -102,6 +96,17 @@ export default async function HomePage() {
     .orderBy(desc(schema.newsArticles.publishedAt))
     .limit(5);
 
+  const volvoArticles = await articleSelect()
+    .where(or(
+      ilike(schema.newsArticles.headline, '%volvo gate%'),
+      ilike(schema.newsArticles.headline, '%volvo-gate%'),
+      ilike(schema.newsArticles.headline, '%bánki erik%'),
+      ilike(schema.newsArticles.headline, '%tüke busz%'),
+      eq(schema.newsArticles.tag, 'volvo-gate'),
+    ))
+    .orderBy(desc(schema.newsArticles.publishedAt))
+    .limit(5);
+
   const lelegArticles = await articleSelect()
     .where(or(
       ilike(schema.newsArticles.headline, '%lélegeztetőgép%'),
@@ -110,18 +115,33 @@ export default async function HomePage() {
     .orderBy(desc(schema.newsArticles.publishedAt))
     .limit(5);
 
-  const [{ resignationCount }] = await db
-    .select({ resignationCount: count() })
-    .from(schema.politicalResignations);
+  const resignationCount = (await db.select({ c: count() }).from(schema.politicalResignations))[0]?.c ?? 0;
 
-  const [{ closureCount }] = await db
-    .select({ closureCount: count() })
-    .from(schema.mediaClosures);
+  const resignationsByType = await db
+    .select({
+      type: schema.politicalResignations.resignationType,
+      cnt: sql<number>`count(*)::int`,
+    })
+    .from(schema.politicalResignations)
+    .where(sql`${schema.politicalResignations.resignationType} != 'Hivatalban van'`)
+    .groupBy(schema.politicalResignations.resignationType)
+    .orderBy(sql`count(*) desc`);
+
+  const closureCount = (await db.select({ c: count() }).from(schema.mediaClosures))[0]?.c ?? 0;
   const recentCases = await db
     .select()
     .from(schema.cases)
     .orderBy(desc(schema.cases.amount))
     .limit(8);
+
+  const HOMEPAGE_NEWS_TOPICS = [
+    '%NKA%', '%MNB%', '%KESMA%', '%Mediaworks%',
+    '%lélegeztetőgép%', '%aranykonvoj%', '%hatvanpuszta%', '%batida%',
+    '%Mészáros Lőrinc%', '%Rogán%', '%Matolcsy%',
+    '%Tiborcz%', '%Balásy%', '%Lázár János%',
+    '%volvo%gate%', '%volvo-gate%',
+    '%pesti srácok%', '%világgazdaság%',
+  ] as const;
 
   const recentArticles = await db
     .select({
@@ -132,10 +152,17 @@ export default async function HomePage() {
       publishedAt: schema.newsArticles.publishedAt,
       tag: schema.newsArticles.tag,
       featured: schema.newsArticles.featured,
+      imageUrl: schema.newsArticles.imageUrl,
       sourceName: schema.sources.name,
     })
     .from(schema.newsArticles)
     .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId))
+    .where(
+      or(
+        eq(schema.newsArticles.featured, true),
+        ...HOMEPAGE_NEWS_TOPICS.map(p => ilike(schema.newsArticles.headline, p)),
+      )
+    )
     .orderBy(desc(schema.newsArticles.publishedAt))
     .limit(5);
 
@@ -156,7 +183,8 @@ export default async function HomePage() {
 
   // Fall back gracefully if a fresh DB is empty (avoids a 500 page).
   const totalDamage = snapshot ? BigInt(snapshot.totalDamage) : 0n;
-  const totalPrisonYears = snapshot?.totalPrisonYears ?? 0;
+  // No final convictions yet since the 2026-04-12 government change — hardcoded 0.
+  const totalPrisonYears = 0;
   const activeCases = snapshot?.activeCases ?? 0;
   const newIndictments = snapshot?.newIndictmentsThisWeek ?? 0;
   const partnerCount = snapshot?.partnerCount ?? 0;
@@ -174,6 +202,18 @@ export default async function HomePage() {
   const moneySlices: PieSlice[] = bySector
     .map((e) => ({ name: e.name, value: e.value }))
     .sort((a, b) => b.value - a.value);
+
+  const RESIGNATION_TYPE_HU: Record<string, string> = {
+    'lemondás': 'Lemondás',
+    'kirúgás': 'Kirúgás',
+    'felmentés': 'Felmentés',
+    'egyéb': 'Egyéb',
+  };
+  const resignationSlices: PieSlice[] = resignationsByType.map(r => ({
+    name: RESIGNATION_TYPE_HU[r.type] ?? r.type,
+    value: r.cnt,
+  }));
+
 
   const years = recentCases.map((c) => c.caseYear).sort((a, b) => a - b);
   const minYear = years[0] ?? 2017;
@@ -238,12 +278,12 @@ export default async function HomePage() {
         <div className="stat-grid">
           <div className="stat-card">
             <div className="stat-card-head">
-              <div className="stat-label">Kár — Összesen</div>
+              <div className="stat-label">Becsült / lehetséges kár</div>
               <div className="stat-id">/ KPI–01</div>
             </div>
             <div className="stat-value">{fmtFt(totalDamage)}</div>
             <div className="stat-unit">
-              Dokumentált, fiktív tesztadatok · {fmtNumber(activeCases)} ügy ·{' '}
+              K-Monitor adatbázis · valós dokumentált adatok · {fmtNumber(activeCases)} ügy ·{' '}
               {minYear}–{maxYear}
             </div>
             <Pie3D slices={moneySlices} palette={PALETTE_MONEY} className="donut" ariaLabel="Kár szektoronként" />
@@ -254,15 +294,69 @@ export default async function HomePage() {
               <div className="stat-label">Kiszabott börtönévek</div>
               <div className="stat-id">/ KPI–02</div>
             </div>
-            <div className="stat-value">{fmtNumber(totalPrisonYears)} év</div>
-            <div className="stat-unit">
-              Halmozott szabadságvesztés · {fmtNumber(activeCases)} ügy · átlag{' '}
-              {activeCases > 0
-                ? (totalPrisonYears / activeCases).toFixed(1).replace('.', ',')
-                : '0'}{' '}
-              év
+            {totalPrisonYears === 0 ? (
+              <>
+                <div className="stat-value">0 év</div>
+                <div className="stat-unit stat-unit-notice">
+                  2026. április 12-i rendszerváltás óta még nem ítéltek el jogerősen senkit.
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="stat-value">{fmtNumber(totalPrisonYears)} év</div>
+                <div className="stat-unit">
+                  Halmozott szabadságvesztés · {fmtNumber(activeCases)} ügy · átlag{' '}
+                  {activeCases > 0
+                    ? (totalPrisonYears / activeCases).toFixed(1).replace('.', ',')
+                    : '0'}{' '}
+                  év
+                </div>
+                <Pie3D slices={prisonSlices} palette={PALETTE_PRISON} className="donut" ariaLabel="Börtönévek szektoronként" />
+              </>
+            )}
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-card-head">
+              <div className="stat-label">Visszaszerzett vagyon</div>
+              <div className="stat-id">/ KPI–03</div>
             </div>
-            <Pie3D slices={prisonSlices} palette={PALETTE_PRISON} className="donut" ariaLabel="Börtönévek szektoronként" />
+            <div className="stat-value">~400 millió Ft</div>
+            <div className="stat-unit">
+              Visszautalt / visszakövetelt összeg · frissül az eljárások előrehaladásával
+            </div>
+            <div className="stat-recovered-list">
+              <div className="stat-recovered-item">
+                <div className="stat-recovered-bar" />
+                <div className="stat-recovered-body">
+                  <span className="stat-recovered-case">NKA-botrány</span>
+                  <span className="stat-recovered-amt">~400 M Ft</span>
+                </div>
+                <div className="stat-recovered-note">Tarr Zoltán visszautalt · 2026</div>
+              </div>
+              <div className="stat-recovered-more">
+                További visszaszerzések folyamatban — ügyenként frissítve
+              </div>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-card-head">
+              <div className="stat-label">Lemondások és kirúgások</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div className="stat-id">/ KPI–04</div>
+                <Link href="/resignations" className="stat-card-list-link">Teljes lista →</Link>
+              </div>
+            </div>
+            <div className="stat-value">{fmtNumber(resignationCount)}</div>
+            <div className="stat-unit">
+              Rögzített személyi változás 2026. április 12. óta
+            </div>
+            {resignationSlices.length > 0 ? (
+              <Pie3D slices={resignationSlices} palette={PALETTE_PRISON} className="donut" ariaLabel="Lemondások típusonként" />
+            ) : (
+              <div className="stat-unit" style={{ marginTop: 24 }}>Még nem érkezett adat.</div>
+            )}
           </div>
         </div>
       </section>
@@ -317,14 +411,22 @@ export default async function HomePage() {
                     <div className="corner-tag">
                       № {entry.id} / {rank}
                     </div>
-                    <Mugshot
-                      caseId={entry.id}
-                      name={entry.name}
-                      variant={entry.variant ?? 0}
-                      glasses={entry.glasses ?? false}
-                      hair={(entry.hair as GaleriaHair) ?? 'short'}
-                      detention={detention}
-                    />
+                    {entry.photoUrl ? (
+                      <img
+                        src={entry.photoUrl.startsWith('/') || entry.photoUrl.includes('wikimedia.org') ? entry.photoUrl : `/api/img-proxy?url=${encodeURIComponent(entry.photoUrl)}`}
+                        alt={entry.name}
+                        className="rogue-photo"
+                      />
+                    ) : (
+                      <Mugshot
+                        caseId={entry.id}
+                        name={entry.name}
+                        variant={entry.variant ?? 0}
+                        glasses={entry.glasses ?? false}
+                        hair={(entry.hair as GaleriaHair) ?? 'short'}
+                        detention={detention}
+                      />
+                    )}
                     {isBusted && (
                       <>
                         <div className="stamp">BUSTED</div>
@@ -454,6 +556,22 @@ export default async function HomePage() {
             moreUrl: '/galeria/semjen-zsolt',
             articles: [],
           },
+          {
+            id: 'pecsi-volvo-gate',
+            eyebrow: 'Aktív · Újabb nyomozás indult',
+            title: 'Pécsi Volvo-gate',
+            responsible: 'Bánki Erik',
+            videoId: 'feWPUeFNDmU',
+            summary: 'A pécsi Tüke Zrt. 2010-ben 115 használt Volvo buszt vásárolt Hollandiából 3,5 milliárd forintért — miközben azonos buszokat pár hónappal korábban 2,8 milliárdért kínáltak. A ~700 millió forintos közkárból 170 millió forint egy Bánki Erik fideszes képviselőhöz köthető cégnek folyt ki, 550 000 EUR részben Thaiföldre vándorolt. Éveken át eltussolták; Hadházy 2026-os feljelentése nyomán újabb nyomozás indult.',
+            statusItems: [
+              { icon: '💰', label: 'Becsült közkár', value: '~700 millió Ft (3,5 Mrd helyett 2,8 Mrd lett volna a piaci ár)' },
+              { icon: '💸', label: 'Bánki-közeli céghez folyt', value: '52 M Ft Bánki cégéhez · 550 000 EUR Thaiföldre utalva (170 M Ft)' },
+              { icon: '⚖️', label: 'Eljárás', value: 'Szekszárdi Törvényszék újratárgyalja · 2026-ban Hadházy feljelentése nyomán újabb nyomozás indult (Fejér Megyei Rendőrség)' },
+              { icon: '👤', label: 'Érintett', value: 'Bánki Erik — fideszes képviselő · tanúként harmadszor hallgatták meg 2025-ben' },
+            ],
+            moreUrl: '/volvo-gate',
+            articles: volvoArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
+          },
         ];
         return <BigCasesSection cases={bigCases} />;
       })()}
@@ -464,6 +582,14 @@ export default async function HomePage() {
           <div className="section-num">03 / Adatbázis</div>
           <h2 className="section-title">Az ügyek nyilvántartása.</h2>
         </div>
+        <p className="section-partner-note">
+          Együttműködő partnerünk a{' '}
+          <a href="https://k-monitor.hu" target="_blank" rel="noopener noreferrer">
+            <strong>K-Monitor</strong>
+          </a>{' '}
+          — az ő teljes, nyilvánosan hozzáférhető adatbázisuk (64 000+ dokumentált eset) szolgál
+          az itt látható elemzés alapjául. Az adatokat feldolgoztuk, szűrtük és rendszerezve jelenítjük meg.
+        </p>
 
         <CaseFilters
           regions={regions}
@@ -568,6 +694,7 @@ export default async function HomePage() {
                   rel="noopener noreferrer"
                   className="news-card feature"
                 >
+                  {featured.imageUrl && <NewsCardImage src={featured.imageUrl} />}
                   <div className="news-meta">
                     <span className="news-tag">★ Kiemelt</span>
                     <span className="news-time">{fmtRelative(featured.publishedAt)}</span>
@@ -585,6 +712,7 @@ export default async function HomePage() {
                   rel="noopener noreferrer"
                   className="news-card"
                 >
+                  {a.imageUrl && <NewsCardImage src={a.imageUrl} />}
                   <div className="news-meta">
                     <span className="news-tag">{a.tag ?? 'Hír'}</span>
                     <span className="news-time">{fmtRelative(a.publishedAt)}</span>
@@ -603,7 +731,7 @@ export default async function HomePage() {
       <ResignationsSection resignations={topResignations} />
 
       {/* ───── MEDIA CLOSURES ───── */}
-      <MediaClosuresSection closures={topClosures} />
+      <MediaClosuresSection />
 
       {/* ───── SUBMISSION CTA ───── */}
       <section className="submission" id="submission">
@@ -629,29 +757,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ───── MOBILE PREVIEW ───── */}
-      <HomeMobilePreview
-        topCases={GALERIA.slice(0, 4).map((entry) => ({
-          id: entry.id,
-          name: entry.name,
-          position: entry.subtitle,
-          region: '—',
-          caseYear: 2026,
-          amount: entry.amount,
-        }))}
-        topNews={recentArticles.slice(0, 5).map((a) => ({
-          id: a.id,
-          headline: a.headline,
-          tag: a.featured ? '★ Kiemelt' : a.tag ?? 'Hír',
-          time: fmtRelative(a.publishedAt),
-        }))}
-        kpiMoney={fmtFt(totalDamage)}
-        kpiYears={`${fmtNumber(totalPrisonYears)}`}
-        moneySlices={moneySlices}
-        prisonSlices={prisonSlices}
-        moneyPalette={PALETTE_MONEY}
-        prisonPalette={PALETTE_PRISON}
-      />
+      {/* HomeMobilePreview hidden */}
     </>
   );
 }

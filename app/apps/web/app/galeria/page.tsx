@@ -18,6 +18,8 @@ export default function GaleriaPage() {
   const [selected, setSelected] = useState(0);
   const active = GALERIA[selected];
 
+  if (!active) return null;
+
   return (
     <section className="rogues gal-page" id="galeria">
       <div className="rogues-inner">
@@ -43,7 +45,7 @@ export default function GaleriaPage() {
                 <span className={`dot ${entry.detention}`} style={{ marginRight: 8, flexShrink: 0 }} />
                 <div className="gal-nav-text">
                   <div className="gal-nav-name">{entry.name}</div>
-                  <div className="gal-nav-sub">{entry.subtitle.split('·')[0].trim()}</div>
+                  <div className="gal-nav-sub">{(entry.subtitle.split('·')[0] ?? '').trim()}</div>
                 </div>
               </button>
             ))}
@@ -54,7 +56,7 @@ export default function GaleriaPage() {
             <div className="gal-detail-mug">
               <div className={`rogue-mug-sm r-${active.detention}`}>
                 {active.photoUrl ? (
-                  <img src={active.photoUrl} alt={active.name} className="gal-photo" />
+                  <img src={active.photoUrl.startsWith('/') || active.photoUrl.includes('wikimedia.org') ? active.photoUrl : `/api/img-proxy?url=${encodeURIComponent(active.photoUrl)}`} alt={active.name} className="gal-photo" />
                 ) : (
                   <Mugshot
                     caseId={active.id}
@@ -66,6 +68,9 @@ export default function GaleriaPage() {
                   />
                 )}
                 <div className={`status-strip ${active.detention}`}>{active.detentionLabel}</div>
+                {active.photoCredit && (
+                  <div className="photo-credit">Fotó: {active.photoCredit}</div>
+                )}
               </div>
 
               <div className="gal-detail-meta">

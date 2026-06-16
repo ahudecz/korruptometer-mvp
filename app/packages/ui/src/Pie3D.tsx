@@ -68,7 +68,7 @@ export function Pie3D({
   if (total === 0) {
     return (
       <svg
-        viewBox="0 0 560 260"
+        viewBox="0 52 560 208"
         className={className}
         role="img"
         aria-label={ariaLabel}
@@ -138,7 +138,7 @@ export function Pie3D({
 
   return (
     <svg
-      viewBox="0 0 560 260"
+      viewBox="0 52 560 208"
       className={className}
       role="img"
       aria-label={ariaLabel}

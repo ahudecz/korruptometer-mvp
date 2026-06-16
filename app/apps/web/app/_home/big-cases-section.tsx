@@ -104,7 +104,7 @@ export function BigCasesSection({ cases }: { cases: BigCaseConfig[] }) {
   const [selected, setSelected] = useState(0);
   const active = cases[selected];
 
-  if (cases.length === 0) return null;
+  if (cases.length === 0 || !active) return null;
 
   return (
     <section className="section big-cases-section" id="legdurvabb-ugyek">

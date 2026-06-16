@@ -19,7 +19,32 @@ const TYPE_LABEL: Record<string, string> = {
   'Hivatalban van': '● Hivatalban van',
 };
 
+function ResignationRow({ r }: { r: PoliticalResignation }) {
+  const color = TYPE_COLOR[r.resignationType] ?? '#666';
+  return (
+    <tr key={r.id}>
+      <td style={{ fontWeight: 500 }}>{r.name}</td>
+      <td style={{ color: '#666' }}>{r.position}</td>
+      <td style={{ color: '#666' }}>{r.institution}</td>
+      <td>
+        <span className="elszamoltatas-badge" style={{
+          backgroundColor: `${color}18`,
+          color,
+        }}>
+          {TYPE_LABEL[r.resignationType] ?? r.resignationType}
+        </span>
+      </td>
+      <td style={{ color: '#666' }}>
+        {r.pinned ? '—' : new Date(r.resignationDate).toLocaleDateString('hu-HU')}
+      </td>
+    </tr>
+  );
+}
+
 export function ResignationsSection({ resignations }: Props) {
+  const pinned = resignations.filter(r => r.pinned);
+  const rest = resignations.filter(r => !r.pinned);
+
   return (
     <div className="lemondott-section-wrap">
     <section className="section elszamoltatas-section">
@@ -32,9 +57,7 @@ export function ResignationsSection({ resignations }: Props) {
         Intézmények, alapítványok és közszervezetek vezetői.
       </p>
 
-      {resignations.length === 0 ? (
-        <div className="empty-state">Még nincs adat ebben a kategóriában.</div>
-      ) : (
+      {pinned.length > 0 && (
         <div style={{ overflowX: 'auto', marginTop: '32px' }}>
           <table className="elszamoltatas-table">
             <thead>
@@ -47,27 +70,34 @@ export function ResignationsSection({ resignations }: Props) {
               </tr>
             </thead>
             <tbody>
-              {resignations.map((r) => (
-                <tr key={r.id} style={{ backgroundColor: r.pinned ? '#fafafa' : undefined }}>
-                  <td style={{ fontWeight: 500 }}>{r.name}</td>
-                  <td style={{ color: '#666' }}>{r.position}</td>
-                  <td style={{ color: '#666' }}>{r.institution}</td>
-                  <td>
-                    <span className="elszamoltatas-badge" style={{
-                      backgroundColor: `${TYPE_COLOR[r.resignationType] ?? '#666'}18`,
-                      color: TYPE_COLOR[r.resignationType] ?? '#666',
-                    }}>
-                      {TYPE_LABEL[r.resignationType] ?? r.resignationType}
-                    </span>
-                  </td>
-                  <td style={{ color: '#666' }}>
-                    {r.pinned ? '—' : new Date(r.resignationDate).toLocaleDateString('hu-HU')}
-                  </td>
-                </tr>
-              ))}
+              {pinned.map(r => <ResignationRow key={r.id} r={r} />)}
             </tbody>
           </table>
         </div>
+      )}
+
+      {rest.length > 0 && (
+        <>
+          <h3 className="elszamoltatas-sub-heading">
+            Legfrissebb lemondások, kirúgások és felmentések
+          </h3>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="elszamoltatas-table">
+              <thead>
+                <tr>
+                  <th>Név</th>
+                  <th>Pozíció</th>
+                  <th>Intézmény</th>
+                  <th>Státusz</th>
+                  <th>Dátum</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rest.map(r => <ResignationRow key={r.id} r={r} />)}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       <div className="elszamoltatas-more">

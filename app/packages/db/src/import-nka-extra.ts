@@ -15,7 +15,7 @@ if (!DB_URL) throw new Error('DATABASE_URL not set');
 const conn = postgres(DB_URL, { prepare: false, max: 1 });
 const db = drizzle(conn, { schema });
 
-// 7 NKA cikk — lemondások + háttér
+// NKA cikkek — lemondások + háttér + feljelentés
 const URLS = [
   'https://telex.hu/belfold/2026/04/28/bus-balazs-nka-alelnok-lemondott-fidesz-celebek',
   'https://telex.hu/belfold/2026/04/30/baan-laszlo-nemzeti-kulturalis-alap-bizottsagi-tagsag-lemondas',
@@ -24,6 +24,7 @@ const URLS = [
   'https://telex.hu/belfold/2026/04/30/nka-tamogatas-ibrany-bajnokok-ligaja-himnusz-nepzenei-feldolgozas',
   'https://telex.hu/after/2026/04/24/milliardokat-szort-ki-az-nka-titokban-a-fidesz-kampanyarcainak',
   'https://telex.hu/belfold/2026/05/02/vidnyanszky-attila-lemondott-a-nemzeti-kulturalis-alap-nka-bizottsagi-tagsagarol-hanko-balazs-tavozo-miniszter-milliardos-tamogatas-osztogatas-fidesz',
+  'https://telex.hu/belfold/2026/05/05/hutlen-kezeles-es-koltsegvetesi-csalas-gyanujaval-feljelentest-tettek-az-nka-tamogatasok-ugyeben',
 ];
 
 function dedupHash(url: string) {

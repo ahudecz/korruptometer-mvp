@@ -1,23 +1,67 @@
-import Link from 'next/link';
-import type { MediaClosure } from '@korr/db';
+'use client';
 
-interface Props {
-  closures: MediaClosure[];
+import React from 'react';
+import Link from 'next/link';
+import { MEDIA_OUTLETS, MEDIA_GROUPS, type MediaOutletEntry } from './media-config';
+
+function logoSrc(entry: MediaOutletEntry): string | null {
+  if (!entry.logoUrl) return null;
+  if (entry.logoUrl.startsWith('/')) return entry.logoUrl;
+  return `/api/img-proxy?url=${encodeURIComponent(entry.logoUrl)}`;
 }
 
-const TYPE_COLOR: Record<string, string> = {
-  'megszűnés': '#E31937',
-  'leépítés': '#FF9D00',
-  'elmaradt esemény': '#4B7AFF',
-};
+function MediaCard({ entry }: { entry: MediaOutletEntry }) {
+  const src = logoSrc(entry);
+  const isClosed = entry.status === 'closed';
+  const isFired = entry.status === 'fired-staff';
 
-const TYPE_LABEL: Record<string, string> = {
-  'megszűnés': '✕ Megszűnés',
-  'leépítés': '↓ Leépítés',
-  'elmaradt esemény': '⊘ Elmaradt',
-};
+  const statusColor = isClosed ? '#e31937' : isFired ? '#e8a000' : '#5c5e62';
 
-export function MediaClosuresSection({ closures }: Props) {
+  const imgStyle: React.CSSProperties = entry.logoScale
+    ? { transform: `scale(${entry.logoScale})`, objectFit: 'cover' }
+    : {};
+
+  return (
+    <div className={`media-card mc-${entry.status}`}>
+      <div className={`media-card-logo${entry.logoBgWhite ? ' bg-white' : ''}`}>
+        {src ? (
+          <img
+            src={src}
+            alt={entry.name}
+            loading="lazy"
+            style={imgStyle}
+            onError={(e) => {
+              const el = e.currentTarget;
+              el.style.display = 'none';
+              const parent = el.parentElement;
+              if (parent) {
+                parent.innerHTML = `<span class="media-logo-fallback">${entry.name.slice(0, 2).toUpperCase()}</span>`;
+              }
+            }}
+          />
+        ) : (
+          <span className="media-logo-fallback">{entry.name.slice(0, 2).toUpperCase()}</span>
+        )}
+      </div>
+      <div className="media-card-name">{entry.name}</div>
+      {entry.editorInChief && (
+        <div className="media-card-editor">{entry.editorInChief}</div>
+      )}
+      <p className="media-card-desc">{entry.description}</p>
+      <div className="media-card-status" style={{ background: `${statusColor}22`, color: statusColor, border: `1px solid ${statusColor}55` }}>
+        {entry.statusLabel}
+      </div>
+      <div className="media-card-owner">{entry.owner}</div>
+      {(isClosed || isFired) && (
+        <div className="mc-stamp" aria-hidden="true">
+          {isClosed ? 'MEGSZŰNT' : 'KIRÚGVA'}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function MediaClosuresSection() {
   return (
     <div className="megszunt-section-wrap">
       <section className="section elszamoltatas-section">
@@ -26,46 +70,27 @@ export function MediaClosuresSection({ closures }: Props) {
           <h2 className="section-title">Megszűnt-e már?</h2>
         </div>
         <p className="elszamoltatas-deck">
-          NER-közeli médiumok, műsorok és rendezvények, amelyek 2026. április 12.
-          óta megszűntek, leépültek, vagy elmaradtak.
+          A NER teljes sajtóbirodalma — KESMA napilapok, hetilapok, magazinok, online portálok, rádiók és TV-műsorok.
+          A Mediaworks a KESMA leányvállalata. Ami megszűnt, azt jelöltük. Ami kirúgta az összes újságíróját, azt narancssárgával jelöltük.
         </p>
 
-        {closures.length === 0 ? (
-          <div className="empty-state">Még nincs adat ebben a kategóriában.</div>
-        ) : (
-          <div style={{ overflowX: 'auto', marginTop: '32px' }}>
-            <table className="elszamoltatas-table">
-              <thead>
-                <tr>
-                  <th>Médium / Esemény</th>
-                  <th>Típus</th>
-                  <th>Dátum</th>
-                </tr>
-              </thead>
-              <tbody>
-                {closures.map((r) => (
-                  <tr key={r.id}>
-                    <td style={{ fontWeight: 500 }}>{r.name}</td>
-                    <td>
-                      <span className="elszamoltatas-badge" style={{
-                        backgroundColor: `${TYPE_COLOR[r.eventType] ?? '#666'}18`,
-                        color: TYPE_COLOR[r.eventType] ?? '#666',
-                      }}>
-                        {TYPE_LABEL[r.eventType] ?? r.eventType}
-                      </span>
-                    </td>
-                    <td style={{ color: '#666' }}>
-                      {new Date(r.eventDate).toLocaleDateString('hu-HU')}
-                    </td>
-                  </tr>
+        {MEDIA_GROUPS.map(group => {
+          const entries = MEDIA_OUTLETS.filter(e => e.group === group.key);
+          if (entries.length === 0) return null;
+          return (
+            <div key={group.key} className="media-group">
+              <div className="media-group-label">{group.label}</div>
+              <div className="media-grid">
+                {entries.map(entry => (
+                  <MediaCard key={entry.id} entry={entry} />
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              </div>
+            </div>
+          );
+        })}
 
         <div className="elszamoltatas-more">
-          <Link href="/megszunt">Tovább a teljes listához →</Link>
+          <Link href="/megszunt">Teljes eseménynapló →</Link>
         </div>
       </section>
     </div>

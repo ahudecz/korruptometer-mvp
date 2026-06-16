@@ -37,21 +37,27 @@ function fmtRelative(d: string): string {
 }
 
 function headlineKey(headline: string): string {
-  return headline
+  const words = headline
     .toLowerCase()
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9 ]/g, '')
+    .replace(/[^a-z0-9 ]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
     .split(' ')
-    .slice(0, 7)
-    .join(' ');
+    .filter(w => w.length > 4);
+  return words.sort().slice(0, 7).join(' ');
 }
 
 function ArticleCard({ a, feature }: { a: Article; feature?: boolean }) {
-  const textBody = (
-    <>
+  return (
+    <a
+      href={a.sourceUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`news-card${feature ? ' feature' : ''}`}
+    >
+      {a.imageUrl && <NewsCardImage src={a.imageUrl} />}
       <div className="news-meta">
         <span className="news-tag">{feature ? '★ Kiemelt' : (a.tag ?? 'Hír')}</span>
         <span className="news-time">{fmtRelative(a.publishedAt)}</span>
@@ -70,18 +76,6 @@ function ArticleCard({ a, feature }: { a: Article; feature?: boolean }) {
       ) : (
         <span className="news-source">{a.sourceName ?? a.sourceSlug ?? 'Forrás'}</span>
       )}
-    </>
-  );
-
-  return (
-    <a
-      href={a.sourceUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`news-card${feature ? ' feature' : ''}`}
-    >
-      {a.imageUrl && <NewsCardImage src={a.imageUrl} />}
-      {feature ? <div className="feature-text">{textBody}</div> : textBody}
     </a>
   );
 }

@@ -26,6 +26,9 @@ const KEYWORDS = [
   'lemond', 'kirúg', 'felment', 'leváltott', 'leváltják', 'lemondott',
   'kirúgták', 'felmentették', 'távozik', 'távozott', 'mond le',
   'leváltás', 'menesztés', 'menesztette', 'menesztik',
+  'elbocsát', 'elbocsátja', 'elbocsátják', 'elbocsátotta', 'elbocsátottak',
+  'megszünteti', 'megszüntetik', 'bezárják', 'bezárja', 'leáll', 'megszűnik',
+  'munkavállal', 'dolgozóit',
 ];
 
 async function main() {
