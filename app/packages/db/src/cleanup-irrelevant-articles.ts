@@ -30,14 +30,19 @@ const KEEP_PATTERNS = [
   '%pesti srácok%', '%Pesti Srácok%',
   '%világgazdaság%', '%Világgazdaság%',
   '%Takács Péter%', '%takács péter%',
-  '%aranykonvoj%', '%Aranykonvoj%',
   '%Semjén%', '%semjén%',
   '%Bánki Erik%', '%bánki erik%',
   '%Orbán Viktor%', '%orbán viktor%',
   '%NER %', '%NER-%',
+  '%Megafon%', '%megafon%',
+  '%Windisch%', '%windisch%',
+  '%Integritás Hatóság%', '%integritás hatóság%',
+  '%Polt Péter%', '%polt péter%',
+  '%Deák Dániel%', '%deák dániel%',
+  '%XXI. Század%', '%xxi. század%',
 ] as const;
 
-const KEEP_TAGS = ['NKA', 'MNB', 'Lemondás', 'volvo-gate'];
+const KEEP_TAGS = ['NKA', 'MNB', 'Lemondás', 'volvo-gate', 'Megafon'];
 
 async function main() {
   // 1. Összes cikk száma

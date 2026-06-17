@@ -28,6 +28,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'A KESMA zászlóshajója, egykor a Fidesz kormány félhivatalos szócsöve. A lap 2018-ban megszűnt, majd újraindult KESMA-kiadásban.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Magyar_Nemzet_logo_%282019%29.svg/320px-Magyar_Nemzet_logo_%282019%29.svg.png',
+    logoCredit: 'Wikimedia Commons',
+    logoBgWhite: true,
   },
   {
     id: 'bors',
@@ -60,9 +63,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Nógrád megye egyetlen nyomtatott napilapja. 2026. július 1-jével megszűnt a nyomtatott kiadás.',
     status: 'closed',
     statusLabel: 'Megszűnt (2026. júl. 1.)',
-    logoUrl: 'https://www.ipolyinfo.com/wp-content/uploads/2026/06/Kepkivagas-11.jpg',
-    logoCredit: 'ipolyinfo.hu',
-    logoScale: 1.4,
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2107522nogradlogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'heves-hirlap',
@@ -72,8 +75,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Heves megye regionális napilapja. 2026. július 1-jével megszűnt a nyomtatott kiadás.',
     status: 'closed',
     statusLabel: 'Megszűnt (2026. júl. 1.)',
-    logoUrl: 'https://media1.hu/wp-content/uploads/2021/11/heol.jpg',
-    logoCredit: 'media1.hu',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2105638heveshirlaplogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'pesti-sracok-print',
@@ -107,6 +111,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Konzervatív politikai hetilap / magazin, a KESMA-csoport egyik közéleti kiadványa.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Mandiner.hu.svg/240px-Mandiner.hu.svg.png',
+    logoCredit: 'Wikimedia Commons',
+    logoBgWhite: true,
   },
   {
     id: 'delmagyarorszag',
@@ -116,6 +123,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Dél-magyarországi regionális lap (Szeged), a KESMA-birodalom egyik sarokköve.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2104439delmagyarorszaglogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'eszak-magyarorszag',
@@ -125,6 +135,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Miskolc és Borsod-Abaúj-Zemplén megye regionális napilapja.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2104696eszakmologo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'kisalfold',
@@ -134,6 +147,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Győr-Moson-Sopron megye regionális napilapja.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2106153kisalfoldlogo103.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'petofi-nepe',
@@ -143,6 +159,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Bács-Kiskun megye napilapja, Kecskemét székhellyel.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2107643petofinepelogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'somogyi-hirlap',
@@ -152,6 +171,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Kaposvár székhelyű regionális napilap, Somogy megye.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2107934somogylogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'zalai-hirlap',
@@ -161,6 +183,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Zala megye napilapja, Zalaegerszeg székhellyel.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2113619zalailogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'vas-nepe',
@@ -170,6 +195,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Szombathely székhelyű, Vas megyei regionális lap.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2113345vasnepelogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'tolnai-nepujsag',
@@ -179,6 +207,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Tolna megye napilapja, Szekszárd székhellyel.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2112901tolnailogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'fejer-hirlap',
@@ -188,6 +219,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Fejér megye regionális napilapja, Székesfehérvár székhellyel.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2104919fejerhirlaplogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'hajdu-bihari',
@@ -197,6 +231,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Debrecen székhelyű, Hajdú-Bihar megye napilapja.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2105443hbnaplologo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'bekes-hirlap',
@@ -206,6 +243,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Békéscsaba székhelyű, Békés megye regionális napilapja.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2103955bekeshirlaplogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'kelet-magyarorszag',
@@ -215,6 +255,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Nyíregyháza székhelyű, Szabolcs-Szatmár-Bereg megye napilapja.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2106078keletmologo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'uj-neplap',
@@ -224,6 +267,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Jász-Nagykun-Szolnok megye napilapja, Szolnok székhellyel.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2113192ujneplaplogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'uj-dunantuli-naplo',
@@ -233,6 +279,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Pécsi székhelyű regionális napilap, Baranya megye.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2113161dunantulilogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'naplo',
@@ -242,6 +291,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Veszprém megye regionális napilapja, Veszprém székhellyel.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2107078naplologo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'ripost',
@@ -262,8 +314,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Ingyenes városi lap, terjesztve a tömegközlekedési csomópontokon.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
-    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2020/07/+otf/1920w/6+vL8nFyOS0QRoizK2TaBE5PVF9WRVJZX1NFQyVasADypyixtpeTc1wELnzAV8jN9LPpVckgrTQn3BZPDLMfxnO__5+U34yLGd3aNINXEKAPfHxBF2xH+sXh5Ldk=/7938949metrologo.png',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2106946metropollogo.png',
     logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'szabad-fold',
@@ -273,6 +326,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Vidéki gazdálkodóknak szóló hetilap, a KESMA-hálózat tagja.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2108419szabadfoldlogo68.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'vasarnap-reggel',
@@ -282,6 +338,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Hétvégi politikai hetilap, a KESMA-birodalom egyik közéleti kiadványa.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/21180310vasarnapreggellogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'fanny',
@@ -291,6 +350,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: "KESMA-kiadású women's magazin, magyarországi terjesztésű hetilap.",
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2104860fannylogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'hot',
@@ -300,6 +362,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Bulvár és celeb hetilap, a KESMA-kiadványok egyike.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2105810hotlogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'auto-motor',
@@ -309,6 +374,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Magyarország legrégebbi autós magazinja, KESMA-kiadásban megjelenő kétheti kiadvány.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2103742automotorlogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'lakaskultura',
@@ -318,6 +386,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Belsőépítészeti és otthon-dekorációs havilap, a KESMA magazin-portfóliójának tagja.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2106358lakulogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'videk-ize',
@@ -327,6 +398,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Gasztronómiai és vidéki életmód havilap, KESMA-kiadványok között.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2113471videkizelogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
 
   // ─── KESMA — ONLINE ─────────────────────────────────────────────────
@@ -339,8 +413,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'A Metropol ingyenes városi lap online verziója. A weboldal megszűnt.',
     status: 'closed',
     statusLabel: 'Megszűnt',
-    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2020/07/+otf/1920w/6+vL8nFyOS0QRoizK2TaBE5PVF9WRVJZX1NFQyVasADypyixtpeTc1wELnzAV8jN9LPpVckgrTQn3BZPDLMfxnO__5+U34yLGd3aNINXEKAPfHxBF2xH+sXh5Ldk=/7938949metrologo.png',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2106946metropollogo.png',
     logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'ripost-online',
@@ -383,6 +458,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Egykor az ország legnépszerűbb hírportálja — 2016 után a Fidesz-propaganda egyik leghatékonyabb eszközévé vált.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2107588origologo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'magyarnemzet-online',
@@ -392,6 +470,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'A Magyar Nemzet napilap online portálja, a KESMA digitális zászlóshajója.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Magyar_Nemzet_logo_%282019%29.svg/320px-Magyar_Nemzet_logo_%282019%29.svg.png',
+    logoCredit: 'Wikimedia Commons',
+    logoBgWhite: true,
   },
   {
     id: 'mandiner-online',
@@ -401,6 +482,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Konzervatív politikai hírportál és véleményoldal, a KESMA-hálózat meghatározó online lapja.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Mandiner.hu.svg/240px-Mandiner.hu.svg.png',
+    logoCredit: 'Wikimedia Commons',
+    logoBgWhite: true,
   },
   // Sor 2+: tematikus és regionális portálok
   {
@@ -420,6 +504,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'KESMA-kézben lévő híraggregátor portál.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2107493newsfeedlogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'life',
@@ -429,6 +516,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'KESMA-tulajdonú életmód és szórakoztató portál, széles olvasótáborral.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2106319lifelogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'she',
@@ -438,6 +528,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Nőknek szóló KESMA-portál, divat és lifestyle tartalommal.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2107906shelogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'mindmegette',
@@ -447,6 +540,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Az egyik legnépszerűbb magyar gasztronómiai portál, a KESMA-csoport tagja.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2024/10/7941761mindmegettelogo2rgb.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'likebalaton',
@@ -456,6 +552,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Balatoni turisztikai és életmód portál, KESMA-érdekeltségben.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2106458lblogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'boon',
@@ -465,6 +564,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Borsodi Online — az Észak-Magyarország napilap digitális megfelelője.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2104025boonlogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'delmagyar',
@@ -474,6 +576,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'A Délmagyarország napilap online portálja, Szeged és Csongrád-Csanád megye hírei.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2104416delmagyarlogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'duol',
@@ -483,6 +588,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Dunántúli Online — az Új Dunántúli Napló digitális portálja, Pécs és Baranya megye.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2104623duollogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'baon',
@@ -492,6 +600,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Bács-Kiskun Online — a Petőfi Népe napilap digitális megfelelője.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2103921baonlogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'sonline',
@@ -501,6 +612,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Somogy Online — a Somogyi Hírlap napilap digitális portálja.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2107968sonlinelogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'teol',
@@ -510,6 +624,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Tolna Online — a Tolnai Népújság napilap digitális megfelelője.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2112848teollogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'szoljon',
@@ -519,6 +636,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Szolnok és JNSz-megye hírportálja — az Új Néplap napilap online kiadása.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2108547szoljonlogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'vaol',
@@ -528,6 +648,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Vas Online — a Vas Népe napilap digitális portálja.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2113312vaollogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'zaol',
@@ -537,6 +660,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Zalai Online — a Zalai Hírlap napilap digitális portálja.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2113645zaollogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'haon',
@@ -546,6 +672,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Hajdú-Bihari Online — a Hajdú-Bihari Napló digitális megfelelője, Debrecen.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2105482haonlogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'beol',
@@ -555,6 +684,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Békés Online — a Békés Megyei Hírlap napilap digitális portálja.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2103994beollogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'kemma',
@@ -564,6 +696,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Komárom-Esztergom megye hírportálja, a 24 Óra napilap online kiadása.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2106101kemmalogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'heol',
@@ -573,6 +708,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Heves Online — a Heves Megyei Hírlap napilap digitális megfelelője.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2105510heollogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'nool',
@@ -582,6 +720,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Napló Online — a Napló (Veszprém megye) napilap digitális portálja.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2107547noollogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'feol',
@@ -591,6 +732,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Fejér Online — a Fejér Megyei Hírlap napilap digitális megfelelője.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2104951feollogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'kisalfold-online',
@@ -600,6 +744,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'A Kisalföld napilap online portálja, Győr-Moson-Sopron megye hírportálja.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2106193kisalfoldlogo43.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'szegedma',
@@ -609,6 +756,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Szegedi helyi hírportál, a KESMA regionális digitális jelenlétének része.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2025/11/3558528szegedma.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'mainap',
@@ -629,6 +779,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Kereskedelmi hírtelevízió, 2018-ban KESMA-érdekeltségbe kerülve a NER médiabirodalom részévé vált.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Hir_TV.svg/320px-Hir_TV.svg.png',
+    logoCredit: 'Wikimedia Commons',
+    logoBgWhite: true,
   },
   {
     id: 'igazsag-oraja',
@@ -675,6 +828,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Kereskedelmi rádiócsoport, a KESMA hálózatának tagja. Politikailag Fidesz-közeli tartalmakat sugárzott.',
     status: 'active',
     statusLabel: 'Aktív (NER-közeli)',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2023/06/6820518hirfmm-e1686894581476.jpg',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: 'retro-radio',

@@ -14,16 +14,16 @@ export function SiteFooter() {
         <h4>Adatok</h4>
         <ul>
           <li>
-            <a href="/hamarosan">Módszertan</a>
+            <a href="/modszertan">Módszertan</a>
           </li>
           <li>
-            <a href="/hamarosan">Forráshivatkozások</a>
+            <a href="/forrashivatkozasok">Forráshivatkozások</a>
           </li>
           <li>
-            <a href="/hamarosan">CSV letöltés</a>
+            <a href="/adatok">CSV letöltés</a>
           </li>
           <li>
-            <a href="/hamarosan">API hozzáférés</a>
+            <a href="/adatok">API hozzáférés</a>
           </li>
         </ul>
       </div>
@@ -31,16 +31,16 @@ export function SiteFooter() {
         <h4>Szervezet</h4>
         <ul>
           <li>
-            <a href="/hamarosan">Csapat</a>
+            <a href="/csapat">Csapat</a>
           </li>
           <li>
-            <a href="/hamarosan">Partnerek</a>
+            <a href="/partnerek">Partnerek</a>
           </li>
           <li>
-            <a href="/hamarosan">Sajtó</a>
+            <a href="/sajto">Sajtó</a>
           </li>
           <li>
-            <a href="/hamarosan">Adományozás</a>
+            <a href="/adomanyozas">Adományozás</a>
           </li>
         </ul>
       </div>
@@ -51,10 +51,10 @@ export function SiteFooter() {
             <a href="/bejelentes">Bejelentés tétele</a>
           </li>
           <li>
-            <a href="/hamarosan">Whistleblower védelem</a>
+            <a href="/whistleblower">Whistleblower védelem</a>
           </li>
           <li>
-            <a href="/hamarosan">Sajtóügynökség</a>
+            <a href="/sajto">Sajtókapcsolat</a>
           </li>
           <li>
             <a href="mailto:dpo@korruptometer.hu">Hibajelentés</a>

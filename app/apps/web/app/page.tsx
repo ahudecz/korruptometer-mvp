@@ -31,6 +31,23 @@ function pillClass(s: string): string {
   return 'pill folyamatban';
 }
 
+const HU_MONTHS_SHORT = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
+
+function fmtShortDate(d: Date): string {
+  return `${HU_MONTHS_SHORT[d.getMonth()]} ${d.getDate()}.`;
+}
+
+function fmtRecoveryDate(d: Date): string {
+  return `${d.getFullYear()}. ${HU_MONTHS_SHORT[d.getMonth()]}`;
+}
+
+const RESIGNATION_TYPE_COLOR: Record<string, string> = {
+  'lemondás': '#4B7AFF',
+  'kirúgás': '#E31937',
+  'felmentés': '#FF9D00',
+  'egyéb': '#888',
+};
+
 function fmtRelative(d: Date): string {
   const diff = Date.now() - d.getTime();
   const h = Math.floor(diff / 3_600_000);
@@ -128,6 +145,19 @@ export default async function HomePage() {
     .orderBy(sql`count(*) desc`);
 
   const closureCount = (await db.select({ c: count() }).from(schema.mediaClosures))[0]?.c ?? 0;
+
+  const allRecoveries = await db
+    .select()
+    .from(schema.assetRecoveries)
+    .orderBy(desc(schema.assetRecoveries.recoveredAt));
+  const latestRecoveries = allRecoveries.slice(0, 5);
+  const totalRecoveredFt = allRecoveries.reduce((s, r) => s + r.amountFt, 0n);
+
+  const latestResignations5 = await db
+    .select()
+    .from(schema.politicalResignations)
+    .orderBy(desc(schema.politicalResignations.resignationDate))
+    .limit(5);
   const recentCases = await db
     .select()
     .from(schema.cases)
@@ -319,24 +349,30 @@ export default async function HomePage() {
           <div className="stat-card">
             <div className="stat-card-head">
               <div className="stat-label">Visszaszerzett vagyon</div>
-              <div className="stat-id">/ KPI–03</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div className="stat-id">/ KPI–03</div>
+                <Link href="/visszaszerzett-vagyon" className="stat-card-list-link">Teljes lista →</Link>
+              </div>
             </div>
-            <div className="stat-value">~400 millió Ft</div>
-            <div className="stat-unit">
-              Visszautalt / visszakövetelt összeg · frissül az eljárások előrehaladásával
+            <div className="stat-value">{totalRecoveredFt > 0n ? fmtFt(totalRecoveredFt) : '—'}</div>
+            <div className="stat-unit stat-unit-fresh">
+              frissül az eljárások előrehaladásával
             </div>
+            <h3 className="stat-card-list-title">Legfrissebb visszaszerzések</h3>
             <div className="stat-recovered-list">
-              <div className="stat-recovered-item">
-                <div className="stat-recovered-bar" />
-                <div className="stat-recovered-body">
-                  <span className="stat-recovered-case">NKA-botrány</span>
-                  <span className="stat-recovered-amt">~400 M Ft</span>
+              {latestRecoveries.map((r) => (
+                <div key={r.id} className="stat-recovered-item">
+                  <div className="stat-recovered-bar" />
+                  <div className="stat-recovered-body">
+                    <span className="stat-recovered-case">{r.caseLabel}</span>
+                    <span className="stat-recovered-amt">{fmtFt(r.amountFt)}</span>
+                  </div>
+                  <div className="stat-recovered-note">{r.description} · {fmtRecoveryDate(r.recoveredAt)}</div>
                 </div>
-                <div className="stat-recovered-note">Tarr Zoltán visszautalt · 2026</div>
-              </div>
-              <div className="stat-recovered-more">
-                További visszaszerzések folyamatban — ügyenként frissítve
-              </div>
+              ))}
+              {latestRecoveries.length === 0 && (
+                <div className="stat-recovered-more">Még nincs rögzített visszaszerzés.</div>
+              )}
             </div>
           </div>
 
@@ -349,11 +385,29 @@ export default async function HomePage() {
               </div>
             </div>
             <div className="stat-value">{fmtNumber(resignationCount)}</div>
-            <div className="stat-unit">
-              Rögzített személyi változás 2026. április 12. óta
+            <div className="stat-unit stat-unit-fresh">
+              2026. április 12. óta
             </div>
-            {resignationSlices.length > 0 ? (
-              <Pie3D slices={resignationSlices} palette={PALETTE_PRISON} className="donut" ariaLabel="Lemondások típusonként" />
+            <h3 className="stat-card-list-title">Legfrissebb személyi változások</h3>
+            {latestResignations5.length > 0 ? (
+              <div className="stat-resigned-list">
+                {latestResignations5.map((r) => (
+                  <div key={r.id} className="stat-resigned-item">
+                    <span
+                      className="stat-resigned-dot"
+                      style={{ background: RESIGNATION_TYPE_COLOR[r.resignationType] ?? '#888' }}
+                    />
+                    <div className="stat-resigned-body">
+                      <span className="stat-resigned-name">{r.name}</span>
+                      <span className="stat-resigned-pos">{r.position}</span>
+                    </div>
+                    {r.description && (
+                      <span className="stat-resigned-desc">{r.description}</span>
+                    )}
+                    <span className="stat-resigned-date">{fmtShortDate(r.resignationDate)}</span>
+                  </div>
+                ))}
+              </div>
             ) : (
               <div className="stat-unit" style={{ marginTop: 24 }}>Még nem érkezett adat.</div>
             )}
@@ -362,7 +416,7 @@ export default async function HomePage() {
       </section>
 
       {/* ───── TICKER ───── */}
-      <Ticker items={tickerItems} />
+      {/* <Ticker items={tickerItems} /> */}
 
       {/* ───── ROGUES GALLERY ───── */}
       <section className="rogues" id="rogues">
@@ -402,7 +456,7 @@ export default async function HomePage() {
               const isWanted = detention === 'wanted';
               const rank = String(idx + 1).padStart(2, '0');
               return (
-                <Link key={entry.id} href={`/galeria/${entry.id}`} className={`rogue r-${detention}`} style={{ display: 'block', color: 'inherit', textDecoration: 'none' }}>
+                <Link key={entry.id} href={`/galeria/${entry.id}`} className={`rogue r-${detention}`} style={{ color: 'inherit', textDecoration: 'none' }}>
                   <div className="rogue-rank">
                     <span>№ {rank}</span>
                     <span className="id">{entry.id}</span>
@@ -479,7 +533,7 @@ export default async function HomePage() {
               { icon: '🚪', label: 'Lemondások', value: 'Bús Balázs (alelnök, ápr. 28.) · Báán László (ápr. 30.) · Vidnyánszky Attila (máj. 2.) — mind lemondtak az NKA bizottságból' },
             ],
             articleTag: 'NKA',
-            moreUrl: '/hirek?tag=NKA',
+            moreUrl: '/ugyek/nka-botrany',
             articles: nkaArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
           },
           {
@@ -494,7 +548,7 @@ export default async function HomePage() {
               { icon: '👤', label: 'Érintett', value: 'Takács Péter sógora — 8 Mrd Ft osztalékot vett fel a Fourcardinalból' },
               { icon: '⚖️', label: 'Státusz', value: 'Nincs büntetőeljárás — KEHI és NAV "nem talált szabálytalanságot"' },
             ],
-            moreUrl: '/hirek?q=l%C3%A9legeztet%C5%91g%C3%A9p',
+            moreUrl: '/ugyek/lelegeztetogep',
             articles: lelegArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
           },
           {
@@ -509,7 +563,7 @@ export default async function HomePage() {
               { icon: '❓', label: 'Forrás', value: 'Ismeretlen — összeegyeztethetetlen a vagyonnyilatkozattal' },
               { icon: '⚖️', label: 'Státusz', value: 'Nincs ismert büntetőeljárás' },
             ],
-            moreUrl: '/hirek?q=hatvanpuszta',
+            moreUrl: '/ugyek/hatvanpuszta',
             articles: hatvanArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
           },
           {
@@ -524,7 +578,7 @@ export default async function HomePage() {
               { icon: '🏦', label: 'Lefoglalt', value: 'Arany + deviza — pontos összeg nem nyilvános' },
               { icon: '👤', label: 'Kapcsolat', value: 'Orbán-körhöz köthető személyek érintettségét veti fel az ügyvéd' },
             ],
-            moreUrl: '/hirek?q=aranykonvoj',
+            moreUrl: '/ugyek/aranykonvoj',
             articles: aranyArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
           },
           {
@@ -539,7 +593,7 @@ export default async function HomePage() {
               { icon: '📋', label: 'Feltárta', value: 'ÁSZ (Állami Számvevőszék) — kiszivárgott jelentés-tervezet' },
               { icon: '⚖️', label: 'Nyomozás', value: 'Ügyészség 2026-ban indított nyomozást — hűtlen kezelés gyanúja' },
             ],
-            moreUrl: '/galeria/matolcsy-gyorgy',
+            moreUrl: '/ugyek/mnb-botrany',
             articles: mnbArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
           },
           {
@@ -553,7 +607,7 @@ export default async function HomePage() {
               { icon: '⛪', label: 'Egyházi normatíva-különbözet', value: '30–40%-kal több, mint állami iskoláknak · évente több tízmilliárd Ft' },
               { icon: '🏠', label: 'Ingatlanvisszaadás', value: 'Milliárd négyzetméternyi állami ingatlan egyházaknak — sokszor bizonyítatlan igény alapján' },
             ],
-            moreUrl: '/galeria/semjen-zsolt',
+            moreUrl: '/ugyek/zsolt-bacsi',
             articles: [],
           },
           {
@@ -569,12 +623,14 @@ export default async function HomePage() {
               { icon: '⚖️', label: 'Eljárás', value: 'Szekszárdi Törvényszék újratárgyalja · 2026-ban Hadházy feljelentése nyomán újabb nyomozás indult (Fejér Megyei Rendőrség)' },
               { icon: '👤', label: 'Érintett', value: 'Bánki Erik — fideszes képviselő · tanúként harmadszor hallgatták meg 2025-ben' },
             ],
-            moreUrl: '/volvo-gate',
+            moreUrl: '/ugyek/pecsi-volvo-gate',
             articles: volvoArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
           },
         ];
         return <BigCasesSection cases={bigCases} />;
       })()}
+
+      <div className="block-divider" />
 
       {/* ───── DATABASE PREVIEW ───── */}
       <section className="section" id="database">

@@ -40,7 +40,7 @@ function CaseDetail({ c }: { c: BigCaseConfig }) {
     return (
       <div className="big-case-coming-soon">
         <div className="big-case-coming-icon">⏳</div>
-        <p className="big-case-coming-text">Ez az ügy hamarosan kerül fel a Korruptométerre.</p>
+        <p className="big-case-coming-text">Ez az ügy hamarosan kerül fel a Kegyencjáratra.</p>
       </div>
     );
   }

@@ -1,5 +1,6 @@
 import { desc } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
+import { WatchlistGrid } from '../_home/watchlist-grid';
 
 export const revalidate = 120;
 
@@ -7,7 +8,6 @@ function typeLabel(t: string): string {
   if (t === 'lemondás') return '↓ Lemondás';
   if (t === 'kirúgás') return '✕ Kirúgás';
   if (t === 'felmentés') return '⟲ Felmentés';
-  if (t === 'Hivatalban van') return '● Hivatalban van';
   return t;
 }
 
@@ -15,7 +15,6 @@ function typeColor(t: string): string {
   if (t === 'lemondás') return '#4B7AFF';
   if (t === 'kirúgás') return '#E31937';
   if (t === 'felmentés') return '#FF9D00';
-  if (t === 'Hivatalban van') return '#888';
   return '#666';
 }
 
@@ -26,7 +25,7 @@ function Row({ r }: { r: Awaited<ReturnType<typeof fetchRows>>[number] }) {
   return (
     <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
       <td style={{ ...cellStyle, whiteSpace: 'nowrap' as const }}>
-        {r.pinned ? '—' : new Date(r.resignationDate).toLocaleDateString('hu-HU')}
+        {new Date(r.resignationDate).toLocaleDateString('hu-HU')}
       </td>
       <td style={cellStyle}>
         <span style={{
@@ -54,7 +53,7 @@ async function fetchRows() {
   return db
     .select()
     .from(schema.politicalResignations)
-    .orderBy(desc(schema.politicalResignations.pinned), desc(schema.politicalResignations.resignationDate))
+    .orderBy(desc(schema.politicalResignations.resignationDate))
     .limit(100);
 }
 
@@ -73,7 +72,6 @@ const tableHead = (
 
 export default async function ResignationsPage() {
   const rows = await fetchRows();
-  const pinned = rows.filter(r => r.pinned);
   const rest = rows.filter(r => !r.pinned);
 
   return (
@@ -84,50 +82,42 @@ export default async function ResignationsPage() {
           <h2 className="section-title">Lemondott-e már?</h2>
         </div>
 
-        <p className="rogues-deck" style={{ marginTop: 24, marginBottom: 24, color: 'var(--ink)' }}>
-          Lemondások, kirúgások és felmentések politikai személyeknél — AI által
-          folyamatosan követve.
+        <p className="rogues-deck" style={{ marginTop: 24, marginBottom: 0, color: 'var(--ink)' }}>
+          Magyar Péter lemondásra szólította fel a NER kulcsintézményeinek vezetőit — ha valamelyikük
+          távozik, a kártyáján megjelenik. Lemondásra szólította fel Sulyok Tamás köztársasági elnököt,
+          valamint azokat, akiket ő a rendszer tartóoszlopainak nevez: a Kúria elnökét, az
+          Alkotmánybíróság elnökét, a legfőbb ügyészt, az Állami Számvevőszék elnökét, a Gazdasági
+          Versenyhivatal elnökét, a Médiahatóság elnökét és az Országos Bírói Hivatal elnökét.
         </p>
 
-        {rows.length === 0 ? (
-          <div className="empty-state" style={{ marginTop: 32 }}>Nincs adat.</div>
-        ) : (
-          <>
-            {pinned.length > 0 && (
-              <div style={{ overflowX: 'auto', marginTop: 32 }}>
-                <table style={{ width: '100%', fontSize: '14px', lineHeight: '1.6' }}>
-                  {tableHead}
-                  <tbody>
-                    {pinned.map(r => <Row key={r.id} r={r} />)}
-                  </tbody>
-                </table>
-              </div>
-            )}
+        <WatchlistGrid />
 
-            {rest.length > 0 && (
-              <>
-                <h2 style={{
-                  fontSize: '18px',
-                  fontWeight: 600,
-                  marginTop: '48px',
-                  marginBottom: '16px',
-                  paddingTop: '24px',
-                  borderTop: '1px solid #e5e5e5',
-                  color: 'var(--ink)',
-                }}>
-                  Legfrissebb lemondások, kirúgások és felmentések
-                </h2>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', fontSize: '14px', lineHeight: '1.6' }}>
-                    {tableHead}
-                    <tbody>
-                      {rest.map(r => <Row key={r.id} r={r} />)}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            )}
+        {rest.length > 0 && (
+          <>
+            <h2 style={{
+              fontSize: '18px',
+              fontWeight: 600,
+              marginTop: '48px',
+              marginBottom: '16px',
+              paddingTop: '24px',
+              borderTop: '1px solid #e5e5e5',
+              color: 'var(--ink)',
+            }}>
+              Legfrissebb lemondások, kirúgások és felmentések
+            </h2>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', fontSize: '14px', lineHeight: '1.6' }}>
+                {tableHead}
+                <tbody>
+                  {rest.map(r => <Row key={r.id} r={r} />)}
+                </tbody>
+              </table>
+            </div>
           </>
+        )}
+
+        {rows.length === 0 && (
+          <div className="empty-state" style={{ marginTop: 32 }}>Nincs adat.</div>
         )}
       </section>
     </div>

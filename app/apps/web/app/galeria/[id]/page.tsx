@@ -5,6 +5,7 @@ import { desc, ilike, or, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { Mugshot } from '@korr/ui/mugshot';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from '../../_home/galeria-config';
+import { UGYEK } from '../../_home/ugyek-config';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +23,8 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const { id } = await params;
   const entry = GALERIA.find((e) => e.id === id);
   if (!entry) notFound();
+
+  const relatedCases = UGYEK.filter(u => u.relatedPersonIds?.includes(id));
 
   const db = getDb();
 
@@ -104,22 +107,33 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       </div>
 
       <div className="person-body">
-        {/* Video placeholder */}
-        <div className="person-video-wrap">
-          {entry.videoId ? (
-            <iframe
-              src={`https://www.youtube.com/embed/${entry.videoId}`}
-              title={`${entry.name} – összefoglaló videó`}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          ) : (
+        {entry.videoId && (
+          <>
+            {(entry.videoTitle || entry.videoSummary) && (
+              <div className="person-video-teaser">
+                {entry.videoChannel && <div className="person-video-teaser-channel">{entry.videoChannel}</div>}
+                {entry.videoTitle && <h3 className="person-video-teaser-title">{entry.videoTitle}</h3>}
+                {entry.videoSummary && <p className="person-video-teaser-desc">{entry.videoSummary}</p>}
+              </div>
+            )}
+            <div className="person-video-wrap">
+              <iframe
+                src={`https://www.youtube.com/embed/${entry.videoId}`}
+                title={entry.videoTitle ?? `${entry.name} – összefoglaló videó`}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </>
+        )}
+        {!entry.videoId && (
+          <div className="person-video-wrap">
             <div className="person-video-placeholder">
               <div className="person-video-icon">▶</div>
               <p>Összefoglaló videó hamarosan</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Individual cases */}
         {entry.personCases && entry.personCases.length > 0 && (
@@ -161,6 +175,38 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Related big cases */}
+        {relatedCases.length > 0 && (
+          <div className="person-related-cases">
+            <h2 className="person-section-title">Kapcsolódó nagy ügyek</h2>
+            <p className="person-section-note">
+              Az alábbi ügyek sajtójelentések alapján hozhatók összefüggésbe ezzel a személlyel.
+            </p>
+            <div className="person-related-cases-grid">
+              {relatedCases.map(u => (
+                <Link key={u.id} href={`/ugyek/${u.id}`} className="person-related-case-card">
+                  <div className="person-related-case-eyebrow">{u.eyebrow.split('·')[0].trim()}</div>
+                  <div className="person-related-case-title">{u.title}</div>
+                  {u.estimatedDamage && (
+                    <div className="person-related-case-dmg">
+                      <span className="person-related-case-dmg-lbl">Becsült kár</span>
+                      <span className="person-related-case-dmg-val">{u.estimatedDamage}</span>
+                    </div>
+                  )}
+                  {u.crimeTypes && u.crimeTypes.length > 0 && (
+                    <div className="person-related-case-tags">
+                      {u.crimeTypes.slice(0, 2).map(c => (
+                        <span key={c} className="tag tag-sm">{c}</span>
+                      ))}
+                    </div>
+                  )}
+                  <div className="person-related-case-cta">Teljes ügy →</div>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
 

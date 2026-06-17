@@ -37,6 +37,7 @@ const KEYWORDS = [
   // NER-specifikus ügyek
   'lélegeztetőgép',
   'akkugyár',
+  'megafon',
   // Sajtó, média — csak specifikus, NER-közeli cégek/kiadványok
   'mediaworks',
   // KESMA csoport — nyomtatott

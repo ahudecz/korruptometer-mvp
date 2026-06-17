@@ -619,3 +619,28 @@ export const mediaClosures = pgTable(
 
 export type MediaClosure = typeof mediaClosures.$inferSelect;
 export type NewMediaClosure = typeof mediaClosures.$inferInsert;
+
+// ─── Asset Recoveries Tracker ─────────────────────────────────────────────
+
+export const assetRecoveries = pgTable(
+  'AssetRecovery',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    caseId: text('caseId').notNull(),
+    caseLabel: text('caseLabel').notNull(),
+    description: text('description').notNull(),
+    amountFt: bigint('amountFt', { mode: 'bigint' }).notNull(),
+    recoveredAt: timestamp('recoveredAt', { withTimezone: true }).notNull(),
+    sourceUrl: text('sourceUrl'),
+    sourceName: text('sourceName'),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    caseIdIdx: index('AssetRecovery_caseId_idx').on(t.caseId),
+    recoveredAtIdx: index('AssetRecovery_recoveredAt_idx').on(t.recoveredAt),
+    amountIdx: index('AssetRecovery_amountFt_idx').on(t.amountFt),
+  }),
+);
+
+export type AssetRecovery = typeof assetRecoveries.$inferSelect;
+export type NewAssetRecovery = typeof assetRecoveries.$inferInsert;
