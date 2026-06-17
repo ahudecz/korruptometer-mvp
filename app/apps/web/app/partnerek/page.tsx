@@ -95,7 +95,7 @@ export default function PartnerekPage() {
             Ha szervezeted adatokat gyűjt magyarországi korrupcióval, közpénzekkel
             vagy elszámoltathatósággal kapcsolatban, és az együttműködés valamilyen
             formájában gondolkozol, írj a{' '}
-            <a href="mailto:dpo@korruptometer.hu">dpo@korruptometer.hu</a> címre.
+            <a href="mailto:hello@kegyencjarat.hu">hello@kegyencjarat.hu</a> címre.
             Nem vállalunk minden felkérést, de minden megkeresésre válaszolunk.
           </p>
 

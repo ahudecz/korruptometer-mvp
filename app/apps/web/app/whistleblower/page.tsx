@@ -27,8 +27,7 @@ export default function WhistleblowerPage() {
           <p>
             Az Európai Unió 2019-ben fogadta el a visszaélés-bejelentők védelméről szóló
             irányelvet (<strong>EU 2019/1937</strong>). Magyarország ezt 2023-ban ültette át
-            a nemzeti jogba a <strong>2023. évi XXV. törvénnyel</strong> — „a visszaélések
-            bejelentőinek védelméről."
+            a nemzeti jogba a <strong>2023. évi XXV. törvénnyel</strong> {'— „a visszaélések bejelentőinek védelméről."'}
           </p>
 
           <p>

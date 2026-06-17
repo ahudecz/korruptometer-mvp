@@ -38,7 +38,7 @@ export default function AdatokPage() {
               <li>utolsó módosítás dátuma</li>
             </ul>
             <p>
-              A CSV-t <a href="mailto:dpo@korruptometer.hu">emailben kérheted</a> addig
+              A CSV-t <a href="mailto:hello@kegyencjarat.hu">emailben kérheted</a> addig
               is — egy munkanapon belül elküldjük.
             </p>
           </div>
@@ -59,7 +59,7 @@ export default function AdatokPage() {
             <p>
               Az API kulcs nélkül, rate-limittel lesz elérhető. Nagyobb forgalmú
               hozzáférés esetén regisztrációhoz kötjük. Ha az API-t aktívan várod,{' '}
-              <a href="mailto:dpo@korruptometer.hu">jelezd emailben</a> — a kereslet
+              <a href="mailto:hello@kegyencjarat.hu">jelezd emailben</a> — a kereslet
               befolyásolja a fejlesztési prioritásokat.
             </p>
           </div>

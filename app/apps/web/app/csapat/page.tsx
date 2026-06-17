@@ -77,7 +77,7 @@ export default function CsapatPage() {
 
           <p>
             Ha az ellenőrzésben, adatgyűjtésben vagy jogi háttérrel szeretnél segíteni,
-            írj a <a href="mailto:dpo@korruptometer.hu">dpo@korruptometer.hu</a> címre.
+            írj a <a href="mailto:hello@kegyencjarat.hu">hello@kegyencjarat.hu</a> címre.
             Nem fizetünk, de a munkádat jóváírjuk, ha nyilvánossá válik az oldal mögötti
             csapat.
           </p>

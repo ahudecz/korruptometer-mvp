@@ -213,7 +213,7 @@ export default function ForrashivatkozasokPage() {
             url="https://nyugatifeny.hu"
             label="Eseti"
           >
-            A „Jövő Nemzedék Földje" alapítványi nyereség feltárásához (Lázár-ügy) hivatkozzuk.
+            {'A „Jövő Nemzedék Földje" alapítványi nyereség feltárásához (Lázár-ügy) hivatkozzuk.'}
           </SourceEntry>
 
           <SourceEntry

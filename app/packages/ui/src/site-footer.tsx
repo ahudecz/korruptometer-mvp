@@ -57,7 +57,7 @@ export function SiteFooter() {
             <a href="/sajto">Sajtókapcsolat</a>
           </li>
           <li>
-            <a href="mailto:dpo@korruptometer.hu">Hibajelentés</a>
+            <a href="mailto:hello@kegyencjarat.hu">Hibajelentés</a>
           </li>
         </ul>
       </div>

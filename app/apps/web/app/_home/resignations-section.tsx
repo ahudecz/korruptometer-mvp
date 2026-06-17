@@ -85,7 +85,7 @@ export function ResignationsSection({ resignations }: Props) {
       )}
 
       <div className="elszamoltatas-more">
-        <Link href="/resignations">Tovább a teljes listához →</Link>
+        <Link href="/lemondosok">Tovább a teljes listához →</Link>
       </div>
     </section>
     </div>

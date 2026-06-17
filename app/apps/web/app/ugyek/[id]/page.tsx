@@ -5,6 +5,7 @@ import { desc, ilike, or, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { UGYEK } from '../../_home/ugyek-config';
 import { GALERIA } from '../../_home/galeria-config';
+import { CrossLemondosok, CrossMegszunt } from '../../_home/cross-promo';
 
 export const dynamic = 'force-dynamic';
 
@@ -93,7 +94,7 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
               </div>
             )}
             <div className="person-status-badge" style={{ background: badgeColor }}>
-              {entry.eyebrow.split('·')[0].trim()}
+              {(entry.eyebrow.split('·')[0] ?? '').trim()}
             </div>
             {photoCredit && (
               <div className="photo-credit">Fotó: {photoCredit}</div>
@@ -256,12 +257,18 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
           <div className="ugyek-more-grid">
             {UGYEK.filter(e => e.id !== entry.id).map(e => (
               <Link key={e.id} href={`/ugyek/${e.id}`} className="ugyek-more-card">
-                <div className="ugyek-more-eyebrow">{e.eyebrow.split('·')[0].trim()}</div>
+                <div className="ugyek-more-eyebrow">{(e.eyebrow.split('·')[0] ?? '').trim()}</div>
                 <div className="ugyek-more-title">{e.title}</div>
                 {e.responsible && <div className="ugyek-more-sub">{e.responsible}</div>}
               </Link>
             ))}
           </div>
+        </div>
+      </div>
+      <div className="cross-promo-below-more">
+        <div className="cross-promo-below-more-inner">
+          <CrossLemondosok />
+          <CrossMegszunt />
         </div>
       </div>
     </div>

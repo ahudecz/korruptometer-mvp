@@ -381,7 +381,7 @@ export default async function HomePage() {
               <div className="stat-label">Lemondások és kirúgások</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div className="stat-id">/ KPI–04</div>
-                <Link href="/resignations" className="stat-card-list-link">Teljes lista →</Link>
+                <Link href="/lemondosok" className="stat-card-list-link">Teljes lista →</Link>
               </div>
             </div>
             <div className="stat-value">{fmtNumber(resignationCount)}</div>
@@ -528,7 +528,7 @@ export default async function HomePage() {
             videoId: 'NRA-QuItdUA',
             statusItems: [
               { icon: '⚖️', label: 'Nyomozás', value: 'NAV — hűtlen kezelés + költségvetési csalás (Győr is)' },
-              { icon: '💰', label: 'Visszaszerzett vagyon', value: '~400 millió Ft' },
+              { icon: '💰', label: 'Visszaszerzett vagyon', value: '~2,1 milliárd Ft visszaadva + 22 milliárd Ft visszakövetelve (Élvonal)' },
               { icon: '👤', label: 'Felelős', value: 'Hankó Balázs — volt kulturális miniszter' },
               { icon: '🚪', label: 'Lemondások', value: 'Bús Balázs (alelnök, ápr. 28.) · Báán László (ápr. 30.) · Vidnyánszky Attila (máj. 2.) — mind lemondtak az NKA bizottságból' },
             ],
@@ -780,6 +780,9 @@ export default async function HomePage() {
               ))}
             </div>
           )}
+          <div className="news-more-wrap">
+            <Link href="/hirek" className="news-more-btn">Tovább az összes hírre →</Link>
+          </div>
         </section>
       </div>
 

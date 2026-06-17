@@ -28,7 +28,7 @@ export default function SajtoPage() {
             <div className="adom-cost-row">
               <span className="adom-cost-label">Sajtómegkeresések</span>
               <span className="adom-cost-val">
-                <a href="mailto:dpo@korruptometer.hu">dpo@korruptometer.hu</a>
+                <a href="mailto:hello@kegyencjarat.hu">hello@kegyencjarat.hu</a>
               </span>
             </div>
             <div className="adom-cost-row">
@@ -50,7 +50,7 @@ export default function SajtoPage() {
             Véleményt, kommentárt, szerkesztői álláspontot nem adunk sajtónak.
             Az adatokért, módszertanért és a megjelenített összefüggések pontosságáért
             helytállunk — de nem nyilatkozunk politikai kérdésekben, és nem vállalunk
-            „szakértői" szerepet.
+            {'„szakértői"'} szerepet.
           </p>
 
           <h3 className="modszertan-h3">Sajtóanyagok</h3>

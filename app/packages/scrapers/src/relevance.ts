@@ -16,9 +16,11 @@ const KEYWORDS = [
   'bánki erik',
   'pócs jános', 'rétvári bence', 'gulyás gergely',
   'sulyok tamás', 'polt péter',
+  'kubatov gábor', 'kubatov',
   // Intézmények / ügyek
   'nka ', 'nemzeti kulturális alap',
   'mnb ', 'jegybank', 'magyar nemzeti bank',
+  'állami számvevőszék', 'számvevőszék', 'ász ',
   'aranykonvoj',
   'volvo gate', 'volvo-gate', 'tüke zrt', 'tüke busz',
   // Helyek / NER-specifikus témák

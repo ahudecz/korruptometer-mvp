@@ -70,7 +70,7 @@ export const UGYEK: UgyekConfig[] = [
     videoSummary: 'Egy bennfentes forráson keresztül tárja fel ez a videó, hogyan osztotta ki Hankó Balázs kulturális miniszter a választások előtt a közpénzeket az NKA-n keresztül. Az ügyet elsőként hozó riporter egyenesen a forrástól hallja a részleteket.',
     additionalVideos: [
       { id: 'OfMzRRIJ9WQ', label: 'Telex', title: 'Segélyszervezetnek tűnt, aztán rájöttünk, hogy ez a Fidesz – az NKA-botrány mélyére mentünk' },
-      { id: 'df2GNzmh7pY', label: 'ATV', title: 'Botrányos kifizetések az NKA-nál: Rónai Egon megizzasztotta a minisztert' },
+      { id: 'df2GNzmh7pY', label: 'ATV', title: 'Botrányos kifizetések az NKA-nál: Rónai Egon megizzasztotta Hankó Balázs ex-minisztert' },
       { id: 'L8DWqeZp2l4', label: 'Partizán', title: 'Újabb 700 millió Orbán Ráhel lieblingjének, milliárdok a csókosoknak | Közpénzszivattyú az NKA-nál' },
       { id: 'vdNQGR9kzYk', label: 'ATV', title: 'NKA-botrány: Magyar Péter is megszólalt az ügyben' },
       { id: 'zAx4e6GhVQQ', label: 'ATV', title: '"Nagyon sok minden van, amiről nem tudunk" – Az NKA-botrány csak a jéghegy csúcsa?' },

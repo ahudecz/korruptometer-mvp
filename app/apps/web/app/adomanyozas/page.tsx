@@ -69,7 +69,7 @@ export default function AdomanyozasPage() {
             <div className="adom-method">
               <div className="adom-method-title">Ko-fi</div>
               <div className="adom-method-desc">
-                Egyszeri „kávé" összeg — gyors, egyszerű, kártyával is fizethető.
+                {'Egyszeri „kávé" összeg — gyors, egyszerű, kártyával is fizethető.'}
               </div>
               <a href="https://ko-fi.com" target="_blank" rel="noopener noreferrer" className="adom-btn">
                 Támogatás Ko-fi-on →

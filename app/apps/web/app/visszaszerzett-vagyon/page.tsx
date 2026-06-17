@@ -89,7 +89,7 @@ export default async function VisszaszerzettVagyonPage({
           <div className="visszaszerzett-cases">
             {topCases.map((g, i) => {
               const ugy = UGYEK.find(u => u.id === g.caseId);
-              const eyebrow = ugy ? ugy.eyebrow.split('·')[0].trim() : 'Ügy';
+              const eyebrow = ugy ? (ugy.eyebrow.split('·')[0] ?? '').trim() : 'Ügy';
               const title = ugy?.title ?? g.caseId;
               const oneLiner = ugy ? firstSentence(ugy.summary) : '';
               const crimes = ugy?.crimeTypes?.slice(0, 2) ?? [];

@@ -6,6 +6,7 @@ import { getDb, schema } from '@/lib/db';
 import { Mugshot } from '@korr/ui/mugshot';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from '../../_home/galeria-config';
 import { UGYEK } from '../../_home/ugyek-config';
+import { CrossLemondosok, CrossMegszunt } from '../../_home/cross-promo';
 
 export const dynamic = 'force-dynamic';
 
@@ -188,7 +189,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             <div className="person-related-cases-grid">
               {relatedCases.map(u => (
                 <Link key={u.id} href={`/ugyek/${u.id}`} className="person-related-case-card">
-                  <div className="person-related-case-eyebrow">{u.eyebrow.split('·')[0].trim()}</div>
+                  <div className="person-related-case-eyebrow">{(u.eyebrow.split('·')[0] ?? '').trim()}</div>
                   <div className="person-related-case-title">{u.title}</div>
                   {u.estimatedDamage && (
                     <div className="person-related-case-dmg">
@@ -272,6 +273,12 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
               </Link>
             ))}
           </div>
+        </div>
+      </div>
+      <div className="cross-promo-below-more">
+        <div className="cross-promo-below-more-inner">
+          <CrossLemondosok />
+          <CrossMegszunt />
         </div>
       </div>
     </div>

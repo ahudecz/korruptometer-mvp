@@ -164,6 +164,64 @@ button {
   height: 2px;
   background: var(--ink);
   margin: 5px 0;
+  transition: transform 0.2s, opacity 0.2s;
+  transform-origin: center;
+}
+
+/* ─── Mobil overlay menü ─────────────────────────────────────────── */
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--ink);
+  z-index: 998;
+  padding: 88px 28px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto;
+}
+.mobile-close {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: rgba(255,255,255,0.6);
+  font-size: 26px;
+  line-height: 1;
+  padding: 8px;
+}
+.mobile-close:hover {
+  color: #fff;
+}
+.mobile-nav-link {
+  display: block;
+  color: rgba(255,255,255,0.85);
+  font-family: 'Archivo', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+.mobile-nav-link:hover {
+  color: #fff;
+}
+.mobile-nav-cta {
+  display: inline-block;
+  margin-top: 28px;
+  background: var(--accent);
+  color: #fff;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  padding: 14px 24px;
+  border-radius: 4px;
+  text-decoration: none;
+  align-self: flex-start;
 }
 
 /* ============ HERO ============ */
@@ -1731,6 +1789,9 @@ button {
     margin-bottom: 28px;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 48px), transparent 100%);
+    mask-image: linear-gradient(to right, black calc(100% - 48px), transparent 100%);
   }
 
   .big-cases-nav::-webkit-scrollbar {
@@ -2436,6 +2497,197 @@ button {
   border-radius: 4px;
 }
 
+/* Cross-promo sections */
+.cross-promo {
+  margin: 0;
+  padding: 32px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 8px;
+}
+
+.cross-promo + .cross-promo {
+  margin-top: 20px;
+}
+
+.cross-promo-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 8px;
+  line-height: 1.2;
+}
+
+.cross-promo-deck {
+  font-size: 14px;
+  color: rgba(255,255,255,0.55);
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+.cross-promo-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.cross-promo-row {
+  display: grid;
+  grid-template-columns: 90px 90px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.cross-promo-row-date {
+  color: rgba(255,255,255,0.4);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.cross-promo-row-type {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 3px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.cross-promo-row-name {
+  font-weight: 600;
+  color: #fff;
+}
+
+.cross-promo-row-sub {
+  color: rgba(255,255,255,0.45);
+  font-size: 13px;
+}
+
+.cross-promo-cta {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 10px 20px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.cross-promo-cta:hover {
+  opacity: 0.85;
+}
+
+/* ugyek-more-grid inside cross-promo: add top/bottom margin */
+.cross-promo .ugyek-more-grid {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+/* person-more-grid inside cross-promo: 5-col layout + text color overrides */
+.cross-promo .person-more-grid {
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 700px) {
+  .cross-promo .person-more-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.cross-promo .person-more-name {
+  color: #fff;
+  font-size: 12px;
+}
+
+.cross-promo .person-more-sub {
+  color: rgba(255,255,255,0.45);
+  font-size: 11px;
+}
+
+/* Section wrapper on lemondosok/megszunt pages */
+.cross-promo-section {
+  background: var(--ink);
+  position: relative;
+  overflow: hidden;
+  padding: 64px 24px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.cross-promo-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 96px,
+      rgba(255,255,255,0.03) 96px,
+      rgba(255,255,255,0.03) 97px
+    ),
+    radial-gradient(circle at 20% 0%, rgba(227, 25, 55, 0.18), transparent 50%);
+  pointer-events: none;
+}
+
+.cross-promo-section-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Wrapper for cross-promos below person-more-section on [id] pages */
+.cross-promo-below-more {
+  background: var(--ink);
+  position: relative;
+  overflow: hidden;
+  padding: 48px 24px 64px;
+}
+
+.cross-promo-below-more::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 96px,
+      rgba(255,255,255,0.03) 96px,
+      rgba(255,255,255,0.03) 97px
+    ),
+    radial-gradient(circle at 20% 0%, rgba(227, 25, 55, 0.18), transparent 50%);
+  pointer-events: none;
+}
+
+.cross-promo-below-more-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Wrapper for cross-promos on collection pages */
+.cross-promo-collection {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px 64px;
+}
+
 /* More persons section (bottom of individual person pages) */
 .person-more-section {
   border-top: 1px solid var(--line);
@@ -2482,9 +2734,10 @@ button {
   overflow: hidden;
   border-radius: 2px;
   position: relative;
-  border: 2px solid transparent;
+  border: 2px solid rgba(255,255,255,0.22);
 }
 
+.person-more-mug.r-loose   { border-color: rgba(255,255,255,0.55); }
 .person-more-mug.r-investig { border-color: var(--accent-soft); }
 .person-more-mug.r-pretrial,
 .person-more-mug.r-busted { border-color: var(--accent); }
@@ -2524,9 +2777,29 @@ button {
 }
 
 @media (max-width: 768px) {
+  .person-hero {
+    padding: 56px 20px 32px;
+  }
   .person-hero-inner {
-    grid-template-columns: 120px 1fr;
-    gap: 24px;
+    display: flow-root;
+  }
+  .person-hero-photo {
+    float: left;
+    width: 110px;
+    margin: 0 16px 12px 0;
+  }
+  .person-hero-eyebrow {
+    display: none;
+  }
+  .person-hero-name {
+    font-size: 22px;
+    margin-bottom: 4px;
+  }
+  .person-hero-amount,
+  .person-hero-desc,
+  .person-hero-tags {
+    clear: both;
+    width: 100%;
   }
 
   .person-case-card {
@@ -2730,13 +3003,13 @@ button {
   margin-top: 48px;
 }
 .media-group-label {
-  font-size: 11px;
+  font-size: 17px;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--muted);
-  border-bottom: 1px solid var(--line);
-  padding-bottom: 10px;
+  color: var(--ink);
+  border-bottom: 2px solid var(--line);
+  padding-bottom: 12px;
   margin-bottom: 24px;
 }
 .media-grid {
@@ -3850,6 +4123,9 @@ button {
   .hero-stat:nth-last-child(-n+2) {
     border-bottom: none;
   }
+  .hero-stat:first-child {
+    padding-top: 20px;
+  }
   .hero-title {
     font-size: 13vw;
   }
@@ -3862,6 +4138,10 @@ button {
   }
   .stat-card {
     padding: 32px 24px 36px;
+    overflow: hidden;
+  }
+  .donut {
+    overflow: hidden;
   }
   .news-grid {
     grid-template-columns: 1fr;
@@ -3873,7 +4153,7 @@ button {
     height: 260px;
   }
   .db-controls {
-    grid-template-columns: 1fr;
+    display: none;
   }
   .db-table thead {
     display: none;
@@ -3936,6 +4216,8 @@ button {
   }
   .rogue {
     padding: 16px 14px 18px;
+    overflow: hidden;
+    min-width: 0;
   }
   .rogue-name {
     font-size: 16px;
@@ -5822,7 +6104,7 @@ body:has(.admin-nav) > main {
   gap: 4px;
   padding: 14px 16px;
   background: #1a1d24;
-  border: 1px solid #2a2d35;
+  border: 1px solid rgba(255,255,255,0.18);
   border-radius: 8px;
   text-decoration: none;
   transition: border-color 0.15s, background 0.15s;
@@ -6249,6 +6531,64 @@ body:has(.admin-nav) > main {
 }
 .modszertan-list li {
   list-style: disc;
+}
+
+/* ─── Hírek tovább gomb ──────────────────────────────────────────── */
+.news-more-wrap {
+  margin-top: 28px;
+  display: flex;
+  justify-content: flex-start;
+}
+.news-more-btn {
+  display: inline-flex;
+  align-items: center;
+  background: var(--accent);
+  color: #fff;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  padding: 13px 24px;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.news-more-btn:hover {
+  opacity: 0.88;
+}
+
+/* ─── Lemondások tábla — mobil ───────────────────────────────────── */
+.res-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.res-table-wrap::-webkit-scrollbar {
+  height: 3px;
+}
+.res-table-wrap::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 2px;
+}
+@media (max-width: 720px) {
+  .res-col-date,
+  .res-col-institution,
+  .res-col-desc {
+    display: none;
+  }
+
+  /* Cross-promo: hide date column, shrink grid, clamp names */
+  .cross-promo-row {
+    grid-template-columns: 80px 1fr auto;
+  }
+  .cross-promo-row-date {
+    display: none;
+  }
+  .cross-promo-row-name {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
 
 /* ─── Inline code ─────────────────────────────────────────────────── */

@@ -33,10 +33,10 @@ export default function HamarosanPage() {
       <p>
         Adatvédelmi vagy GDPR-jellegű kérés esetén írj a{' '}
         <a
-          href="mailto:dpo@korruptometer.hu"
+          href="mailto:hello@kegyencjarat.hu"
           style={{ color: 'var(--accent)', textDecoration: 'underline' }}
         >
-          dpo@korruptometer.hu
+          hello@kegyencjarat.hu
         </a>{' '}
         címre. A megkereséseket 30 napon belül megválaszoljuk.
       </p>
