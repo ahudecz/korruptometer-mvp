@@ -8,16 +8,16 @@ import { NewsGrid } from './news-grid';
 export const revalidate = 120;
 
 function headlineKey(headline: string): string {
-  return headline
+  const words = headline
     .toLowerCase()
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9 ]/g, '')
+    .replace(/[^a-z0-9 ]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
     .split(' ')
-    .slice(0, 7)
-    .join(' ');
+    .filter(w => w.length > 4);
+  return words.sort().slice(0, 7).join(' ');
 }
 
 export default async function HirekPage({

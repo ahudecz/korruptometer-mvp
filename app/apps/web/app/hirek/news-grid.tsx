@@ -37,16 +37,16 @@ function fmtRelative(d: string): string {
 }
 
 function headlineKey(headline: string): string {
-  return headline
+  const words = headline
     .toLowerCase()
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9 ]/g, '')
+    .replace(/[^a-z0-9 ]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
     .split(' ')
-    .slice(0, 7)
-    .join(' ');
+    .filter(w => w.length > 4);
+  return words.sort().slice(0, 7).join(' ');
 }
 
 function ArticleCard({ a, feature }: { a: Article; feature?: boolean }) {
@@ -120,7 +120,10 @@ export function NewsGrid({
     });
   }
 
-  const featured = articles.find((a) => a.featured) ?? null;
+  const featured =
+    articles.find((a) => a.featured && a.imageUrl) ??
+    articles.find((a) => a.featured) ??
+    null;
   const rest = articles.filter((a) => a.id !== featured?.id);
 
   if (articles.length === 0) {

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { PoliticalResignation } from '@korr/db';
+import { WatchlistGrid } from './watchlist-grid';
 
 interface Props {
   resignations: PoliticalResignation[];
@@ -9,17 +10,39 @@ const TYPE_COLOR: Record<string, string> = {
   'lemondás': '#4B7AFF',
   'kirúgás': '#E31937',
   'felmentés': '#FF9D00',
-  'Hivatalban van': '#888',
 };
 
 const TYPE_LABEL: Record<string, string> = {
   'lemondás': '↓ Lemondás',
   'kirúgás': '✕ Kirúgás',
   'felmentés': '⟲ Felmentés',
-  'Hivatalban van': '● Hivatalban van',
 };
 
+function ResignationRow({ r }: { r: PoliticalResignation }) {
+  const color = TYPE_COLOR[r.resignationType] ?? '#666';
+  return (
+    <tr key={r.id}>
+      <td style={{ fontWeight: 500 }}>{r.name}</td>
+      <td style={{ color: '#666' }}>{r.position}</td>
+      <td style={{ color: '#666' }}>{r.institution}</td>
+      <td>
+        <span className="elszamoltatas-badge" style={{
+          backgroundColor: `${color}18`,
+          color,
+        }}>
+          {TYPE_LABEL[r.resignationType] ?? r.resignationType}
+        </span>
+      </td>
+      <td style={{ color: '#666' }}>
+        {new Date(r.resignationDate).toLocaleDateString('hu-HU')}
+      </td>
+    </tr>
+  );
+}
+
 export function ResignationsSection({ resignations }: Props) {
+  const rest = resignations.filter(r => !r.pinned);
+
   return (
     <div className="lemondott-section-wrap">
     <section className="section elszamoltatas-section">
@@ -28,50 +51,41 @@ export function ResignationsSection({ resignations }: Props) {
         <h2 className="section-title">Lemondott-e már?</h2>
       </div>
       <p className="elszamoltatas-deck">
-        Április 12 óta történt lemondások és kirúgások politikai személyeknél.
-        Intézmények, alapítványok és közszervezetek vezetői.
+        Magyar Péter lemondásra szólította fel a NER kulcsintézményeinek vezetőit — ha valamelyikük
+        távozik, a kártyáján megjelenik. Lemondásra szólította fel Sulyok Tamás köztársasági elnököt,
+        valamint azokat, akiket ő a rendszer tartóoszlopainak nevez: a Kúria elnökét, az
+        Alkotmánybíróság elnökét, a legfőbb ügyészt, az Állami Számvevőszék elnökét, a Gazdasági
+        Versenyhivatal elnökét, a Médiahatóság elnökét és az Országos Bírói Hivatal elnökét.
       </p>
 
-      {resignations.length === 0 ? (
-        <div className="empty-state">Még nincs adat ebben a kategóriában.</div>
-      ) : (
-        <div style={{ overflowX: 'auto', marginTop: '32px' }}>
-          <table className="elszamoltatas-table">
-            <thead>
-              <tr>
-                <th>Név</th>
-                <th>Pozíció</th>
-                <th>Intézmény</th>
-                <th>Státusz</th>
-                <th>Dátum</th>
-              </tr>
-            </thead>
-            <tbody>
-              {resignations.map((r) => (
-                <tr key={r.id} style={{ backgroundColor: r.pinned ? '#fafafa' : undefined }}>
-                  <td style={{ fontWeight: 500 }}>{r.name}</td>
-                  <td style={{ color: '#666' }}>{r.position}</td>
-                  <td style={{ color: '#666' }}>{r.institution}</td>
-                  <td>
-                    <span className="elszamoltatas-badge" style={{
-                      backgroundColor: `${TYPE_COLOR[r.resignationType] ?? '#666'}18`,
-                      color: TYPE_COLOR[r.resignationType] ?? '#666',
-                    }}>
-                      {TYPE_LABEL[r.resignationType] ?? r.resignationType}
-                    </span>
-                  </td>
-                  <td style={{ color: '#666' }}>
-                    {r.pinned ? '—' : new Date(r.resignationDate).toLocaleDateString('hu-HU')}
-                  </td>
+      <WatchlistGrid />
+
+      {rest.length > 0 && (
+        <>
+          <h3 className="elszamoltatas-sub-heading">
+            Legfrissebb lemondások, kirúgások és felmentések
+          </h3>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="elszamoltatas-table">
+              <thead>
+                <tr>
+                  <th>Név</th>
+                  <th>Pozíció</th>
+                  <th>Intézmény</th>
+                  <th>Státusz</th>
+                  <th>Dátum</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {rest.map(r => <ResignationRow key={r.id} r={r} />)}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       <div className="elszamoltatas-more">
-        <Link href="/resignations">Tovább a teljes listához →</Link>
+        <Link href="/lemondosok">Tovább a teljes listához →</Link>
       </div>
     </section>
     </div>

@@ -22,7 +22,8 @@ export type OutletSlug =
   | 'jambor'
   | 'rtl'
   | 'kmonitor-news'
-  | 'media1';
+  | 'media1'
+  | 'portfolio';
 
 export type OutletAdapter = {
   slug: OutletSlug;

@@ -2,11 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { SiteFooter } from '@korr/ui/site-footer';
+import { NavMobile } from './nav-mobile';
+import { FooterScrollFix } from './footer-scroll-fix';
 
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'KORRUPTOMÉTER — Magyarországi korrupció nyomon követése',
+  title: 'KEGYENCJÁRAT — Magyarországi korrupció nyomon követése',
   description:
     'Független, közforrású adatbázis a Magyarországon dokumentált korrupciós ügyekről, a 2026. április 12-i rendszerváltás óta történt személyi változásokról és a propaganda megszűnéséről. Minden korrupciós eset nyomon követhető a vádemeléstől az ítéletig — adatokra, nem szólamokra alapozva.',
   metadataBase: new URL('http://localhost:3000'),
@@ -34,13 +36,16 @@ export default function RootLayout({
                 <Link href="/galeria">Galéria</Link>
               </li>
               <li>
+                <Link href="/ugyek">Ügyek</Link>
+              </li>
+              <li>
                 <Link href="/adatbazis">Adatbázis</Link>
               </li>
               <li>
                 <Link href="/hirek">Hírek</Link>
               </li>
               <li>
-                <Link href="/resignations">Lemondások</Link>
+                <Link href="/lemondosok">Lemondások</Link>
               </li>
               <li>
                 <Link href="/megszunt">Megszűnt-e?</Link>
@@ -52,15 +57,12 @@ export default function RootLayout({
             <Link href="/bejelentes" className="nav-cta">
               Bejelentés tétele
             </Link>
-            <button className="hamburger" aria-label="Menu" type="button">
-              <span></span>
-              <span></span>
-              <span></span>
-            </button>
+            <NavMobile />
           </div>
         </nav>
         <main id="fooldal">{children}</main>
         <SiteFooter />
+        <FooterScrollFix />
       </body>
     </html>
   );

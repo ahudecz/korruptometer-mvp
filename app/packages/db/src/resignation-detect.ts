@@ -80,20 +80,23 @@ const TOOL: Anthropic.Tool = {
 };
 
 const SYSTEM_PROMPT = `Te egy magyar politikai híreket elemző asszisztens vagy.
-A feladatod eldönteni, hogy egy cikk politikai személyek lemondásáról, kirúgásáról vagy felmentéséről szól-e Magyarországon.
+A feladatod eldönteni, hogy egy cikk politikai személyek lemondásáról, kirúgásáról, felmentéséről, vagy politikailag kötött médium/intézmény tömeges elbocsátásáról/bezárásáról szól-e Magyarországon.
 
-Politikai személynek minősül:
+Politikai személynek vagy szervezetnek minősül:
 - Miniszterek, államtitkárok, miniszterelnökök
 - Országgyűlési képviselők
 - Polgármesterek, alpolgármesterek, önkormányzati tisztségviselők
 - Állami vállalatok, alapítványok, közintézmények vezetői
 - Pártvezetők, politikai tisztségviselők
+- NER-közeli médiumok (Pesti Srácok, Világgazdaság, Magyar Nemzet, Origó, KESMA-médiumok) szerkesztői, újságírói — tömeges kirúgás esetén is
+- Kulturális, oktatási, tudományos intézmények politikailag kinevezett vezetői
 
-Csak akkor jelöld isResignation=true-val, ha egyértelmű, hogy valaki elhagyja a pozícióját.
+Tömeges elbocsátásnál (pl. "kirúgják az összes Pesti Srácok-munkatársat") a "name" mezőbe a szerkesztőség/outlet neve kerüljön (pl. "Pesti Srácok szerkesztőség"), a "position" mezőbe "újságíró, szerkesztő", az "institution" mezőbe a médium neve.
+
+Csak akkor jelöld isResignation=true-val, ha egyértelmű, hogy valaki/valakik elhagyják a pozíciójukat, vagy médium szűnik meg/bocsát el tömegesen.
 Ne jelöld, ha csak spekuláció, bejelentett tervek (nem befejezett tény), vagy ha más ország politikusáról van szó.
 
-FONTOS: A "name" mezőbe mindig AZT a személyt írd, aki elhagyja a pozícióját — NEM azt, aki a döntést hozta.
-Például: "Magyar Péter kirúgta a titkosszolgálatok vezetőit" esetén a titkosszolgálatok vezetői a releváns személyek, nem Magyar Péter.`;
+FONTOS: A "name" mezőbe mindig AZT a személyt/szervzetet írd, aki elhagyja a pozícióját — NEM azt, aki a döntést hozta.`;
 
 let _client: Anthropic | null = null;
 function getClient(): Anthropic {

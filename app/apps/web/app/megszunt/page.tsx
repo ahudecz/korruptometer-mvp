@@ -1,5 +1,6 @@
 import { desc } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
+import { CrossLemondosok, CrossUgyek, CrossGaleria } from '../_home/cross-promo';
 
 export const revalidate = 120;
 
@@ -43,21 +44,21 @@ export default async function MegszuntPage() {
             Nincs adat.
           </div>
         ) : (
-          <div style={{ overflowX: 'auto', marginTop: 32 }}>
-            <table style={{ width: '100%', fontSize: '14px', lineHeight: '1.6' }}>
+          <div className="res-table-wrap" style={{ marginTop: 32 }}>
+            <table style={{ width: '100%', minWidth: 640, fontSize: '14px', lineHeight: '1.6' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid #e5e5e5' }}>
-                  <th style={{ textAlign: 'left', padding: '12px', fontWeight: 600 }}>Dátum</th>
+                  <th className="res-col-date" style={{ textAlign: 'left', padding: '12px', fontWeight: 600, whiteSpace: 'nowrap' }}>Dátum</th>
                   <th style={{ textAlign: 'left', padding: '12px', fontWeight: 600 }}>Típus</th>
                   <th style={{ textAlign: 'left', padding: '12px', fontWeight: 600 }}>Médium / Esemény</th>
-                  <th style={{ textAlign: 'left', padding: '12px', fontWeight: 600 }}>Leírás</th>
+                  <th style={{ textAlign: 'left', padding: '12px', fontWeight: 600, minWidth: 220 }}>Leírás</th>
                   <th style={{ textAlign: 'left', padding: '12px', fontWeight: 600 }}>Forrás</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                    <td style={{ padding: '12px', color: '#666', whiteSpace: 'nowrap' }}>
+                    <td className="res-col-date" style={{ padding: '12px', color: '#666', whiteSpace: 'nowrap' }}>
                       {new Date(r.eventDate).toLocaleDateString('hu-HU')}
                     </td>
                     <td style={{ padding: '12px' }}>
@@ -77,7 +78,7 @@ export default async function MegszuntPage() {
                       </span>
                     </td>
                     <td style={{ padding: '12px', fontWeight: 500 }}>{r.name}</td>
-                    <td style={{ padding: '12px', color: '#666', maxWidth: 360, fontSize: 13 }}>
+                    <td style={{ padding: '12px', color: '#666', width: 280, fontSize: 13 }}>
                       {r.description ?? '—'}
                     </td>
                     <td style={{ padding: '12px', fontSize: 13 }}>
@@ -100,7 +101,16 @@ export default async function MegszuntPage() {
             </table>
           </div>
         )}
+
       </section>
+
+      <div className="cross-promo-section">
+        <div className="cross-promo-section-inner">
+          <CrossLemondosok />
+          <CrossUgyek />
+          <CrossGaleria />
+        </div>
+      </div>
     </div>
   );
 }

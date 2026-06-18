@@ -1,0 +1,178 @@
+import Link from 'next/link';
+import { desc } from 'drizzle-orm';
+import { getDb, schema } from '@/lib/db';
+import { UGYEK } from './ugyek-config';
+import { GALERIA, type GaleriaDetention, type GaleriaHair } from './galeria-config';
+import { Mugshot } from '@korr/ui/mugshot';
+
+const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
+function fmtDate(d: Date) {
+  return `${HU_MONTHS[d.getMonth()]} ${d.getDate()}.`;
+}
+
+// ── CrossMegszunt ────────────────────────────────────────────────────────────
+
+function closureTypeLabel(t: string) {
+  if (t === 'megszűnés') return 'Megszűnt';
+  if (t === 'leépítés') return 'Leépítés';
+  if (t === 'elmaradt esemény') return 'Elmaradt';
+  return t;
+}
+function closureTypeColor(t: string) {
+  if (t === 'megszűnés') return '#e31937';
+  if (t === 'leépítés') return '#e8a000';
+  return '#4B7AFF';
+}
+
+export async function CrossMegszunt() {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(schema.mediaClosures)
+    .orderBy(desc(schema.mediaClosures.eventDate))
+    .limit(10);
+
+  if (rows.length === 0) return null;
+
+  return (
+    <div className="cross-promo">
+      <h2 className="cross-promo-title">Érdekelnek a megszűnések is?</h2>
+      <p className="cross-promo-deck">
+        NER-közeli médiumok, műsorok és rendezvények, amelyek 2026. április 12. óta megszűntek vagy leépültek.
+      </p>
+      <div className="cross-promo-rows">
+        {rows.map(r => (
+          <div key={r.id} className="cross-promo-row">
+            <span className="cross-promo-row-date">{fmtDate(r.eventDate)}</span>
+            <span
+              className="cross-promo-row-type"
+              style={{ background: `${closureTypeColor(r.eventType)}30`, color: closureTypeColor(r.eventType) }}
+            >
+              {closureTypeLabel(r.eventType)}
+            </span>
+            <span className="cross-promo-row-name">{r.name}</span>
+          </div>
+        ))}
+      </div>
+      <Link href="/megszunt" className="cross-promo-cta">
+        Teljes megszűnési lista →
+      </Link>
+    </div>
+  );
+}
+
+// ── CrossLemondosok ──────────────────────────────────────────────────────────
+
+function resignTypeLabel(t: string) {
+  if (t === 'lemondás') return 'Lemondás';
+  if (t === 'kirúgás') return 'Kirúgás';
+  if (t === 'felmentés') return 'Felmentés';
+  return t;
+}
+function resignTypeColor(t: string) {
+  if (t === 'lemondás') return '#4B7AFF';
+  if (t === 'kirúgás') return '#e31937';
+  if (t === 'felmentés') return '#e8a000';
+  return '#888';
+}
+
+export async function CrossLemondosok() {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(schema.politicalResignations)
+    .orderBy(desc(schema.politicalResignations.resignationDate))
+    .limit(10);
+
+  if (rows.length === 0) return null;
+
+  return (
+    <div className="cross-promo">
+      <h2 className="cross-promo-title">Érdekelnek a lemondások is?</h2>
+      <p className="cross-promo-deck">
+        Politikusok, intézményvezetők és közszereplők, akik 2026. április 12. óta lemondtak, kirúgták vagy felmentették őket.
+      </p>
+      <div className="cross-promo-rows">
+        {rows.map(r => (
+          <div key={r.id} className="cross-promo-row">
+            <span className="cross-promo-row-date">{fmtDate(r.resignationDate)}</span>
+            <span
+              className="cross-promo-row-type"
+              style={{ background: `${resignTypeColor(r.resignationType)}30`, color: resignTypeColor(r.resignationType) }}
+            >
+              {resignTypeLabel(r.resignationType)}
+            </span>
+            <span className="cross-promo-row-name">{r.name}</span>
+            {r.position && <span className="cross-promo-row-sub">— {r.position}</span>}
+          </div>
+        ))}
+      </div>
+      <Link href="/lemondosok" className="cross-promo-cta">
+        Teljes lemondási lista →
+      </Link>
+    </div>
+  );
+}
+
+// ── CrossUgyek ───────────────────────────────────────────────────────────────
+
+export function CrossUgyek() {
+  return (
+    <div className="cross-promo">
+      <h2 className="cross-promo-title">Érdekelnek a legdurvább ügyek?</h2>
+      <p className="cross-promo-deck">
+        7 kiemelt korrupciós ügy — bizonyítékokkal, becsült összegekkel, felelős személyekkel.
+      </p>
+      <div className="ugyek-more-grid">
+        {UGYEK.map(e => (
+          <Link key={e.id} href={`/ugyek/${e.id}`} className="ugyek-more-card">
+            <div className="ugyek-more-eyebrow">{(e.eyebrow.split('·')[0] ?? '').trim()}</div>
+            <div className="ugyek-more-title">{e.title}</div>
+            {e.responsible && <div className="ugyek-more-sub">{e.responsible}</div>}
+          </Link>
+        ))}
+      </div>
+      <Link href="/ugyek" className="cross-promo-cta">Összes kiemelt ügy →</Link>
+    </div>
+  );
+}
+
+// ── CrossGaleria ─────────────────────────────────────────────────────────────
+
+export function CrossGaleria() {
+  return (
+    <div className="cross-promo">
+      <h2 className="cross-promo-title">Érdekelnek a NER kiemelt személyei?</h2>
+      <p className="cross-promo-deck">
+        10 kiemelt személy, akik a rendszer kulcsfigurái voltak — sajtójelentések és nyilvános dokumentumok alapján.
+      </p>
+      <div className="person-more-grid">
+        {GALERIA.map(e => (
+          <Link key={e.id} href={`/galeria/${e.id}`} className="person-more-card">
+            <div className={`person-more-mug r-${e.detention}`}>
+              {e.photoUrl ? (
+                <img
+                  src={e.photoUrl.startsWith('/') || e.photoUrl.includes('wikimedia.org') ? e.photoUrl : `/api/img-proxy?url=${encodeURIComponent(e.photoUrl)}`}
+                  alt={e.name}
+                  className="person-more-img"
+                />
+              ) : (
+                <Mugshot
+                  caseId={e.id}
+                  name={e.name}
+                  variant={e.variant ?? 0}
+                  glasses={e.glasses ?? false}
+                  hair={(e.hair as GaleriaHair) ?? 'short'}
+                  detention={e.detention as GaleriaDetention}
+                />
+              )}
+            </div>
+            <div className="person-more-name">{e.name}</div>
+            <div className="person-more-sub">{(e.subtitle.split('·')[0] ?? '').trim()}</div>
+          </Link>
+        ))}
+      </div>
+      <Link href="/galeria" className="cross-promo-cta">Teljes galéria →</Link>
+    </div>
+  );
+}
