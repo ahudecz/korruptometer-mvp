@@ -659,6 +659,75 @@ export const leadActorKindEnum = pgEnum('lead_actor_kind', [
 
 export const partyKindEnum = pgEnum('party_kind', ['person', 'entity']);
 
+// ─── Case-catalog classification layer ───────────────────────────────────────
+// Authority-grade axes folded onto Investigation: legal offence type (Axis 1),
+// procedural stage (Axis 5), competent authority + matter tier (Axis 4), and the
+// canonical case key that makes case identity idempotent (no duplicate cases).
+
+// Axis 5 — procedural stage ladder (criminal-justice pipeline). A case is "open"
+// while its stage is not one of the terminal states (final_verdict / acquitted /
+// closed_no_charge); openness is decided in app logic, not encoded here.
+export const proceduralStageEnum = pgEnum('procedural_stage', [
+  'reported',
+  'investigating',
+  'suspect_charged',
+  'indicted',
+  'on_trial',
+  'verdict_first_instance',
+  'final_verdict',
+  'closed_no_charge',
+  'acquitted',
+]);
+
+// Axis 4 — competent authority. Hungary is not an EPPO participant; 'eppo' is
+// retained for completeness/cross-border matters but HU cases route through
+// prosecution / integrity_authority / olaf.
+export const competentAuthorityEnum = pgEnum('competent_authority', [
+  'national_police',
+  'prosecution',
+  'integrity_authority',
+  'state_audit_asz',
+  'olaf',
+  'eppo',
+  'court',
+  'eu_commission',
+  'other',
+  'unknown',
+]);
+
+// Axis 4 — OLAF crime/irregularity split.
+export const matterTierEnum = pgEnum('matter_tier', [
+  'fraud',
+  'corruption',
+  'conflict_of_interest',
+  'irregularity',
+  'unknown',
+]);
+
+// Axis 1 — two-level offence-type vocabulary. The controlled list of legal
+// offence codes keyed to the Hungarian Criminal Code (Btk.) and UNCAC, each
+// mapped to a plain-Hungarian public label and to the K-Monitor topics that
+// bootstrap-classify articles deterministically before any LLM step.
+// Btk. section references are indicative and must be verified against the
+// current Act C of 2012 text during backfill.
+export const offenceTypeRefs = pgTable('OffenceTypeRef', {
+  code: text('code').primaryKey(),
+  labelHu: text('labelHu').notNull(),
+  labelEn: text('labelEn'),
+  btkSection: text('btkSection'),
+  uncacCategory: text('uncacCategory'),
+  matterTierDefault: matterTierEnum('matterTierDefault')
+    .notNull()
+    .default('unknown'),
+  kmonitorTopics: jsonb('kmonitorTopics')
+    .notNull()
+    .default(sql`'[]'::jsonb`),
+  sortOrder: integer('sortOrder').notNull().default(0),
+  createdAt: timestamp('createdAt', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 export const articleExtractionRuns = pgTable(
   'ArticleExtractionRun',
   {
@@ -733,6 +802,10 @@ export const investigations = pgTable(
     primaryPersonName: text('primaryPersonName'),
     primaryPersonNormalized: text('primaryPersonNormalized'),
     primaryEntityName: text('primaryEntityName'),
+    primaryEntityNormalized: text('primaryEntityNormalized'),
+    caseName: text('caseName'),
+    scandalKey: text('scandalKey'),
+    scandalName: text('scandalName'),
     summary: text('summary'),
     quantityScore: numeric('quantityScore', { precision: 6, scale: 2 })
       .notNull()
@@ -748,6 +821,21 @@ export const investigations = pgTable(
     oldestExternalRecordFetchedAt: timestamp('oldestExternalRecordFetchedAt', {
       withTimezone: true,
     }),
+    // ── Catalog classification axes (nullable until classified) ──
+    offenceTypes: text('offenceTypes')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    proceduralStage: proceduralStageEnum('proceduralStage'),
+    competentAuthority: competentAuthorityEnum('competentAuthority'),
+    matterTier: matterTierEnum('matterTier'),
+    // ── Idempotency anchor: stable case identity derived from the strongest
+    //    available identifier (court no. > procurement ID > entity+contract
+    //    hash). On re-ingestion a claim resolves to the existing case by this
+    //    key instead of spawning a duplicate. caseKeySource records which kind
+    //    of identifier produced it.
+    canonicalCaseKey: text('canonicalCaseKey'),
+    caseKeySource: text('caseKeySource'),
     createdAt: timestamp('createdAt', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -764,6 +852,18 @@ export const investigations = pgTable(
     refreshPriorityIdx: index('Investigation_refresh_priority_idx').on(
       t.articleCount,
       t.oldestExternalRecordFetchedAt,
+    ),
+    // One live case per canonical key — merged duplicates are exempt so a
+    // collapsed case never collides with its survivor.
+    canonicalCaseKeyUq: uniqueIndex('Investigation_canonicalCaseKey_uq')
+      .on(t.canonicalCaseKey)
+      .where(sql`"canonicalCaseKey" IS NOT NULL AND status <> 'merged'`),
+    offenceTypesIdx: index('Investigation_offenceTypes_idx').using(
+      'gin',
+      t.offenceTypes,
+    ),
+    proceduralStageIdx: index('Investigation_proceduralStage_idx').on(
+      t.proceduralStage,
     ),
   }),
 );

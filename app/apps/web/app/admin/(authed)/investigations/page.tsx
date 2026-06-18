@@ -221,6 +221,10 @@ export default async function InvestigationsQueuePage({
   const q = typeof sp.q === 'string' ? sp.q : '';
   const selectedId = typeof sp.selected === 'string' ? sp.selected : '';
   const limit = 50;
+  // Catalog lands on a per-person grouping (each name once); typing/clicking a
+  // name (q) drills into that person's named matters. Sorting by damage shows
+  // the flat, global, de-duplicated scandal list instead of the person groups.
+  const groupByPerson = !q && sort !== 'damage';
 
   const db = getDb();
   const conds = [] as ReturnType<typeof eq>[];
@@ -234,7 +238,17 @@ export default async function InvestigationsQueuePage({
   const where = conds.length > 0 ? and(...conds) : undefined;
 
   let orderBy;
-  if (sort === 'recent') {
+  if (sort === 'damage') {
+    // order by the correlated DamageEstimate high, so the top-50 fetched are the
+    // globally highest-damage cases (the JS pass below re-sorts within them).
+    orderBy = [
+      sql`(SELECT d."totalHighHuf" FROM "DamageEstimate" d WHERE d."investigationId" = "Investigation".id) DESC NULLS LAST`,
+      // secondary: significance (article count) so big unknown-damage scandals
+      // (e.g. MNB, 130 articles) stay visible below the grounded ones, not hidden
+      desc(schema.investigations.articleCount),
+      desc(schema.investigations.id),
+    ];
+  } else if (sort === 'recent') {
     orderBy = [desc(schema.investigations.updatedAt), desc(schema.investigations.id)];
   } else if (sort === 'quantity') {
     orderBy = [
@@ -261,10 +275,12 @@ export default async function InvestigationsQueuePage({
     investigationId: string;
     low: string | null;
     high: string | null;
+    basis: string | null;
   }>(
     sql`SELECT "investigationId",
                "totalLowHuf"::text  AS low,
-               "totalHighHuf"::text AS high
+               "totalHighHuf"::text AS high,
+               "basis"::text        AS basis
           FROM "DamageEstimate"`,
   );
   const sourcesPerInvP = db.execute<{ investigationId: string; n: number }>(
@@ -324,6 +340,32 @@ export default async function InvestigationsQueuePage({
          GROUP BY l."investigationId"`,
   );
 
+  // Per-person aggregate for the grouped landing view (each name once).
+  const peopleAggP = groupByPerson
+    ? db.execute<{
+        person: string;
+        person_norm: string | null;
+        matters: number;
+        articles: number;
+        dmg_low: string | null;
+        dmg_high: string | null;
+      }>(
+        sql`SELECT i."primaryPersonName"        AS person,
+                   i."primaryPersonNormalized"  AS person_norm,
+                   COUNT(*)::int                AS matters,
+                   COALESCE(SUM(i."articleCount"),0)::int AS articles,
+                   COALESCE(SUM(d."totalLowHuf"),0)::text  AS dmg_low,
+                   COALESCE(SUM(d."totalHighHuf"),0)::text AS dmg_high
+              FROM "Investigation" i
+              LEFT JOIN "DamageEstimate" d ON d."investigationId" = i.id
+             WHERE i."primaryPersonName" IS NOT NULL
+               ${status === 'all' ? sql`` : sql`AND i.status = ${status}`}
+             GROUP BY i."primaryPersonName", i."primaryPersonNormalized"
+             ORDER BY COALESCE(SUM(d."totalHighHuf"),0) DESC, COUNT(*) DESC
+             LIMIT 200`,
+      )
+    : Promise.resolve([]);
+
   // KPI aggregates — all read-only, fire in parallel.
   const kpiActiveP = db.execute<{ c: number }>(
     sql`SELECT COUNT(*)::int AS c FROM "Investigation" WHERE status = 'new'`,
@@ -346,14 +388,41 @@ export default async function InvestigationsQueuePage({
     low: string | null;
     high: string | null;
   }>(
-    sql`SELECT
-          COALESCE(SUM("totalLowHuf"), 0)::text  AS low,
-          COALESCE(SUM("totalHighHuf"), 0)::text AS high
-        FROM "DamageEstimate"`,
+    // Honest total: sum each TED contract's documented overrun ONCE (a
+    // contractor's overrun is attributed to every case it touches, so summing
+    // per-case DamageEstimates would double-count shared contractors).
+    sql`SELECT COALESCE(SUM(d), 0)::text AS low, COALESCE(SUM(d), 0)::text AS high
+        FROM (
+          SELECT DISTINCT e."externalId",
+            (e."rawPayload"->>'awardedHuf')::numeric - (e."rawPayload"->>'estimatedHuf')::numeric AS d
+          FROM "ExternalRecord" e
+          JOIN "Investigation" i ON i.id = e."investigationId"
+          WHERE i."caseKeySource" LIKE 'kmonitor_%' AND e."sourceSystem" = 'TED'
+            AND (e."rawPayload"->>'awardedHuf') IS NOT NULL
+            AND (e."rawPayload"->>'estimatedHuf') IS NOT NULL
+            AND (e."rawPayload"->>'awardedHuf')::numeric > (e."rawPayload"->>'estimatedHuf')::numeric
+            AND (e."rawPayload"->>'awardedHuf')::numeric <= (e."rawPayload"->>'estimatedHuf')::numeric * 3
+        ) t`,
   );
   const kpiLlmSpendTodayP = db.execute<{ total: string | null }>(
     sql`SELECT COALESCE(SUM("estimatedHufSpend"), 0)::text AS total
         FROM "DailyLlmUsage" WHERE "day" = CURRENT_DATE`,
+  );
+  // Coverage by evidential tier: TED-grounded vs sourced press allegation.
+  const kpiGroundedP = db.execute<{
+    grounded: number;
+    alleged: number;
+    estimated: number;
+    total: number;
+  }>(
+    sql`SELECT
+          COUNT(*) FILTER (WHERE d.basis = 'procurement_modeled')::int AS grounded,
+          COUNT(*) FILTER (WHERE d.basis = 'alleged_reported')::int    AS alleged,
+          COUNT(*) FILTER (WHERE d.basis = 'estimated_rough')::int     AS estimated,
+          (SELECT COUNT(*)::int FROM "Investigation" WHERE status = 'new') AS total
+        FROM "DamageEstimate" d
+        JOIN "Investigation" i ON i.id = d."investigationId"
+        WHERE i."caseKeySource" LIKE 'kmonitor_%'`,
   );
 
   // Selected-row preview data (single round-trip per page render when set).
@@ -451,6 +520,7 @@ export default async function InvestigationsQueuePage({
     kpiRedFlagsRaw,
     kpiDamageRangeRaw,
     kpiLlmSpendTodayRaw,
+    kpiGroundedRaw,
     previewRows,
     previewClaimRaw,
     previewMetaRaw,
@@ -460,6 +530,7 @@ export default async function InvestigationsQueuePage({
     redFlagsPerInvRaw,
     claimedDamagePerInvRaw,
     latestArticleDatePerInvRaw,
+    peopleAggRaw,
   ] = await Promise.all([
     rowsP,
     kpiActiveP,
@@ -468,6 +539,7 @@ export default async function InvestigationsQueuePage({
     kpiRedFlagsP,
     kpiDamageRangeP,
     kpiLlmSpendTodayP,
+    kpiGroundedP,
     previewRowP,
     previewClaimP,
     previewMetaP,
@@ -477,6 +549,7 @@ export default async function InvestigationsQueuePage({
     redFlagsPerInvP,
     claimedDamagePerInvP,
     latestArticleDatePerInvP,
+    peopleAggP,
   ]);
 
   const kpiActive = pickQueryRow<{ c: number }>(kpiActiveRaw)?.c ?? 0;
@@ -492,6 +565,12 @@ export default async function InvestigationsQueuePage({
   const kpiLlmSpend = fmtBigHuf(
     pickQueryRow<{ total: string | null }>(kpiLlmSpendTodayRaw)?.total ?? null,
   );
+  const grounded = pickQueryRow<{
+    grounded: number;
+    alleged: number;
+    estimated: number;
+    total: number;
+  }>(kpiGroundedRaw) ?? { grounded: 0, alleged: 0, estimated: 0, total: 0 };
 
   const allItems: InvestigationListItem[] = rows.map((r) => ({
     id: r.id,
@@ -550,9 +629,12 @@ export default async function InvestigationsQueuePage({
   };
 
   const damageMap = new Map(
-    toRows<{ investigationId: string; low: string | null; high: string | null }>(
-      damagePerInvRaw,
-    ).map((r) => [r.investigationId, r]),
+    toRows<{
+      investigationId: string;
+      low: string | null;
+      high: string | null;
+      basis: string | null;
+    }>(damagePerInvRaw).map((r) => [r.investigationId, r]),
   );
   const claimedDamageMap = new Map(
     toRows<{
@@ -578,12 +660,25 @@ export default async function InvestigationsQueuePage({
       latestArticleDatePerInvRaw,
     ).map((r) => [r.investigationId, r.latest_at]),
   );
+  // caseName per matter (the LLM/headline title shown instead of person/company)
+  const caseNameById = new Map(
+    rows.map((r) => [r.id, (r as { caseName: string | null }).caseName]),
+  );
+  const peopleRows = toRows<{
+    person: string;
+    person_norm: string | null;
+    matters: number;
+    articles: number;
+    dmg_low: string | null;
+    dmg_high: string | null;
+  }>(peopleAggRaw);
 
   type Tier = 'estimated' | 'claimed';
   type DamageView = {
     low: string;
     high: string;
     tier: Tier;
+    basis?: string | null;
     claimCount?: number;
   };
   function pickDamage(invId: string): DamageView | null {
@@ -594,7 +689,7 @@ export default async function InvestigationsQueuePage({
       && d.high !== null
       && (Number(d.low) > 0 || Number(d.high) > 0)
     ) {
-      return { low: d.low, high: d.high, tier: 'estimated' };
+      return { low: d.low, high: d.high, tier: 'estimated', basis: d.basis };
     }
     const c = claimedDamageMap.get(invId);
     if (
@@ -620,6 +715,24 @@ export default async function InvestigationsQueuePage({
         return 'állítás';
     }
   }
+  // Evidential basis — the visible separation between a proven/modeled figure
+  // and a sourced press allegation.
+  function basisShort(d: DamageView): string {
+    switch (d.basis) {
+      case 'court_confirmed':
+        return 'ítélet';
+      case 'audit_finding':
+        return 'ÁSZ/audit';
+      case 'procurement_modeled':
+        return 'közbeszerzés';
+      case 'alleged_reported':
+        return 'gyanú';
+      case 'estimated_rough':
+        return 'becslés';
+      default:
+        return tierLabelHu(d.tier);
+    }
+  }
   function fmtRelativeDays(iso: string | null | undefined): string {
     if (!iso) return '';
     const t = Date.parse(iso);
@@ -639,7 +752,7 @@ export default async function InvestigationsQueuePage({
   const unnumberedCount = allItems.length - numberedCount;
 
   let items = allItems;
-  if (quant === 'numbered') {
+  if (quant === 'numbered' && sort !== 'damage') {
     items = items.filter((it) => pickDamage(it.id) !== null);
   } else if (quant === 'unnumbered') {
     items = items.filter((it) => pickDamage(it.id) === null);
@@ -650,7 +763,10 @@ export default async function InvestigationsQueuePage({
       const db = pickDamage(b.id);
       const aHigh = da ? Number(da.high) : -1;
       const bHigh = db ? Number(db.high) : -1;
-      return bHigh - aHigh;
+      // grounded cases first (by figure), then unknown-damage cases by
+      // significance (article count) so big scandals like MNB stay visible
+      if (aHigh !== bHigh) return bHigh - aHigh;
+      return b.articleCount - a.articleCount;
     });
   } else if (sort === 'article_date') {
     items = [...items].sort((a, b) => {
@@ -707,7 +823,7 @@ export default async function InvestigationsQueuePage({
           <div className="kpi-delta">verdict = fail</div>
         </div>
         <div className="kpi">
-          <div className="kpi-label">Becsült kár</div>
+          <div className="kpi-label">Igazolt kár · közbeszerzés</div>
           <div className="kpi-value">
             {kpiDamageLow.value}–{kpiDamageHigh.value}
             <span className="kpi-unit">
@@ -715,7 +831,8 @@ export default async function InvestigationsQueuePage({
             </span>
           </div>
           <div className="kpi-delta">
-            Σ DamageEstimate · összes nyomozás
+            {grounded.grounded} igazolt · {grounded.alleged} gyanú ·{' '}
+            {grounded.estimated} becslés
           </div>
         </div>
         <div className="kpi">
@@ -739,7 +856,17 @@ export default async function InvestigationsQueuePage({
         <aside className="rail" aria-label="Nyomozások listája">
           <div className="rail-head">
             <div className="rail-count">
-              <strong>{railCount}</strong> találat · {kpiActive} nyomozásból
+              {groupByPerson ? (
+                <>
+                  <strong>{peopleRows.length}</strong> érintett · {kpiActive}{' '}
+                  nyomozás
+                </>
+              ) : (
+                <>
+                  <strong>{railCount}</strong> ügy · {q} · {kpiActive}{' '}
+                  nyomozásból
+                </>
+              )}
             </div>
             <div className="rail-sort">
               <span>Rendezés:</span>
@@ -752,7 +879,45 @@ export default async function InvestigationsQueuePage({
               </span>
             </div>
           </div>
-          {items.length === 0 ? (
+          {groupByPerson ? (
+            <ul className="rail-list rail-list-people">
+              {peopleRows.map((p, i) => {
+                const range = fmtDamageRange(p.dmg_low, p.dmg_high);
+                const href = `/admin/investigations?q=${encodeURIComponent(
+                  p.person_norm ?? p.person,
+                )}`;
+                return (
+                  <li key={p.person} className="rail-item">
+                    <Link href={href} prefetch={false} scroll={false}>
+                      <div className="rail-rank">
+                        {String(i + 1).padStart(2, '0')}
+                      </div>
+                      <div className="rail-name">{p.person}</div>
+                      <div className="rail-entity">
+                        {p.matters} ügy · {p.articles} cikk
+                      </div>
+                      <div className="rail-score">
+                        {range ? (
+                          <div className="rail-score-amt tier-estimated">
+                            {range.primary}
+                            <small>{range.unit}</small>
+                          </div>
+                        ) : (
+                          <div className="rail-score-amt rail-score-amt-empty">
+                            kár n/a
+                          </div>
+                        )}
+                        <div className="rail-score-grade">összesen</div>
+                      </div>
+                      <div className="rail-meta">
+                        <span className="tag">{p.matters} ügy →</span>
+                      </div>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : items.length === 0 ? (
             <div style={{ padding: '40px 24px', color: 'var(--muted)' }}>
               Nincs találat.
             </div>
@@ -777,20 +942,32 @@ export default async function InvestigationsQueuePage({
                         {String(i + 1).padStart(2, '0')}
                       </div>
                       <div className="rail-name">
-                        {it.primaryPersonName ?? '— (névtelen klaszter)'}
+                        {caseNameById.get(it.id)
+                          ?? it.primaryPersonName
+                          ?? '— (névtelen klaszter)'}
                       </div>
                       <div className="rail-entity">
-                        {it.primaryEntityName ?? 'Szervezet ismeretlen'}
+                        {[it.primaryPersonName, it.primaryEntityName]
+                          .filter(Boolean)
+                          .join(' · ') || 'Szervezet ismeretlen'}
                       </div>
                       <div className="rail-score">
                         {dmgRange && dmgView ? (
                           <>
-                            <div className={`rail-score-amt tier-${dmgView.tier}`}>
+                            <div
+                              className={`rail-score-amt tier-${dmgView.tier} basis-${
+                                dmgView.basis ?? 'none'
+                              }`}
+                            >
                               {dmgRange.primary}
                               <small>{dmgRange.unit}</small>
                             </div>
-                            <div className="rail-score-grade">
-                              {tierLabelHu(dmgView.tier)}
+                            <div
+                              className={`rail-score-grade basis-${
+                                dmgView.basis ?? 'none'
+                              }`}
+                            >
+                              {basisShort(dmgView)}
                               {' · '}
                               {fmtQualityShort(it.qualityScore)}
                             </div>
@@ -798,7 +975,7 @@ export default async function InvestigationsQueuePage({
                         ) : (
                           <>
                             <div className="rail-score-amt rail-score-amt-empty">
-                              kár n/a
+                              nem megállapított
                             </div>
                             <div className="rail-score-grade">
                               {fmtQualityShort(it.qualityScore)}
@@ -860,11 +1037,18 @@ export default async function InvestigationsQueuePage({
                     ) : null}
                   </div>
                   <h2 className="preview-name">
-                    {selectedItem.primaryPersonName ?? '— (névtelen klaszter)'}
+                    {selectedRow?.caseName
+                      ?? selectedItem.primaryPersonName
+                      ?? '— (névtelen klaszter)'}
                   </h2>
                   <div className="preview-entity">
-                    {selectedItem.primaryEntityName ?? 'Szervezet ismeretlen'}
+                    {[selectedItem.primaryPersonName, selectedItem.primaryEntityName]
+                      .filter(Boolean)
+                      .join(' · ') || 'Szervezet ismeretlen'}
                   </div>
+                  {selectedRow?.summary ? (
+                    <p className="preview-synopsis">{selectedRow.summary}</p>
+                  ) : null}
                 </div>
                 <div className="preview-tags">
                   <span className={`tag tier-${selectedItem.disclosureTier}`}>

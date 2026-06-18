@@ -14,6 +14,11 @@
   --accent: #e31937;
   --accent-soft: #fee5e8;
   --surface: #f4f4f4;
+  /* status colors — referenced throughout (tiers, red-flags, leads) but were
+     never defined, so var(--ok)/var(--warn)/var(--crit) silently fell back. */
+  --ok: #1a7f37;
+  --warn: #b26a00;
+  --crit: #b00020;
 }
 
 * {
@@ -4068,6 +4073,33 @@ body:has(.admin-nav) > main {
   font-weight: 600;
   color: var(--muted);
   margin-top: 4px;
+}
+/* Damage validity tiers — color the figure + badge by how solid it is, so a
+   rough BECSLÉS is never mistaken for a grounded KÖZBESZERZÉS or proven figure. */
+.admin-investigations .rail-score-amt.basis-estimated_rough {
+  color: var(--muted);
+  opacity: 0.85;
+}
+.admin-investigations .rail-score-amt.basis-alleged_reported {
+  color: var(--warn);
+}
+.admin-investigations .rail-score-amt.basis-procurement_modeled,
+.admin-investigations .rail-score-amt.basis-court_confirmed,
+.admin-investigations .rail-score-amt.basis-audit_finding {
+  color: var(--ok);
+}
+.admin-investigations .rail-score-grade.basis-estimated_rough {
+  color: var(--muted);
+}
+.admin-investigations .rail-score-grade.basis-alleged_reported {
+  color: var(--warn);
+  font-weight: 700;
+}
+.admin-investigations .rail-score-grade.basis-procurement_modeled,
+.admin-investigations .rail-score-grade.basis-court_confirmed,
+.admin-investigations .rail-score-grade.basis-audit_finding {
+  color: var(--ok);
+  font-weight: 700;
 }
 .admin-investigations .rail-meta {
   grid-column: 2 / span 2;
