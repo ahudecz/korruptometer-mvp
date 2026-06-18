@@ -25,6 +25,9 @@ export function SiteFooter() {
           <li>
             <a href="/adatok">API hozzáférés</a>
           </li>
+          <li>
+            <a href="/adatvedelem">Adatvédelem</a>
+          </li>
         </ul>
       </div>
       <div>
