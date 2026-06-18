@@ -2008,8 +2008,13 @@ button {
   display: grid;
   grid-template-columns: 180px 1fr;
   gap: 32px;
-  margin-bottom: 32px;
+  margin-bottom: 16px;
   align-items: start;
+}
+
+.gal-detail-body {
+  padding-left: calc(180px + 32px);
+  margin-bottom: 32px;
 }
 
 .rogue-mug-sm {
@@ -2177,7 +2182,45 @@ button {
   line-height: 1;
 }
 
+.gal-mobile-only { display: none; }
+.gal-desktop-only { display: grid; }
+
 @media (max-width: 840px) {
+  .gal-desktop-only { display: none; }
+  .gal-mobile-only { display: block; }
+
+  .gal-mobile-entry {
+    padding: 32px 20px;
+  }
+  .gal-mobile-entry:nth-child(even),
+  .ugyek-mobile-entry:nth-child(even) {
+    background: #f4f4f4;
+    color: var(--ink);
+  }
+  .gal-mobile-entry:nth-child(even) .gal-detail-name,
+  .gal-mobile-entry:nth-child(even) .gal-detail-sub,
+  .gal-mobile-entry:nth-child(even) .gal-detail-desc,
+  .gal-mobile-entry:nth-child(even) .gal-detail-amount-lbl,
+  .gal-mobile-entry:nth-child(even) .gal-detail-amount-val,
+  .gal-mobile-entry:nth-child(even) .gal-cases-label,
+  .gal-mobile-entry:nth-child(even) .gal-case-title,
+  .gal-mobile-entry:nth-child(even) .gal-case-desc,
+  .gal-mobile-entry:nth-child(even) .big-case-more-btn,
+  .ugyek-mobile-entry:nth-child(even) .gal-detail-name,
+  .ugyek-mobile-entry:nth-child(even) .gal-detail-sub,
+  .ugyek-mobile-entry:nth-child(even) .gal-detail-desc,
+  .ugyek-mobile-entry:nth-child(even) .gal-detail-amount-lbl,
+  .ugyek-mobile-entry:nth-child(even) .gal-detail-amount-val,
+  .ugyek-mobile-entry:nth-child(even) .ugyek-status-label,
+  .ugyek-mobile-entry:nth-child(even) .ugyek-status-value,
+  .ugyek-mobile-entry:nth-child(even) .big-case-more-btn {
+    color: var(--ink);
+  }
+
+  .ugyek-mobile-entry {
+    padding: 32px 20px;
+  }
+
   .gal-layout {
     grid-template-columns: 1fr;
     gap: 0;
@@ -2215,6 +2258,10 @@ button {
   }
 
   .rogue-mug-sm { width: 120px; }
+
+  .gal-detail-body {
+    padding-left: 0;
+  }
 }
 
 /* ============ PERSON ALOLDAL (/galeria/[id]) ============ */
@@ -2711,7 +2758,10 @@ button {
 
 @media (max-width: 700px) {
   .cross-promo .person-more-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .cross-promo .cross-watch-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -6745,6 +6795,56 @@ body:has(.admin-nav) > main {
   cursor: pointer;
   font-size: inherit;
   font-family: inherit;
+}
+
+/* ─── Megszűnt oldal stats ────────────────────────────────────────── */
+.megszunt-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  margin-bottom: 40px;
+}
+
+.megszunt-stats--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.megszunt-stat {
+  background: #fff;
+  padding: 32px 28px;
+}
+
+.megszunt-stat-value {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: clamp(36px, 4vw, 56px);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.megszunt-stat-value--red   { color: #E31937; }
+.megszunt-stat-value--orange { color: #FF9D00; }
+.megszunt-stat-value--blue  { color: #4B7AFF; }
+
+.megszunt-stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+@media (max-width: 640px) {
+  .megszunt-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .megszunt-stats--3 {
+    grid-template-columns: repeat(1, 1fr);
+  }
 }
 
 /* ─── Partnerek oldal ─────────────────────────────────────────────── */

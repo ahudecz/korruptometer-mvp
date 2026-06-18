@@ -64,6 +64,18 @@ export default function ForrashivatkozasokPage() {
             változtatás nélkül.
           </SourceEntry>
 
+          <SourceEntry
+            name="aHang – Közösségi kampányplatform"
+            url="https://ahang.hu"
+            label="Nyomozói anyagok"
+          >
+            Az aHang civil szervezet <a href="https://ahang.hu/lopnak/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>Lopnak! projektje</a> részletes,
+            közérthető formában dokumentálja a NER-közeli vagyon- és közpénzügyletek legfontosabb
+            eseteit. Számos ügynél az ő összefoglalóik alapján dolgoztuk ki az adatbázisunk leírásait
+            és kategóriáit. A galériában szereplő politikusok és közszereplők képeit több esetben
+            szintén tőlük vettük át.
+          </SourceEntry>
+
           {/* ── 2. Rendszeres sajtóforrások ── */}
           <h3 className="modszertan-h3">Rendszeres sajtóforrások</h3>
           <p style={{ marginBottom: 24 }}>
@@ -166,7 +178,7 @@ export default function ForrashivatkozasokPage() {
 
           <SourceEntry
             name="Országgyűlési vagyonnyilatkozatok"
-            url="https://www.parlament.hu/web/guest/vagyonnyilatkozatok"
+            url="https://www.parlament.hu/keresheto-vagyonnyilatkozatok-kepviselok"
             label="Képviselői adatok"
           >
             A képviselők nyilvánosan elérhető vagyonnyilatkozatait felhasználjuk a személyi

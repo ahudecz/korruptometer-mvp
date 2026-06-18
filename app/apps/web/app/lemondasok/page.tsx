@@ -80,7 +80,7 @@ export default async function LemondasokPage() {
     <div className="news-section-wrap">
       <section className="section" id="lemondasok">
         <div className="section-head">
-          <div className="section-num">/ Elszámoltatás</div>
+          <div className="section-num">/ Személyi változások</div>
           <h2 className="section-title">Lemondott-e már?</h2>
         </div>
 

@@ -8,6 +8,7 @@ function typeLabel(t: string): string {
   if (t === 'megszűnés') return '✕ Megszűnés';
   if (t === 'leépítés') return '↓ Leépítés';
   if (t === 'elmaradt esemény') return '⊘ Elmaradt esemény';
+  if (t === 'egyéb') return '◈ Intézményi';
   return t;
 }
 
@@ -15,6 +16,7 @@ function typeColor(t: string): string {
   if (t === 'megszűnés') return '#E31937';
   if (t === 'leépítés') return '#FF9D00';
   if (t === 'elmaradt esemény') return '#4B7AFF';
+  if (t === 'egyéb') return '#888';
   return '#666';
 }
 
@@ -26,18 +28,37 @@ export default async function MegszuntPage() {
     .orderBy(desc(schema.mediaClosures.eventDate))
     .limit(200);
 
+  const megszuntCount = rows.filter(r => r.eventType === 'megszűnés').length;
+  const leepitesCount = rows.filter(r => r.eventType === 'leépítés').length;
+  const mediaCount = megszuntCount + leepitesCount;
+
   return (
     <div className="news-section-wrap">
       <section className="section" id="megszunt">
         <div className="section-head">
-          <div className="section-num">/ Elszámoltatás</div>
+          <div className="section-num">/ Médiaváltozások</div>
           <h2 className="section-title">Megszűnt-e már?</h2>
         </div>
 
-        <p className="rogues-deck" style={{ marginTop: 24, marginBottom: 24, color: 'var(--ink)' }}>
+        <p className="rogues-deck" style={{ marginTop: 24, marginBottom: 32, color: 'var(--ink)' }}>
           NER-közeli médiumok, műsorok és rendezvények, amelyek 2026. április 12.
           óta megszűntek, leépítések áldozataivá váltak, vagy elmaradtak.
         </p>
+
+        <div className="megszunt-stats megszunt-stats--3">
+          <div className="megszunt-stat">
+            <div className="megszunt-stat-value">{mediaCount}</div>
+            <div className="megszunt-stat-label">Érintett médium összesen</div>
+          </div>
+          <div className="megszunt-stat">
+            <div className="megszunt-stat-value megszunt-stat-value--red">{megszuntCount}</div>
+            <div className="megszunt-stat-label">Teljes megszűnés</div>
+          </div>
+          <div className="megszunt-stat">
+            <div className="megszunt-stat-value megszunt-stat-value--orange">{leepitesCount}</div>
+            <div className="megszunt-stat-label">Leépítés / tömeges kirúgás</div>
+          </div>
+        </div>
 
         {rows.length === 0 ? (
           <div className="empty-state" style={{ marginTop: 32 }}>

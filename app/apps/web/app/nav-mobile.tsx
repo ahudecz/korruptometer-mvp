@@ -11,9 +11,8 @@ const NAV_LINKS = [
   { href: '/ugyek', label: 'Ügyek' },
   { href: '/adatbazis', label: 'Adatbázis' },
   { href: '/hirek', label: 'Hírek' },
-  { href: '/lemondasok', label: 'Lemondások' },
+  { href: '/lemondasok', label: 'Lemondott-e?' },
   { href: '/megszunt', label: 'Megszűnt-e?' },
-  { href: '/bejelentes', label: 'Bejelentés' },
 ];
 
 export function NavMobile() {

@@ -46,14 +46,12 @@ export default function RootLayout({
                 <Link href="/hirek">Hírek</Link>
               </li>
               <li>
-                <Link href="/lemondasok">Lemondások</Link>
+                <Link href="/lemondasok">Lemondott-e?</Link>
               </li>
               <li>
                 <Link href="/megszunt">Megszűnt-e?</Link>
               </li>
-              <li>
-                <Link href="/bejelentes">Bejelentés</Link>
-              </li>
+
             </ul>
             <Link href="/bejelentes" className="nav-cta">
               Bejelentés tétele

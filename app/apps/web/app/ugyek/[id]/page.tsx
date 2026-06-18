@@ -128,7 +128,7 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
 
         {/* ── Main video ── */}
         {entry.videoId && (
-          <>
+          <div className="person-video-section">
             {(entry.videoTitle || entry.videoSummary) && (
               <div className="person-video-teaser">
                 {entry.videoChannel && <div className="person-video-teaser-channel">{entry.videoChannel}</div>}
@@ -144,7 +144,7 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
                 allowFullScreen
               />
             </div>
-          </>
+          </div>
         )}
 
         {/* ── Additional videos ── */}

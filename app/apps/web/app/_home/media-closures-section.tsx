@@ -66,7 +66,7 @@ export function MediaClosuresSection() {
     <div className="megszunt-section-wrap">
       <section className="section elszamoltatas-section">
         <div className="section-head">
-          <div className="section-num">06 / Elszámoltatás</div>
+          <div className="section-num">06 / Médiaváltozások</div>
           <h2 className="section-title">Megszűnt-e már?</h2>
         </div>
         <p className="elszamoltatas-deck">

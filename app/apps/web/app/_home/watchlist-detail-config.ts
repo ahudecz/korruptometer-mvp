@@ -374,7 +374,7 @@ export const WATCHLIST_DETAIL: WatchlistDetailEntry[] = [
         source: 'Telex',
       },
     ],
-    bio: 'Koltay András 2021 óta vezeti a Nemzeti Média- és Hírközlési Hatóságot (NMHH). Médiajogi professzorként munkái a médiaszabadság szűkítését igazoló elméleti kereteket nyújtottak. Az NMHH alatt a Fidesz háborús riogatós videóját nem ítélte jogsértőnek, bíróság által betiltott NER-médiumot védelmébe vett, és 13 milliárdot költ reklámtábla-ellenőrzésre kormányközeli cégeken keresztül.',
+    bio: 'Koltay András 2021 óta vezeti a Nemzeti Média- és Hírközlési Hatóságot (NMHH). Médiajogi professzorként munkái a médiaszabadság szűkítését igazoló elméleti kereteket nyújtottak. Az NMHH alatt a Fidesz háborús riogatós videóját nem ítélte jogsértőnek, bíróság által betiltott NER-médiumot védelmébe vett, és 1,3 milliárdot költ reklámtábla-ellenőrzésre kormányközeli cégeken keresztül.',
     nerRole: 'Koltay médiahatósága NER-barát szelektivitással működik: a Fidesz kampánymanipulációja ellen nem lép, a független médiumokat megbünteti, a bíróság döntéseit figyelmen kívül hagyja — majd a választások után hirtelen tud eljárásokat indítani a volt kormánymédia ellen.',
     keyCases: [
       {
@@ -399,8 +399,8 @@ export const WATCHLIST_DETAIL: WatchlistDetailEntry[] = [
         sourceLabel: 'Telex',
       },
       {
-        title: 'Kormányközeli cégek — 13 milliárd reklámtábla-ellenőrzésre',
-        description: 'Az NMHH 13 milliárd forintot költ arra, hogy az összes reklámtáblát ellenőrizze — az Atlatszo.hu szerint a szerződés kormányközeli cégekhez kerül. A közpénzköltés átláthatatlansága és a feladat aránytalan mérete politikai motivációkra utal.',
+        title: 'Kormányközeli cégek — 1,3 milliárd reklámtábla-ellenőrzésre',
+        description: 'Az NMHH 1,3 milliárd forintot költ arra, hogy az összes reklámtáblát ellenőrizze — az Atlatszo.hu szerint a szerződés kormányközeli cégekhez kerül. A közpénzköltés átláthatatlansága és a feladat aránytalan mérete politikai motivációkra utal.',
         crimeTypes: ['közpénzek pazarlása', 'kormányközeli összefonódás'],
         sourceUrl: 'https://atlatszo.hu/kozpenz/2026/03/26/13-milliardot-kolt-arra-a-mediahatosag-hogy-az-osszes-reklamtablat-ellenorizze/',
         sourceLabel: 'Atlatszo.hu',

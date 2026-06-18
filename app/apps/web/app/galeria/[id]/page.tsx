@@ -109,7 +109,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
 
       <div className="person-body">
         {entry.videoId && (
-          <>
+          <div className="person-video-section">
             {(entry.videoTitle || entry.videoSummary) && (
               <div className="person-video-teaser">
                 {entry.videoChannel && <div className="person-video-teaser-channel">{entry.videoChannel}</div>}
@@ -125,7 +125,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                 allowFullScreen
               />
             </div>
-          </>
+          </div>
         )}
         {!entry.videoId && (
           <div className="person-video-wrap">
