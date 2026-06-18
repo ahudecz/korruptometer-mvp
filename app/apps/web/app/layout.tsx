@@ -45,7 +45,7 @@ export default function RootLayout({
                 <Link href="/hirek">Hírek</Link>
               </li>
               <li>
-                <Link href="/lemondosok">Lemondások</Link>
+                <Link href="/lemondasok">Lemondások</Link>
               </li>
               <li>
                 <Link href="/megszunt">Megszűnt-e?</Link>

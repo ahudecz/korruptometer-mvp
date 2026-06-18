@@ -12,13 +12,14 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.95.2",
     "@korr/db": "workspace:*",
+    "@korr/scrapers": "workspace:*",
     "@korr/shared": "workspace:*",
     "@korr/ui": "workspace:*",
     "@sentry/nextjs": "^8.45.1",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.46.1",
-    "@korr/scrapers": "workspace:*",
     "@upstash/ratelimit": "^2.0.5",
     "@upstash/redis": "^1.34.3",
     "drizzle-orm": "^0.36.4",
@@ -33,8 +34,8 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.10.1",
     "@playwright/test": "^1.48.2",
-    "@types/node": "^20.14.10",
     "@types/libsodium-wrappers-sumo": "^0.7.8",
+    "@types/node": "^20.14.10",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "eslint": "^8.57.0",

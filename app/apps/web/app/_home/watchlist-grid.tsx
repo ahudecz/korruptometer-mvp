@@ -1,3 +1,7 @@
+import Link from 'next/link';
+import { gte } from 'drizzle-orm';
+
+import { getDb, schema } from '@/lib/db';
 import { WATCH_LIST, type WatchPerson } from './watchlist-config';
 
 const STATUS_LABEL: Record<string, string> = {
@@ -15,10 +19,24 @@ function initials(name: string) {
   return name.split(' ').map(w => w[0]).join('').slice(0, 2);
 }
 
+function resolveStatus(
+  dbResignations: { name: string; resignationType: string }[],
+  personName: string,
+): WatchPerson['status'] {
+  const parts = personName.toLowerCase().split(' ').filter(p => p.length > 2);
+  const match = dbResignations.find(r => {
+    if (r.resignationType === 'Hivatalban van' || r.resignationType === 'egyéb') return false;
+    const rn = r.name.toLowerCase();
+    return parts.every(part => rn.includes(part));
+  });
+  if (!match) return 'active';
+  return match.resignationType === 'lemondás' ? 'resigned' : 'removed';
+}
+
 function WatchCard({ person }: { person: WatchPerson }) {
   const isGone = person.status !== 'active';
   return (
-    <div className={`watchlist-card ${isGone ? 'watchlist-card--gone' : ''}`}>
+    <Link href={`/lemondasok/${person.id}`} className={`watchlist-card ${isGone ? 'watchlist-card--gone' : ''}`}>
       <div className="watchlist-photo">
         {person.photoUrl ? (
           <img
@@ -42,15 +60,29 @@ function WatchCard({ person }: { person: WatchPerson }) {
       <div className="watchlist-info">
         <div className="watchlist-name">{person.name}</div>
         <div className="watchlist-institution">{person.institution}</div>
+        <div className="watchlist-cta">Miért kell mennie? →</div>
       </div>
-    </div>
+    </Link>
   );
 }
 
-export function WatchlistGrid() {
+export async function WatchlistGrid() {
+  const db = getDb();
+  const since = new Date('2026-04-12');
+
+  const resignations = await db
+    .select({ name: schema.politicalResignations.name, resignationType: schema.politicalResignations.resignationType })
+    .from(schema.politicalResignations)
+    .where(gte(schema.politicalResignations.resignationDate, since));
+
+  const persons = WATCH_LIST.map(p => {
+    const dynamicStatus = resolveStatus(resignations, p.name);
+    return dynamicStatus !== 'active' ? { ...p, status: dynamicStatus } : p;
+  });
+
   return (
     <div className="watchlist-grid">
-      {WATCH_LIST.map(p => (
+      {persons.map(p => (
         <WatchCard key={p.id} person={p} />
       ))}
     </div>

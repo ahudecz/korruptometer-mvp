@@ -1,6 +1,6 @@
 import { desc } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
-import { CrossLemondosok, CrossUgyek, CrossGaleria } from '../_home/cross-promo';
+import { CrossLemondosok, CrossUgyek, CrossGaleria, CrossFelszolitottak } from '../_home/cross-promo';
 
 export const revalidate = 120;
 
@@ -78,7 +78,7 @@ export default async function MegszuntPage() {
                       </span>
                     </td>
                     <td style={{ padding: '12px', fontWeight: 500 }}>{r.name}</td>
-                    <td style={{ padding: '12px', color: '#666', width: 280, fontSize: 13 }}>
+                    <td style={{ padding: '12px', color: '#666', minWidth: 320, fontSize: 13 }}>
                       {r.description ?? '—'}
                     </td>
                     <td style={{ padding: '12px', fontSize: 13 }}>
@@ -107,6 +107,7 @@ export default async function MegszuntPage() {
       <div className="cross-promo-section">
         <div className="cross-promo-section-inner">
           <CrossLemondosok />
+          <CrossFelszolitottak />
           <CrossUgyek />
           <CrossGaleria />
         </div>

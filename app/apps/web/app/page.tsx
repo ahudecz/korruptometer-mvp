@@ -381,7 +381,7 @@ export default async function HomePage() {
               <div className="stat-label">Lemondások és kirúgások</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div className="stat-id">/ KPI–04</div>
-                <Link href="/lemondosok" className="stat-card-list-link">Teljes lista →</Link>
+                <Link href="/lemondasok" className="stat-card-list-link">Teljes lista →</Link>
               </div>
             </div>
             <div className="stat-value">{fmtNumber(resignationCount)}</div>

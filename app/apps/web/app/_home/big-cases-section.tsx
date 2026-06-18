@@ -112,7 +112,9 @@ export function BigCasesSection({ cases }: { cases: BigCaseConfig[] }) {
         <div className="section-num">03 / Legdurvább ügyek</div>
         <h2 className="section-title">Legdurvább ügyek.</h2>
       </div>
-      <div className="big-cases-layout">
+
+      {/* Desktop: tab-alapú layout */}
+      <div className="big-cases-layout big-cases-desktop-only">
         <nav className="big-cases-nav">
           {cases.map((c, i) => (
             <button
@@ -140,6 +142,33 @@ export function BigCasesSection({ cases }: { cases: BigCaseConfig[] }) {
           </div>
           <CaseDetail c={active} />
         </div>
+      </div>
+
+      {/* Mobil: kártyás lista, az összes ügy egymás alatt */}
+      <div className="big-cases-mobile-list">
+        {cases.map((c, i) => (
+          <div key={c.id} className={`big-case-mobile-card${c.placeholder ? ' placeholder' : ''}`}>
+            <div className="big-case-mobile-num">/ {String(i + 1).padStart(2, '0')}</div>
+            <div className="big-case-mobile-eyebrow">{c.eyebrow}</div>
+            <h3 className="big-case-mobile-title">{c.title}</h3>
+            {c.responsible && (
+              <div className="big-case-mobile-resp">/ {c.responsible}</div>
+            )}
+            <p className="big-case-mobile-summary">{c.summary}</p>
+            {c.statusItems && c.statusItems.map((s, j) => (
+              <div key={j} className="big-case-mobile-status-row">
+                <span>{s.icon}</span>
+                <span className="big-case-mobile-status-label">{s.label}:</span>
+                <span className="big-case-mobile-status-value">{s.value}</span>
+              </div>
+            ))}
+            {c.moreUrl && (
+              <Link href={c.moreUrl} className="big-case-mobile-more">
+                A teljes ügy →
+              </Link>
+            )}
+          </div>
+        ))}
       </div>
     </section>
   );

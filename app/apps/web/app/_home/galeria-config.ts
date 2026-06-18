@@ -201,7 +201,7 @@ export const GALERIA: GaleriaEntry[] = [
     subtitle: 'Üzletember · Felcsút',
     description: 'Orbán Viktor gyerekkori barátja az elmúlt évtizedben az ország leggazdagabb emberévé vált — közbeszerzések, energetikai koncessziók és médiabirodalom révén. Vagyona 2010 előtt néhány száz millió, 2026-ra közel 900 milliárd forintra becsült.',
     detention: 'investig',
-    detentionLabel: 'Vagyonvizsgálat folyamatban',
+    detentionLabel: 'Vagyon­vizsgálat folyamatban',
     crimes: ['Közbeszerzési visszaélés', 'Jogtalan vagyonosodás', 'Bennfentes ügyletek'],
     amountLabel: 'Becsült vagyonnövekedés',
     amount: '~900 milliárd Ft',
@@ -211,7 +211,7 @@ export const GALERIA: GaleriaEntry[] = [
     videoId: 'rFpHB2w_O1o',
     videoChannel: 'Partizán',
     videoTitle: 'Kicsoda Mészáros Lőrinc?',
-    videoSummary: 'Egy falusi vízszerelőből tíz év alatt Magyarország egyik leggazdagabb embere lett — Orbán barátjaként. A Partizán első részben tárja fel, hogyan épült fel a Mészáros-birodalom: ki fizette, ki nyitotta az ajtókat, és mi volt az ára.',
+    videoSummary: 'Egy falusi gázszerelőből tíz év alatt Magyarország egyik leggazdagabb embere lett — Orbán barátjaként. A Partizán első részben tárja fel, hogyan épült fel a Mészáros-birodalom: ki fizette, ki nyitotta az ajtókat, és mi volt az ára.',
     newsTag: 'Mészáros Lőrinc',
     newsKeywords: ['mészáros lőrinc', 'mészáros'],
     personCases: [

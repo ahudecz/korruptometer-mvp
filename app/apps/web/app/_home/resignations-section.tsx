@@ -65,7 +65,7 @@ export function ResignationsSection({ resignations }: Props) {
           <h3 className="elszamoltatas-sub-heading">
             Legfrissebb lemondások, kirúgások és felmentések
           </h3>
-          <div style={{ overflowX: 'auto' }}>
+          <div className="res-table-wrap">
             <table className="elszamoltatas-table">
               <thead>
                 <tr>
@@ -85,7 +85,7 @@ export function ResignationsSection({ resignations }: Props) {
       )}
 
       <div className="elszamoltatas-more">
-        <Link href="/lemondosok">Tovább a teljes listához →</Link>
+        <Link href="/lemondasok">Tovább a teljes listához →</Link>
       </div>
     </section>
     </div>

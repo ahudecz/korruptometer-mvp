@@ -90,7 +90,7 @@ export function MediaClosuresSection() {
         })}
 
         <div className="elszamoltatas-more">
-          <Link href="/megszunt">Teljes eseménynapló →</Link>
+          <Link href="/megszunt" className="btn-red">Összes megszűnt médium →</Link>
         </div>
       </section>
     </div>
