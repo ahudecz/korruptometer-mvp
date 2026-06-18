@@ -65,6 +65,11 @@ export function ResignationsSection({ resignations }: Props) {
           <h3 className="elszamoltatas-sub-heading">
             Legfrissebb lemondások, kirúgások és felmentések
           </h3>
+          <p className="elszamoltatas-deck" style={{ marginBottom: 24 }}>
+            Itt dokumentáljuk a NER összeomlásával távozó, kirúgott és felmentett embereket —
+            köztisztviselőket, propagandistákat és mindenkit, aki a rendszer szekerét tolta,
+            és most mennie kellett.
+          </p>
           <div className="res-table-wrap">
             <table className="elszamoltatas-table">
               <thead>

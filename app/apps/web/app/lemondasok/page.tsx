@@ -1,4 +1,4 @@
-import { desc } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { WatchlistGrid } from '../_home/watchlist-grid';
 import { CrossMegszunt, CrossUgyek, CrossGaleria } from '../_home/cross-promo';
@@ -73,8 +73,17 @@ const tableHead = (
 );
 
 export default async function LemondasokPage() {
-  const rows = await fetchRows();
+  const db = getDb();
+  const [rows, mediaLeepites] = await Promise.all([
+    fetchRows(),
+    db.select().from(schema.mediaClosures).where(eq(schema.mediaClosures.eventType, 'leépítés')),
+  ]);
   const rest = rows.filter(r => !r.pinned);
+
+  const kirugasCount = rows.filter(r => r.resignationType === 'kirúgás' && !r.name.includes('szerkesztőség')).length;
+  const lemondasCount = rows.filter(r => r.resignationType === 'lemondás' || r.resignationType === 'felmentés').length;
+  const osszes = kirugasCount + lemondasCount;
+  const szerkLeepitesCount = mediaLeepites.length;
 
   return (
     <div className="news-section-wrap">
@@ -100,13 +109,36 @@ export default async function LemondasokPage() {
               fontSize: '18px',
               fontWeight: 600,
               marginTop: '48px',
-              marginBottom: '16px',
+              marginBottom: '8px',
               paddingTop: '24px',
               borderTop: '1px solid #e5e5e5',
               color: 'var(--ink)',
             }}>
               Legfrissebb lemondások, kirúgások és felmentések
             </h2>
+            <p className="elszamoltatas-deck" style={{ marginBottom: 24 }}>
+              Itt dokumentáljuk a NER összeomlásával távozó, kirúgott és felmentett embereket —
+              köztisztviselőket, propagandistákat és mindenkit, aki a rendszer szekerét tolta,
+              és most mennie kellett.
+            </p>
+            <div className="megszunt-stats megszunt-stats--4" style={{ marginBottom: 32 }}>
+              <div className="megszunt-stat">
+                <div className="megszunt-stat-value">{osszes}</div>
+                <div className="megszunt-stat-label">NER-káder távozott összesen</div>
+              </div>
+              <div className="megszunt-stat">
+                <div className="megszunt-stat-value megszunt-stat-value--red">{kirugasCount}</div>
+                <div className="megszunt-stat-label">Kirúgás</div>
+              </div>
+              <div className="megszunt-stat">
+                <div className="megszunt-stat-value" style={{ color: '#4B7AFF' }}>{lemondasCount}</div>
+                <div className="megszunt-stat-label">Lemondás / felmentés</div>
+              </div>
+              <div className="megszunt-stat">
+                <div className="megszunt-stat-value megszunt-stat-value--orange">{szerkLeepitesCount}</div>
+                <div className="megszunt-stat-label">Szerkesztőségi leépítés</div>
+              </div>
+            </div>
             <div className="res-table-wrap">
               <table style={{ width: '100%', minWidth: 700, fontSize: '14px', lineHeight: '1.6' }}>
                 {tableHead}
