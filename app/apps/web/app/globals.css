@@ -2021,6 +2021,7 @@ button {
   position: relative;
   width: 180px;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .rogue-mug-sm svg {
@@ -2033,9 +2034,11 @@ button {
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
-  object-position: top;
+  object-position: center;
   display: block;
   border-radius: 2px;
+  transform: scale(1.25);
+  transform-origin: bottom center;
 }
 
 .gal-detail-name {

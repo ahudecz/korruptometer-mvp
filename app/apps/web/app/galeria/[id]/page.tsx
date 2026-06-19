@@ -40,7 +40,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     }
   }
 
-  const articles = conditions.length > 0
+  const rawArticles = conditions.length > 0
     ? await db
         .select({
           id: schema.newsArticles.id,
@@ -56,6 +56,13 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         .orderBy(desc(schema.newsArticles.publishedAt))
         .limit(20)
     : [];
+
+  const excludeKws = entry.newsExcludeKeywords ?? [];
+  const articles = excludeKws.length === 0
+    ? rawArticles
+    : rawArticles.filter(a =>
+        !excludeKws.some(kw => a.headline.toLowerCase().includes(kw.toLowerCase()))
+      );
 
   const detentionColors: Record<string, string> = {
     investig: '#c9a800',

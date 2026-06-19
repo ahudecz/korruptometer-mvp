@@ -27,6 +27,8 @@ export interface GaleriaEntry {
   // Photo (user-provided URL) + credit
   photoUrl?: string;
   photoCredit?: string;
+  photoObjectPosition?: string;
+  photoOffsetY?: number;
   // Detail page data
   videoId?: string;
   videoChannel?: string;
@@ -34,6 +36,7 @@ export interface GaleriaEntry {
   videoSummary?: string;
   newsTag?: string;
   newsKeywords?: string[];
+  newsExcludeKeywords?: string[];
   personCases?: PersonCaseItem[];
 }
 
@@ -49,8 +52,8 @@ export const GALERIA: GaleriaEntry[] = [
     amountLabel: 'Becsült közpénzérintettség',
     amount: 'Több ezer milliárd Ft',
     variant: 2, glasses: false, hair: 'slick',
-    photoUrl: '/images/persons/orban.jpg',
-    photoCredit: 'Orbán Viktor Facebook oldala',
+    photoUrl: '/images/persons/orban.png',
+    photoCredit: '',
     videoId: 'HiW9r1M32ug',
     videoChannel: '444.hu',
     videoTitle: 'Hatvanpuszta — Orbán titkos majorja',
@@ -147,8 +150,9 @@ export const GALERIA: GaleriaEntry[] = [
     amountLabel: 'Becsült érintett összeg',
     amount: 'Több száz milliárd Ft',
     variant: 0, glasses: false, hair: 'short',
-    photoUrl: 'https://image.blikk.hu/1/S9Ck9kpTURBXy81ZjE4ZDcwZjI3M2FmYzE0ZjY1YWZkNmNkZDk5ODA1Ny5qcGeTlQMAO80Ra80JzJMJpmY2OGQ5MAaTBc0DMM0CZN4AAaEwBQ/rogan-antal-megszolalt-a-valasztasok-utan-foto-korponai-tamas',
-    photoCredit: 'Blikk / Korponai Tamás',
+    photoUrl: '/images/persons/rogan.png',
+    photoCredit: '',
+    photoOffsetY: -15,
     videoId: 'ePRovUEGY1c',
     videoChannel: 'Juhász Péter | Juhi',
     videoTitle: 'Rogán és a letelepedési kötvény',
@@ -206,8 +210,9 @@ export const GALERIA: GaleriaEntry[] = [
     amountLabel: 'Becsült vagyonnövekedés',
     amount: '~900 milliárd Ft',
     variant: 3, glasses: false, hair: 'bald',
-    photoUrl: 'https://kep.cdn.indexvas.hu/1/0/1985/19857/198573/19857367_80ff5bffe0beda9d134343dec5c5d50d_wm.jpg',
-    photoCredit: 'index.hu',
+    photoUrl: '/images/persons/meszaros.png',
+    photoCredit: '',
+    photoOffsetY: -15,
     videoId: 'rFpHB2w_O1o',
     videoChannel: 'Partizán',
     videoTitle: 'Kicsoda Mészáros Lőrinc?',
@@ -251,8 +256,8 @@ export const GALERIA: GaleriaEntry[] = [
     amountLabel: 'Becsült vagyon (BDPST csoport)',
     amount: '188+ milliárd Ft',
     variant: 5, glasses: false, hair: 'short',
-    photoUrl: 'https://bbj.hu/wp-content/uploads/2024/06/Tiborcz-Istvan-OK-1-1365x2048.jpg.webp',
-    photoCredit: 'bbj.hu',
+    photoUrl: '/images/persons/tiborcz.png',
+    photoCredit: '',
     videoId: '26q4cPw-W3A',
     videoChannel: '444.hu',
     videoTitle: 'Tiborcz a kamerák előtt',
@@ -324,8 +329,8 @@ export const GALERIA: GaleriaEntry[] = [
     amountLabel: 'Érintett szerződések értéke',
     amount: 'Több száz milliárd Ft',
     variant: 4, glasses: false, hair: 'short',
-    photoUrl: 'https://symposium.org/wp-content/uploads/2023/12/Szijjarto_Peter_kep.jpg',
-    photoCredit: 'symposium.org',
+    photoUrl: '/images/persons/szijjarto.png',
+    photoCredit: '',
     videoId: '89pePZybTXo',
     videoChannel: 'Telex.hu',
     videoTitle: 'Önök milliárdosok?',
@@ -382,8 +387,9 @@ export const GALERIA: GaleriaEntry[] = [
     amountLabel: 'Sógor által felvett osztalék',
     amount: '~8 milliárd Ft',
     variant: 1, glasses: true, hair: 'short',
-    photoUrl: 'https://kep.cdn.indexvas.hu/1/0/6426/64266/642665/64266583_02646dcda0e9534845ab8f0750026dc5_wm.jpg',
-    photoCredit: 'Index',
+    photoUrl: '/images/persons/takacs.png',
+    photoCredit: '',
+    photoOffsetY: -15,
     videoId: 'DrHUAmHMZBM',
     videoChannel: 'Puzser Robert',
     videoTitle: 'Közpénztékozlás vagy pánikvasárlás?',
@@ -412,8 +418,9 @@ export const GALERIA: GaleriaEntry[] = [
     amountLabel: 'ÁSZ által feltárt vagyonvesztés',
     amount: '266+ milliárd Ft',
     variant: 5, glasses: false, hair: 'wave',
-    photoUrl: 'https://www.valaszonline.hu/wp-content/uploads/2025/04/ADSZZS202004160004-1536x864.jpg',
-    photoCredit: 'Válasz Online',
+    photoUrl: '/images/persons/matolcsy.png',
+    photoCredit: '',
+    photoOffsetY: -15,
     videoId: 'bgA0PTDFKlY',
     videoChannel: 'Telex.hu',
     videoTitle: 'Az MNB-botrány egy évvel később',
@@ -463,8 +470,9 @@ export const GALERIA: GaleriaEntry[] = [
     amountLabel: 'Közpénzből felújított magánút',
     amount: 'min. 3,3 milliárd Ft',
     variant: 0, glasses: false, hair: 'short',
-    photoUrl: 'https://ahang.hu/lopnak/wp-content/uploads/sites/3/2025/10/lazar-janos.jpg',
-    photoCredit: 'ahang.hu',
+    photoUrl: '/images/persons/lazar.png',
+    photoCredit: '',
+    photoOffsetY: -15,
     videoId: 'Zso0FRjX9cM',
     videoChannel: 'Kontroll',
     videoTitle: 'A batidai kastély rejtélye',
@@ -584,8 +592,9 @@ export const GALERIA: GaleriaEntry[] = [
     amountLabel: 'Érintett állami reklámköltés',
     amount: '~700 milliárd Ft',
     variant: 4, glasses: false, hair: 'wave',
-    photoUrl: 'https://ahang.hu/lopnak/wp-content/uploads/sites/3/2025/09/balasy-gyula-1.jpg',
-    photoCredit: 'ahang.hu',
+    photoUrl: '/images/persons/balasy.png',
+    photoCredit: '',
+    photoOffsetY: -15,
     videoId: 'cslzmXaC51M',
     videoChannel: 'Kontroll',
     videoTitle: 'Balásy "önként" lemond',
@@ -614,14 +623,15 @@ export const GALERIA: GaleriaEntry[] = [
     amountLabel: 'Egyházi normatíva-különbözet',
     amount: 'Több száz milliárd Ft',
     variant: 1, glasses: true, hair: 'cap',
-    photoUrl: 'https://temabaranya.hu/wp-content/uploads/2025/05/semjen_zsolt_vasarnap.hu_szennyes_krisztian_1000.jpg',
-    photoCredit: 'témabaranya.hu',
+    photoUrl: '/images/persons/semjen.png',
+    photoCredit: '',
     videoId: 'FlvGWxP5dzw',
     videoChannel: '444.hu',
     videoTitle: 'Semjén cáfol',
     videoSummary: 'Semjén Zsolt határozottan kijelenti: semmiféle bűnös viszonyhoz nem volt köze. A videó Semjén védekezését mutatja be — és közben sokat elárul arról, hogyan kommunikál a hatalom, amikor szorult helyzetbe kerül.',
     newsTag: 'Semjén',
-    newsKeywords: ['semjén zsolt', 'semjén', 'zsolti bácsi', 'zsolt bácsi', 'kdnp'],
+    newsKeywords: ['semjén zsolt', 'semjén', 'kdnp'],
+    newsExcludeKeywords: ['zsolti bácsi', 'zsolt bácsi', 'zsolt-bácsi'],
     personCases: [
       {
         title: 'Egyházi ingatlanvissza-adások',
