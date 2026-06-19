@@ -52,38 +52,20 @@ export default function AdomanyozasPage() {
 
           <h3 className="modszertan-h3">Hogyan támogathatsz?</h3>
 
-          <div className="adom-methods">
-            <div className="adom-method">
-              <div className="adom-method-title">Banki átutalás</div>
-              <div className="adom-method-desc">
-                Egyszeri vagy rendszeres utalás közvetlenül — jutalék nélkül, minden
-                forint megérkezik.
-              </div>
-              <div className="adom-bank">
-                <div className="adom-bank-row"><span>Kedvezményezett:</span> <strong>— hamarosan —</strong></div>
-                <div className="adom-bank-row"><span>Számlaszám:</span> <strong>— hamarosan —</strong></div>
-                <div className="adom-bank-row"><span>Közlemény:</span> <strong>Kegyencjárat támogatás</strong></div>
-              </div>
-            </div>
-
-            <div className="adom-method">
-              <div className="adom-method-title">Ko-fi</div>
-              <div className="adom-method-desc">
-                {'Egyszeri „kávé" összeg — gyors, egyszerű, kártyával is fizethető.'}
-              </div>
-              <a href="https://ko-fi.com" target="_blank" rel="noopener noreferrer" className="adom-btn">
-                Támogatás Ko-fi-on →
-              </a>
-            </div>
-
-            <div className="adom-method">
-              <div className="adom-method-title">Patreon — havi tagság</div>
-              <div className="adom-method-desc">
-                Havi rendszeres támogatás — a leghasznosabb, mert tervezhetővé teszi
-                a kiadásokat. Már havi 1&nbsp;000 Ft is számít.
-              </div>
-              <a href="https://patreon.com" target="_blank" rel="noopener noreferrer" className="adom-btn">
-                Tagság Patreonon →
+          <div className="adom-bmc-box">
+            <div className="adom-bmc-logo">☕</div>
+            <div className="adom-bmc-content">
+              <div className="adom-bmc-title">Buy Me a Coffee</div>
+              <p className="adom-bmc-desc">
+                Egy egyszerű, megbízható platform egyszerű, egyszeri támogatásra — kártyával, PayPal-lal vagy Apple Pay-jel, regisztráció nélkül is. Minden összeg egyenesen hozzánk érkezik.
+              </p>
+              <a
+                href="https://buymeacoffee.com/kegyencjarat"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="adom-bmc-btn"
+              >
+                ☕ Küldök egy kávét →
               </a>
             </div>
           </div>

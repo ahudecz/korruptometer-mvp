@@ -6,8 +6,7 @@ export function SiteFooter() {
       <div>
         <h4>Kegyencjárat</h4>
         <p>
-          Független, közösségi tényfeltáró platform. Adataink nyilvános bírósági
-          iratokon és sajtóforrásokon alapulnak.
+          Független híraggregátor. Adataink nyilvános sajtóforrásokon és bírósági iratokon alapulnak.
         </p>
       </div>
       <div>
@@ -24,6 +23,9 @@ export function SiteFooter() {
           </li>
           <li>
             <a href="/adatok">API hozzáférés</a>
+          </li>
+          <li>
+            <a href="/adatvedelem">Adatvédelem</a>
           </li>
         </ul>
       </div>

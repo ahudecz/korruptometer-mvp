@@ -6,6 +6,7 @@ import type { OutletSlug, ScrapedArticle } from '@korr/scrapers';
 import { schema } from '@/lib/db';
 import { getDb } from '@/lib/db';
 import { postEditorAlert } from '@/lib/slack';
+import { classifyArticle } from '@/lib/ai-classify';
 
 import { inngest } from '../client';
 
@@ -52,7 +53,7 @@ export const scrapeNews = inngest.createFunction(
 
         try {
           const scraped = await adapter.crawl();
-          const inserted = await persistArticles(source.id, adapter.queryAllowlist, scraped, adapter.relevantByDefault ?? false);
+          const inserted = await persistArticles(source.id, adapter.queryAllowlist, scraped, adapter.relevantByDefault ?? false, logger);
           const finishedAt = new Date();
           await db
             .update(schema.scraperRuns)
@@ -149,29 +150,68 @@ async function persistArticles(
   allowlist: readonly string[],
   scraped: ScrapedArticle[],
   relevantByDefault: boolean,
+  logger?: { info?: (...a: unknown[]) => void },
 ): Promise<string[]> {
   const db = getDb();
   const insertedIds: string[] = [];
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
+
+  const useAi = Boolean(process.env.ANTHROPIC_API_KEY);
+
   for (const a of scraped) {
-    if (!relevantByDefault && !isRelevant(a.headline, a.excerpt)) continue;
+    // 1. Gyors kulcsszavas előszűrés — ha nem releváns és nem default-relevant, skip
+    const keywordPass = relevantByDefault || isRelevant(a.headline, a.excerpt);
+    if (!keywordPass) continue;
+
     const canonical = canonicalUrl(a.sourceUrl, allowlist);
     const hash = dedupHash(canonical);
+
+    let finalExcerpt = a.excerpt;
+    let finalTag = a.tag ?? null;
+    let finalFeatured = shouldFeature(a.headline, a.excerpt);
+
+    // 2. AI-alapú finomítás: okosabb relevancia + excerpt + tag
+    if (useAi) {
+      try {
+        const ai = await classifyArticle(a.headline, a.excerpt);
+        totalInputTokens += ai.inputTokens;
+        totalOutputTokens += ai.outputTokens;
+
+        // Ha az AI nem-relevánsnak ítéli ÉS nem relevantByDefault forrás, kihagyjuk
+        if (!ai.relevant && !relevantByDefault) continue;
+
+        finalExcerpt = ai.excerpt || a.excerpt;
+        if (ai.tag) finalTag = ai.tag;
+        // Ha az AI relevansnak ítéli a lemondás/kirúgás kulcsszó nélkül is, featured lehet
+        if (ai.relevant && ai.tag === 'lemondás') finalFeatured = true;
+      } catch {
+        // API hiba esetén folytatjuk az eredeti adatokkal
+      }
+    }
+
     const inserted = await db
       .insert(schema.newsArticles)
       .values({
         sourceId,
         headline: a.headline.slice(0, 500),
-        excerpt: a.excerpt,
+        excerpt: finalExcerpt,
         sourceUrl: canonical,
         sourceUrlHash: hash,
         publishedAt: a.publishedAt,
-        tag: a.tag ?? null,
+        tag: finalTag,
         imageUrl: a.imageUrl ?? null,
-        featured: shouldFeature(a.headline, a.excerpt),
+        featured: finalFeatured,
       })
       .onConflictDoNothing({ target: schema.newsArticles.sourceUrlHash })
       .returning({ id: schema.newsArticles.id });
     if (inserted[0]) insertedIds.push(inserted[0].id);
   }
+
+  if (useAi && (totalInputTokens > 0 || totalOutputTokens > 0)) {
+    const costUsd = ((totalInputTokens / 1_000_000) * 0.8 + (totalOutputTokens / 1_000_000) * 4).toFixed(5);
+    logger?.info?.(`AI classify: ${totalInputTokens} in + ${totalOutputTokens} out tokens = ~$${costUsd}`);
+  }
+
   return insertedIds;
 }

@@ -6,13 +6,81 @@ import { Mugshot } from '@korr/ui/mugshot';
 
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from '../_home/galeria-config';
 
-const DETENTION_LABELS: Record<string, string> = {
-  busted: 'Jogerősen elítélve',
-  pretrial: 'Előzetes letartóztatásban',
-  investig: 'Feljelentés / nyomozás',
-  loose: 'Nincs ismert eljárás',
-  wanted: 'Körözési parancs kiadva',
-};
+function photoSrc(url: string) {
+  if (url.startsWith('/') || url.includes('wikimedia.org')) return url;
+  return `/api/img-proxy?url=${encodeURIComponent(url)}`;
+}
+
+function GaleriaDetail({ entry }: { entry: typeof GALERIA[number] }) {
+  return (
+    <>
+      <div className="gal-detail-mug">
+        <div className={`rogue-mug-sm r-${entry.detention}`}>
+          {entry.photoUrl ? (
+            <img src={photoSrc(entry.photoUrl)} alt={entry.name} className="gal-photo" />
+          ) : (
+            <Mugshot
+              caseId={entry.id}
+              name={entry.name}
+              variant={entry.variant ?? 0}
+              glasses={entry.glasses ?? false}
+              hair={(entry.hair as GaleriaHair) ?? 'short'}
+              detention={entry.detention as GaleriaDetention}
+            />
+          )}
+          <div className={`status-strip ${entry.detention}`}>{entry.detentionLabel}</div>
+          {entry.photoCredit && (
+            <div className="photo-credit">Fotó: {entry.photoCredit}</div>
+          )}
+        </div>
+
+        <div className="gal-detail-meta">
+          <div className="gal-detail-name">{entry.name}</div>
+          <div className="gal-detail-sub">{entry.subtitle}</div>
+        </div>
+      </div>
+
+      <div className="gal-detail-body">
+        <p className="gal-detail-desc">{entry.description}</p>
+        <div className="gal-detail-tags">
+          {entry.crimes.slice(0, 3).map(c => (
+            <span key={c} className="tag">{c}</span>
+          ))}
+        </div>
+        <div className="gal-detail-amount">
+          <div className="gal-detail-amount-lbl">{entry.amountLabel}</div>
+          <div className="gal-detail-amount-val">{entry.amount}</div>
+        </div>
+      </div>
+
+      {entry.personCases && entry.personCases.length > 0 && (
+        <div className="gal-cases">
+          <div className="gal-cases-label">Feltárt ügyek és gyanúsítások</div>
+          {entry.personCases.map((c, i) => (
+            <div key={i} className="gal-case-row">
+              <div className="gal-case-title">{c.title}</div>
+              <p className="gal-case-desc">{c.description}</p>
+              <div className="gal-case-footer">
+                {c.estimatedDamage && (
+                  <span className="gal-case-dmg">💰 {c.estimatedDamage}</span>
+                )}
+                <div className="gal-case-crimes">
+                  {c.crimeTypes.map(cr => (
+                    <span key={cr} className="tag tag-sm">{cr}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <Link href={`/galeria/${entry.id}`} className="big-case-more-btn" style={{ marginTop: 24 }}>
+        Részletek és tények: {entry.name} →
+      </Link>
+    </>
+  );
+}
 
 export default function GaleriaClient() {
   const [selected, setSelected] = useState(0);
@@ -33,8 +101,8 @@ export default function GaleriaClient() {
           érintett személyek ártatlannak tekintendők.
         </p>
 
-        <div className="gal-layout">
-          {/* Left nav */}
+        {/* Desktop: tab layout */}
+        <div className="gal-layout gal-desktop-only">
           <nav className="gal-nav">
             {GALERIA.map((entry, i) => (
               <button
@@ -50,73 +118,18 @@ export default function GaleriaClient() {
               </button>
             ))}
           </nav>
-
-          {/* Right detail */}
           <div className="gal-detail">
-            <div className="gal-detail-mug">
-              <div className={`rogue-mug-sm r-${active.detention}`}>
-                {active.photoUrl ? (
-                  <img src={active.photoUrl.startsWith('/') || active.photoUrl.includes('wikimedia.org') ? active.photoUrl : `/api/img-proxy?url=${encodeURIComponent(active.photoUrl)}`} alt={active.name} className="gal-photo" />
-                ) : (
-                  <Mugshot
-                    caseId={active.id}
-                    name={active.name}
-                    variant={active.variant ?? 0}
-                    glasses={active.glasses ?? false}
-                    hair={(active.hair as GaleriaHair) ?? 'short'}
-                    detention={active.detention as GaleriaDetention}
-                  />
-                )}
-                <div className={`status-strip ${active.detention}`}>{active.detentionLabel}</div>
-                {active.photoCredit && (
-                  <div className="photo-credit">Fotó: {active.photoCredit}</div>
-                )}
-              </div>
-
-              <div className="gal-detail-meta">
-                <div className="gal-detail-name">{active.name}</div>
-                <div className="gal-detail-sub">{active.subtitle}</div>
-                <p className="gal-detail-desc">{active.description}</p>
-
-                <div className="gal-detail-tags">
-                  {active.crimes.slice(0, 3).map(c => (
-                    <span key={c} className="tag">{c}</span>
-                  ))}
-                </div>
-
-                <div className="gal-detail-amount">
-                  <div className="gal-detail-amount-lbl">{active.amountLabel}</div>
-                  <div className="gal-detail-amount-val">{active.amount}</div>
-                </div>
-              </div>
-            </div>
-
-            {active.personCases && active.personCases.length > 0 && (
-              <div className="gal-cases">
-                <div className="gal-cases-label">Feltárt ügyek és gyanúsítások</div>
-                {active.personCases.map((c, i) => (
-                  <div key={i} className="gal-case-row">
-                    <div className="gal-case-title">{c.title}</div>
-                    <p className="gal-case-desc">{c.description}</p>
-                    <div className="gal-case-footer">
-                      {c.estimatedDamage && (
-                        <span className="gal-case-dmg">💰 {c.estimatedDamage}</span>
-                      )}
-                      <div className="gal-case-crimes">
-                        {c.crimeTypes.map(cr => (
-                          <span key={cr} className="tag tag-sm">{cr}</span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <Link href={`/galeria/${active.id}`} className="big-case-more-btn" style={{ marginTop: 24 }}>
-              Részletek és tények: {active.name} →
-            </Link>
+            <GaleriaDetail entry={active} />
           </div>
+        </div>
+
+        {/* Mobile: stacked layout */}
+        <div className="gal-mobile-only">
+          {GALERIA.map(entry => (
+            <div key={entry.id} className="gal-mobile-entry">
+              <GaleriaDetail entry={entry} />
+            </div>
+          ))}
         </div>
 
         <p className="rogues-disclaimer">

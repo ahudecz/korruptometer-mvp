@@ -5,6 +5,25 @@ import { detectResignationFromArticle } from '@korr/db/ai';
 import { getDb, schema } from '@/lib/db';
 import { inngest } from '../client';
 
+const WATCHLIST_NAMES = [
+  'Sulyok Tamás',
+  'Polt Péter',
+  'Nagy Gábor Bálint',
+  'Varga Zs. András',
+  'Windisch László',
+  'Rigó Csaba Balázs',
+  'Koltay András',
+  'Senyei György',
+];
+
+function isWatchlistPerson(extractedName: string): boolean {
+  const n = extractedName.toLowerCase();
+  return WATCHLIST_NAMES.some(wn => {
+    const parts = wn.toLowerCase().split(' ').filter(p => p.length > 2);
+    return parts.every(part => n.includes(part));
+  });
+}
+
 const BATCH_SIZE = 20;
 // Scan articles published in the last 2 hours.
 const LOOKBACK_MS = 2 * 60 * 60 * 1000;
@@ -98,6 +117,8 @@ export const detectResignations = inngest.createFunction(
             resignationDate = fallbackDate;
           }
 
+          const pinned = isWatchlistPerson(result.name);
+
           await db.insert(schema.politicalResignations).values({
             name: result.name.slice(0, 200),
             position: result.position.slice(0, 200),
@@ -105,6 +126,7 @@ export const detectResignations = inngest.createFunction(
             resignationType: result.resignationType,
             resignationDate,
             description: result.description.slice(0, 1000) || null,
+            pinned,
           });
 
           // Tag the source article so it appears in /hirek under the 'Lemondás' filter.

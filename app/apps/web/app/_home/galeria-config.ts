@@ -201,7 +201,7 @@ export const GALERIA: GaleriaEntry[] = [
     subtitle: 'Üzletember · Felcsút',
     description: 'Orbán Viktor gyerekkori barátja az elmúlt évtizedben az ország leggazdagabb emberévé vált — közbeszerzések, energetikai koncessziók és médiabirodalom révén. Vagyona 2010 előtt néhány száz millió, 2026-ra közel 900 milliárd forintra becsült.',
     detention: 'investig',
-    detentionLabel: 'Vagyonvizsgálat folyamatban',
+    detentionLabel: 'Vagyon­vizsgálat folyamatban',
     crimes: ['Közbeszerzési visszaélés', 'Jogtalan vagyonosodás', 'Bennfentes ügyletek'],
     amountLabel: 'Becsült vagyonnövekedés',
     amount: '~900 milliárd Ft',
@@ -211,7 +211,7 @@ export const GALERIA: GaleriaEntry[] = [
     videoId: 'rFpHB2w_O1o',
     videoChannel: 'Partizán',
     videoTitle: 'Kicsoda Mészáros Lőrinc?',
-    videoSummary: 'Egy falusi vízszerelőből tíz év alatt Magyarország egyik leggazdagabb embere lett — Orbán barátjaként. A Partizán első részben tárja fel, hogyan épült fel a Mészáros-birodalom: ki fizette, ki nyitotta az ajtókat, és mi volt az ára.',
+    videoSummary: 'Egy falusi gázszerelőből tíz év alatt Magyarország egyik leggazdagabb embere lett — Orbán barátjaként. A Partizán első részben tárja fel, hogyan épült fel a Mészáros-birodalom: ki fizette, ki nyitotta az ajtókat, és mi volt az ára.',
     newsTag: 'Mészáros Lőrinc',
     newsKeywords: ['mészáros lőrinc', 'mészáros'],
     personCases: [
@@ -320,7 +320,7 @@ export const GALERIA: GaleriaEntry[] = [
     description: 'Miniszteri időszaka alatt több stratégiai szerződés körül érdekkonfliktust és átláthatósági problémákat azonosított a sajtó. Az azerbajdzsáni és orosz energetikai cégekhez fűződő üzleti kapcsolatai 2026-ban parlamenti vizsgálat tárgyát képezik.',
     detention: 'investig',
     detentionLabel: 'Vizsgálat folyamatban',
-    crimes: ['Érdekkonfliktus', 'Átláthatóság megsértése', 'Közbeszerzési visszaélés'],
+    crimes: ['Érdekkonfliktus', 'Átláthatóság megsértése', 'Közbeszerzési visszaélés', 'Külföldi érdek kiszolgálása'],
     amountLabel: 'Érintett szerződések értéke',
     amount: 'Több száz milliárd Ft',
     variant: 4, glasses: false, hair: 'short',
@@ -333,6 +333,13 @@ export const GALERIA: GaleriaEntry[] = [
     newsTag: 'Szíjjártó Péter',
     newsKeywords: ['szíjjártó péter', 'szíjjártó'],
     personCases: [
+      {
+        title: 'Lavrov-lobbi: hangfelvételen ígért segítséget az orosz szankciók ellen',
+        description: 'A The Insider és a Telex által nyilvánosságra hozott hangfelvétel bizonyítja: Szijjártó Péter 2022-ben titkos telefonbeszélgetésben ígért segítséget Szergej Lavrovnak, hogy eltávolítsák Pavel Szorokint — egy orosz energetikai oligarchát — az EU szankciós listájáról. „Mindig a rendelkezésedre állok" — mondta Szijjártó a felvételen. Az ügy súlyát fokozza, hogy Szorokin az orosz olaj- és árnyékflotta-hálózat kulcsfigurája. A botrány parlamenti vizsgálatot váltott ki, és külföldi nyomásgyakorlást is eredményezett Magyarország ellen.',
+        crimeTypes: ['Külföldi érdek kiszolgálása', 'Titkos lobbi', 'Szankciókerülés (gyanú)', 'Hazaárulás (gyanú)'],
+        sourceUrl: 'https://444.hu/2026/03/31/mindig-a-rendelkezesedre-allok-mar-hangfelvetelen-is-hallhato-szijjarto-hogyan-igert-segitseget-lavrovnak',
+        sourceLabel: '444',
+      },
       {
         title: 'Azerbajdzsáni kapcsolatok',
         description: 'Szíjjártó miniszteri évei alatt kötött azerbajdzsáni energetikai és befektetési szerződések körül az ellenzék és a sajtó összeférhetetlenséget azonosított. A Vagif Aliyev-üggyel való kapcsolat vizsgálat alatt.',

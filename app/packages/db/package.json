@@ -9,7 +9,8 @@
     "./schema": "./src/schema.ts",
     "./locks": "./src/locks.ts",
     "./scrapers": "./src/scrapers.ts",
-    "./ai": "./src/resignation-detect.ts"
+    "./ai": "./src/resignation-detect.ts",
+    "./ai-closures": "./src/media-closure-detect.ts"
   },
   "scripts": {
     "lint": "eslint src",

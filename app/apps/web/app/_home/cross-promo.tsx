@@ -3,6 +3,7 @@ import { desc } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { UGYEK } from './ugyek-config';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './galeria-config';
+import { WATCH_LIST } from './watchlist-config';
 import { Mugshot } from '@korr/ui/mugshot';
 
 const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
@@ -94,20 +95,19 @@ export async function CrossLemondosok() {
       </p>
       <div className="cross-promo-rows">
         {rows.map(r => (
-          <div key={r.id} className="cross-promo-row">
+          <div key={r.id} className="cross-promo-row cross-promo-row--resignation">
             <span className="cross-promo-row-date">{fmtDate(r.resignationDate)}</span>
             <span
-              className="cross-promo-row-type"
-              style={{ background: `${resignTypeColor(r.resignationType)}30`, color: resignTypeColor(r.resignationType) }}
-            >
-              {resignTypeLabel(r.resignationType)}
-            </span>
+              className="cross-promo-row-dot"
+              title={resignTypeLabel(r.resignationType)}
+              style={{ background: resignTypeColor(r.resignationType) }}
+            />
             <span className="cross-promo-row-name">{r.name}</span>
             {r.position && <span className="cross-promo-row-sub">— {r.position}</span>}
           </div>
         ))}
       </div>
-      <Link href="/lemondosok" className="cross-promo-cta">
+      <Link href="/lemondasok" className="cross-promo-cta">
         Teljes lemondási lista →
       </Link>
     </div>
@@ -133,6 +133,47 @@ export function CrossUgyek() {
         ))}
       </div>
       <Link href="/ugyek" className="cross-promo-cta">Összes kiemelt ügy →</Link>
+    </div>
+  );
+}
+
+// ── CrossFelszolitottak ──────────────────────────────────────────────────────
+
+function watchImgSrc(url: string) {
+  if (url.startsWith('/') || url.includes('wikimedia.org')) return url;
+  return `/api/img-proxy?url=${encodeURIComponent(url)}`;
+}
+
+export function CrossFelszolitottak() {
+  return (
+    <div className="cross-promo">
+      <h2 className="cross-promo-title">Lemondásra felszólított személyek</h2>
+      <p className="cross-promo-deck">
+        Magyar Péter nyolc NER-intézményvezető lemondását követeli — kövesd nyomon, ki ment és ki maradt.
+      </p>
+      <div className="person-more-grid cross-watch-grid">
+        {WATCH_LIST.map(p => (
+          <Link key={p.id} href={`/lemondasok/${p.id}`} className="person-more-card">
+            <div className="person-more-mug r-loose">
+              {p.photoUrl ? (
+                <img
+                  src={watchImgSrc(p.photoUrl)}
+                  alt={p.name}
+                  className="person-more-img"
+                  style={p.objectPosition ? { objectPosition: p.objectPosition } : undefined}
+                />
+              ) : (
+                <div className="person-photo-placeholder">
+                  <span>{p.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</span>
+                </div>
+              )}
+            </div>
+            <div className="person-more-name">{p.name}</div>
+            <div className="person-more-sub">{p.institution}</div>
+          </Link>
+        ))}
+      </div>
+      <Link href="/lemondasok" className="cross-promo-cta">Lemondásra felszólítottak →</Link>
     </div>
   );
 }

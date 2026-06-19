@@ -5,7 +5,7 @@ import { desc, ilike, or, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { UGYEK } from '../../_home/ugyek-config';
 import { GALERIA } from '../../_home/galeria-config';
-import { CrossLemondosok, CrossMegszunt } from '../../_home/cross-promo';
+import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../_home/cross-promo';
 
 export const dynamic = 'force-dynamic';
 
@@ -128,7 +128,7 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
 
         {/* ── Main video ── */}
         {entry.videoId && (
-          <>
+          <div className="person-video-section">
             {(entry.videoTitle || entry.videoSummary) && (
               <div className="person-video-teaser">
                 {entry.videoChannel && <div className="person-video-teaser-channel">{entry.videoChannel}</div>}
@@ -144,7 +144,7 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
                 allowFullScreen
               />
             </div>
-          </>
+          </div>
         )}
 
         {/* ── Additional videos ── */}
@@ -268,7 +268,9 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
       <div className="cross-promo-below-more">
         <div className="cross-promo-below-more-inner">
           <CrossLemondosok />
+          <CrossGaleria />
           <CrossMegszunt />
+          <CrossFelszolitottak />
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { SiteFooter } from '@korr/ui/site-footer';
 import { NavMobile } from './nav-mobile';
 import { FooterScrollFix } from './footer-scroll-fix';
+import { CookieBanner } from './_home/cookie-banner';
 
 import './globals.css';
 
@@ -45,14 +46,12 @@ export default function RootLayout({
                 <Link href="/hirek">Hírek</Link>
               </li>
               <li>
-                <Link href="/lemondosok">Lemondások</Link>
+                <Link href="/lemondasok">Lemondott-e?</Link>
               </li>
               <li>
                 <Link href="/megszunt">Megszűnt-e?</Link>
               </li>
-              <li>
-                <Link href="/bejelentes">Bejelentés</Link>
-              </li>
+
             </ul>
             <Link href="/bejelentes" className="nav-cta">
               Bejelentés tétele
@@ -63,6 +62,7 @@ export default function RootLayout({
         <main id="fooldal">{children}</main>
         <SiteFooter />
         <FooterScrollFix />
+        <CookieBanner />
       </body>
     </html>
   );

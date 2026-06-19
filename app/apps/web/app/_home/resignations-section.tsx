@@ -47,7 +47,7 @@ export function ResignationsSection({ resignations }: Props) {
     <div className="lemondott-section-wrap">
     <section className="section elszamoltatas-section">
       <div className="section-head">
-        <div className="section-num">05 / Elszámoltatás</div>
+        <div className="section-num">05 / Személyi változások</div>
         <h2 className="section-title">Lemondott-e már?</h2>
       </div>
       <p className="elszamoltatas-deck">
@@ -65,7 +65,12 @@ export function ResignationsSection({ resignations }: Props) {
           <h3 className="elszamoltatas-sub-heading">
             Legfrissebb lemondások, kirúgások és felmentések
           </h3>
-          <div style={{ overflowX: 'auto' }}>
+          <p className="elszamoltatas-deck" style={{ marginBottom: 24 }}>
+            Itt dokumentáljuk a NER összeomlásával távozó, kirúgott és felmentett embereket —
+            köztisztviselőket, propagandistákat és mindenkit, aki a rendszer szekerét tolta,
+            és most mennie kellett.
+          </p>
+          <div className="res-table-wrap">
             <table className="elszamoltatas-table">
               <thead>
                 <tr>
@@ -85,7 +90,7 @@ export function ResignationsSection({ resignations }: Props) {
       )}
 
       <div className="elszamoltatas-more">
-        <Link href="/lemondosok">Tovább a teljes listához →</Link>
+        <Link href="/lemondasok">Tovább a teljes listához →</Link>
       </div>
     </section>
     </div>
