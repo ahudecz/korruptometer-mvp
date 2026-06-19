@@ -157,12 +157,12 @@ async function main() {
     }
     if (overrun > 0 && comps.length) {
       await sql`
-        INSERT INTO "DamageEstimate" ("investigationId","totalLowHuf","totalHighHuf",confidence,components,"inputsHash")
-        VALUES (${c.id}, ${Math.round(overrun)}, ${Math.round(overrun)}, 'medium',
+        INSERT INTO "DamageEstimate" ("investigationId","totalLowHuf","totalHighHuf",confidence,basis,components,"inputsHash")
+        VALUES (${c.id}, ${Math.round(overrun)}, ${Math.round(overrun)}, 'medium', 'procurement_modeled',
                 ${sql.json(comps as Parameters<typeof sql.json>[0])}, ${createHash('sha256').update(c.id + ':ted').digest('hex')})
         ON CONFLICT ("investigationId") DO UPDATE
           SET "totalLowHuf"=EXCLUDED."totalLowHuf","totalHighHuf"=EXCLUDED."totalHighHuf",
-              confidence=EXCLUDED.confidence, components=EXCLUDED.components, "computedAt"=now()`;
+              confidence=EXCLUDED.confidence, basis=EXCLUDED.basis, components=EXCLUDED.components, "computedAt"=now()`;
       withDamage++;
       console.log(`  ${c.caseName?.slice(0, 40)} [${c.entity}] → ${matched.length} TED contracts · overrun ${(overrun / 1e9).toFixed(2)} Mrd`);
     }

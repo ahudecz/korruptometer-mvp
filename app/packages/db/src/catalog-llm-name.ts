@@ -12,7 +12,6 @@
  * Usage: pnpm --filter @korr/db tsx src/catalog-llm-name.ts
  */
 import { resolve } from 'node:path';
-import { createHash } from 'node:crypto';
 import { config as loadEnv } from 'dotenv';
 
 loadEnv({ path: resolve(__dirname, '../../../.env.local') });
@@ -95,42 +94,14 @@ async function nameOne(c: {
   if (!block || block.type !== 'tool_use') return;
   const cf = block.input as CaseFile;
 
+  // Naming only sets the title + synopsis. Damage is owned exclusively by the
+  // tiered passes (TED procurement → alleged → rough), each of which sets a
+  // basis; writing damage here produced untagged (null-basis) estimates.
   await sql`
     UPDATE "Investigation"
     SET "caseName" = ${cf.caseName}, summary = ${cf.synopsis}, "updatedAt" = now()
     WHERE id = ${c.id}
   `;
-
-  if (cf.allegedDamageHuf && cf.allegedDamageHuf > 0) {
-    const amt = Math.round(cf.allegedDamageHuf);
-    const inputsHash = createHash('sha256')
-      .update(arts.map((a) => a.newsId).sort((x, y) => x - y).join(','))
-      .digest('hex');
-    const components = [
-      {
-        mechanism: 'other',
-        lowHuf: amt,
-        highHuf: amt,
-        method: 'claim_consolidation',
-        inputs: { articleCount: arts.length, source: 'llm_haiku' },
-        formula: 'LLM által megállapított vélelmezett kár',
-        citation: null,
-        notes: cf.damageReasoning,
-      },
-    ];
-    await sql`
-      INSERT INTO "DamageEstimate"
-        ("investigationId", "totalLowHuf", "totalHighHuf", confidence, components, "inputsHash")
-      VALUES (${c.id}, ${amt}, ${amt}, ${cf.damageConfidence}, ${sql.json(components)}, ${inputsHash})
-      ON CONFLICT ("investigationId") DO UPDATE
-        SET "totalLowHuf" = EXCLUDED."totalLowHuf",
-            "totalHighHuf" = EXCLUDED."totalHighHuf",
-            confidence = EXCLUDED.confidence,
-            components = EXCLUDED.components,
-            "inputsHash" = EXCLUDED."inputsHash",
-            "computedAt" = now()
-    `;
-  }
 }
 
 async function main() {

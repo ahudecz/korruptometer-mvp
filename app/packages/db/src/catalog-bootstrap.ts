@@ -36,7 +36,8 @@ if (!DB_URL) throw new Error('DATABASE_URL not set');
 
 const sql = postgres(DB_URL, { prepare: false, max: 1 });
 
-const PILOT_FROM = '2025-01-01';
+const PILOT_FROM = '2024-01-01';
+const MIN_AMOUNT_HUF = 100_000_000; // material threshold — drop extremely small amounts
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 function norm(s: string | null | undefined): string {
@@ -124,7 +125,7 @@ async function main() {
   >`
     SELECT "newsId", title, topics, institutions, "amountHuf", "pubTime", "sourceUrl"
     FROM "KMonitorArticle"
-    WHERE "pubTime" >= ${PILOT_FROM} AND "amountHuf" IS NOT NULL
+    WHERE "pubTime" >= ${PILOT_FROM} AND "amountHuf" >= ${MIN_AMOUNT_HUF}
   `;
   console.log(`pilot articles: ${articles.length}`);
 
