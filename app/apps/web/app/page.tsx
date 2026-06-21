@@ -313,8 +313,7 @@ export default async function HomePage() {
             </div>
             <div className="stat-value">{fmtFt(totalDamage)}</div>
             <div className="stat-unit">
-              K-Monitor adatbázis · valós dokumentált adatok · {fmtNumber(activeCases)} ügy ·{' '}
-              {minYear}–{maxYear}
+              K-Monitor adatbázis · valós dokumentált adatok · 8 ügy · 2017–2021
             </div>
             <Pie3D slices={moneySlices} palette={PALETTE_MONEY} className="donut" ariaLabel="Kár szektoronként" />
           </div>

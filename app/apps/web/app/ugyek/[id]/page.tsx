@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { desc, ilike, or, eq } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
-import { UGYEK } from '../../_home/ugyek-config';
+import { UGYEK, type DescriptionBlock } from '../../_home/ugyek-config';
 import { GALERIA } from '../../_home/galeria-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../_home/cross-promo';
 
@@ -13,6 +13,82 @@ const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.'
 
 function fmtDate(d: Date): string {
   return `${d.getFullYear()}. ${HU_MONTHS[d.getMonth()]} ${d.getDate()}.`;
+}
+
+function DescBlock({ block }: { block: DescriptionBlock }) {
+  switch (block.type) {
+    case 'text':
+      return (
+        <div className="ugy-block-text">
+          {block.heading && <h3 className="ugy-block-heading">{block.heading}</h3>}
+          <p>{block.content}</p>
+        </div>
+      );
+    case 'video':
+      return (
+        <div className="ugy-block-video">
+          <div className="ugy-block-video-meta">
+            {block.label && <span className="ugy-block-video-label">{block.label}</span>}
+            {block.title && <span className="ugy-block-video-title">{block.title}</span>}
+          </div>
+          {block.summary && <p className="ugy-block-video-summary">{block.summary}</p>}
+          <div className="ugy-block-video-wrap">
+            <iframe
+              src={`https://www.youtube.com/embed/${block.id}`}
+              title={block.title ?? block.id}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      );
+    case 'article-card':
+      return (
+        <a
+          href={block.url || undefined}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`ugy-block-article-card${!block.url ? ' no-link' : ''}`}
+        >
+          <div className="ugy-block-article-meta">
+            <span className="ugy-block-article-source">{block.source}</span>
+            {block.date && <span className="ugy-block-article-date">{block.date}</span>}
+          </div>
+          <div className="ugy-block-article-headline">{block.headline}</div>
+          {block.lead && <p className="ugy-block-article-lead">{block.lead}</p>}
+          {block.url && <span className="ugy-block-article-arrow">Cikk olvasása →</span>}
+        </a>
+      );
+    case 'quote':
+      return (
+        <blockquote className="ugy-block-quote">
+          <p>{block.text}</p>
+          {block.author && <cite>{block.author}</cite>}
+          {block.note && <span className="ugy-block-quote-note">{block.note}</span>}
+        </blockquote>
+      );
+    case 'pdf-link':
+      return (
+        <a
+          href={block.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ugy-block-pdf-link"
+        >
+          <span className="ugy-block-pdf-icon">📄</span>
+          <span className="ugy-block-pdf-label">{block.label}</span>
+          {block.note && <span className="ugy-block-pdf-note">{block.note}</span>}
+        </a>
+      );
+    case 'image-pair':
+      return (
+        <div className="ugy-block-image-pair">
+          <img src={block.src1} alt={block.alt1 ?? ''} className="ugy-block-image-pair-img" />
+          <img src={block.src2} alt={block.alt2 ?? ''} className="ugy-block-image-pair-img" />
+          {block.caption && <p className="ugy-block-image-pair-caption">{block.caption}</p>}
+        </div>
+      );
+  }
 }
 
 function imgSrc(url: string): string {
@@ -71,7 +147,7 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
         .limit(30)
     : [];
 
-  const descParagraphs = entry.description.split('\n\n').filter(Boolean);
+  const descParagraphs = entry.descriptionBlocks ? [] : entry.description.split('\n\n').filter(Boolean);
 
   return (
     <div className="person-page ugy-page">
@@ -97,7 +173,7 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
               {(entry.eyebrow.split('·')[0] ?? '').trim()}
             </div>
             {photoCredit && (
-              <div className="photo-credit">Fotó: {photoCredit}</div>
+              <div className="photo-credit">{photoCredit}</div>
             )}
           </div>
 
@@ -109,7 +185,7 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
             )}
             {entry.estimatedDamage && (
               <div className="person-hero-amount">
-                <span className="person-hero-amount-lbl">Becsült kár</span>
+                <span className="person-hero-amount-lbl">{entry.estimatedDamageLabel ?? 'Becsült kár'}</span>
                 <span className="person-hero-amount-val">{entry.estimatedDamage}</span>
               </div>
             )}
@@ -180,9 +256,10 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
             hiányában az érintett személyek ártatlannak tekintendők.
           </p>
           <div className="ugy-description-body">
-            {descParagraphs.map((para, i) => (
-              <p key={i}>{para}</p>
-            ))}
+            {entry.descriptionBlocks
+              ? entry.descriptionBlocks.map((block, i) => <DescBlock key={i} block={block} />)
+              : descParagraphs.map((para, i) => <p key={i}>{para}</p>)
+            }
           </div>
 
           {entry.statusItems && entry.statusItems.length > 0 && (

@@ -644,3 +644,41 @@ export const assetRecoveries = pgTable(
 
 export type AssetRecovery = typeof assetRecoveries.$inferSelect;
 export type NewAssetRecovery = typeof assetRecoveries.$inferInsert;
+
+// ─── Court Verdicts Tracker ───────────────────────────────────────────────────
+
+export const courtVerdicts = pgTable(
+  'CourtVerdict',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    personName: text('personName').notNull(),
+    personGaleriaId: text('personGaleriaId'),
+    personUgyId: text('personUgyId'),
+    position: text('position').notNull(),
+    crimes: text('crimes').array().notNull().default(sql`ARRAY[]::text[]`),
+    sentenceYears: integer('sentenceYears').notNull().default(0),
+    sentenceMonths: integer('sentenceMonths'),
+    sentenceLabel: text('sentenceLabel'),
+    verdictType: text('verdictType').notNull().default('elsőfokú'),
+    verdictDate: timestamp('verdictDate', { withTimezone: true }).notNull(),
+    court: text('court').notNull(),
+    summary: text('summary').notNull(),
+    sourceUrls: text('sourceUrls').array().notNull().default(sql`ARRAY[]::text[]`),
+    sourceNames: text('sourceNames').array().notNull().default(sql`ARRAY[]::text[]`),
+    sourceHeadlines: text('sourceHeadlines').array().notNull().default(sql`ARRAY[]::text[]`),
+    sourceDates: text('sourceDates').array().notNull().default(sql`ARRAY[]::text[]`),
+    videoId: text('videoId'),
+    videoChannel: text('videoChannel'),
+    videoTitle: text('videoTitle'),
+    videoSummary: text('videoSummary'),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    verdictDateIdx: index('CourtVerdict_verdictDate_idx').on(t.verdictDate),
+    personNameIdx: index('CourtVerdict_personName_idx').on(t.personName),
+  }),
+);
+
+export type CourtVerdict = typeof courtVerdicts.$inferSelect;
+export type NewCourtVerdict = typeof courtVerdicts.$inferInsert;

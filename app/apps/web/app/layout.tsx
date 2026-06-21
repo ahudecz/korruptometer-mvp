@@ -51,7 +51,6 @@ export default function RootLayout({
               <li>
                 <Link href="/megszunt">Megszűnt-e?</Link>
               </li>
-
             </ul>
             <Link href="/bejelentes" className="nav-cta">
               Bejelentés tétele

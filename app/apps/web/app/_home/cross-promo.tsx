@@ -178,6 +178,42 @@ export function CrossFelszolitottak() {
   );
 }
 
+// ── CrossBirosag ─────────────────────────────────────────────────────────────
+
+export async function CrossBirosag() {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(schema.courtVerdicts)
+    .orderBy(desc(schema.courtVerdicts.verdictDate))
+    .limit(5);
+
+  if (rows.length === 0) return null;
+
+  const totalYears = rows.reduce((sum, r) => sum + r.sentenceYears, 0);
+
+  return (
+    <div className="cross-promo">
+      <h2 className="cross-promo-title">Kiszabott börtönévek</h2>
+      <p className="cross-promo-deck">
+        NER-kapcsolatú ügyekben kiszabott szabadságvesztés ítéletek — {totalYears} év összesen.
+      </p>
+      <div className="cross-promo-rows">
+        {rows.map(r => (
+          <div key={r.id} className="cross-promo-row">
+            <span style={{ fontWeight: 800, color: '#E31937', minWidth: 52, flexShrink: 0 }}>{r.sentenceYears} ÉV</span>
+            <span className="cross-promo-row-name">{r.personName}</span>
+            {r.crimes[0] && <span className="cross-promo-row-sub">— {r.crimes[0]}</span>}
+          </div>
+        ))}
+      </div>
+      <Link href="/birosagi-iteletek" className="cross-promo-cta">
+        Összes ítélet →
+      </Link>
+    </div>
+  );
+}
+
 // ── CrossGaleria ─────────────────────────────────────────────────────────────
 
 export function CrossGaleria() {
