@@ -17,12 +17,19 @@ const KEYWORDS = [
   'pócs jános', 'rétvári bence', 'gulyás gergely',
   'sulyok tamás', 'polt péter',
   'kubatov gábor', 'kubatov',
+  'ligeti miklós', 'ligeti',
+  'zsigó róbert', 'zsigó',
+  'ruff bálint',
   // Intézmények / ügyek
   'nka ', 'nemzeti kulturális alap',
   'mnb ', 'jegybank', 'magyar nemzeti bank',
   'állami számvevőszék', 'számvevőszék', 'ász ',
   'aranykonvoj',
   'volvo gate', 'volvo-gate', 'tüke zrt', 'tüke busz',
+  'szőlő utca',
+  'kegyelmi botrány',
+  'nemzeti vagyonvisszaszerzési hivatal', 'vagyonvisszaszerzés', 'vagyonvisszaszerzési hivatal',
+  'transparency',
   // Helyek / NER-specifikus témák
   'hatvanpuszta', 'vitnyéd', 'batida',
   // Pártok, szervezetek
@@ -62,9 +69,14 @@ const KEYWORDS = [
   'newsfeed.hu', 'videa.hu',
 ] as const;
 
+// 'tisztítótűz' csak akkor releváns, ha politikai kontextusban szerepel
+const TISZTITOTUZ_CONTEXT = ['magyar péter', 'fidesz', 'vagyonvisszaszerzés'];
+
 export function isRelevant(headline: string, excerpt: string): boolean {
   const text = `${headline} ${excerpt}`.toLowerCase();
-  return KEYWORDS.some((kw) => text.includes(kw));
+  if (KEYWORDS.some((kw) => text.includes(kw))) return true;
+  if (text.includes('tisztítótűz') && TISZTITOTUZ_CONTEXT.some((ctx) => text.includes(ctx))) return true;
+  return false;
 }
 
 const FEATURED_KEYWORDS = [
@@ -81,9 +93,14 @@ const FEATURED_KEYWORDS = [
   'pesti srácok', 'világgazdaság',
   // Volvo-gate
   'volvo gate', 'volvo-gate', 'bánki erik',
+  // Vagyonvisszaszerzés, kegyelmi botrány
+  'szőlő utca', 'kegyelmi botrány',
+  'vagyonvisszaszerzés', 'transparency', 'ligeti miklós', 'ligeti',
 ] as const;
 
 export function shouldFeature(headline: string, excerpt: string): boolean {
   const text = `${headline} ${excerpt}`.toLowerCase();
-  return FEATURED_KEYWORDS.some((kw) => text.includes(kw));
+  if (FEATURED_KEYWORDS.some((kw) => text.includes(kw))) return true;
+  if (text.includes('tisztítótűz') && TISZTITOTUZ_CONTEXT.some((ctx) => text.includes(ctx))) return true;
+  return false;
 }

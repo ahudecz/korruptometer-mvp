@@ -54,7 +54,7 @@ function WatchCard({ person }: { person: WatchPerson }) {
           {STATUS_LABEL[person.status]}
         </div>
         {person.photoCredit && (
-          <div className="watchlist-photo-credit">Fotó: {person.photoCredit}</div>
+          <div className="watchlist-photo-credit">{person.photoCredit}</div>
         )}
       </div>
       <div className="watchlist-info">

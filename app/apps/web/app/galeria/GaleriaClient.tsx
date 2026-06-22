@@ -30,7 +30,7 @@ function GaleriaDetail({ entry }: { entry: typeof GALERIA[number] }) {
           )}
           <div className={`status-strip ${entry.detention}`}>{entry.detentionLabel}</div>
           {entry.photoCredit && (
-            <div className="photo-credit">Fotó: {entry.photoCredit}</div>
+            <div className="photo-credit">{entry.photoCredit}</div>
           )}
         </div>
 

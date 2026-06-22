@@ -13,6 +13,7 @@ import { CaseFilters } from './adatbazis/case-filters';
 import { ResignationsSection } from './_home/resignations-section';
 import { MediaClosuresSection } from './_home/media-closures-section';
 import { SubmissionCTA } from './_home/submission-cta';
+import { SocialFeed } from './_home/social-feed';
 import { BigCasesSection, type BigCaseConfig } from './_home/big-cases-section';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './_home/galeria-config';
 import { NewsCardImage } from './hirek/news-card-image';
@@ -790,6 +791,9 @@ export default async function HomePage() {
 
       {/* ───── MEDIA CLOSURES ───── */}
       <MediaClosuresSection />
+
+      {/* ───── SOCIAL FEED ───── */}
+      <SocialFeed />
 
       {/* ───── SUBMISSION CTA ───── */}
       <section className="submission" id="submission">

@@ -89,6 +89,21 @@ export default function PartnerekPage() {
             </p>
           </div>
 
+          <div className="partner-entry">
+            <div className="partner-head">
+              <a href="https://www.youtube.com/@juhaszpeter" target="_blank" rel="noopener noreferrer" className="partner-name">
+                Juhász Péter | Juhi – NER100
+              </a>
+              <span className="forras-entry-label">Videós összefoglalók</span>
+            </div>
+            <p className="partner-desc">
+              „A NER 100 legnagyobb bűne" sorozat epizódonként dolgozza fel a rendszer
+              legjelentősebb korrupciós ügyeit. Az egyes esetekhez kapcsolódó videókat
+              ajánlóként közöljük — az Elios-ügytől a trafikmutyiig és a vadászati
+              kiállításig.
+            </p>
+          </div>
+
           <h3 className="modszertan-h3">Együttműködési lehetőség</h3>
 
           <p>

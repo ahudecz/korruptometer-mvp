@@ -146,6 +146,65 @@ export default async function VolvoGatePage() {
               </div>
             </div>
           </div>
+
+          <div className="person-case-card">
+            <div className="person-case-num">/ 04</div>
+            <div className="person-case-body">
+              <h3 className="person-case-title">Bánki Erik más ügyei is gyanúsak</h3>
+              <p className="person-case-desc">
+                A Volvo-gate mellett Bánki Erik neve egy másik, párhuzamos korrupciós ügyben is
+                felbukkan: az óbudai közétkeztetési botrányban. Az ügy egyik gyanúsítottjának vallomása
+                szerint Bánki a Hungast nevű közétkeztetési cég tényleges, be nem jegyzett 50%-os
+                tulajdonosa, és ő fizeti pénzzel az önkormányzatokat. Bánki tagad. Hadházy Ákos 2024-ben
+                lefotózta, hogy Bánki Erik egy Hungast-cégre bejegyzett sport BMW-vel járt a parlamentbe —
+                a rendszám betűi ráadásul véletlenül a Volvo-ügy harmadrendű vádlottjának nevére utalnak.
+              </p>
+              <blockquote style={{ borderLeft: '3px solid var(--line)', margin: '16px 0', padding: '10px 16px', color: 'var(--muted)', fontStyle: 'italic', fontSize: 14, lineHeight: 1.7 }}>
+                „A Telex idézett az »óbudai ügy« gyanúsítottjának vallomásából, ami szerint Bánki Erik
+                a Hungast nevű közéheztetési cég valódi tulajdonosa és ő keni pénzzel az önkormányzatokat.
+                Bánki persze tagad. Érdekes tény: korábban lefotóztam, hogy Bánki véletlenül a Hungast
+                nevén levő sport BMW-vel járt a parlamentbe… (Fun fact: a rendszám betűi meg véletlenül
+                a Volvo ügy harmadrendű vádlottjának, Paczek Bandinak a nevére utalnak) De miért nincs
+                még előzetesben, főleg, miután a Volvo nyomozást is újranyitották?"
+                <br /><span style={{ fontStyle: 'normal', fontSize: 12, marginTop: 6, display: 'block' }}>— Hadházy Ákos, Facebook · 2026. június 20.</span>
+              </blockquote>
+              <a
+                href="https://rtl.hu/belfold/2024/07/09/banki-erik-hungast-csoport-sportauto-bmw-hadhazy-akos"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ugy-block-article-card"
+              >
+                <div className="ugy-block-article-meta">
+                  <span className="ugy-block-article-source">RTL</span>
+                  <span className="ugy-block-article-date">2024. július 9.</span>
+                </div>
+                <div className="ugy-block-article-headline">Hadházy: Bánki Erik a Hungast-csoport BMW-jével járt a parlamentbe</div>
+                <p className="ugy-block-article-lead">Hadházy Ákos lefotózta, hogy Bánki Erik egy Hungast-cégre bejegyzett sport BMW-vel érkezett az Országgyűlés parkolójába. A rendszám betűi ráadásul a Volvo-ügy harmadrendű vádlottjának nevére utalnak.</p>
+                <span className="ugy-block-article-arrow">Cikk olvasása →</span>
+              </a>
+              <a
+                href="https://telex.hu/belfold/2026/06/20/hungast-ugy-obudai-korrupcios-ugy-oxygen-wellness-vip-reszleg-talalkozo"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ugy-block-article-card"
+              >
+                <div className="ugy-block-article-meta">
+                  <span className="ugy-block-article-source">Telex</span>
+                  <span className="ugy-block-article-date">2026. június 20.</span>
+                </div>
+                <div className="ugy-block-article-headline">A gyanúsított vallomása: Bánki Erik a Hungast tényleges tulajdonosa, ő fizette az önkormányzatokat</div>
+                <p className="ugy-block-article-lead">Az óbudai közétkeztetési korrupciós ügyben az egyik gyanúsított azt vallotta: Bánki Erik a Hungast be nem jegyzett 50%-os tulajdonosa, és az Oxygen Wellness VIP-részlegén találkoztak. Bánki tagadja, hogy valaha találkozott volna a vallomást tevő személlyel.</p>
+                <span className="ugy-block-article-arrow">Cikk olvasása →</span>
+              </a>
+              <div className="person-case-footer">
+                <div className="person-case-crimes">
+                  <span className="tag">Közétkeztetési korrupció</span>
+                  <span className="tag">Összeférhetetlenség</span>
+                  <span className="tag">Stróman-gyanú</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {articles.length > 0 && (

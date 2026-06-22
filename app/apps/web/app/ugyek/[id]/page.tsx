@@ -5,6 +5,7 @@ import { desc, ilike, or, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { UGYEK, type DescriptionBlock } from '../../_home/ugyek-config';
 import { GALERIA } from '../../_home/galeria-config';
+import { WATCH_LIST } from '../../_home/watchlist-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../_home/cross-promo';
 
 export const dynamic = 'force-dynamic';
@@ -148,6 +149,29 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
     : [];
 
   const descParagraphs = entry.descriptionBlocks ? [] : entry.description.split('\n\n').filter(Boolean);
+
+  // Build related persons list: match relatedPersonIds against galeria + watchlist
+  const relatedPersons = (entry.relatedPersonIds ?? []).map(pid => {
+    const gal = GALERIA.find(g => g.id === pid);
+    if (gal) return {
+      id: gal.id,
+      name: gal.name,
+      subtitle: (gal.subtitle.split('·')[0] ?? '').trim(),
+      photoUrl: gal.photoUrl ?? null,
+      href: `/galeria/${gal.id}`,
+      source: 'galeria' as const,
+    };
+    const watch = WATCH_LIST.find(w => w.id === pid);
+    if (watch) return {
+      id: watch.id,
+      name: watch.name,
+      subtitle: watch.institution,
+      photoUrl: watch.photoUrl ?? null,
+      href: `/lemondasok/${watch.id}`,
+      source: 'watchlist' as const,
+    };
+    return null;
+  }).filter(Boolean) as Array<{ id: string; name: string; subtitle: string; photoUrl: string | null; href: string; source: 'galeria' | 'watchlist' }>;
 
   return (
     <div className="person-page ugy-page">
@@ -294,6 +318,39 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
             </div>
           )}
         </div>
+
+        {/* ── Kapcsolódó személyek ── */}
+        {relatedPersons.length > 0 && (
+          <div className="ugy-related-persons">
+            <h2 className="person-section-title">Kapcsolódó személyek</h2>
+            <div className="ugy-related-persons-grid">
+              {relatedPersons.map(p => (
+                <Link key={p.id} href={p.href} className="ugy-related-person-card">
+                  <div className="ugy-related-person-photo">
+                    {p.photoUrl ? (
+                      <img
+                        src={imgSrc(p.photoUrl)}
+                        alt={p.name}
+                        className="ugy-related-person-img"
+                      />
+                    ) : (
+                      <div className="ugy-related-person-placeholder">
+                        <span>{p.name.split(' ').slice(0, 2).map(w => w[0]).join('')}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="ugy-related-person-text">
+                    <div className="ugy-related-person-name">{p.name}</div>
+                    <div className="ugy-related-person-sub">{p.subtitle}</div>
+                    <div className="ugy-related-person-cta">
+                      {p.source === 'galeria' ? 'Kiemelt személy →' : 'Felszólított →'}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Kapcsolódó hírek ── */}
         {articles.length > 0 && (

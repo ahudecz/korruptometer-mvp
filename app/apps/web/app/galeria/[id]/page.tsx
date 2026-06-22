@@ -92,7 +92,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
               {entry.detentionLabel}
             </div>
             {entry.photoCredit && (
-              <div className="photo-credit">Fotó: {entry.photoCredit}</div>
+              <div className="photo-credit">{entry.photoCredit}</div>
             )}
           </div>
 
@@ -157,6 +157,41 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                 <div className="person-case-body">
                   <h3 className="person-case-title">{c.title}</h3>
                   <p className="person-case-desc">{c.description}</p>
+                  {c.pinnedArticles && c.pinnedArticles.map((a, ai) => (
+                    <a
+                      key={ai}
+                      href={a.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ugy-block-article-card"
+                    >
+                      <div className="ugy-block-article-meta">
+                        <span className="ugy-block-article-source">{a.source}</span>
+                      </div>
+                      <div className="ugy-block-article-headline">{a.headline}</div>
+                      {a.lead && <p className="ugy-block-article-lead">{a.lead}</p>}
+                      <span className="ugy-block-article-arrow">Cikk olvasása →</span>
+                    </a>
+                  ))}
+                  {c.videoId && (
+                    <div className="person-case-video">
+                      {(c.videoTitle || c.videoSummary) && (
+                        <div className="person-case-video-header">
+                          {c.videoChannel && <div className="person-case-video-channel">{c.videoChannel}</div>}
+                          {c.videoTitle && <div className="person-case-video-title">{c.videoTitle}</div>}
+                          {c.videoSummary && <p className="person-case-video-summary">{c.videoSummary}</p>}
+                        </div>
+                      )}
+                      <div className="person-case-video-wrap">
+                        <iframe
+                          src={`https://www.youtube.com/embed/${c.videoId}`}
+                          title={c.videoTitle ?? c.title}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    </div>
+                  )}
                   <div className="person-case-footer">
                     {c.estimatedDamage && (
                       <div className="person-case-dmg">
@@ -180,6 +215,44 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                       </a>
                     )}
                   </div>
+
+                  {/* Sub-cases */}
+                  {c.subCases && c.subCases.length > 0 && (
+                    <div className="person-subcases">
+                      {c.subCases.map((sc, si) => (
+                        <div key={si} className="person-subcase-card">
+                          <div className="person-subcase-num">/ {String(i + 1).padStart(2, '0')}.{si + 1}</div>
+                          <div className="person-subcase-body">
+                            <h4 className="person-subcase-title">{sc.title}</h4>
+                            <p className="person-subcase-desc">{sc.description}</p>
+                            <div className="person-subcase-footer">
+                              {sc.estimatedDamage && (
+                                <div className="person-case-dmg">
+                                  <span className="person-case-dmg-lbl">Becsült kár</span>
+                                  <span className="person-case-dmg-val">{sc.estimatedDamage}</span>
+                                </div>
+                              )}
+                              <div className="person-case-crimes">
+                                {sc.crimeTypes.map(cr => (
+                                  <span key={cr} className="tag tag-sm">{cr}</span>
+                                ))}
+                              </div>
+                              {sc.sourceUrl && (
+                                <a
+                                  href={sc.sourceUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="person-case-source"
+                                >
+                                  Forrás: {sc.sourceLabel ?? 'link'} →
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

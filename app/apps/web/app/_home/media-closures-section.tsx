@@ -75,7 +75,10 @@ export function MediaClosuresSection() {
         </p>
 
         {MEDIA_GROUPS.map(group => {
-          const entries = MEDIA_OUTLETS.filter(e => e.group === group.key);
+          const STATUS_ORDER: Record<string, number> = { closed: 0, 'fired-staff': 1, active: 2 };
+          const entries = MEDIA_OUTLETS
+            .filter(e => e.group === group.key)
+            .sort((a, b) => (STATUS_ORDER[a.status] ?? 9) - (STATUS_ORDER[b.status] ?? 9));
           if (entries.length === 0) return null;
           return (
             <div key={group.key} className="media-group">

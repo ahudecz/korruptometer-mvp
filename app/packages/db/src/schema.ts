@@ -682,3 +682,25 @@ export const courtVerdicts = pgTable(
 
 export type CourtVerdict = typeof courtVerdicts.$inferSelect;
 export type NewCourtVerdict = typeof courtVerdicts.$inferInsert;
+
+// ─── Social Feed Posts ────────────────────────────────────────────────────────
+
+export const socialPosts = pgTable(
+  'SocialPost',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    authorName: text('authorName').notNull(),
+    authorHandle: text('authorHandle'),
+    platform: text('platform').notNull().default('facebook'),
+    postUrl: text('postUrl').notNull(),
+    content: text('content').notNull(),
+    postedAt: timestamp('postedAt', { withTimezone: true }),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    postedAtIdx: index('SocialPost_postedAt_idx').on(t.postedAt),
+  }),
+);
+
+export type SocialPost = typeof socialPosts.$inferSelect;
+export type NewSocialPost = typeof socialPosts.$inferInsert;

@@ -44,7 +44,7 @@ function UgyekDetail({ entry }: { entry: typeof UGYEK[number] }) {
             {(entry.eyebrow.split('·')[0] ?? '').trim()}
           </div>
           {photoCredit && (
-            <div className="photo-credit">Fotó: {photoCredit}</div>
+            <div className="photo-credit">{photoCredit}</div>
           )}
         </div>
 
