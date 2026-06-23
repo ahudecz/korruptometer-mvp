@@ -1,8 +1,15 @@
+import type { Metadata } from 'next';
 import { and, desc, eq, sql } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 
 import { NewsFilters } from './news-filters';
+
+export const metadata: Metadata = {
+  title: 'Hírek',
+  description: 'Releváns hírek és cikkek a dokumentált korrupciós ügyekről — automatikusan gyűjtve, naprakészen.',
+  openGraph: { title: 'Hírek — Kegyencjárat', description: 'Releváns hírek a dokumentált korrupciós ügyekről.' },
+};
 import { NewsGrid } from './news-grid';
 
 export const revalidate = 120;

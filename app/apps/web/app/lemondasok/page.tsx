@@ -1,5 +1,12 @@
+import type { Metadata } from 'next';
 import { desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
+
+export const metadata: Metadata = {
+  title: 'Lemondott-e már?',
+  description: 'Nyomon követjük, hogy a NER kegyenceinek lemondását ki és mikor teljesítette — és ki húzza még mindig.',
+  openGraph: { title: 'Lemondott-e már? — Kegyencjárat', description: 'Ki mondott le, és ki húzza még mindig.' },
+};
 import { WatchlistGrid } from '../_home/watchlist-grid';
 import { CrossMegszunt, CrossUgyek, CrossGaleria } from '../_home/cross-promo';
 
