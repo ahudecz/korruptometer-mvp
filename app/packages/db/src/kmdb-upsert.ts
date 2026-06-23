@@ -21,6 +21,7 @@ import { sql } from 'drizzle-orm';
 import postgres from 'postgres';
 
 import * as schema from './schema';
+import { urlIdentity } from './url-canonical';
 
 type PersonRecord = {
   displayName: string;
@@ -161,19 +162,24 @@ async function main() {
     await db
       .insert(schema.kMonitorArticles)
       .values(
-        chunk.map((a) => ({
-          newsId: a.newsId,
-          sourceUrl: a.sourceUrl,
-          archiveUrl: a.archiveUrl,
-          title: a.title,
-          pubTime: a.pubTime ? new Date(a.pubTime) : null,
-          amountHuf: toBig(a.amountHuf),
-          newspaper: a.newspaper,
-          category: a.category,
-          topics: a.topics,
-          institutions: a.institutions,
-          places: a.places,
-        })),
+        chunk.map((a) => {
+          const id = urlIdentity(a.sourceUrl);
+          return {
+            newsId: a.newsId,
+            sourceUrl: a.sourceUrl,
+            archiveUrl: a.archiveUrl,
+            title: a.title,
+            pubTime: a.pubTime ? new Date(a.pubTime) : null,
+            amountHuf: toBig(a.amountHuf),
+            newspaper: a.newspaper,
+            category: a.category,
+            topics: a.topics,
+            institutions: a.institutions,
+            places: a.places,
+            canonicalUrl: id?.canonical ?? null,
+            urlHash: id?.hash ?? null,
+          };
+        }),
       )
       .onConflictDoUpdate({
         target: schema.kMonitorArticles.newsId,
@@ -188,11 +194,25 @@ async function main() {
           topics: sql`EXCLUDED.topics`,
           institutions: sql`EXCLUDED.institutions`,
           places: sql`EXCLUDED.places`,
+          canonicalUrl: sql`EXCLUDED."canonicalUrl"`,
+          urlHash: sql`EXCLUDED."urlHash"`,
         },
       });
     aInserted += chunk.length;
   }
   console.log(`[upsert] articles upserted: ${aInserted}`);
+
+  // Dedup link: point each kmdb article at the scraped NewsArticle that shares
+  // its canonical URL. Matched rows are enrichment, excluded from the engine as
+  // a separate extraction input (see catalog-bootstrap).
+  const linked = await db.execute(sql`
+    UPDATE "KMonitorArticle" k
+    SET "matchedNewsArticleId" = n.id
+    FROM "NewsArticle" n
+    WHERE n."sourceUrlHash" = k."urlHash"
+      AND (k."matchedNewsArticleId" IS DISTINCT FROM n.id)
+  `);
+  console.log(`[upsert] dedup links set: ${(linked as { count?: number }).count ?? '?'}`);
 
   // --- 4. Replace person↔article links in batches. ------------------------
   // Simpler than diffing: truncate + bulk insert. This is fast because all the

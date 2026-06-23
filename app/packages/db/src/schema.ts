@@ -463,10 +463,22 @@ export const kMonitorArticles = pgTable(
     importedAt: timestamp('importedAt', { withTimezone: true })
       .notNull()
       .defaultNow(),
+    /** Canonical outlet URL + dedup hash (same canonicalUrl()/dedupHash() the
+     *  scraper uses) — the shared identity with NewsArticle. */
+    canonicalUrl: text('canonicalUrl'),
+    urlHash: text('urlHash'),
+    /** Set when this kmdb article duplicates a scraped NewsArticle; such rows
+     *  are enrichment, not a separate engine extraction input. */
+    matchedNewsArticleId: uuid('matchedNewsArticleId').references(
+      () => newsArticles.id,
+      { onDelete: 'set null' },
+    ),
   },
   (t) => ({
     pubTimeIdx: index('KMonitorArticle_pubTime_idx').on(t.pubTime),
     newspaperIdx: index('KMonitorArticle_newspaper_idx').on(t.newspaper),
+    urlHashIdx: index('KMonitorArticle_urlHash_idx').on(t.urlHash),
+    matchedIdx: index('KMonitorArticle_matched_idx').on(t.matchedNewsArticleId),
   }),
 );
 

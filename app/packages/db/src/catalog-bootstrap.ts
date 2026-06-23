@@ -126,6 +126,9 @@ async function main() {
     SELECT "newsId", title, topics, institutions, "amountHuf", "pubTime", "sourceUrl"
     FROM "KMonitorArticle"
     WHERE "pubTime" >= ${PILOT_FROM} AND "amountHuf" >= ${MIN_AMOUNT_HUF}
+      -- Dedup: skip kmdb articles that duplicate a scraped NewsArticle; the
+      -- scraped row is the engine's single input for that canonical URL.
+      AND "matchedNewsArticleId" IS NULL
   `;
   console.log(`pilot articles: ${articles.length}`);
 
