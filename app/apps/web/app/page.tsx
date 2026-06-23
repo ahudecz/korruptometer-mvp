@@ -1,9 +1,7 @@
 import Link from 'next/link';
-import { asc, count, desc, eq, ilike, or, sql } from 'drizzle-orm';
+import { count, desc, eq, ilike, or, sql } from 'drizzle-orm';
 
 import { fmtFt, fmtNumber } from '@korr/shared/format';
-import { caseQuerySchema } from '@korr/shared/schemas/cases';
-import type { SortValue } from '@korr/shared/cursor';
 import { Pie3D, type PieSlice } from '@korr/ui/pie3d';
 import { Ticker } from '@korr/ui/ticker';
 import { Mugshot } from '@korr/ui/mugshot';
@@ -25,11 +23,6 @@ const PALETTE_PRISON = ['#171a20', '#e31937', '#5c5e62', '#9b9da1', '#cccccc', '
 
 type SectorEntry = { name: string; value: number };
 
-function pillClass(s: string): string {
-  if (s === 'Lezárva') return 'pill lezarva';
-  if (s === 'Vádemelés') return 'pill vad';
-  return 'pill folyamatban';
-}
 
 const HU_MONTHS_SHORT = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
 
@@ -158,11 +151,26 @@ export default async function HomePage() {
     .from(schema.politicalResignations)
     .orderBy(desc(schema.politicalResignations.resignationDate))
     .limit(5);
-  const recentCases = await db
-    .select()
-    .from(schema.cases)
-    .orderBy(desc(schema.cases.amount))
-    .limit(8);
+  const recentScandals = (await db.execute(sql`
+    SELECT id, name, person, institution, article_count, investigation_count, damage_huf, is_open
+    FROM "ScandalCatalog"
+    ORDER BY damage_huf DESC, id ASC
+    LIMIT 8
+  `)) as unknown as Array<{
+    id: string;
+    name: string;
+    person: string | null;
+    institution: string | null;
+    article_count: number;
+    investigation_count: number;
+    damage_huf: string;
+    is_open: boolean;
+  }>;
+
+  const offRows = (await db.execute(
+    sql`SELECT code, "labelHu" AS label FROM "OffenceTypeRef" ORDER BY "sortOrder", "labelHu"`,
+  )) as unknown as Array<{ code: string; label: string }>;
+  const offences = offRows.map((o) => ({ code: o.code, label: o.label }));
 
   const HOMEPAGE_NEWS_TOPICS = [
     '%NKA%', '%MNB%', '%KESMA%', '%Mediaworks%',
@@ -196,20 +204,12 @@ export default async function HomePage() {
     .orderBy(desc(schema.newsArticles.publishedAt))
     .limit(5);
 
-  const regionRows = await db
-    .selectDistinct({ region: schema.cases.region })
-    .from(schema.cases)
-    .orderBy(asc(schema.cases.region));
-  const regions = regionRows.map((r) => r.region);
-
-  const filterDefaults = caseQuerySchema.parse({});
-  const previewSortLabels: Record<SortValue, string> = {
-    amount_desc: 'Kár ↓',
-    amount_asc: 'Kár ↑',
-    sentence_desc: 'Évek ↓',
-    year_desc: 'Dátum ↓',
-    name_asc: 'Név A–Z',
-  };
+  // Year span of the underlying news corpus (for the KPI-01 caption).
+  const yearSpanRes = (await db.execute(sql`
+    SELECT min(extract(year from "publishedAt"))::int AS min_y,
+           max(extract(year from "publishedAt"))::int AS max_y
+    FROM "NewsArticle"
+  `)) as unknown as Array<{ min_y: number | null; max_y: number | null }>;
 
   // Fall back gracefully if a fresh DB is empty (avoids a 500 page).
   const totalDamage = snapshot ? BigInt(snapshot.totalDamage) : 0n;
@@ -220,14 +220,10 @@ export default async function HomePage() {
   const partnerCount = snapshot?.partnerCount ?? 0;
   const bySector = (snapshot?.bySector ?? []) as SectorEntry[];
 
-  // Aggregate prison years by sector for the second donut.
-  const prisonBySector = new Map<string, number>();
-  for (const r of recentCases) {
-    prisonBySector.set(r.sector, (prisonBySector.get(r.sector) ?? 0) + r.sentenceYears);
-  }
-  const prisonSlices: PieSlice[] = Array.from(prisonBySector.entries())
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value);
+  // Prison-years-by-sector donut: no real sentencing data yet (0 final
+  // convictions since 2026-04-12), so this stays empty — it only renders in
+  // the dead totalPrisonYears>0 branch below.
+  const prisonSlices: PieSlice[] = [];
 
   const moneySlices: PieSlice[] = bySector
     .map((e) => ({ name: e.name, value: e.value }))
@@ -245,9 +241,8 @@ export default async function HomePage() {
   }));
 
 
-  const years = recentCases.map((c) => c.caseYear).sort((a, b) => a - b);
-  const minYear = years[0] ?? 2017;
-  const maxYear = years[years.length - 1] ?? 2023;
+  const minYear = yearSpanRes[0]?.min_y ?? 2017;
+  const maxYear = yearSpanRes[0]?.max_y ?? new Date().getFullYear();
 
   const updatedAt = snapshot?.computedAt ?? new Date();
   const featured = recentArticles.find((a) => a.featured) ?? recentArticles[0];
@@ -647,28 +642,24 @@ export default async function HomePage() {
           az itt látható elemzés alapjául. Az adatokat feldolgoztuk, szűrtük és rendszerezve jelenítjük meg.
         </p>
 
-        <CaseFilters
-          regions={regions}
-          initial={filterDefaults}
-          sortLabels={previewSortLabels}
-        />
+        <CaseFilters offences={offences} initial={{ sort: 'damage_desc' }} />
 
         <div className="db-meta">
           <div className="db-count">
-            <strong>{recentCases.length}</strong> találat {fmtNumber(activeCases)}{' '}
+            <strong>{recentScandals.length}</strong> kiemelt ügy {fmtNumber(activeCases)}{' '}
             ügyből
           </div>
           <div className="db-sort">
-            <Link href="/adatbazis?sort=amount_desc" className="db-sort-link">
+            <Link href="/adatbazis?sort=damage_desc" className="db-sort-link">
               <button type="button" className="active">
                 Kár ↓
               </button>
             </Link>
-            <Link href="/adatbazis?sort=sentence_desc" className="db-sort-link">
-              <button type="button">Évek ↓</button>
+            <Link href="/adatbazis?sort=recent" className="db-sort-link">
+              <button type="button">Friss ↓</button>
             </Link>
-            <Link href="/adatbazis?sort=year_desc" className="db-sort-link">
-              <button type="button">Dátum ↓</button>
+            <Link href="/adatbazis?sort=name" className="db-sort-link">
+              <button type="button">Név A–Z</button>
             </Link>
           </div>
         </div>
@@ -677,36 +668,38 @@ export default async function HomePage() {
           <thead>
             <tr>
               <th>Ügy</th>
-              <th>Pozíció</th>
-              <th>Régió</th>
-              <th>Év</th>
+              <th>Felelős</th>
+              <th>Intézmény</th>
+              <th className="num">Cikkek</th>
               <th>Státusz</th>
-              <th className="num">Kár (Ft)</th>
-              <th className="num">Évek</th>
+              <th className="num">Becsült kár (Ft)</th>
             </tr>
           </thead>
           <tbody>
-            {recentCases.map((c) => (
+            {recentScandals.map((c) => (
               <tr key={c.id}>
                 <td data-label="Ügy">
-                  <div className="case-id">{c.id}</div>
-                  <Link href={`/adatbazis/${c.id}`} className="case-name">
+                  <Link href={`/adatbazis/${encodeURIComponent(c.id)}`} className="case-name">
                     {c.name}
                   </Link>
+                  {c.investigation_count > 1 && (
+                    <div className="case-id">{fmtNumber(c.investigation_count)} kapcsolódó ügy</div>
+                  )}
                 </td>
-                <td data-label="Pozíció">
-                  <div style={{ fontSize: 14, color: 'var(--ink)' }}>{c.position}</div>
+                <td data-label="Felelős">
+                  <div style={{ fontSize: 14, color: 'var(--ink)' }}>{c.person ?? '—'}</div>
                 </td>
-                <td data-label="Régió">{c.region}</td>
-                <td data-label="Év">{c.caseYear}</td>
+                <td data-label="Intézmény">{c.institution ?? '—'}</td>
+                <td className="num" data-label="Cikkek">
+                  {fmtNumber(c.article_count)}
+                </td>
                 <td data-label="Státusz">
-                  <span className={pillClass(c.status)}>{c.status}</span>
+                  <span className={c.is_open ? 'pill folyamatban' : 'pill lezarva'}>
+                    {c.is_open ? 'Folyamatban' : 'Lezárt'}
+                  </span>
                 </td>
-                <td className="num" data-label="Kár">
-                  {fmtFt(c.amount)}
-                </td>
-                <td className="num" data-label="Évek">
-                  {c.sentenceYears}
+                <td className="num" data-label="Becsült kár">
+                  {BigInt(c.damage_huf) > 0n ? fmtFt(BigInt(c.damage_huf)) : '—'}
                 </td>
               </tr>
             ))}

@@ -1,30 +1,43 @@
 import Link from 'next/link';
-import { and, asc, desc, eq, gte, lte, sql, type SQL } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 
 import { fmtFt, fmtNumber } from '@korr/shared/format';
-import { caseQuerySchema } from '@korr/shared/schemas/cases';
-import { encodeCursor, type SortValue } from '@korr/shared/cursor';
 
-import { getDb, schema } from '@/lib/db';
+import { getDb } from '@/lib/db';
 
-import { CaseFilters } from './case-filters';
+import { CaseFilters, type ScandalFilterState } from './case-filters';
 
 export const dynamic = 'force-dynamic';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-const SORT_LABELS: Record<SortValue, string> = {
-  amount_desc: 'Kár (legnagyobb)',
-  amount_asc: 'Kár (legkisebb)',
-  sentence_desc: 'Évek (legtöbb)',
-  year_desc: 'Dátum (legfrissebb)',
-  name_asc: 'Név (A–Z)',
+const PAGE_SIZE = 50;
+const SORTS = ['damage_desc', 'damage_asc', 'recent', 'name'] as const;
+type Sort = (typeof SORTS)[number];
+
+type ScandalRow = {
+  id: string;
+  name: string;
+  person: string | null;
+  institution: string | null;
+  article_count: number;
+  investigation_count: number;
+  damage_huf: string; // int8 over raw driver → string
+  is_open: boolean;
 };
 
-function statusPillClass(s: string): string {
-  if (s === 'Lezárva') return 'pill lezarva';
-  if (s === 'Vádemelés') return 'pill vad';
-  return 'pill folyamatban';
+function orderBySql(sort: Sort) {
+  switch (sort) {
+    case 'damage_asc':
+      return sql`damage_huf ASC, id ASC`;
+    case 'recent':
+      return sql`created_at DESC NULLS LAST, id ASC`;
+    case 'name':
+      return sql`name ASC, id ASC`;
+    case 'damage_desc':
+    default:
+      return sql`damage_huf DESC, id ASC`;
+  }
 }
 
 export default async function AdatbazisPage({
@@ -33,83 +46,70 @@ export default async function AdatbazisPage({
   searchParams: SearchParams;
 }) {
   const sp = await searchParams;
-  const flat = Object.fromEntries(
-    Object.entries(sp).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
-  );
-  const parsed = caseQuerySchema.safeParse(flat);
-  const params = parsed.success ? parsed.data : caseQuerySchema.parse({});
+  const flat: Record<string, string> = {};
+  for (const [k, v] of Object.entries(sp)) {
+    const val = Array.isArray(v) ? v[0] : v;
+    if (typeof val === 'string') flat[k] = val;
+  }
+
+  const q = flat.q?.trim() ?? '';
+  const offence = flat.offence?.trim() ?? '';
+  const open = flat.open === 'open' || flat.open === 'closed' ? flat.open : '';
+  const minDamage = /^\d+$/.test(flat.minDamage ?? '') ? BigInt(flat.minDamage!) : 0n;
+  const sort: Sort = (SORTS as readonly string[]).includes(flat.sort ?? '')
+    ? (flat.sort as Sort)
+    : 'damage_desc';
+  const off = /^\d+$/.test(flat.off ?? '') ? Math.min(Number(flat.off), 100000) : 0;
 
   const db = getDb();
-  const { cases } = schema;
 
-  const conditions: SQL[] = [];
-  if (params.q) {
-    conditions.push(
-      sql`"Case"."searchVector" @@ websearch_to_tsquery('simple', immutable_unaccent(${params.q}))`,
+  const conds = [sql`TRUE`];
+  if (q) {
+    const pat = `%${q}%`;
+    conds.push(
+      sql`(name ILIKE ${pat} OR coalesce(person,'') ILIKE ${pat} OR coalesce(institution,'') ILIKE ${pat} OR coalesce(summary,'') ILIKE ${pat})`,
     );
   }
-  if (params.status) conditions.push(eq(cases.status, params.status));
-  if (params.region) conditions.push(eq(cases.region, params.region));
-  if (params.sector) conditions.push(eq(cases.sector, params.sector));
-  if (params.minAmount !== undefined)
-    conditions.push(gte(cases.amount, BigInt(params.minAmount)));
-  if (params.minSentenceYears !== undefined)
-    conditions.push(gte(cases.sentenceYears, params.minSentenceYears));
-  if (params.caseYearFrom !== undefined)
-    conditions.push(gte(cases.caseYear, params.caseYearFrom));
-  if (params.caseYearTo !== undefined)
-    conditions.push(lte(cases.caseYear, params.caseYearTo));
+  if (offence) conds.push(sql`offence_codes && ARRAY[${offence}]::text[]`);
+  if (open === 'open') conds.push(sql`is_open = TRUE`);
+  if (open === 'closed') conds.push(sql`is_open = FALSE`);
+  if (minDamage > 0n) conds.push(sql`damage_huf >= ${minDamage.toString()}`);
+  const where = sql.join(conds, sql` AND `);
 
-  const where = conditions.length ? and(...conditions) : undefined;
-  const orderBy = orderByFor(cases, params.sort);
+  const rows = (await db.execute(sql`
+    SELECT id, name, person, institution, article_count, investigation_count, damage_huf, is_open
+    FROM "ScandalCatalog"
+    WHERE ${where}
+    ORDER BY ${orderBySql(sort)}
+    LIMIT ${PAGE_SIZE + 1} OFFSET ${off}
+  `)) as unknown as ScandalRow[];
 
-  const rows = await db
-    .select({
-      id: cases.id,
-      name: cases.name,
-      position: cases.position,
-      amount: cases.amount,
-      sentenceYears: cases.sentenceYears,
-      caseYear: cases.caseYear,
-      status: cases.status,
-      region: cases.region,
-      sector: cases.sector,
-    })
-    .from(cases)
-    .where(where)
-    .orderBy(...orderBy)
-    .limit(params.limit + 1);
+  const hasMore = rows.length > PAGE_SIZE;
+  const page = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
 
-  const hasMore = rows.length > params.limit;
-  const page = hasMore ? rows.slice(0, params.limit) : rows;
-  const last = page[page.length - 1];
-  const nextCursor =
-    hasMore && last
-      ? encodeCursor({
-          s: params.sort,
-          k:
-            params.sort === 'amount_desc' || params.sort === 'amount_asc'
-              ? last.amount.toString()
-              : params.sort === 'sentence_desc'
-                ? last.sentenceYears
-                : params.sort === 'year_desc'
-                  ? last.caseYear
-                  : last.name,
-          id: last.id,
-        })
-      : null;
+  const totalRes = (await db.execute(
+    sql`SELECT count(*)::int AS c FROM "ScandalCatalog" WHERE ${where}`,
+  )) as unknown as Array<{ c: number }>;
+  const total = totalRes[0]?.c ?? 0;
 
-  // Count total cases (for the meta line)
-  const totalRows = await db
-    .select({ c: sql<number>`count(*)::int` })
-    .from(cases);
-  const totalCases = totalRows[0]?.c ?? 0;
+  const offRows = (await db.execute(
+    sql`SELECT code, "labelHu" AS label FROM "OffenceTypeRef" ORDER BY "sortOrder", "labelHu"`,
+  )) as unknown as Array<{ code: string; label: string }>;
+  const offences = offRows.map((o) => ({ code: o.code, label: o.label }));
 
-  const regionRows = await db
-    .selectDistinct({ region: cases.region })
-    .from(cases)
-    .orderBy(asc(cases.region));
-  const regions = regionRows.map((r) => r.region);
+  const initial: ScandalFilterState = { q, offence, open, minDamage: flat.minDamage, sort };
+
+  function sortHref(s: Sort) {
+    const next = new URLSearchParams(flat);
+    next.set('sort', s);
+    next.delete('off');
+    return `/adatbazis?${next.toString()}`;
+  }
+  function nextHref() {
+    const next = new URLSearchParams(flat);
+    next.set('off', String(off + PAGE_SIZE));
+    return `/adatbazis?${next.toString()}`;
+  }
 
   return (
     <section className="section" id="database">
@@ -118,36 +118,27 @@ export default async function AdatbazisPage({
         <h2 className="section-title">Az ügyek nyilvántartása.</h2>
       </div>
 
-      <CaseFilters regions={regions} initial={params} sortLabels={SORT_LABELS} />
+      <CaseFilters offences={offences} initial={initial} />
 
       <div className="db-meta">
         <div className="db-count">
-          <strong>{fmtNumber(page.length)}</strong> találat {fmtNumber(totalCases)} ügyből
+          <strong>{fmtNumber(page.length)}</strong> találat {fmtNumber(total)} ügyből
           {hasMore ? ' (folytatható)' : ''}
         </div>
         <div className="db-sort">
-          <a href={updateSort(flat, 'amount_desc')}>
-            <button
-              type="button"
-              className={params.sort === 'amount_desc' ? 'active' : ''}
-            >
+          <a href={sortHref('damage_desc')}>
+            <button type="button" className={sort === 'damage_desc' ? 'active' : ''}>
               Kár ↓
             </button>
           </a>
-          <a href={updateSort(flat, 'sentence_desc')}>
-            <button
-              type="button"
-              className={params.sort === 'sentence_desc' ? 'active' : ''}
-            >
-              Évek ↓
+          <a href={sortHref('recent')}>
+            <button type="button" className={sort === 'recent' ? 'active' : ''}>
+              Friss ↓
             </button>
           </a>
-          <a href={updateSort(flat, 'year_desc')}>
-            <button
-              type="button"
-              className={params.sort === 'year_desc' ? 'active' : ''}
-            >
-              Dátum ↓
+          <a href={sortHref('name')}>
+            <button type="button" className={sort === 'name' ? 'active' : ''}>
+              Név A–Z
             </button>
           </a>
         </div>
@@ -155,46 +146,46 @@ export default async function AdatbazisPage({
 
       {page.length === 0 ? (
         <div className="empty-state">
-          Nincs ilyen találat. Próbáld lazítani a szűrőket — különösen a min.
-          összeget vagy az évszakaszt.
+          Nincs ilyen találat. Próbáld lazítani a szűrőket — különösen a min. kárt
+          vagy a jogsértés típusát.
         </div>
       ) : (
         <table className="db-table">
           <thead>
             <tr>
               <th>Ügy</th>
-              <th>Pozíció</th>
-              <th>Régió</th>
-              <th>Év</th>
+              <th>Felelős</th>
+              <th>Intézmény</th>
+              <th className="num">Cikkek</th>
               <th>Státusz</th>
-              <th className="num">Kár (Ft)</th>
-              <th className="num">Évek</th>
+              <th className="num">Becsült kár (Ft)</th>
             </tr>
           </thead>
           <tbody>
             {page.map((c) => (
               <tr key={c.id}>
                 <td data-label="Ügy">
-                  <div className="case-id">{c.id}</div>
-                  <Link href={`/adatbazis/${c.id}`} className="case-name">
+                  <Link href={`/adatbazis/${encodeURIComponent(c.id)}`} className="case-name">
                     {c.name}
                   </Link>
+                  {c.investigation_count > 1 && (
+                    <div className="case-id">{fmtNumber(c.investigation_count)} kapcsolódó ügy</div>
+                  )}
                 </td>
-                <td data-label="Pozíció">
-                  <div style={{ fontSize: 14, color: 'var(--ink)' }}>
-                    {c.position}
-                  </div>
+                <td data-label="Felelős">
+                  <div style={{ fontSize: 14, color: 'var(--ink)' }}>{c.person ?? '—'}</div>
                 </td>
-                <td data-label="Régió">{c.region}</td>
-                <td data-label="Év">{c.caseYear}</td>
+                <td data-label="Intézmény">{c.institution ?? '—'}</td>
+                <td className="num" data-label="Cikkek">
+                  {fmtNumber(c.article_count)}
+                </td>
                 <td data-label="Státusz">
-                  <span className={statusPillClass(c.status)}>{c.status}</span>
+                  <span className={c.is_open ? 'pill folyamatban' : 'pill lezarva'}>
+                    {c.is_open ? 'Folyamatban' : 'Lezárt'}
+                  </span>
                 </td>
-                <td className="num" data-label="Kár">
-                  {fmtFt(c.amount)}
-                </td>
-                <td className="num" data-label="Évek">
-                  {fmtNumber(c.sentenceYears)}
+                <td className="num" data-label="Becsült kár">
+                  {BigInt(c.damage_huf) > 0n ? fmtFt(BigInt(c.damage_huf)) : '—'}
                 </td>
               </tr>
             ))}
@@ -202,10 +193,10 @@ export default async function AdatbazisPage({
         </table>
       )}
 
-      {nextCursor && (
+      {hasMore && (
         <div style={{ marginTop: 24, textAlign: 'center' }}>
           <Link
-            href={`/adatbazis?${nextCursorHref(flat, nextCursor)}`}
+            href={nextHref()}
             style={{
               display: 'inline-block',
               background: 'var(--ink)',
@@ -224,45 +215,4 @@ export default async function AdatbazisPage({
       )}
     </section>
   );
-}
-
-function orderByFor(t: typeof schema.cases, sort: SortValue) {
-  switch (sort) {
-    case 'amount_desc':
-      return [desc(t.amount), asc(t.id)];
-    case 'amount_asc':
-      return [asc(t.amount), asc(t.id)];
-    case 'sentence_desc':
-      return [desc(t.sentenceYears), asc(t.id)];
-    case 'year_desc':
-      return [desc(t.caseYear), asc(t.id)];
-    case 'name_asc':
-      return [asc(t.name), asc(t.id)];
-  }
-}
-
-function nextCursorHref(
-  current: Record<string, string | undefined>,
-  cursor: string,
-): string {
-  const params = new URLSearchParams();
-  for (const [k, v] of Object.entries(current)) {
-    if (k === 'cursor' || v === undefined || v === '') continue;
-    params.set(k, v);
-  }
-  params.set('cursor', cursor);
-  return params.toString();
-}
-
-function updateSort(
-  current: Record<string, string | undefined>,
-  next: SortValue,
-): string {
-  const params = new URLSearchParams();
-  for (const [k, v] of Object.entries(current)) {
-    if (k === 'sort' || k === 'cursor' || v === undefined || v === '') continue;
-    params.set(k, v);
-  }
-  params.set('sort', next);
-  return `/adatbazis?${params.toString()}`;
 }
