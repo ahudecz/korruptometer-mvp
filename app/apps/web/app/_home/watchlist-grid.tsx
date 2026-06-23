@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { gte } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
+import { findBreakingForName, type BreakingArticle } from '@/lib/breaking';
 import { WATCH_LIST, type WatchPerson } from './watchlist-config';
 
 const STATUS_LABEL: Record<string, string> = {
@@ -33,10 +34,22 @@ function resolveStatus(
   return match.resignationType === 'lemondás' ? 'resigned' : 'removed';
 }
 
-function WatchCard({ person }: { person: WatchPerson }) {
+function WatchCard({ person, breakingArticle }: { person: WatchPerson; breakingArticle?: BreakingArticle | null }) {
   const isGone = person.status !== 'active';
   return (
     <Link href={`/lemondasok/${person.id}`} className={`watchlist-card ${isGone ? 'watchlist-card--gone' : ''}`}>
+      {breakingArticle && (
+        <a
+          href={breakingArticle.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="watchlist-breaking-tag"
+          onClick={e => e.stopPropagation()}
+        >
+          <span className="watchlist-breaking-dot" />
+          BREAKING
+        </a>
+      )}
       <div className="watchlist-photo">
         {person.photoUrl ? (
           <img
@@ -66,7 +79,7 @@ function WatchCard({ person }: { person: WatchPerson }) {
   );
 }
 
-export async function WatchlistGrid() {
+export async function WatchlistGrid({ breaking = [] }: { breaking?: BreakingArticle[] }) {
   const db = getDb();
   const since = new Date('2026-04-12');
 
@@ -83,7 +96,7 @@ export async function WatchlistGrid() {
   return (
     <div className="watchlist-grid">
       {persons.map(p => (
-        <WatchCard key={p.id} person={p} />
+        <WatchCard key={p.id} person={p} breakingArticle={findBreakingForName(p.name, breaking)} />
       ))}
     </div>
   );

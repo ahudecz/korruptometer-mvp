@@ -9,12 +9,14 @@ import { Ticker } from '@korr/ui/ticker';
 import { Mugshot } from '@korr/ui/mugshot';
 
 import { getDb, schema } from '@/lib/db';
+import { getActiveBreaking } from '@/lib/breaking';
 import { CaseFilters } from './adatbazis/case-filters';
 import { ResignationsSection } from './_home/resignations-section';
 import { MediaClosuresSection } from './_home/media-closures-section';
 import { SubmissionCTA } from './_home/submission-cta';
 import { SocialFeed } from './_home/social-feed';
 import { BigCasesSection, type BigCaseConfig } from './_home/big-cases-section';
+import { BreakingBanner } from './_home/breaking-banner';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './_home/galeria-config';
 import { NewsCardImage } from './hirek/news-card-image';
 
@@ -174,28 +176,40 @@ export default async function HomePage() {
     '%pesti srácok%', '%világgazdaság%',
   ] as const;
 
-  const recentArticles = await db
-    .select({
-      id: schema.newsArticles.id,
-      headline: schema.newsArticles.headline,
-      excerpt: schema.newsArticles.excerpt,
-      sourceUrl: schema.newsArticles.sourceUrl,
-      publishedAt: schema.newsArticles.publishedAt,
-      tag: schema.newsArticles.tag,
-      featured: schema.newsArticles.featured,
-      imageUrl: schema.newsArticles.imageUrl,
-      sourceName: schema.sources.name,
-    })
-    .from(schema.newsArticles)
-    .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId))
-    .where(
-      or(
-        eq(schema.newsArticles.featured, true),
-        ...HOMEPAGE_NEWS_TOPICS.map(p => ilike(schema.newsArticles.headline, p)),
+  const [recentArticlesRaw, breakingArticles] = await Promise.all([
+    db
+      .select({
+        id: schema.newsArticles.id,
+        headline: schema.newsArticles.headline,
+        excerpt: schema.newsArticles.excerpt,
+        sourceUrl: schema.newsArticles.sourceUrl,
+        publishedAt: schema.newsArticles.publishedAt,
+        tag: schema.newsArticles.tag,
+        featured: schema.newsArticles.featured,
+        imageUrl: schema.newsArticles.imageUrl,
+        isBreakingCandidate: schema.newsArticles.isBreakingCandidate,
+        breakingOverride: schema.newsArticles.breakingOverride,
+        sourceName: schema.sources.name,
+      })
+      .from(schema.newsArticles)
+      .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId))
+      .where(
+        or(
+          eq(schema.newsArticles.featured, true),
+          eq(schema.newsArticles.breakingOverride, true),
+          eq(schema.newsArticles.isBreakingCandidate, true),
+          ...HOMEPAGE_NEWS_TOPICS.map(p => ilike(schema.newsArticles.headline, p)),
+        )
       )
-    )
-    .orderBy(desc(schema.newsArticles.publishedAt))
-    .limit(5);
+      .orderBy(desc(schema.newsArticles.publishedAt))
+      .limit(10),
+    getActiveBreaking(),
+  ]);
+
+  const recentArticles = recentArticlesRaw.map(a => ({
+    ...a,
+    isBreaking: (a.breakingOverride ?? a.isBreakingCandidate) === true,
+  }));
 
   const regionRows = await db
     .selectDistinct({ region: schema.cases.region })
@@ -251,7 +265,9 @@ export default async function HomePage() {
   const maxYear = years[years.length - 1] ?? 2023;
 
   const updatedAt = snapshot?.computedAt ?? new Date();
-  const featured = recentArticles.find((a) => a.featured) ?? recentArticles[0];
+  const featuredBreaking = recentArticles.filter(a => a.isBreaking).sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime())[0] ?? null;
+  const featuredNormal = recentArticles.find(a => a.featured) ?? recentArticles[0];
+  const featured = featuredBreaking ?? featuredNormal;
   const restArticles = recentArticles.filter((a) => a.id !== featured?.id).slice(0, 4);
 
   const tickerItems = [
@@ -415,8 +431,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ───── TICKER ───── */}
-      {/* <Ticker items={tickerItems} /> */}
+      {/* ───── BREAKING BANNER ───── */}
+      <BreakingBanner />
 
       {/* ───── ROGUES GALLERY ───── */}
       <section className="rogues" id="rogues">
@@ -751,6 +767,12 @@ export default async function HomePage() {
                   className="news-card feature"
                 >
                   {featured.imageUrl && <NewsCardImage src={featured.imageUrl} />}
+                  {featured.isBreaking && (
+                    <div className="news-breaking-badge">
+                      <span className="news-breaking-dot" />
+                      BREAKING
+                    </div>
+                  )}
                   <div className="news-meta">
                     <span className="news-tag">★ Kiemelt</span>
                     <span className="news-time">{fmtRelative(featured.publishedAt)}</span>
@@ -787,7 +809,7 @@ export default async function HomePage() {
       </div>
 
       {/* ───── RESIGNATIONS ───── */}
-      <ResignationsSection resignations={topResignations} />
+      <ResignationsSection resignations={topResignations} breaking={breakingArticles} />
 
       {/* ───── MEDIA CLOSURES ───── */}
       <MediaClosuresSection />

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
+import { getActiveBreaking, findBreakingForName, type BreakingArticle } from '@/lib/breaking';
 
 export const metadata: Metadata = {
   title: 'Lemondott-e már?',
@@ -28,10 +29,10 @@ function typeColor(t: string): string {
 
 const cellStyle = { padding: '12px', color: '#666' } as const;
 
-function Row({ r }: { r: Awaited<ReturnType<typeof fetchRows>>[number] }) {
+function Row({ r, breakingArticle }: { r: Awaited<ReturnType<typeof fetchRows>>[number]; breakingArticle?: BreakingArticle | null }) {
   const color = typeColor(r.resignationType);
   return (
-    <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
+    <tr className={breakingArticle ? 'res-row-breaking' : undefined} style={{ borderBottom: '1px solid #f0f0f0' }}>
       <td className="res-col-date" style={{ ...cellStyle, whiteSpace: 'nowrap' as const }}>
         {new Date(r.resignationDate).toLocaleDateString('hu-HU')}
       </td>
@@ -49,7 +50,20 @@ function Row({ r }: { r: Awaited<ReturnType<typeof fetchRows>>[number] }) {
           {typeLabel(r.resignationType)}
         </span>
       </td>
-      <td style={{ ...cellStyle, fontWeight: 500, color: 'var(--ink)' }}>{r.name}</td>
+      <td style={{ ...cellStyle, fontWeight: 500, color: 'var(--ink)' }}>
+        {r.name}
+        {breakingArticle && (
+          <a
+            href={breakingArticle.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="res-breaking-inline"
+          >
+            <span className="res-breaking-dot" />
+            BREAKING
+          </a>
+        )}
+      </td>
       <td style={cellStyle}>{r.position}</td>
       <td className="res-col-institution" style={cellStyle}>{r.institution}</td>
       <td className="res-col-desc" style={{ ...cellStyle, maxWidth: 320, fontSize: 13 }}>{r.description ?? '—'}</td>
@@ -81,9 +95,10 @@ const tableHead = (
 
 export default async function LemondasokPage() {
   const db = getDb();
-  const [rows, mediaLeepites] = await Promise.all([
+  const [rows, mediaLeepites, breakingArticles] = await Promise.all([
     fetchRows(),
     db.select().from(schema.mediaClosures).where(eq(schema.mediaClosures.eventType, 'leépítés')),
+    getActiveBreaking(),
   ]);
   const rest = rows.filter(r => !r.pinned);
 
@@ -108,7 +123,7 @@ export default async function LemondasokPage() {
           Versenyhivatal elnökét, a Médiahatóság elnökét és az Országos Bírói Hivatal elnökét.
         </p>
 
-        <WatchlistGrid />
+        <WatchlistGrid breaking={breakingArticles} />
 
         {/* Tisztítótűz összefoglaló blokk */}
         <div style={{
@@ -326,7 +341,7 @@ export default async function LemondasokPage() {
               <table style={{ width: '100%', minWidth: 700, fontSize: '14px', lineHeight: '1.6' }}>
                 {tableHead}
                 <tbody>
-                  {rest.map(r => <Row key={r.id} r={r} />)}
+                  {rest.map(r => <Row key={r.id} r={r} breakingArticle={findBreakingForName(r.name, breakingArticles)} />)}
                 </tbody>
               </table>
             </div>
