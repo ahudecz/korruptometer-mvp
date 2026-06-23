@@ -18,7 +18,7 @@ type ScandalHeader = {
   investigation_count: number;
   damage_huf: string;
   is_open: boolean;
-  offence_codes: string[] | null;
+  offence_labels: string | null;
 };
 
 type Member = {
@@ -57,20 +57,18 @@ export default async function ScandalPage({
   const db = getDb();
 
   const headRes = (await db.execute(sql`
-    SELECT id, name, person, institution, summary, article_count, investigation_count,
-           damage_huf, is_open, offence_codes
-    FROM "ScandalCatalog" WHERE id = ${id} LIMIT 1
+    SELECT sc.id, sc.name, sc.person, sc.institution, sc.summary, sc.article_count,
+           sc.investigation_count, sc.damage_huf, sc.is_open,
+           (SELECT string_agg(o."labelHu", ', ' ORDER BY o."sortOrder")
+            FROM "OffenceTypeRef" o WHERE o.code = ANY(sc.offence_codes)) AS offence_labels
+    FROM "ScandalCatalog" sc WHERE sc.id = ${id} LIMIT 1
   `)) as unknown as ScandalHeader[];
   const scandal = headRes[0];
   if (!scandal) notFound();
 
-  const offenceLabels =
-    scandal.offence_codes && scandal.offence_codes.length
-      ? ((await db.execute(sql`
-          SELECT "labelHu" AS label FROM "OffenceTypeRef"
-          WHERE code = ANY(${scandal.offence_codes}) ORDER BY "sortOrder"
-        `)) as unknown as Array<{ label: string }>).map((r) => r.label)
-      : [];
+  const offenceLabels = scandal.offence_labels
+    ? scandal.offence_labels.split(', ').filter(Boolean)
+    : [];
 
   const members = (await db.execute(sql`
     SELECT id, "caseName", "primaryPersonName", "primaryEntityName", "articleCount"
