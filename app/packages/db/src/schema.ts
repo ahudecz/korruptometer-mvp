@@ -130,6 +130,8 @@ export const newsArticles = pgTable(
     linkOverridden: boolean('linkOverridden').notNull().default(false),
     featured: boolean('featured').notNull().default(false),
     viaArchive: boolean('viaArchive').notNull().default(false),
+    isBreakingCandidate: boolean('isBreakingCandidate').notNull().default(false),
+    breakingOverride: boolean('breakingOverride'),
     createdAt: timestamp('createdAt', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -682,6 +684,20 @@ export const courtVerdicts = pgTable(
 
 export type CourtVerdict = typeof courtVerdicts.$inferSelect;
 export type NewCourtVerdict = typeof courtVerdicts.$inferInsert;
+
+// ─── Breaking Monitor ────────────────────────────────────────────────────────
+
+export const breakingMonitor = pgTable('BreakingMonitor', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  keyword: text('keyword').notNull(),
+  type: text('type').notNull().default('keyword'),
+  label: text('label').notNull(),
+  enabled: boolean('enabled').notNull().default(true),
+  createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type BreakingMonitor = typeof breakingMonitor.$inferSelect;
+export type NewBreakingMonitor = typeof breakingMonitor.$inferInsert;
 
 // ─── Social Feed Posts ────────────────────────────────────────────────────────
 

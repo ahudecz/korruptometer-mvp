@@ -104,3 +104,47 @@ export function shouldFeature(headline: string, excerpt: string): boolean {
   if (text.includes('tisztítótűz') && TISZTITOTUZ_CONTEXT.some((ctx) => text.includes(ctx))) return true;
   return false;
 }
+
+// ─── Breaking News detekció ───────────────────────────────────────────────────
+
+const BREAKING_TRIGGERS = [
+  'őrizetbe vett', 'őrizetbe vétel', 'letartóztatták', 'letartóztatás',
+  'előzetesbe', 'előzetes letartóztatás', 'vádat emeltek', 'vádemelés',
+  'bírósági ítélet', 'elítélték', 'elítélte', 'jogerős ítélet',
+  'házkutatás', 'razzia', 'gyanúsítottként hallgatták',
+  'nyomozást rendeltek el', 'körözik', 'európai elfogatóparancs',
+];
+
+// Statikus figyelt lista — WATCH_LIST + GALERIA + extra ügyek
+const BREAKING_MONITORED = [
+  // Kiemelt személyek (WATCH_LIST)
+  'sulyok tamás', 'polt péter', 'nagy gábor bálint',
+  'varga zs. andrás', 'windisch lászló', 'rigó csaba balázs',
+  'koltay andrás', 'senyei györgy',
+  // Galéria személyek
+  'orbán viktor', 'rogán antal', 'mészáros lőrinc', 'tiborcz istván',
+  'szíjjártó péter', 'takács péter', 'matolcsy györgy', 'lázár jános',
+  'balásy gyula', 'semjén zsolt',
+  // Extra személyek
+  'czeglédy csaba', 'simonka györgy', 'borkai zsolt', 'tasnádi andrás',
+  'zsigó róbert', 'tilky zoltán', 'pócs jános', 'schadl györgy',
+  // Extra ügyek / kulcsszavak
+  'budapest-belgrád vasútvonal', 'budapest–belgrád',
+  'kaleta', 'mátrai erőmű',
+  'voldemort',
+  'végrehajtói botrány',
+  'atlétikai vb stadion', 'atlétikai stadion',
+  'úszó vb', 'úszóvb',
+  'zuglói parkolás',
+  'parkfenntartási botrány',
+  // Már meglévő KEYWORDS-ből is breaking-képesek
+  'nka ', 'mnb ', 'volvo-gate', 'szőlő utca', 'aranykonvoj',
+  'lélegeztetőgép', 'kegyelmi botrány',
+];
+
+export function isBreaking(headline: string, excerpt: string): boolean {
+  const text = `${headline} ${excerpt}`.toLowerCase();
+  const hasTrigger = BREAKING_TRIGGERS.some((t) => text.includes(t));
+  if (!hasTrigger) return false;
+  return BREAKING_MONITORED.some((m) => text.includes(m));
+}
