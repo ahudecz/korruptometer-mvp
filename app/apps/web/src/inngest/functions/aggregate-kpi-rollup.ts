@@ -26,7 +26,7 @@ export const aggregateKpiRollup = inngest.createFunction(
     id: 'aggregate-kpi-rollup',
     name: 'Aggregate / KPI rollup',
     concurrency: { limit: 1 },
-    debounce: { period: '10s' },
+    debounce: { period: '10s', key: 'kpi-recompute' },
   },
   [{ cron: '0 * * * *' }, { event: 'kpi.recompute' }],
   async ({ step }) => {

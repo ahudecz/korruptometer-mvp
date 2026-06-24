@@ -46,7 +46,7 @@ const KEEP_TAGS = ['NKA', 'MNB', 'Lemondás', 'volvo-gate', 'Megafon'];
 
 async function main() {
   // 1. Összes cikk száma
-  const [{ total }] = await db
+  const [{ total } = { total: 0 }] = await db
     .select({ total: sql<number>`count(*)::int` })
     .from(schema.newsArticles);
 
@@ -60,7 +60,7 @@ async function main() {
 
   const deleteWhere = not(or(...keepConditions)!);
 
-  const [{ toDelete }] = await db
+  const [{ toDelete } = { toDelete: 0 }] = await db
     .select({ toDelete: sql<number>`count(*)::int` })
     .from(schema.newsArticles)
     .where(deleteWhere);

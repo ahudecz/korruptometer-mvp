@@ -11,7 +11,7 @@ async function main() {
   const db = drizzle(postgres(process.env.DATABASE_URL!, { prepare: false, max: 1 }), { schema });
 
   // Összesített számok
-  const [{ total }] = await db.select({ total: sql<number>`count(*)::int` }).from(schema.newsArticles);
+  const [{ total } = { total: 0 }] = await db.select({ total: sql<number>`count(*)::int` }).from(schema.newsArticles);
   console.log(`\nÖsszes cikk: ${total}`);
 
   // Legfrissebb 20

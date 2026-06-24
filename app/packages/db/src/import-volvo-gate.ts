@@ -90,7 +90,7 @@ async function main() {
     }
 
     const slug = SOURCE_SLUGS[art.sourceDomain];
-    let sourceId: number | null = null;
+    let sourceId: string | null = null;
 
     if (slug) {
       const rows = await db
@@ -98,6 +98,11 @@ async function main() {
         .from(schema.sources)
         .where(eq(schema.sources.slug, slug));
       sourceId = rows[0]?.id ?? null;
+    }
+
+    if (!sourceId) {
+      console.log(`SKIP (forrás nem található: ${art.sourceDomain}): ${art.headline}`);
+      continue;
     }
 
     await db.insert(schema.newsArticles).values({

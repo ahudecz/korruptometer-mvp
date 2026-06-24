@@ -38,7 +38,7 @@ async function main() {
     not(or(...rescueConditions)!),
   )!;
 
-  const [{ toDelete }] = await db
+  const [{ toDelete } = { toDelete: 0 }] = await db
     .select({ toDelete: sql<number>`count(*)::int` })
     .from(schema.newsArticles)
     .where(deleteWhere);

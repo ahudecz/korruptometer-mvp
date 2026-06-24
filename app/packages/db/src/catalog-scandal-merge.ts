@@ -196,7 +196,7 @@ async function applyOne(id: string, key: string | null, a: Assign, articles: num
   await sql.begin((tx) => applyOneTx(tx, id, key, a.name, articles, assigns));
 }
 
-async function applyOneTx(tx: TransactionSql<{}>, id: string, key: string | null, name: string, articles: number, assigns: Assign[]) {
+async function applyOneTx(tx: TransactionSql<Record<string, never>>, id: string, key: string | null, name: string, articles: number, assigns: Assign[]) {
   await tx`
     UPDATE "Investigation"
     SET "scandalKey"=${key}, "scandalName"=${name}, "caseName"=${name},

@@ -32,7 +32,7 @@ async function main() {
   }
 
   // Zárszó
-  const [{ n }] = await conn`SELECT count(*)::int as n FROM "NewsArticle"`;
+  const [{ n } = { n: 0 }] = await conn<{ n: number }[]>`SELECT count(*)::int as n FROM "NewsArticle"`;
   console.log(`\nMaradó cikkek: ${n}`);
   await conn.end();
 }

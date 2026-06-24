@@ -9,8 +9,8 @@ import * as schema from './schema';
 
 async function main() {
   const db = drizzle(postgres(process.env.DATABASE_URL!, { prepare: false, max: 1 }), { schema });
-  const [a] = await db.select({ n: sql<number>`count(*)::int` }).from(schema.newsArticles).where(eq(schema.newsArticles.featured, true));
-  const [b] = await db.select({ n: sql<number>`count(*)::int` }).from(schema.newsArticles).where(eq(schema.newsArticles.featured, false));
+  const [a = { n: 0 }] = await db.select({ n: sql<number>`count(*)::int` }).from(schema.newsArticles).where(eq(schema.newsArticles.featured, true));
+  const [b = { n: 0 }] = await db.select({ n: sql<number>`count(*)::int` }).from(schema.newsArticles).where(eq(schema.newsArticles.featured, false));
   console.log(`featured=true: ${a.n}   featured=false: ${b.n}`);
 
   // Minta a featured=false cikkekből

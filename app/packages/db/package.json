@@ -46,6 +46,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.2",
+    "@korr/scrapers": "workspace:*",
     "@korr/shared": "workspace:*",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.36.4",

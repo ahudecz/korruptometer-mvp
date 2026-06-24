@@ -24,7 +24,7 @@ const conn = postgres(DB_URL, { prepare: false, max: 1 });
 const db = drizzle(conn, { schema });
 
 const CUTOFF = new Date('2026-04-12T00:00:00Z');
-const NAME = process.argv[2];
+const NAME: string = process.argv[2] ?? '';
 if (!NAME) {
   console.error('Adj meg egy nevet: tsx src/import-by-name.ts "Mészáros Lőrinc"');
   process.exit(1);
@@ -75,7 +75,7 @@ function extractUrls(html: string, baseHost: string, patterns: RegExp[]): string
       try {
         const url = m[1]!.startsWith('http') ? m[1]! : `${baseHost}${m[1]!}`;
         found.add(url.replace(/&amp;/g, '&'));
-      } catch {}
+      } catch { /* skip malformed URL */ }
     }
   }
   return [...found];

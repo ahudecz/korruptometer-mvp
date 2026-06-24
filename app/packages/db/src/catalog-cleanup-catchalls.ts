@@ -175,7 +175,7 @@ async function main() {
   await sql.end();
 }
 
-async function upsertDamage(tx: TransactionSql<{}>, id: string, huf: number, conf: string, n: number) {
+async function upsertDamage(tx: TransactionSql<Record<string, never>>, id: string, huf: number, conf: string, n: number) {
   if (huf <= 0) { await tx`DELETE FROM "DamageEstimate" WHERE "investigationId"=${id}`; return; }
   await tx`
     INSERT INTO "DamageEstimate" ("investigationId","totalLowHuf","totalHighHuf",confidence,components,"inputsHash")

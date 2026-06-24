@@ -20,13 +20,13 @@ async function main() {
       DELETE FROM "NewsArticle" WHERE "sourceUrl" = ${url} RETURNING headline
     `;
     if (result.length > 0) {
-      console.log(`✅ Törölve: ${result[0].headline?.slice(0, 70)}`);
+      console.log(`✅ Törölve: ${result[0]?.headline?.slice(0, 70)}`);
     } else {
       console.log(`⚠️  Nem található: ${url.slice(0, 60)}`);
     }
   }
 
-  const [{ n }] = await conn`SELECT count(*)::int as n FROM "NewsArticle"`;
+  const [{ n } = { n: 0 }] = await conn<{ n: number }[]>`SELECT count(*)::int as n FROM "NewsArticle"`;
   console.log(`\nMaradó cikkek: ${n}`);
   await conn.end();
 }
