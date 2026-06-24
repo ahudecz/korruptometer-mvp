@@ -43,6 +43,7 @@ export interface GaleriaEntry {
   newsTag?: string;
   newsKeywords?: string[];
   newsExcludeKeywords?: string[];
+  featuredArticle?: { source: string; headline: string; lead: string; url: string; date?: string };
   personCases?: PersonCaseItem[];
 }
 
@@ -234,6 +235,13 @@ export const GALERIA: GaleriaEntry[] = [
     videoSummary: 'Egy falusi gázszerelőből tíz év alatt Magyarország egyik leggazdagabb embere lett — Orbán barátjaként. A Partizán első részben tárja fel, hogyan épült fel a Mészáros-birodalom: ki fizette, ki nyitotta az ajtókat, és mi volt az ára.',
     newsTag: 'Mészáros Lőrinc',
     newsKeywords: ['mészáros lőrinc', 'mészáros'],
+    featuredArticle: {
+      source: 'Atlátszó',
+      headline: 'Kiadó a Rose Dor — heti 200 millióért bárki kibérelheti a Mészáros Lőrincék által használt luxusjachtot',
+      lead: 'A Mészáros-família által korábban használt Rose Dor luxusjacht mostantól bárki számára bérelhető — heti 200 millió forintért.',
+      url: 'https://atlatszo.hu/kozugy/2026/06/04/kiado-lett-a-rose-dor-heti-200-millioert-barki-kiberelheti-a-meszarosek-altal-hasznalt-luxusjachtot',
+      date: '2026. június 4.',
+    },
     personCases: [
       {
         title: 'Közbeszerzési birodalom',

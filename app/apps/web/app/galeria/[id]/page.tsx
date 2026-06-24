@@ -143,6 +143,26 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           </div>
         )}
 
+        {/* Featured article */}
+        {entry.featuredArticle && (
+          <a
+            href={entry.featuredArticle.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="person-featured-article"
+          >
+            <div className="person-featured-article-meta">
+              <span className="person-featured-article-source">{entry.featuredArticle.source}</span>
+              {entry.featuredArticle.date && (
+                <span className="person-featured-article-date">{entry.featuredArticle.date}</span>
+              )}
+            </div>
+            <div className="person-featured-article-headline">{entry.featuredArticle.headline}</div>
+            <p className="person-featured-article-lead">{entry.featuredArticle.lead}</p>
+            <span className="person-featured-article-arrow">Cikk olvasása →</span>
+          </a>
+        )}
+
         {/* Individual cases */}
         {entry.personCases && entry.personCases.length > 0 && (
           <div className="person-cases">

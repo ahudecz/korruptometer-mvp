@@ -2617,6 +2617,27 @@ button {
   opacity: 0.3;
 }
 
+/* Featured article card on galeria person detail page */
+.person-featured-article {
+  display: block;
+  margin: 32px 0;
+  padding: 20px 24px;
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+.person-featured-article:hover { background: #f3f3f3; }
+.person-featured-article-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.person-featured-article-source { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; }
+.person-featured-article-date { font-size: 11px; color: #999; }
+.person-featured-article-headline { font-size: 16px; font-weight: 700; color: #111; line-height: 1.4; margin-bottom: 8px; }
+.person-featured-article-lead { font-size: 14px; color: #555; line-height: 1.6; margin: 0 0 12px; }
+.person-featured-article-arrow { font-size: 13px; font-weight: 600; color: var(--accent); }
+
 /* Section titles */
 .person-section-title {
   font-family: 'Archivo', sans-serif;
