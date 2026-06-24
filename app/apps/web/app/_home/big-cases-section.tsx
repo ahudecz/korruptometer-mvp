@@ -17,6 +17,13 @@ interface StatusItem {
   value: string;
 }
 
+export interface BreakingAlert {
+  source: string;
+  headline: string;
+  lead: string;
+  url: string;
+}
+
 export interface BigCaseConfig {
   id: string;
   eyebrow: string;
@@ -29,6 +36,7 @@ export interface BigCaseConfig {
   moreUrl?: string;
   articles?: BigCaseArticle[];
   placeholder?: boolean;
+  breakingAlert?: BreakingAlert;
 }
 
 function fmtDate(iso: string): string {
@@ -47,6 +55,17 @@ function CaseDetail({ c }: { c: BigCaseConfig }) {
 
   return (
     <div className="big-case-detail-inner">
+      {c.breakingAlert && (
+        <a href={c.breakingAlert.url} target="_blank" rel="noopener noreferrer" className="big-case-breaking-alert">
+          <div className="big-case-breaking-alert-label">
+            <span className="big-case-breaking-dot" />
+            BREAKING · {c.breakingAlert.source}
+          </div>
+          <div className="big-case-breaking-alert-headline">{c.breakingAlert.headline}</div>
+          <p className="big-case-breaking-alert-lead">{c.breakingAlert.lead}</p>
+        </a>
+      )}
+
       {c.videoId && (
         <div className="big-case-video-wrap">
           <iframe
@@ -155,6 +174,16 @@ export function BigCasesSection({ cases }: { cases: BigCaseConfig[] }) {
               <div className="big-case-mobile-resp">/ {c.responsible}</div>
             )}
             <p className="big-case-mobile-summary">{c.summary}</p>
+            {c.breakingAlert && (
+              <a href={c.breakingAlert.url} target="_blank" rel="noopener noreferrer" className="big-case-breaking-alert big-case-breaking-alert--mobile">
+                <div className="big-case-breaking-alert-label">
+                  <span className="big-case-breaking-dot" />
+                  BREAKING · {c.breakingAlert.source}
+                </div>
+                <div className="big-case-breaking-alert-headline">{c.breakingAlert.headline}</div>
+                <p className="big-case-breaking-alert-lead">{c.breakingAlert.lead}</p>
+              </a>
+            )}
             {c.statusItems && c.statusItems.map((s, j) => (
               <div key={j} className="big-case-mobile-status-row">
                 <span>{s.icon}</span>

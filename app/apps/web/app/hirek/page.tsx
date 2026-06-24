@@ -59,6 +59,8 @@ export default async function HirekPage({
       imageUrl: schema.newsArticles.imageUrl,
       featured: schema.newsArticles.featured,
       relatedCaseId: schema.newsArticles.relatedCaseId,
+      isBreakingCandidate: schema.newsArticles.isBreakingCandidate,
+      breakingOverride: schema.newsArticles.breakingOverride,
       sourceSlug: schema.sources.slug,
       sourceName: schema.sources.name,
     })
@@ -77,7 +79,15 @@ export default async function HirekPage({
       return true;
     })
     .slice(0, 40)
-    .map((a) => ({ ...a, publishedAt: a.publishedAt.toISOString() }));
+    .map((a) => {
+      const isBreaking = (a.breakingOverride ?? a.isBreakingCandidate) === true;
+      return {
+        ...a,
+        publishedAt: a.publishedAt.toISOString(),
+        isBreaking,
+        featured: isBreaking ? true : a.featured,
+      };
+    });
 
   // Ha pontosan 120 sort kaptunk vissza, valószínűleg van még több
   const initialHasMore = rawRows.length >= 120;

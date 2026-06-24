@@ -1,4 +1,3 @@
-import 'server-only';
 import { and, desc, gte, or, eq } from 'drizzle-orm';
 import { getDb, schema } from './db';
 
@@ -47,6 +46,6 @@ export function findBreakingForName(name: string, breaking: BreakingArticle[]): 
   const parts = name.toLowerCase().split(' ').filter(p => p.length > 2);
   return breaking.find(b => {
     const text = `${b.headline} ${b.excerpt ?? ''}`.toLowerCase();
-    return parts.some(part => text.includes(part));
+    return parts.every(part => text.includes(part));
   }) ?? null;
 }

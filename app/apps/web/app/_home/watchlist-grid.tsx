@@ -39,16 +39,10 @@ function WatchCard({ person, breakingArticle }: { person: WatchPerson; breakingA
   return (
     <Link href={`/lemondasok/${person.id}`} className={`watchlist-card ${isGone ? 'watchlist-card--gone' : ''}`}>
       {breakingArticle && (
-        <a
-          href={breakingArticle.sourceUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="watchlist-breaking-tag"
-          onClick={e => e.stopPropagation()}
-        >
+        <span className="watchlist-breaking-tag">
           <span className="watchlist-breaking-dot" />
           BREAKING
-        </a>
+        </span>
       )}
       <div className="watchlist-photo">
         {person.photoUrl ? (

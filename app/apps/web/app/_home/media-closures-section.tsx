@@ -54,7 +54,12 @@ function MediaCard({ entry }: { entry: MediaOutletEntry }) {
       <div className="media-card-owner">{entry.owner}</div>
       {(isClosed || isFired) && (
         <div className="mc-stamp" aria-hidden="true">
-          {isClosed ? 'MEGSZŰNT' : 'KIRÚGVA'}
+          {isClosed ? 'MEGSZŰNT' : (
+            <>
+              <span style={{ fontSize: '0.55em', display: 'block', letterSpacing: '0.12em', lineHeight: 1.2, marginBottom: 2 }}>SZERKESZTŐSÉG</span>
+              KIRÚGVA
+            </>
+          )}
         </div>
       )}
     </div>

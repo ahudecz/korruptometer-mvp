@@ -25,6 +25,7 @@ export type SerializedVerdict = {
   photoUrl: string | null;
   relatedUgy: { id: string; title: string; eyebrow: string; responsible?: string; summary: string } | null;
   relatedGaleria: { id: string; name: string; subtitle: string } | null;
+  reactionQuote?: string | null;
 };
 
 const YEAR_RANGES: Record<string, [number, number | null]> = {
@@ -79,15 +80,27 @@ function VerdictCard({ r }: { r: SerializedVerdict }) {
           </div>
         </div>
 
-        <div className="verdict-sentence-badge">
-          <span className="verdict-sentence-years">{r.sentenceYears}</span>
-          <span className="verdict-sentence-unit">ÉV</span>
-          {r.sentenceMonths ? <span className="verdict-sentence-months">+{r.sentenceMonths}hó</span> : null}
-        </div>
+        {r.verdictType === 'előzetesben' ? (
+          <div className="verdict-sentence-badge verdict-sentence-badge--pretrial">
+            <span className="verdict-pretrial-label">ELŐZETESBEN</span>
+          </div>
+        ) : (
+          <div className="verdict-sentence-badge">
+            <span className="verdict-sentence-years">{r.sentenceYears}</span>
+            <span className="verdict-sentence-unit">ÉV</span>
+            {r.sentenceMonths ? <span className="verdict-sentence-months">+{r.sentenceMonths}hó</span> : null}
+          </div>
+        )}
       </div>
 
       <div className="verdict-body">
         <p className="verdict-summary">{r.summary}</p>
+
+        {r.reactionQuote && (
+          <blockquote className="verdict-reaction-quote">
+            <p style={{ whiteSpace: 'pre-wrap' }}>„{r.reactionQuote}"</p>
+          </blockquote>
+        )}
 
         {r.videoId && (
           <div className="ugy-block-video verdict-video">
@@ -197,8 +210,10 @@ export function VerdictList({ rows }: { rows: SerializedVerdict[] }) {
   }), [rows, search, verdictTypeFilter, crimeFilter, yearRange, courtFilter]);
 
   const hasFilter = search || verdictTypeFilter !== 'all' || crimeFilter.length > 0 || yearRange !== 'all' || courtFilter !== 'all';
-  const totalYears = filtered.reduce((s, r) => s + r.sentenceYears, 0);
-  const jogerosCount = filtered.filter(r => r.verdictType === 'jogerős').length;
+  const nonPretrial = filtered.filter(r => r.verdictType !== 'előzetesben');
+  const totalYears = nonPretrial.reduce((s, r) => s + r.sentenceYears, 0);
+  const jogerosCount = nonPretrial.filter(r => r.verdictType === 'jogerős').length;
+  const pretrialCount = filtered.filter(r => r.verdictType === 'előzetesben').length;
 
   function clearAll() {
     setSearch(''); setVerdictTypeFilter('all'); setCrimeFilter([]); setYearRange('all'); setCourtFilter('all');
@@ -207,13 +222,17 @@ export function VerdictList({ rows }: { rows: SerializedVerdict[] }) {
   return (
     <>
       {/* Stats — szűrés alapján frissülnek */}
-      <div className="megszunt-stats megszunt-stats--3">
+      <div className="megszunt-stats megszunt-stats--4">
         <div className="megszunt-stat">
-          <div className="megszunt-stat-value">{filtered.length}</div>
+          <div className="megszunt-stat-value megszunt-stat-value--red">{pretrialCount}</div>
+          <div className="megszunt-stat-label">Előzetesben van</div>
+        </div>
+        <div className="megszunt-stat">
+          <div className="megszunt-stat-value">{nonPretrial.length}</div>
           <div className="megszunt-stat-label">Ítélet összesen</div>
         </div>
         <div className="megszunt-stat">
-          <div className="megszunt-stat-value megszunt-stat-value--red">{totalYears}</div>
+          <div className="megszunt-stat-value">{totalYears}</div>
           <div className="megszunt-stat-label">Kiszabott börtönév</div>
         </div>
         <div className="megszunt-stat">
@@ -269,6 +288,7 @@ export function VerdictList({ rows }: { rows: SerializedVerdict[] }) {
           <div className="verdict-pills">
             {[
               { val: 'all',                label: 'Összes' },
+              { val: 'előzetesben',         label: 'Előzetesben' },
               { val: 'elsőfokú',           label: 'Elsőfokú' },
               { val: 'jogerős',            label: 'Jogerős' },
               { val: 'fellebbezés alatt',  label: 'Fellebbezés alatt' },

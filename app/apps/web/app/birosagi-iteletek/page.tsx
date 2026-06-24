@@ -13,10 +13,20 @@ function fmtDateLong(d: Date): string {
   return `${d.getFullYear()}. ${HU_MONTHS[d.getMonth()]} ${d.getDate()}.`;
 }
 
-function resolvePhoto(url: string | null | undefined): string | null {
-  if (!url) return null;
-  if (url.startsWith('/') || url.includes('wikimedia.org')) return url;
-  return `/api/img-proxy?url=${encodeURIComponent(url)}`;
+const VERDICT_PERSON_PHOTOS: Record<string, string> = {
+  'Bús Balázs': '/images/persons/bus-balazs.png',
+};
+
+const VERDICT_PERSON_QUOTES: Record<string, string> = {
+  'Őrsi Gergely': `A jelenlegi helyzetben a legfontosabb, hogy elmondjam Önöknek, a II. kerületi Önkormányzat működik, minden feladatot zökkenőmentesen ellát.\nSzeretném nyilvánvalóvá tenni: minden körülmények között tartom magam eskümhöz és ahhoz a vállaláshoz, hogy számomra a II. kerület boldogulása, fejlődése a legfontosabb.\nBiztosan tudom, hogy esküm és lelkiismeretem szerint mindig a törvényeknek megfelelően jártam el — ahogy a Hivatal is.\nFelháborít és egyben elszomorít, hogy sarokba szorított ember/emberek szavára alapozva történhet letartóztatás, de ez nem változtat azon, hogy az igazság ki fog derülni. Sajnálatos módon ennek a magyar igazságszolgáltatás szervei egyelőre bedőltek. A velem szemben közölt gyanúsítás azonban teljes egészében megalapozatlan, az ténybeli és jogi alapokon sem állja meg a helyét. Ennek kívánunk érvényt szerezni a jövőben.\nKöszönöm szeretetüket és támogatásukat, hálás vagyok érte, mert erőt ad ahhoz, hogy kiálljak az igazamért.`,
+};
+
+function resolvePhoto(url: string | null | undefined, personName?: string): string | null {
+  const fallback = personName ? (VERDICT_PERSON_PHOTOS[personName] ?? null) : null;
+  const src = url ?? fallback;
+  if (!src) return null;
+  if (src.startsWith('/') || src.includes('wikimedia.org')) return src;
+  return `/api/img-proxy?url=${encodeURIComponent(src)}`;
 }
 
 export default async function BirosagPage() {
@@ -29,7 +39,7 @@ export default async function BirosagPage() {
   const serialized: SerializedVerdict[] = rows.map(r => {
     const galeriaEntry = r.personGaleriaId ? (GALERIA.find(g => g.id === r.personGaleriaId) ?? null) : null;
     const ugyEntry     = r.personUgyId     ? (UGYEK.find(u => u.id === r.personUgyId) ?? null)     : null;
-    const photoUrl = resolvePhoto(galeriaEntry?.photoUrl ?? ugyEntry?.photo);
+    const photoUrl = resolvePhoto(galeriaEntry?.photoUrl ?? null, r.personName);
 
     return {
       id:                   r.id,
@@ -51,6 +61,7 @@ export default async function BirosagPage() {
       videoTitle:           r.videoTitle   ?? null,
       videoSummary:         r.videoSummary ?? null,
       photoUrl,
+      reactionQuote: VERDICT_PERSON_QUOTES[r.personName] ?? null,
       relatedUgy: ugyEntry ? {
         id:          ugyEntry.id,
         title:       ugyEntry.title,

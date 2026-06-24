@@ -52,9 +52,6 @@ export default function RootLayout({
             </Link>
             <ul className="nav-links" aria-label="Fő navigáció">
               <li>
-                <Link href="/#dashboard">Áttekintés</Link>
-              </li>
-              <li>
                 <Link href="/galeria">Galéria</Link>
               </li>
               <li>
@@ -68,6 +65,9 @@ export default function RootLayout({
               </li>
               <li>
                 <Link href="/lemondasok">Lemondott-e?</Link>
+              </li>
+              <li>
+                <Link href="/birosagi-iteletek">Börtönben van-e?</Link>
               </li>
               <li>
                 <Link href="/megszunt">Megszűnt-e?</Link>

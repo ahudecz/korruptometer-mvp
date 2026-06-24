@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { desc, ilike, or, eq } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
-import { UGYEK, type DescriptionBlock } from '../../_home/ugyek-config';
+import { UGYEK, type DescriptionBlock, type BreakingGroupArticle } from '../../_home/ugyek-config';
 import { GALERIA } from '../../_home/galeria-config';
 import { WATCH_LIST } from '../../_home/watchlist-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../_home/cross-promo';
@@ -43,14 +43,57 @@ function DescBlock({ block }: { block: DescriptionBlock }) {
           </div>
         </div>
       );
+    case 'breaking-box':
+      return (
+        <div className="ugy-breaking-box">
+          <div className="ugy-breaking-box-label">
+            <span className="ugy-breaking-box-dot" />
+            BREAKING
+          </div>
+          <div className="ugy-breaking-box-headline">{block.headline}</div>
+          {block.lead && <p className="ugy-breaking-box-lead">{block.lead}</p>}
+        </div>
+      );
+    case 'breaking-group':
+      return (
+        <div className="ugy-breaking-group">
+          <div className="ugy-breaking-group-header">
+            <div className="ugy-breaking-box-label">
+              <span className="ugy-breaking-box-dot" />
+              BREAKING
+            </div>
+            <div className="ugy-breaking-group-headline">{block.headline}</div>
+            {block.lead && <p className="ugy-breaking-box-lead">{block.lead}</p>}
+          </div>
+          <div className="ugy-breaking-group-cards">
+            {block.articles.map((a: BreakingGroupArticle, i: number) => (
+              <a key={i} href={a.url} target="_blank" rel="noopener noreferrer" className="ugy-breaking-group-card">
+                <div className="ugy-block-article-meta">
+                  <span className="ugy-block-article-source">{a.source}</span>
+                  {a.date && <span className="ugy-block-article-date">{a.date}</span>}
+                </div>
+                <div className="ugy-block-article-headline">{a.headline}</div>
+                {a.lead && <p className="ugy-block-article-lead">{a.lead}</p>}
+                <span className="ugy-block-article-arrow">Cikk olvasása →</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      );
     case 'article-card':
       return (
         <a
           href={block.url || undefined}
           target="_blank"
           rel="noopener noreferrer"
-          className={`ugy-block-article-card${!block.url ? ' no-link' : ''}`}
+          className={`ugy-block-article-card${!block.url ? ' no-link' : ''}${block.breaking ? ' ugy-block-article-card--breaking' : ''}`}
         >
+          {block.breaking && (
+            <div className="ugy-block-article-breaking-badge">
+              <span className="ugy-block-article-breaking-dot" />
+              BREAKING
+            </div>
+          )}
           <div className="ugy-block-article-meta">
             <span className="ugy-block-article-source">{block.source}</span>
             {block.date && <span className="ugy-block-article-date">{block.date}</span>}
@@ -63,9 +106,14 @@ function DescBlock({ block }: { block: DescriptionBlock }) {
     case 'quote':
       return (
         <blockquote className="ugy-block-quote">
-          <p>{block.text}</p>
+          <p>„{block.text}"</p>
           {block.author && <cite>{block.author}</cite>}
           {block.note && <span className="ugy-block-quote-note">{block.note}</span>}
+          {block.url && (
+            <a href={block.url} target="_blank" rel="noopener noreferrer" className="ugy-block-quote-source-link">
+              Forrás →
+            </a>
+          )}
         </blockquote>
       );
     case 'pdf-link':
@@ -79,6 +127,18 @@ function DescBlock({ block }: { block: DescriptionBlock }) {
           <span className="ugy-block-pdf-icon">📄</span>
           <span className="ugy-block-pdf-label">{block.label}</span>
           {block.note && <span className="ugy-block-pdf-note">{block.note}</span>}
+        </a>
+      );
+    case 'audio-link':
+      return (
+        <a href={block.url} target="_blank" rel="noopener noreferrer" className="ugy-block-audio-link">
+          <span className="ugy-block-audio-icon">🎙️</span>
+          <div className="ugy-block-audio-content">
+            <div className="ugy-block-audio-source">{block.source}</div>
+            <div className="ugy-block-audio-title">{block.title}</div>
+            {block.duration && <div className="ugy-block-audio-duration">{block.duration}</div>}
+          </div>
+          <span className="ugy-block-audio-cta">Meghallgatás →</span>
         </a>
       );
     case 'image-pair':
@@ -206,6 +266,13 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
             <h1 className="person-hero-name">{entry.title}</h1>
             {entry.responsible && (
               <div className="person-hero-sub">{entry.responsible}</div>
+            )}
+            {entry.responsiblePersons && entry.responsiblePersons.length > 1 && (
+              <div className="ugy-responsible-persons">
+                {entry.responsiblePersons.map(p => (
+                  <span key={p} className="ugy-responsible-person">{p}</span>
+                ))}
+              </div>
             )}
             {entry.estimatedDamage && (
               <div className="person-hero-amount">

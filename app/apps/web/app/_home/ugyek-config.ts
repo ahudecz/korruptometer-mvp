@@ -1,4 +1,4 @@
-export interface BigCaseStatus {
+﻿export interface BigCaseStatus {
   icon: string;
   label: string;
   value: string;
@@ -15,13 +15,18 @@ export interface BigCaseRef {
   url: string;
 }
 
+export type BreakingGroupArticle = { source: string; headline: string; lead?: string; url: string; date?: string };
+
 export type DescriptionBlock =
   | { type: 'text'; heading?: string; content: string }
   | { type: 'video'; id: string; label?: string; title?: string; summary?: string }
-  | { type: 'article-card'; source: string; headline: string; lead?: string; url: string; date?: string }
-  | { type: 'quote'; text: string; author?: string; note?: string }
+  | { type: 'article-card'; source: string; headline: string; lead?: string; url: string; date?: string; breaking?: boolean }
+  | { type: 'breaking-box'; headline: string; lead?: string }
+  | { type: 'breaking-group'; headline: string; lead?: string; articles: BreakingGroupArticle[] }
+  | { type: 'quote'; text: string; author?: string; note?: string; url?: string }
   | { type: 'pdf-link'; url: string; label: string; note?: string }
-  | { type: 'image-pair'; src1: string; alt1?: string; src2: string; alt2?: string; caption?: string };
+  | { type: 'image-pair'; src1: string; alt1?: string; src2: string; alt2?: string; caption?: string }
+  | { type: 'audio-link'; url: string; title: string; source: string; duration?: string };
 
 export interface UgyekConfig {
   id: string;
@@ -61,7 +66,7 @@ const ZSOLT_BACSI_SEMJEN_GUARD = null; // intentionally unused — marker commen
 export const UGYEK: UgyekConfig[] = [
   {
     id: 'nka-botrany',
-    eyebrow: 'Aktív · Nyomozás alatt',
+    eyebrow: 'Aktív · 6 személy előzetesben',
     title: 'NKA botrány',
     responsible: 'Hankó Balázs',
     responsibleGaleriaId: undefined,
@@ -73,7 +78,7 @@ export const UGYEK: UgyekConfig[] = [
     relatedPersonIds: [],
     articleTag: 'NKA',
     moreUrl: '/ugyek/nka-botrany',
-    summary: 'Hankó Balázs volt kulturális miniszter a 2026-os választások előtt szabálytalanul osztott ki milliárdos NKA-támogatásokat. A NAV hűtlen kezelés és költségvetési csalás gyanújával nyomoz — Győrben is indult eljárás. Tarr Zoltán közel 400 millió forintnyi támogatást vont vissza.',
+    summary: 'Hankó Balázs volt kulturális miniszter a 2026-os választások előtt szabálytalanul osztott ki milliárdos NKA-támogatásokat — közel 394 millió forintnyi egyedi miniszteri keretből. A NAV hűtlen kezelés bűntett gyanújával nyomoz, az ügy 17+ milliárd Ft-ot érint. Tarr Zoltán a kifizetések átvizsgálását rendelte el.',
     videoId: 'NRA-QuItdUA',
     videoChannel: 'Molnár Áron',
     videoTitle: 'Megszólal a forrás',
@@ -87,18 +92,41 @@ export const UGYEK: UgyekConfig[] = [
       { id: 'lkFb77t0h-w', label: 'ATV', title: 'NKA-botrány: Tóth Gabi, Muri Enikő és Pataky Attila is komoly pénzeket kaphatott' },
     ],
     statusItems: [
-      { icon: '⚖️', label: 'Nyomozás', value: 'NAV — hűtlen kezelés + költségvetési csalás (Győr is)' },
-      { icon: '💰', label: 'Visszaszerzett vagyon', value: '~2,1 milliárd Ft — 1,69 Mrd visszautalt + ~400 M visszavonva' },
+      { icon: '🔴', label: 'Őrizetbe vétel', value: '6 személy előzetesben — köztük Bús Balázs volt óbudai polgármester (jún. 23.)' },
+      { icon: '⚖️', label: 'Nyomozás', value: 'NAV — hűtlen kezelés bűntett gyanúja, 17+ milliárd Ft érintett összeg' },
+      { icon: '💰', label: 'Visszaszerzett vagyon', value: '~2,56 milliárd Ft — 2,16 Mrd visszautalt + ~400 M visszatartott (Tarr Zoltán)' },
       { icon: '👤', label: 'Felelős', value: 'Hankó Balázs — volt kulturális miniszter' },
-      { icon: '🚪', label: 'Lemondások', value: 'Bús Balázs (ápr. 28.) · Báán László (ápr. 30.) · Vidnyánszky Attila (máj. 2.) — mind lemondtak az NKA bizottságból' },
     ],
     sourceRefs: [
+      { label: 'NAV.hu: Áttörés az NKA-ügyben — 6 személy őrizetbe véve (jún. 23.)', url: 'https://nav.gov.hu/sajtoszoba/hirek/Attores_az_NKA-ugyben' },
+      { label: 'Telex: 6 személyt vett őrizetbe a NAV (jún. 23.)', url: 'https://telex.hu/belfold/2026/06/23/nka-botrany-hat-szemelyt-orizetbe-vett-a-nav-hanko-balazs-tarr-zoltan' },
       { label: 'Telex: NAV nyomoz az NKA-ügyben', url: 'https://telex.hu/belfold/2026/06/16/nka-nyomozas-nav' },
-      { label: 'Telex: 49 pályázó 1,69 milliárdot utalt vissza', url: 'https://telex.hu/belfold/2026/05/23/nka-palyazati-penzek-visszafizetes-kis-grofo-varosliget-zrt' },
+      { label: 'Telex: 49 pályázó 1,69 milliárdot utalt vissza', url: 'https://telex.hu/belfold/2026/05/23/nka-palyazati-penzek-visszafizetes-kis-grofo-valosliget-zrt' },
       { label: '444: Tarr Zoltán ~400 M Ft-ot vont vissza', url: 'https://444.hu/2026/06/15/tarr-zoltan-kozel-400-millio-forintnyi-nka-tamogatast-von-vissza-amit-hanko-balazs-a-valasztas-elott-osztott-ki' },
     ],
     description: `A Nemzeti Kulturális Alap (NKA) botránya az egyik legsúlyosabb közpénzügyi visszaélés, amelyet a Fidesz-korszak vége előtt tártak fel.`,
     descriptionBlocks: [
+      {
+        type: 'breaking-group',
+        headline: '2026. június 23. — Hat személyt vett őrizetbe a NAV',
+        lead: 'A NAV nyomozói hat személyt vettek előzetesbe hűtlen kezelés bűntett megalapozott gyanúja miatt — köztük Bús Balázs volt fideszes óbudai polgármestert, az NKA alelnökét, aki részletes vallomást tett. Az elkövetők az NKTK és a Kulturális és Innovációs Minisztérium alkalmazottai. Letartóztatásukat az ügyészségnél kezdeményezték.',
+        articles: [
+          {
+            source: 'NAV.hu',
+            headline: 'Áttörés az NKA-ügyben — hat személyt vett őrizetbe a NAV',
+            lead: 'A NAV nyomozói hűtlen kezelés bűntett megalapozott gyanúja miatt hat személyt vettek őrizetbe. Az ügy több mint 17 milliárd forintot érint. Letartóztatásukat az ügyészségnél kezdeményezték.',
+            url: 'https://nav.gov.hu/sajtoszoba/hirek/Attores_az_NKA-ugyben',
+            date: '2026. június 23.',
+          },
+          {
+            source: 'Telex',
+            headline: 'NKA-botrány: hat személyt vett őrizetbe a NAV — köztük Bús Balázs volt óbudai polgármester',
+            lead: 'Köztük Bús Balázs volt fideszes óbudai polgármester, az NKA alelnöke, aki részletes vallomást tett.',
+            url: 'https://telex.hu/belfold/2026/06/23/nka-botrany-hat-szemelyt-orizetbe-vett-a-nav-hanko-balazs-tarr-zoltan',
+            date: '2026. június 23.',
+          },
+        ],
+      },
       {
         type: 'text',
         content: 'A Nemzeti Kulturális Alap (NKA) botránya az egyik legsúlyosabb közpénzügyi visszaélés, amelyet a Fidesz-korszak vége előtt tártak fel. Hankó Balázs kulturális miniszter négy nappal a 2026-os parlamenti választások előtt — 2026. április 8-án — közel 394 millió forintnyi egyedi miniszteri keretből osztott ki támogatásokat. Tarr Zoltán, az új kormány kulturális minisztere ezeket a döntéseket visszavonta, majd elrendelte a kifizetések átvizsgálását.',
@@ -117,7 +145,7 @@ export const UGYEK: UgyekConfig[] = [
       },
       {
         type: 'text',
-        content: 'A Nemzeti Adó- és Vámhivatal (NAV) hűtlen kezelés és költségvetési csalás gyanújával nyomozást indított. A nyomozás nemcsak Budapesten folyik: Győrben is indult eljárás, ahol helyi kulturális szervezetek kaptak aránytalanul nagy összegeket. A NAV Molnár Áront, a közismert humoristát is tanúként hallgatta ki az NKA-val kapcsolatos ügyekben — számolt be a Telex.',
+        content: 'A Nemzeti Adó- és Vámhivatal (NAV) hűtlen kezelés bűntett gyanújával nyomozást indított. Az elkövetők az NKTK és a Kulturális és Innovációs Minisztérium alkalmazottai. A nyomozás nemcsak Budapesten folyik: Győrben is indult eljárás, ahol helyi kulturális szervezetek kaptak aránytalanul nagy összegeket. A NAV Molnár Áront, a közismert humoristát is tanúként hallgatta ki az NKA-val kapcsolatos ügyekben — számolt be a Telex.',
       },
       {
         type: 'article-card',
@@ -156,6 +184,131 @@ export const UGYEK: UgyekConfig[] = [
       },
     ],
   },
+
+  {
+    id: 'parkfenntartas',
+    eyebrow: 'Aktív · 8 személy előzetesben',
+    title: 'Parkfenntartási kenőpénzbotrány',
+    responsible: 'Több felelős',
+    estimatedDamage: '2+ milliárd Ft kenőpénz',
+    estimatedDamageLabel: 'Becsült kenőpénz összesen',
+    responsiblePersons: [
+      'Őrsi Gergely — II. ker. polgármester (DK)',
+      'Láng Zsolt — II. ker. volt polgármester (Fidesz)',
+      'Puskás Péter — óbudai Fidesz-elnök',
+      'Szkaliczki Tünde — Momentum, volt képviselő',
+      'Matisz Károly — Momentum pártigazgató',
+      'Molnár Zsolt — MSZP, volt OGY képviselő',
+      'Z. Zsolt és „Pék" — vállalkozók',
+    ],
+    crimeTypes: ['Befolyással üzérkedés', 'Vesztegetés', 'Kenőpénz'],
+    articleKeywords: ['parkfenntartás', 'Őrsi Gergely', 'parkfenntartá'],
+    moreUrl: '/ugyek/parkfenntartas',
+    videoId: '7A-NUGjuKGg',
+    additionalVideos: [
+      { id: 'iditf3NLfos', label: 'Kapcsolódó riport', title: 'Parkfenntartási korrupció — háttér' },
+      { id: '94cOBsarL00', label: 'Kapcsolódó riport', title: 'Parkfenntartási kenőpénzbotrány — dokumentáció' },
+      { id: 'HDzrxp3GAkE', label: 'Kapcsolódó riport', title: 'Parkfenntartási korrupció — részletek' },
+    ],
+    summary: '8 személyt tartóztattak le 2026. június 4-én — köztük Őrsi Gergely (DK) II. kerületi polgármestert, Láng Zsolt (Fidesz) volt polgármestert és négy más politikust. Z. Zsolt parkfenntartó vállalkozó cégei 2011–2024 között közel 2 milliárd forint kenőpénzt fizethettek budapesti politikusoknak milliárdos közpénzes szerződésekért cserébe — minden nagy párt érintett.',
+    description: `A parkfenntartási kenőpénzbotrány egyedülálló a magyar korrupciós ügyekben: egy átpárti, szisztematikus kenőpénz-rendszert tárt fel a budapesti önkormányzati közpénzek körül — amelybe Fidesz, DK, Momentum és MSZP politikusok egyaránt belekeveredtek.
+
+Z. Zsolt parkfenntartó vállalkozó és cégei — köztük a Pannon Park Forest Kft. — 2011 és 2024 között milliárdos közpénzes szerződéseket nyertek Budapest több kerületében és vidéki önkormányzatoknál is. A „Pék" nevű közvetítőn keresztül áramló kenőpénz politikusokat ért el a II., III., VIII., XIII. és XIV. kerületben egyaránt.
+
+A Fővárosi Törvényszék 2026. június 4-én 30 napra letartóztatott hat politikust és két vállalkozót. A gyanú: befolyással üzérkedés és vesztegetés. Az érintett összeg: közel 2 milliárd forint kenőpénz — és 35+ milliárd forintos szerződésállomány a XIII. kerületben egyedül.
+
+Kerényi György, a Klub Rádió újságírója 2020-ban már részletesen megírta a botrány főbb vonásait — sem az ügyészség, sem a rendőrség nem reagált. A tényleges nyomozás 6 évvel később, 2026-ban indult el.`,
+    statusItems: [
+      { icon: '🔴', label: 'Letartóztatva', value: '8 személy — 6 politikus (Fidesz, DK, Momentum, MSZP) + 2 vállalkozó · 2026. jún. 4.' },
+      { icon: '⚖️', label: 'Gyanú', value: 'Befolyással üzérkedés · Vesztegetés — Fővárosi Törvényszék, 30 nap előzetes' },
+      { icon: '💰', label: 'Kenőpénz', value: '2+ milliárd Ft kenőpénz · 35+ milliárd Ft szerződésállomány' },
+      { icon: '🏙️', label: 'Érintett területek', value: 'II., III., VIII., XIII., XIV. kerület + vidéki önkormányzatok · 2011–2024' },
+    ],
+    sourceRefs: [
+      { label: 'Telex: Letartóztatások — Őrsi Gergely és más politikusok (2026. jún. 4.)', url: 'https://telex.hu/belfold/2026/06/04/orsi-gergely-reakcio-letartoztatas' },
+      { label: 'Telex: Pék és Karácsony Gergely neve a parkfenntartási ügyben (2026. jún. 22.)', url: 'https://telex.hu/belfold/2026/06/22/pek-korrupcio-karacsony-gergely-neveben-parkfenntartas' },
+      { label: 'G7 / Telex: Milliárdos szerződések az óbudai parkfenntartási botrányban (2026. jún. 22.)', url: 'https://telex.hu/g7/vallalat/2026/06/22/parkfenntartas-obudai-korrupcios-ugy-szerzodes' },
+      { label: 'Népszava: Bús Balázs és az óbudai parkfenntartási korrupció', url: 'https://nepszava.hu/3326824_bus-balazs-obuda-parkfenntartasi-korrupcio' },
+      { label: 'HVG: Bűnismétlés — gyanúsítotti letartóztatás a parkfenntartási ügyben (2026. jún. 5.)', url: 'https://hvg.hu/itthon/20260605_bunismetles-parkfenntartasi-kenopenzbotrany-gyanusitott-letartoztatas' },
+      { label: 'Klub Rádió: Kerényi György hanganyaga a parkfenntartási korrupcióról (2020)', url: 'https://www.klubradio.hu/adas?hanganyag_id=58202' },
+    ],
+    descriptionBlocks: [
+      {
+        type: 'text',
+        heading: 'Az ügy háttere',
+        content: 'Z. Zsolt parkfenntartó vállalkozó cégei — köztük a Pannon Park Forest Kft. és a Parkfenntartó Kft. — 2011–2024 között milliárdos közpénzes szerződéseket nyertek Budapest több kerületében túlárazott közbeszerzések révén. A vállalkozó vallomása szerint összesen közel 2 milliárd forint kenőpénzt fizetett helyi politikusoknak — köztük fideszes, momentumos, szocialista és ellenzéki önkormányzati képviselőknek egyaránt.',
+      },
+      {
+        type: 'text',
+        heading: 'A kenőpénz mechanizmusa',
+        content: '„Pék" nevű közvetítőn keresztül a kenőpénz Budapest különböző kerületeinek politikusai felé áramlott — a II., III., VIII., XIII., XIV. kerületben és vidéki önkormányzatoknál is. A XIII. kerületben a Pannon Park cégek összesen 35+ milliárd forintnyi parkfenntartási szerződést nyertek el. Pék a kihallgatáson azt állította, hogy Karácsony Gergely nevében is gyűjtött pénzt — ezt Karácsony cáfolja.',
+      },
+      {
+        type: 'article-card',
+        source: 'Telex',
+        headline: 'Pék és Karácsony Gergely neve a parkfenntartási ügyben',
+        lead: 'A „Pék" nevű közvetítő azt állítja, hogy Karácsony Gergely nevében is gyűjtött kenőpénzt a parkfenntartási szerződésekért cserébe — Karácsony cáfolja az állítást.',
+        url: 'https://telex.hu/belfold/2026/06/22/pek-korrupcio-karacsony-gergely-neveben-parkfenntartas',
+        date: '2026. június 22.',
+      },
+      {
+        type: 'article-card',
+        source: 'G7 / Telex',
+        headline: 'Milliárdos szerződések az óbudai parkfenntartási botrányban',
+        lead: 'A Pannon Park cégcsoport az óbudai (III. ker.) és más kerületi parkfenntartási szerződéseken milliárdos közpénzeket vett fel — a G7 feltárta a szerződések részleteit és az érintett összegeket.',
+        url: 'https://telex.hu/g7/vallalat/2026/06/22/parkfenntartas-obudai-korrupcios-ugy-szerzodes',
+        date: '2026. június 22.',
+      },
+      {
+        type: 'article-card',
+        source: 'Népszava',
+        headline: 'Bús Balázs és az óbudai parkfenntartási korrupció',
+        lead: 'A Népszava cikke az óbudai (III. kerületi) szálat vizsgálja — Bús Balázs neve a parkfenntartási szerződések körüli korrupciós gyanúval is összefüggésbe kerül.',
+        url: 'https://nepszava.hu/3326824_bus-balazs-obuda-parkfenntartasi-korrupcio',
+      },
+      {
+        type: 'text',
+        heading: '6 éves lappangás — 2020-ban már megírták',
+        content: 'Kerényi György, a Klub Rádió újságírója 2020-ban már részletesen megírta a parkfenntartási korrupció főbb vonásait. Riportja hanganyagban is elérhető. Sem az ügyészség, sem a rendőrség nem reagált akkoriban. Az ügyben az érdemi nyomozás csak 6 évvel később, 2026-ban indult el.',
+      },
+      {
+        type: 'audio-link',
+        source: 'Klub Rádió',
+        title: 'Kerényi György riportja a parkfenntartási korrupcióról — 2020',
+        url: 'https://www.klubradio.hu/adas?hanganyag_id=58202',
+      },
+      {
+        type: 'breaking-group',
+        headline: '2026. június 4. — 8 személyt tartóztatott le a Fővárosi Törvényszék',
+        lead: 'A Fővárosi Törvényszék 2026. június 4-én 30 napra előzetesbe helyezte a parkfenntartási kenőpénzbotrány nyolc gyanúsítottját — hat politikust és két vállalkozót. A gyanú: befolyással üzérkedés és vesztegetés.',
+        articles: [
+          {
+            source: 'Telex',
+            headline: 'Őrsi Gergely és a letartóztatottak — az ügy keretei',
+            lead: 'Hat politikus: Őrsi Gergely (DK), Láng Zsolt (Fidesz), Puskás Péter (Fidesz), Szkaliczki Tünde (Momentum), Matisz Károly (Momentum) és Molnár Zsolt (MSZP) is előzetesbe kerültek.',
+            url: 'https://telex.hu/belfold/2026/06/04/orsi-gergely-reakcio-letartoztatas',
+            date: '2026. június 4.',
+          },
+          {
+            source: 'HVG',
+            headline: 'Bűnismétlés — gyanúsítotti letartóztatás a parkfenntartási kenőpénzbotrányban',
+            url: 'https://hvg.hu/itthon/20260605_bunismetles-parkfenntartasi-kenopenzbotrany-gyanusitott-letartoztatas',
+            date: '2026. június 5.',
+          },
+        ],
+      },
+      {
+        type: 'quote',
+        text: 'A jelenlegi helyzetben a legfontosabb, hogy elmondjam Önöknek, a II. kerületi Önkormányzat működik, minden feladatot zökkenőmentesen ellát. Szeretném nyilvánvalóvá tenni: minden körülmények között tartom magam eskümhöz és ahhoz a vállaláshoz, hogy számomra a II. kerület boldogulása, fejlődése a legfontosabb. Biztosan tudom, hogy esküm és lelkiismeretem szerint mindig a törvényeknek megfelelően jártam el — ahogy a Hivatal is. Felháborít és egyben elszomorít, hogy sarokba szorított ember/emberek szavára alapozva történhet letartóztatás, de ez nem változtat azon, hogy az igazság ki fog derülni. A velem szemben közölt gyanúsítás azonban teljes egészében megalapozatlan, az ténybeli és jogi alapokon sem állja meg a helyét.',
+        author: 'Őrsi Gergely, II. kerületi polgármester',
+        note: 'Letartóztatása napján, 2026. június 4-én kiadott nyilatkozat',
+        url: 'https://www.facebook.com/orsigergely2kerulet/posts/pfbid06rznwFFRyRHxfvvuvCQfCFfQfyKjFThWKqk5qFwGuCA43oyojgVkdQ3PZAxwa8oil',
+      },
+    ],
+  },
+
+
+
 
   {
     id: 'lelegeztetogep',
