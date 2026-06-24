@@ -43,6 +43,8 @@ export async function GET(req: Request) {
       imageUrl: schema.newsArticles.imageUrl,
       featured: schema.newsArticles.featured,
       relatedCaseId: schema.newsArticles.relatedCaseId,
+      isBreakingCandidate: schema.newsArticles.isBreakingCandidate,
+      breakingOverride: schema.newsArticles.breakingOverride,
       sourceSlug: schema.sources.slug,
       sourceName: schema.sources.name,
     })
@@ -53,8 +55,13 @@ export async function GET(req: Request) {
     .limit(limit)
     .offset(offset);
 
+  const items = rows.map((r) => {
+    const isBreaking = (r.breakingOverride ?? r.isBreakingCandidate) === true;
+    return { ...r, isBreaking, featured: isBreaking ? true : r.featured };
+  });
+
   return NextResponse.json(
-    { items: rows, hasMore: rows.length === limit },
+    { items, hasMore: rows.length === limit },
     {
       headers: {
         'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600',

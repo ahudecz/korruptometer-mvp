@@ -185,7 +185,21 @@ export default function ForrashivatkozasokPage() {
             profiloknál feltüntetett vagyoni adatok alátámasztásához.
           </SourceEntry>
 
-          {/* ── 4. Egyéb hivatkozott szerkesztőségek ── */}
+          {/* ── 4. Videós forrás ── */}
+          <h3 className="modszertan-h3">Videós összefoglalók</h3>
+
+          <SourceEntry
+            name="Juhász Péter | Juhi – NER100"
+            url="https://www.youtube.com/@juhaszpeter"
+            label="Videós forrás"
+          >
+            „A NER 100 legnagyobb bűne" sorozat epizódonként dolgozza fel a rendszer
+            legjelentősebb korrupciós ügyeit. Az egyes esetekhez kapcsolódó videókat
+            ajánlóként közöljük — az Elios-ügytől a trafikmutyin át a vadászati
+            kiállításig.
+          </SourceEntry>
+
+          {/* ── 5. Egyéb hivatkozott szerkesztőségek ── */}
           <h3 className="modszertan-h3">Egyéb hivatkozott szerkesztőségek</h3>
           <p style={{ marginBottom: 24 }}>
             Az alábbi szerkesztőségek anyagait eseti jelleggel, nem rendszeres szinkronizációval

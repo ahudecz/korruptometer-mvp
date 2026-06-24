@@ -4,6 +4,10 @@ export interface WatchlistKeyCase {
   crimeTypes: string[];
   sourceUrl?: string;
   sourceLabel?: string;
+  videoId?: string;
+  videoLabel?: string;
+  videoTitle?: string;
+  videoSummary?: string;
 }
 
 export interface WatchlistVideoSummary {
@@ -166,6 +170,15 @@ export const WATCHLIST_DETAIL: WatchlistDetailEntry[] = [
         crimeTypes: ['korrupció eltussolása', 'közpénzekkel való visszaélés'],
         sourceUrl: 'https://www.blikk.hu/aktualis/belfold/mnb-botrany-szolo-utca-ugyeszseg-legfobb-ugyesz/91hy95x',
         sourceLabel: 'Blikk',
+      },
+      {
+        title: '🆕 FRISS — Hangfelvétel: a legfőbb ügyész utasítására szüntetik meg a politikailag kényes ügyeket',
+        description: 'A hangfelvétel közvetlen bizonyíték arra, hogy a szelektív igazságszolgáltatás nem egyedi döntések, hanem Nagy Gábor Bálint legfőbb ügyész utasításának eredménye. Juhász-Bauer Tuzson Bence ellen is feljelentést tett: bizonyíthatóan tudnia kellett, amikor kiállt a nyilvánosság elé, hogy van kiskorú sértett a Szőlő utcai ügyben. Az ügyészség nem kívánja kinyomozni — a feljelentést elutasítják, a nyomozást egy vidéki ügyészségre teszik át, ahol sem jogosítványuk, sem lehetőségük nincs az ügy érdemi folytatására.',
+        crimeTypes: ['szelektív igazságszolgáltatás', 'utasításra mellőzött ügyek', 'visszaélés hivatali hatalommal', 'Szőlő utca eltussolása'],
+        videoId: '3strFkmcGbo',
+        videoLabel: 'Juhász Péter | Juhi',
+        videoTitle: 'Eltüntetik a kényes ügyeket? Hangfelvétel került elő az ügyészségről',
+        videoSummary: 'Tura Tímea, a Tolna Vármegyei Főügyészség alkalmazottja telefonban elismerte, hogy ügyészségi utasításra nem foglalkoztak bizonyos ügyekkel. Juhász-Bauer Ágoston Bálint, aki évek óta küzd az igazságszolgáltatási rendszerrel, tette közzé a felvételt.',
       },
       {
         title: 'Gyermekvédelem — visszaélések kivizsgálatlanul',
@@ -449,7 +462,7 @@ export const WATCHLIST_DETAIL: WatchlistDetailEntry[] = [
       {
         title: 'Potenciális összejátszás a Völner–Schadl-ügyben',
         description: 'A Völner–Schadl-korrupciós ügy középpontjában Schadl György végrehajtói kamara elnöke állt, aki bírósági végrehajtói kinevezésekért fizette meg Völner Pált — ezek a kinevezések az OBH-n is átmentek. A 24.hu cikke szerint Schadl az OBH-n keresztül indított „bosszúhadjáratot" egy bíró ellen. 2023-ban egy hangfelvétel is napvilágot látott, amelyen Senyei György és Schadl György barátiasan nevetgélnek — ez a személyes közelség mélyen aggasztó, tekintve Schadl súlyos bűnügyi érintettségét.',
-        crimeTypes: ['potenciális összefonódás korrupciós szereplővel', 'intézményi függetlenség sérelme'],
+        crimeTypes: ['potenciális korrupciós összefonódás', 'intézményi függetlenség sérelme'],
         sourceUrl: 'https://hvg.hu/itthon/20230203_senyei_obh_hangfelvetel_schadl',
         sourceLabel: 'hvg.hu',
       },

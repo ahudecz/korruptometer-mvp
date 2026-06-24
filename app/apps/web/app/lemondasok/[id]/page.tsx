@@ -97,7 +97,7 @@ export default async function WatchlistPersonPage({ params }: { params: Promise<
               {statusLabel(person.status)}
             </div>
             {person.photoCredit && (
-              <div className="photo-credit">Fotó: {person.photoCredit}</div>
+              <div className="photo-credit">{person.photoCredit}</div>
             )}
           </div>
 
@@ -162,6 +162,23 @@ export default async function WatchlistPersonPage({ params }: { params: Promise<
                 <div className="person-case-body">
                   <h3 className="person-case-title">{c.title}</h3>
                   <p className="person-case-desc">{c.description}</p>
+                  {c.videoId && (
+                    <div className="ugy-block-video" style={{ marginTop: '16px' }}>
+                      <div className="ugy-block-video-meta">
+                        {c.videoLabel && <span className="ugy-block-video-label">{c.videoLabel}</span>}
+                        {c.videoTitle && <span className="ugy-block-video-title">{c.videoTitle}</span>}
+                      </div>
+                      {c.videoSummary && <p className="ugy-block-video-summary">{c.videoSummary}</p>}
+                      <div className="ugy-block-video-wrap">
+                        <iframe
+                          src={`https://www.youtube.com/embed/${c.videoId}`}
+                          title={c.title}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    </div>
+                  )}
                   <div className="person-case-footer">
                     <div className="person-case-crimes">
                       {c.crimeTypes.map((cr) => (
@@ -185,26 +202,33 @@ export default async function WatchlistPersonPage({ params }: { params: Promise<
           </div>
         )}
 
+        {/* Source refs */}
+        {detail?.pinnedLinks && detail.pinnedLinks.length > 0 && (
+          <div className="ugy-sources">
+            <p className="ugy-sources-disclaimer">
+              A fenti összefoglaló az alábbi cikkek tartalmaiból készült — nem saját szerkesztőségi tartalom.
+            </p>
+            <div className="ugy-sources-label">Forrás</div>
+            <ul className="ugy-sources-list">
+              {detail.pinnedLinks.map((l, i) => (
+                <li key={i}>
+                  <a href={l.url} target="_blank" rel="noopener noreferrer">
+                    {l.title} →
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {/* News */}
-        {(articles.length > 0 || (detail?.pinnedLinks && detail.pinnedLinks.length > 0)) && (
+        {articles.length > 0 && (
           <div className="person-news">
             <h2 className="person-section-title">Kapcsolódó hírek</h2>
             <p className="person-section-note">
               Automatikusan szűrve a napi hírfolyamból — minden új cikk azonnal megjelenik.
             </p>
             <div className="person-news-list">
-              {detail?.pinnedLinks?.map((l) => (
-                <a
-                  key={l.url}
-                  href={l.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="person-news-item person-news-item--pinned"
-                >
-                  <span className="person-news-source">{l.source}</span>
-                  <span className="person-news-headline">{l.title}</span>
-                </a>
-              ))}
               {articles.map((a) => (
                 <a
                   key={a.id}
@@ -222,7 +246,7 @@ export default async function WatchlistPersonPage({ params }: { params: Promise<
           </div>
         )}
 
-        {articles.length === 0 && (!detail?.pinnedLinks || detail.pinnedLinks.length === 0) && (
+        {articles.length === 0 && (
           <div className="person-news-empty">
             Még nincs beindexelt hír ehhez a személyhez — a következő scrape során frissül.
           </div>

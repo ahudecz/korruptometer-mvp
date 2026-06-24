@@ -133,6 +133,8 @@ export const newsArticles = pgTable(
     linkOverridden: boolean('linkOverridden').notNull().default(false),
     featured: boolean('featured').notNull().default(false),
     viaArchive: boolean('viaArchive').notNull().default(false),
+    isBreakingCandidate: boolean('isBreakingCandidate').notNull().default(false),
+    breakingOverride: boolean('breakingOverride'),
     createdAt: timestamp('createdAt', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -1364,3 +1366,77 @@ export const assetRecoveries = pgTable(
 
 export type AssetRecovery = typeof assetRecoveries.$inferSelect;
 export type NewAssetRecovery = typeof assetRecoveries.$inferInsert;
+
+// ─── Court Verdicts Tracker ───────────────────────────────────────────────────
+
+export const courtVerdicts = pgTable(
+  'CourtVerdict',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    personName: text('personName').notNull(),
+    personGaleriaId: text('personGaleriaId'),
+    personUgyId: text('personUgyId'),
+    position: text('position').notNull(),
+    crimes: text('crimes').array().notNull().default(sql`ARRAY[]::text[]`),
+    sentenceYears: integer('sentenceYears').notNull().default(0),
+    sentenceMonths: integer('sentenceMonths'),
+    sentenceLabel: text('sentenceLabel'),
+    verdictType: text('verdictType').notNull().default('elsőfokú'),
+    verdictDate: timestamp('verdictDate', { withTimezone: true }).notNull(),
+    court: text('court').notNull(),
+    summary: text('summary').notNull(),
+    sourceUrls: text('sourceUrls').array().notNull().default(sql`ARRAY[]::text[]`),
+    sourceNames: text('sourceNames').array().notNull().default(sql`ARRAY[]::text[]`),
+    sourceHeadlines: text('sourceHeadlines').array().notNull().default(sql`ARRAY[]::text[]`),
+    sourceDates: text('sourceDates').array().notNull().default(sql`ARRAY[]::text[]`),
+    videoId: text('videoId'),
+    videoChannel: text('videoChannel'),
+    videoTitle: text('videoTitle'),
+    videoSummary: text('videoSummary'),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    verdictDateIdx: index('CourtVerdict_verdictDate_idx').on(t.verdictDate),
+    personNameIdx: index('CourtVerdict_personName_idx').on(t.personName),
+  }),
+);
+
+export type CourtVerdict = typeof courtVerdicts.$inferSelect;
+export type NewCourtVerdict = typeof courtVerdicts.$inferInsert;
+
+// ─── Breaking Monitor ────────────────────────────────────────────────────────
+
+export const breakingMonitor = pgTable('BreakingMonitor', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  keyword: text('keyword').notNull(),
+  type: text('type').notNull().default('keyword'),
+  label: text('label').notNull(),
+  enabled: boolean('enabled').notNull().default(true),
+  createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type BreakingMonitor = typeof breakingMonitor.$inferSelect;
+export type NewBreakingMonitor = typeof breakingMonitor.$inferInsert;
+
+// ─── Social Feed Posts ────────────────────────────────────────────────────────
+
+export const socialPosts = pgTable(
+  'SocialPost',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    authorName: text('authorName').notNull(),
+    authorHandle: text('authorHandle'),
+    platform: text('platform').notNull().default('facebook'),
+    postUrl: text('postUrl').notNull(),
+    content: text('content').notNull(),
+    postedAt: timestamp('postedAt', { withTimezone: true }),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    postedAtIdx: index('SocialPost_postedAt_idx').on(t.postedAt),
+  }),
+);
+
+export type SocialPost = typeof socialPosts.$inferSelect;
+export type NewSocialPost = typeof socialPosts.$inferInsert;

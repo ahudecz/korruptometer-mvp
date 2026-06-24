@@ -1,8 +1,15 @@
+import type { Metadata } from 'next';
 import { and, desc, eq, sql } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 
 import { NewsFilters } from './news-filters';
+
+export const metadata: Metadata = {
+  title: 'Hírek',
+  description: 'Releváns hírek és cikkek a dokumentált korrupciós ügyekről — automatikusan gyűjtve, naprakészen.',
+  openGraph: { title: 'Hírek — Kegyencjárat', description: 'Releváns hírek a dokumentált korrupciós ügyekről.' },
+};
 import { NewsGrid } from './news-grid';
 
 export const revalidate = 120;
@@ -52,6 +59,8 @@ export default async function HirekPage({
       imageUrl: schema.newsArticles.imageUrl,
       featured: schema.newsArticles.featured,
       relatedCaseId: schema.newsArticles.relatedCaseId,
+      isBreakingCandidate: schema.newsArticles.isBreakingCandidate,
+      breakingOverride: schema.newsArticles.breakingOverride,
       sourceSlug: schema.sources.slug,
       sourceName: schema.sources.name,
     })
@@ -70,7 +79,15 @@ export default async function HirekPage({
       return true;
     })
     .slice(0, 40)
-    .map((a) => ({ ...a, publishedAt: a.publishedAt.toISOString() }));
+    .map((a) => {
+      const isBreaking = (a.breakingOverride ?? a.isBreakingCandidate) === true;
+      return {
+        ...a,
+        publishedAt: a.publishedAt.toISOString(),
+        isBreaking,
+        featured: isBreaking ? true : a.featured,
+      };
+    });
 
   // Ha pontosan 120 sort kaptunk vissza, valószínűleg van még több
   const initialHasMore = rawRows.length >= 120;

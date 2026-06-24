@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import type { PoliticalResignation } from '@korr/db';
+import { findBreakingForName, type BreakingArticle } from '@/lib/breaking';
 import { WatchlistGrid } from './watchlist-grid';
 
 interface Props {
   resignations: PoliticalResignation[];
+  breaking?: BreakingArticle[];
 }
 
 const TYPE_COLOR: Record<string, string> = {
@@ -18,11 +20,24 @@ const TYPE_LABEL: Record<string, string> = {
   'felmentés': '⟲ Felmentés',
 };
 
-function ResignationRow({ r }: { r: PoliticalResignation }) {
+function ResignationRow({ r, breakingArticle }: { r: PoliticalResignation; breakingArticle?: BreakingArticle | null }) {
   const color = TYPE_COLOR[r.resignationType] ?? '#666';
   return (
-    <tr key={r.id}>
-      <td style={{ fontWeight: 500 }}>{r.name}</td>
+    <tr key={r.id} className={breakingArticle ? 'res-row-breaking' : undefined}>
+      <td style={{ fontWeight: 500 }}>
+        {r.name}
+        {breakingArticle && (
+          <a
+            href={breakingArticle.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="res-breaking-inline"
+          >
+            <span className="res-breaking-dot" />
+            BREAKING
+          </a>
+        )}
+      </td>
       <td style={{ color: '#666' }}>{r.position}</td>
       <td style={{ color: '#666' }}>{r.institution}</td>
       <td>
@@ -40,7 +55,7 @@ function ResignationRow({ r }: { r: PoliticalResignation }) {
   );
 }
 
-export function ResignationsSection({ resignations }: Props) {
+export function ResignationsSection({ resignations, breaking = [] }: Props) {
   const rest = resignations.filter(r => !r.pinned);
 
   return (
@@ -58,7 +73,7 @@ export function ResignationsSection({ resignations }: Props) {
         Versenyhivatal elnökét, a Médiahatóság elnökét és az Országos Bírói Hivatal elnökét.
       </p>
 
-      <WatchlistGrid />
+      <WatchlistGrid breaking={breaking} />
 
       {rest.length > 0 && (
         <>
@@ -82,7 +97,7 @@ export function ResignationsSection({ resignations }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {rest.map(r => <ResignationRow key={r.id} r={r} />)}
+                {rest.map(r => <ResignationRow key={r.id} r={r} breakingArticle={findBreakingForName(r.name, breaking)} />)}
               </tbody>
             </table>
           </div>

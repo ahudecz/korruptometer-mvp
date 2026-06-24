@@ -7,18 +7,20 @@ import { Ticker } from '@korr/ui/ticker';
 import { Mugshot } from '@korr/ui/mugshot';
 
 import { getDb, schema } from '@/lib/db';
+import { getActiveBreaking } from '@/lib/breaking';
 import { CaseFilters } from './adatbazis/case-filters';
 import { ResignationsSection } from './_home/resignations-section';
 import { MediaClosuresSection } from './_home/media-closures-section';
 import { SubmissionCTA } from './_home/submission-cta';
+import { SocialFeed } from './_home/social-feed';
 import { BigCasesSection, type BigCaseConfig } from './_home/big-cases-section';
+import { BreakingBanner } from './_home/breaking-banner';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './_home/galeria-config';
 import { NewsCardImage } from './hirek/news-card-image';
 
 export const dynamic = 'force-dynamic';
 
 const PALETTE_MONEY = ['#e31937', '#171a20', '#5c5e62', '#9b9da1', '#cccccc', '#e6e6e6'];
-const PALETTE_PRISON = ['#171a20', '#e31937', '#5c5e62', '#9b9da1', '#cccccc', '#e6e6e6'];
 
 
 type SectorEntry = { name: string; value: number };
@@ -125,6 +127,16 @@ export default async function HomePage() {
     .orderBy(desc(schema.newsArticles.publishedAt))
     .limit(5);
 
+  const parkArticles = await articleSelect()
+    .where(or(
+      ilike(schema.newsArticles.headline, '%parkfenntartás%'),
+      ilike(schema.newsArticles.headline, '%parkfenntartá%'),
+      ilike(schema.newsArticles.headline, '%Őrsi Gergely%'),
+      ilike(schema.newsArticles.headline, '%Puskás Péter%'),
+    ))
+    .orderBy(desc(schema.newsArticles.publishedAt))
+    .limit(5);
+
   const resignationCount = (await db.select({ c: count() }).from(schema.politicalResignations))[0]?.c ?? 0;
 
   const resignationsByType = await db
@@ -138,6 +150,15 @@ export default async function HomePage() {
     .orderBy(sql`count(*) desc`);
 
   const closureCount = (await db.select({ c: count() }).from(schema.mediaClosures))[0]?.c ?? 0;
+
+  const [pretrialCountDb, eliteltCountDb] = await Promise.all([
+    db.select({ c: count() }).from(schema.courtVerdicts)
+      .where(eq(schema.courtVerdicts.verdictType, 'előzetesben'))
+      .then(r => r[0]?.c ?? 0),
+    db.select({ c: count() }).from(schema.courtVerdicts)
+      .where(sql`${schema.courtVerdicts.verdictType} != 'előzetesben'`)
+      .then(r => r[0]?.c ?? 0),
+  ]);
 
   const allRecoveries = await db
     .select()
@@ -179,30 +200,44 @@ export default async function HomePage() {
     '%Tiborcz%', '%Balásy%', '%Lázár János%',
     '%volvo%gate%', '%volvo-gate%',
     '%pesti srácok%', '%világgazdaság%',
+    '%parkfenntart%', '%Őrsi Gergely%',
+    '%Mandiner%',
   ] as const;
 
-  const recentArticles = await db
-    .select({
-      id: schema.newsArticles.id,
-      headline: schema.newsArticles.headline,
-      excerpt: schema.newsArticles.excerpt,
-      sourceUrl: schema.newsArticles.sourceUrl,
-      publishedAt: schema.newsArticles.publishedAt,
-      tag: schema.newsArticles.tag,
-      featured: schema.newsArticles.featured,
-      imageUrl: schema.newsArticles.imageUrl,
-      sourceName: schema.sources.name,
-    })
-    .from(schema.newsArticles)
-    .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId))
-    .where(
-      or(
-        eq(schema.newsArticles.featured, true),
-        ...HOMEPAGE_NEWS_TOPICS.map(p => ilike(schema.newsArticles.headline, p)),
+  const [recentArticlesRaw, breakingArticles] = await Promise.all([
+    db
+      .select({
+        id: schema.newsArticles.id,
+        headline: schema.newsArticles.headline,
+        excerpt: schema.newsArticles.excerpt,
+        sourceUrl: schema.newsArticles.sourceUrl,
+        publishedAt: schema.newsArticles.publishedAt,
+        tag: schema.newsArticles.tag,
+        featured: schema.newsArticles.featured,
+        imageUrl: schema.newsArticles.imageUrl,
+        isBreakingCandidate: schema.newsArticles.isBreakingCandidate,
+        breakingOverride: schema.newsArticles.breakingOverride,
+        sourceName: schema.sources.name,
+      })
+      .from(schema.newsArticles)
+      .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId))
+      .where(
+        or(
+          eq(schema.newsArticles.featured, true),
+          eq(schema.newsArticles.breakingOverride, true),
+          eq(schema.newsArticles.isBreakingCandidate, true),
+          ...HOMEPAGE_NEWS_TOPICS.map(p => ilike(schema.newsArticles.headline, p)),
+        )
       )
-    )
-    .orderBy(desc(schema.newsArticles.publishedAt))
-    .limit(5);
+      .orderBy(desc(schema.newsArticles.publishedAt))
+      .limit(10),
+    getActiveBreaking(),
+  ]);
+
+  const recentArticles = recentArticlesRaw.map(a => ({
+    ...a,
+    isBreaking: (a.breakingOverride ?? a.isBreakingCandidate) === true,
+  }));
 
   // Year span of the underlying news corpus (for the KPI-01 caption).
   const yearSpanRes = (await db.execute(sql`
@@ -219,11 +254,6 @@ export default async function HomePage() {
   const newIndictments = snapshot?.newIndictmentsThisWeek ?? 0;
   const partnerCount = snapshot?.partnerCount ?? 0;
   const bySector = (snapshot?.bySector ?? []) as SectorEntry[];
-
-  // Prison-years-by-sector donut: no real sentencing data yet (0 final
-  // convictions since 2026-04-12), so this stays empty — it only renders in
-  // the dead totalPrisonYears>0 branch below.
-  const prisonSlices: PieSlice[] = [];
 
   const moneySlices: PieSlice[] = bySector
     .map((e) => ({ name: e.name, value: e.value }))
@@ -244,8 +274,11 @@ export default async function HomePage() {
   const minYear = yearSpanRes[0]?.min_y ?? 2017;
   const maxYear = yearSpanRes[0]?.max_y ?? new Date().getFullYear();
 
+
   const updatedAt = snapshot?.computedAt ?? new Date();
-  const featured = recentArticles.find((a) => a.featured) ?? recentArticles[0];
+  const featuredBreaking = recentArticles.filter(a => a.isBreaking).sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime())[0] ?? null;
+  const featuredNormal = recentArticles.find(a => a.featured) ?? recentArticles[0];
+  const featured = featuredBreaking ?? featuredNormal;
   const restArticles = recentArticles.filter((a) => a.id !== featured?.id).slice(0, 4);
 
   const tickerItems = [
@@ -259,6 +292,9 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* ───── BREAKING BANNER ───── */}
+      <BreakingBanner />
+
       {/* ───── HERO ───── */}
       <section className="hero" id="dashboard">
         <div className="hero-inner">
@@ -308,37 +344,38 @@ export default async function HomePage() {
             </div>
             <div className="stat-value">{fmtFt(totalDamage)}</div>
             <div className="stat-unit">
-              K-Monitor adatbázis · valós dokumentált adatok · {fmtNumber(activeCases)} ügy ·{' '}
-              {minYear}–{maxYear}
+              K-Monitor adatbázis · valós dokumentált adatok · 8 ügy · 2017–2021
             </div>
             <Pie3D slices={moneySlices} palette={PALETTE_MONEY} className="donut" ariaLabel="Kár szektoronként" />
           </div>
 
           <div className="stat-card">
             <div className="stat-card-head">
-              <div className="stat-label">Kiszabott börtönévek</div>
-              <div className="stat-id">/ KPI–02</div>
+              <div className="stat-label">Börtönben van-e?</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div className="stat-id">/ KPI–02</div>
+                <Link href="/birosagi-iteletek" className="stat-card-list-link">Részletek →</Link>
+              </div>
             </div>
-            {totalPrisonYears === 0 ? (
-              <>
-                <div className="stat-value">0 év</div>
-                <div className="stat-unit stat-unit-notice">
-                  2026. április 12-i rendszerváltás óta még nem ítéltek el jogerősen senkit.
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="stat-value">{fmtNumber(totalPrisonYears)} év</div>
-                <div className="stat-unit">
-                  Halmozott szabadságvesztés · {fmtNumber(activeCases)} ügy · átlag{' '}
-                  {activeCases > 0
-                    ? (totalPrisonYears / activeCases).toFixed(1).replace('.', ',')
-                    : '0'}{' '}
-                  év
-                </div>
-                <Pie3D slices={prisonSlices} palette={PALETTE_PRISON} className="donut" ariaLabel="Börtönévek szektoronként" />
-              </>
-            )}
+            <div className="stat-status-grid stat-status-grid--2">
+              <div className="stat-status-item">
+                <div className="stat-value stat-status-value--red" style={{ marginBottom: 4 }}>{pretrialCountDb}</div>
+                <div className="stat-status-label">Előzetesben van</div>
+              </div>
+              <div className="stat-status-item">
+                <div className="stat-value" style={{ marginBottom: 4 }}>{eliteltCountDb}</div>
+                <div className="stat-status-label">Jogerősen elítélt</div>
+              </div>
+            </div>
+            <div className="stat-unit stat-unit-notice" style={{ marginTop: 16 }}>
+              NKA-botrány: 6 fő · Parkfenntartás: 6 politikus · összesen {pretrialCountDb} fő előzetesben ·{' '}
+              <a
+                href="/birosagi-iteletek"
+                style={{ color: 'var(--accent)', fontWeight: 600 }}
+              >
+                Részletek →
+              </a>
+            </div>
           </div>
 
           <div className="stat-card">
@@ -356,14 +393,14 @@ export default async function HomePage() {
             <h3 className="stat-card-list-title">Legfrissebb visszaszerzések</h3>
             <div className="stat-recovered-list">
               {latestRecoveries.map((r) => (
-                <div key={r.id} className="stat-recovered-item">
+                <Link key={r.id} href={`/ugyek/${r.caseId}`} className="stat-recovered-item stat-recovered-item--link">
                   <div className="stat-recovered-bar" />
                   <div className="stat-recovered-body">
                     <span className="stat-recovered-case">{r.caseLabel}</span>
                     <span className="stat-recovered-amt">{fmtFt(r.amountFt)}</span>
                   </div>
                   <div className="stat-recovered-note">{r.description} · {fmtRecoveryDate(r.recoveredAt)}</div>
-                </div>
+                </Link>
               ))}
               {latestRecoveries.length === 0 && (
                 <div className="stat-recovered-more">Még nincs rögzített visszaszerzés.</div>
@@ -409,9 +446,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* ───── TICKER ───── */}
-      {/* <Ticker items={tickerItems} /> */}
 
       {/* ───── ROGUES GALLERY ───── */}
       <section className="rogues" id="rogues">
@@ -516,20 +550,48 @@ export default async function HomePage() {
         const bigCases: BigCaseConfig[] = [
           {
             id: 'nka-botrany',
-            eyebrow: 'Aktív · Nyomozás alatt',
+            eyebrow: 'Aktív · 6 személy előzetesben',
             title: 'NKA botrány',
             responsible: 'Hankó Balázs',
-            summary: 'Hankó Balázs volt kulturális miniszter a 2026-os választások előtt szabálytalanul osztott ki milliárdos NKA-támogatásokat. A NAV hűtlen kezelés és költségvetési csalás gyanújával nyomoz — Győrben is indult eljárás. Tarr Zoltán közel 400 millió forintnyi támogatást vont vissza.',
+            summary: 'Hankó Balázs volt kulturális miniszter a 2026-os választások előtt szabálytalanul osztott ki milliárdos NKA-támogatásokat. A NAV hűtlen kezelés bűntett gyanújával nyomoz — az ügy 17+ milliárd Ft-ot érint. Tarr Zoltán a kifizetések visszavizsgálását rendelte el.',
+            breakingAlert: {
+              source: 'NAV / Telex',
+              headline: 'Hat személyt vett őrizetbe a NAV — köztük Bús Balázs',
+              lead: '2026. június 23-án a NAV hat személyt vett előzetesbe hűtlen kezelés bűntett megalapozott gyanúja miatt — az NKTK és KIM alkalmazottait. Bús Balázs részletes vallomást tett.',
+              url: 'https://telex.hu/belfold/2026/06/23/nka-botrany-hat-szemelyt-orizetbe-vett-a-nav-hanko-balazs-tarr-zoltan',
+            },
             videoId: 'NRA-QuItdUA',
             statusItems: [
-              { icon: '⚖️', label: 'Nyomozás', value: 'NAV — hűtlen kezelés + költségvetési csalás (Győr is)' },
+              { icon: '🔴', label: 'Őrizetbe vétel', value: '6 személy előzetesben — köztük Bús Balázs volt óbudai polgármester (jún. 23.)' },
+              { icon: '⚖️', label: 'Nyomozás', value: 'NAV — hűtlen kezelés bűntett, 17+ milliárd Ft érintett összeg' },
               { icon: '💰', label: 'Visszaszerzett vagyon', value: '~2,1 milliárd Ft visszaadva + 22 milliárd Ft visszakövetelve (Élvonal)' },
               { icon: '👤', label: 'Felelős', value: 'Hankó Balázs — volt kulturális miniszter' },
-              { icon: '🚪', label: 'Lemondások', value: 'Bús Balázs (alelnök, ápr. 28.) · Báán László (ápr. 30.) · Vidnyánszky Attila (máj. 2.) — mind lemondtak az NKA bizottságból' },
             ],
             articleTag: 'NKA',
             moreUrl: '/ugyek/nka-botrany',
             articles: nkaArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
+          },
+          {
+            id: 'parkfenntartas',
+            eyebrow: 'Aktív · 8 személy előzetesben',
+            title: 'Parkfenntartási kenőpénzbotrány',
+            responsible: 'Több felelős — minden pártból',
+            videoId: '7A-NUGjuKGg',
+            summary: '8 személyt tartóztattak le 2026. június 4-én — köztük Őrsi Gergely (DK) II. kerületi polgármestert, Láng Zsolt (Fidesz) volt polgármestert és négy más politikust. Z. Zsolt parkfenntartó vállalkozó cégei 2011–2024 között közel 2 milliárd forint kenőpénzt fizethettek budapesti politikusoknak milliárdos közpénzes szerződésekért cserébe.',
+            breakingAlert: {
+              source: 'Telex / Fővárosi Törvényszék',
+              headline: '8 személy letartóztatva — Őrsi Gergely polgármester is előzetesben',
+              lead: '2026. június 4-én a Fővárosi Törvényszék 30 napra letartóztatott hat politikust és két vállalkozót. Gyanú: befolyással üzérkedés és vesztegetés a parkfenntartási szerződések körül.',
+              url: 'https://telex.hu/belfold/2026/06/04/orsi-gergely-reakcio-letartoztatas',
+            },
+            statusItems: [
+              { icon: '🔴', label: 'Letartóztatva', value: '8 személy — Fidesz, DK, Momentum, MSZP + 2 vállalkozó' },
+              { icon: '⚖️', label: 'Gyanú', value: 'Befolyással üzérkedés · Vesztegetés · 30 nap előzetes' },
+              { icon: '💰', label: 'Kenőpénz', value: '2+ milliárd Ft kenőpénz · 35+ Mrd Ft szerződésállomány' },
+              { icon: '🏙️', label: 'Területek', value: 'II., III., VIII., XIII., XIV. ker. + vidéki önkormányzatok' },
+            ],
+            moreUrl: '/ugyek/parkfenntartas',
+            articles: parkArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
           },
           {
             id: 'lelegeztetogep',
@@ -744,6 +806,12 @@ export default async function HomePage() {
                   className="news-card feature"
                 >
                   {featured.imageUrl && <NewsCardImage src={featured.imageUrl} />}
+                  {featured.isBreaking && (
+                    <div className="news-breaking-badge">
+                      <span className="news-breaking-dot" />
+                      BREAKING
+                    </div>
+                  )}
                   <div className="news-meta">
                     <span className="news-tag">★ Kiemelt</span>
                     <span className="news-time">{fmtRelative(featured.publishedAt)}</span>
@@ -780,10 +848,13 @@ export default async function HomePage() {
       </div>
 
       {/* ───── RESIGNATIONS ───── */}
-      <ResignationsSection resignations={topResignations} />
+      <ResignationsSection resignations={topResignations} breaking={breakingArticles} />
 
       {/* ───── MEDIA CLOSURES ───── */}
       <MediaClosuresSection />
+
+      {/* ───── SOCIAL FEED ───── */}
+      <SocialFeed />
 
       {/* ───── SUBMISSION CTA ───── */}
       <section className="submission" id="submission">
@@ -792,7 +863,7 @@ export default async function HomePage() {
             <div className="section-num">07 / Bejelentés</div>
             <h2>
               Hiányzik egy <em>név</em>?<br />
-              Jelents be.
+              Jelentsd be.
             </h2>
             <p>
               Ha tudsz olyan ügyről, ami még nem szerepel az adatbázisban, küldd el —

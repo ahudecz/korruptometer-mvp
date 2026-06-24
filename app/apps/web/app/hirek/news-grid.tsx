@@ -14,6 +14,7 @@ type Article = {
   tag: string | null;
   imageUrl: string | null;
   featured: boolean;
+  isBreaking: boolean;
   relatedCaseId: string | null;
   sourceSlug: string | null;
   sourceName: string | null;
@@ -58,6 +59,12 @@ function ArticleCard({ a, feature }: { a: Article; feature?: boolean }) {
       className={`news-card${feature ? ' feature' : ''}`}
     >
       {a.imageUrl && <NewsCardImage src={a.imageUrl} />}
+      {a.isBreaking && (
+        <div className="news-breaking-badge">
+          <span className="news-breaking-dot" />
+          BREAKING
+        </div>
+      )}
       <div className="news-meta">
         <span className="news-tag">{feature ? '★ Kiemelt' : (a.tag ?? 'Hír')}</span>
         <span className="news-time">{fmtRelative(a.publishedAt)}</span>
@@ -120,10 +127,16 @@ export function NewsGrid({
     });
   }
 
-  const featured =
+  // Breaking > featured — a legfrissebb breaking kerül a kiemelt helyre
+  const featuredBreaking =
+    articles.filter((a) => a.isBreaking).sort(
+      (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+    )[0] ?? null;
+  const featuredNormal =
     articles.find((a) => a.featured && a.imageUrl) ??
     articles.find((a) => a.featured) ??
     null;
+  const featured = featuredBreaking ?? featuredNormal;
   const rest = articles.filter((a) => a.id !== featured?.id);
 
   if (articles.length === 0) {

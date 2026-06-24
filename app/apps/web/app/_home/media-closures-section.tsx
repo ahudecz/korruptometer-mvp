@@ -54,7 +54,12 @@ function MediaCard({ entry }: { entry: MediaOutletEntry }) {
       <div className="media-card-owner">{entry.owner}</div>
       {(isClosed || isFired) && (
         <div className="mc-stamp" aria-hidden="true">
-          {isClosed ? 'MEGSZŰNT' : 'KIRÚGVA'}
+          {isClosed ? 'MEGSZŰNT' : (
+            <>
+              <span style={{ fontSize: '0.55em', display: 'block', letterSpacing: '0.12em', lineHeight: 1.2, marginBottom: 2 }}>SZERKESZTŐSÉG</span>
+              KIRÚGVA
+            </>
+          )}
         </div>
       )}
     </div>
@@ -75,7 +80,10 @@ export function MediaClosuresSection() {
         </p>
 
         {MEDIA_GROUPS.map(group => {
-          const entries = MEDIA_OUTLETS.filter(e => e.group === group.key);
+          const STATUS_ORDER: Record<string, number> = { closed: 0, 'fired-staff': 1, active: 2 };
+          const entries = MEDIA_OUTLETS
+            .filter(e => e.group === group.key)
+            .sort((a, b) => (STATUS_ORDER[a.status] ?? 9) - (STATUS_ORDER[b.status] ?? 9));
           if (entries.length === 0) return null;
           return (
             <div key={group.key} className="media-group">

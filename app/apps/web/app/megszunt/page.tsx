@@ -1,8 +1,15 @@
+import type { Metadata } from 'next';
 import { desc } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { CrossLemondosok, CrossUgyek, CrossGaleria, CrossFelszolitottak } from '../_home/cross-promo';
 
 export const revalidate = 120;
+
+export const metadata: Metadata = {
+  title: 'Megszűnt-e már?',
+  description: 'Nyomon követjük a NER propagandamédiájának felszámolását — melyik szűnt meg, melyik él még.',
+  openGraph: { title: 'Megszűnt-e már? — Kegyencjárat', description: 'A NER propagandamédiumainak felszámolása nyomon követve.' },
+};
 
 function typeLabel(t: string): string {
   if (t === 'megszűnés') return '✕ Megszűnés';

@@ -6,12 +6,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const NAV_LINKS = [
-  { href: '/#dashboard', label: 'Áttekintés' },
   { href: '/galeria', label: 'Galéria' },
   { href: '/ugyek', label: 'Ügyek' },
   { href: '/adatbazis', label: 'Adatbázis' },
   { href: '/hirek', label: 'Hírek' },
   { href: '/lemondasok', label: 'Lemondott-e?' },
+  { href: '/birosagi-iteletek', label: 'Börtönben van-e?' },
   { href: '/megszunt', label: 'Megszűnt-e?' },
 ];
 

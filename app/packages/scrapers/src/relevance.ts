@@ -17,12 +17,19 @@ const KEYWORDS = [
   'pócs jános', 'rétvári bence', 'gulyás gergely',
   'sulyok tamás', 'polt péter',
   'kubatov gábor', 'kubatov',
+  'ligeti miklós', 'ligeti',
+  'zsigó róbert', 'zsigó',
+  'ruff bálint',
   // Intézmények / ügyek
   'nka ', 'nemzeti kulturális alap',
   'mnb ', 'jegybank', 'magyar nemzeti bank',
   'állami számvevőszék', 'számvevőszék', 'ász ',
   'aranykonvoj',
   'volvo gate', 'volvo-gate', 'tüke zrt', 'tüke busz',
+  'szőlő utca',
+  'kegyelmi botrány',
+  'nemzeti vagyonvisszaszerzési hivatal', 'vagyonvisszaszerzés', 'vagyonvisszaszerzési hivatal',
+  'transparency',
   // Helyek / NER-specifikus témák
   'hatvanpuszta', 'vitnyéd', 'batida',
   // Pártok, szervezetek
@@ -62,9 +69,14 @@ const KEYWORDS = [
   'newsfeed.hu', 'videa.hu',
 ] as const;
 
+// 'tisztítótűz' csak akkor releváns, ha politikai kontextusban szerepel
+const TISZTITOTUZ_CONTEXT = ['magyar péter', 'fidesz', 'vagyonvisszaszerzés'];
+
 export function isRelevant(headline: string, excerpt: string): boolean {
   const text = `${headline} ${excerpt}`.toLowerCase();
-  return KEYWORDS.some((kw) => text.includes(kw));
+  if (KEYWORDS.some((kw) => text.includes(kw))) return true;
+  if (text.includes('tisztítótűz') && TISZTITOTUZ_CONTEXT.some((ctx) => text.includes(ctx))) return true;
+  return false;
 }
 
 const FEATURED_KEYWORDS = [
@@ -81,9 +93,58 @@ const FEATURED_KEYWORDS = [
   'pesti srácok', 'világgazdaság',
   // Volvo-gate
   'volvo gate', 'volvo-gate', 'bánki erik',
+  // Vagyonvisszaszerzés, kegyelmi botrány
+  'szőlő utca', 'kegyelmi botrány',
+  'vagyonvisszaszerzés', 'transparency', 'ligeti miklós', 'ligeti',
 ] as const;
 
 export function shouldFeature(headline: string, excerpt: string): boolean {
   const text = `${headline} ${excerpt}`.toLowerCase();
-  return FEATURED_KEYWORDS.some((kw) => text.includes(kw));
+  if (FEATURED_KEYWORDS.some((kw) => text.includes(kw))) return true;
+  if (text.includes('tisztítótűz') && TISZTITOTUZ_CONTEXT.some((ctx) => text.includes(ctx))) return true;
+  return false;
+}
+
+// ─── Breaking News detekció ───────────────────────────────────────────────────
+
+const BREAKING_TRIGGERS = [
+  'őrizetbe vett', 'őrizetbe vétel', 'letartóztatták', 'letartóztatás',
+  'előzetesbe', 'előzetes letartóztatás', 'vádat emeltek', 'vádemelés',
+  'bírósági ítélet', 'elítélték', 'elítélte', 'jogerős ítélet',
+  'házkutatás', 'razzia', 'gyanúsítottként hallgatták',
+  'nyomozást rendeltek el', 'körözik', 'európai elfogatóparancs',
+];
+
+// Statikus figyelt lista — WATCH_LIST + GALERIA + extra ügyek
+const BREAKING_MONITORED = [
+  // Kiemelt személyek (WATCH_LIST)
+  'sulyok tamás', 'polt péter', 'nagy gábor bálint',
+  'varga zs. andrás', 'windisch lászló', 'rigó csaba balázs',
+  'koltay andrás', 'senyei györgy',
+  // Galéria személyek
+  'orbán viktor', 'rogán antal', 'mészáros lőrinc', 'tiborcz istván',
+  'szíjjártó péter', 'takács péter', 'matolcsy györgy', 'lázár jános',
+  'balásy gyula', 'semjén zsolt',
+  // Extra személyek
+  'czeglédy csaba', 'simonka györgy', 'borkai zsolt', 'tasnádi andrás',
+  'zsigó róbert', 'tilky zoltán', 'pócs jános', 'schadl györgy',
+  // Extra ügyek / kulcsszavak
+  'budapest-belgrád vasútvonal', 'budapest–belgrád',
+  'kaleta', 'mátrai erőmű',
+  'voldemort',
+  'végrehajtói botrány',
+  'atlétikai vb stadion', 'atlétikai stadion',
+  'úszó vb', 'úszóvb',
+  'zuglói parkolás',
+  'parkfenntartási botrány',
+  // Már meglévő KEYWORDS-ből is breaking-képesek
+  'nka ', 'mnb ', 'volvo-gate', 'szőlő utca', 'aranykonvoj',
+  'lélegeztetőgép', 'kegyelmi botrány',
+];
+
+export function isBreaking(headline: string, excerpt: string): boolean {
+  const text = `${headline} ${excerpt}`.toLowerCase();
+  const hasTrigger = BREAKING_TRIGGERS.some((t) => text.includes(t));
+  if (!hasTrigger) return false;
+  return BREAKING_MONITORED.some((m) => text.includes(m));
 }
