@@ -23,5 +23,6 @@ export async function POST(req: Request) {
     .values({ name, eventType, description, eventDate: new Date(eventDate), sourceUrl, sourceName })
     .returning();
 
+  if (!row) return NextResponse.json({ error: 'Insert failed' }, { status: 500 });
   return NextResponse.json({ ok: true, id: row.id });
 }

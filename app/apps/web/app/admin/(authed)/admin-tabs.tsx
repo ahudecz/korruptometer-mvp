@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 const TABS = [
   { href: '/admin', label: 'Sor' },
   { href: '/admin/news', label: 'Hírek' },
+  { href: '/admin/social-posts', label: 'Social posztok' },
   { href: '/admin/scraper-runs', label: 'Scraperek' },
   { href: '/admin/resignations', label: 'Lemondások' },
   { href: '/admin/media-closures', label: 'Megszűnt-e?' },

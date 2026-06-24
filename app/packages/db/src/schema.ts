@@ -708,10 +708,12 @@ export const socialPosts = pgTable(
     authorName: text('authorName').notNull(),
     authorHandle: text('authorHandle'),
     platform: text('platform').notNull().default('facebook'),
-    postUrl: text('postUrl').notNull(),
+    postUrl: text('postUrl').notNull().unique(),
     content: text('content').notNull(),
+    imageUrl: text('imageUrl'),
     postedAt: timestamp('postedAt', { withTimezone: true }),
     createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+    hidden: boolean('hidden').notNull().default(false),
   },
   (t) => ({
     postedAtIdx: index('SocialPost_postedAt_idx').on(t.postedAt),

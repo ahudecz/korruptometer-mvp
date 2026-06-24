@@ -21,7 +21,7 @@ const AVATAR_COLORS = ['#1877f2', '#e31937', '#2d8a4e', '#7b3fa0', '#d97706', '#
 function avatarColor(name: string): string {
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length] ?? '#1877f2';
 }
 
 function authorInitial(name: string): string {
@@ -56,6 +56,7 @@ export function SocialFeedClient({ initialPosts, initialHasMore }: { initialPost
     const { data } = await supabase
       .from('SocialPost')
       .select('*')
+      .eq('hidden', false)
       .order('createdAt', { ascending: false })
       .range(from, to);
 

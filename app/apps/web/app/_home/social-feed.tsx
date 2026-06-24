@@ -13,6 +13,7 @@ export async function SocialFeed() {
     const { data: posts, error } = await supabase
       .from('SocialPost')
       .select('*')
+      .eq('hidden', false)
       .order('createdAt', { ascending: false })
       .range(0, PAGE_SIZE - 1);
 

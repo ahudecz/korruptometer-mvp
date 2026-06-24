@@ -16,10 +16,10 @@
 
 **Cél**: DB migráció + Drizzle séma frissítése — ezt kell először elvégezni, mert minden story erre épül.
 
-- [ ] T001 Ellenőrizni, hogy a meglévő SocialPost sorok között van-e `postUrl` duplikátum (Supabase Studio → Table Editor → SocialPost → SQL: `SELECT "postUrl", COUNT(*) FROM "SocialPost" GROUP BY "postUrl" HAVING COUNT(*) > 1`)
-- [ ] T002 Létrehozni `app/supabase/migrations/0016_social_post_hidden.sql` fájlt: `ADD COLUMN hidden boolean NOT NULL DEFAULT false` + `ADD CONSTRAINT SocialPost_postUrl_unique UNIQUE ("postUrl")`
-- [ ] T003 [P] Frissíteni `app/packages/db/src/schema.ts` socialPosts táblát: `hidden: boolean('hidden').notNull().default(false)` + `imageUrl: text('imageUrl')` + `.unique()` a postUrl-re
-- [ ] T004 Lefuttatni a migrációt a Supabase-en (Supabase Studio SQL Editor-ban, vagy `supabase db push`)
+- [x] T001 Ellenőrizni, hogy a meglévő SocialPost sorok között van-e `postUrl` duplikátum (Supabase Studio → Table Editor → SocialPost → SQL: `SELECT "postUrl", COUNT(*) FROM "SocialPost" GROUP BY "postUrl" HAVING COUNT(*) > 1`)
+- [x] T002 Létrehozni `app/supabase/migrations/0016_social_post_hidden.sql` fájlt: `ADD COLUMN hidden boolean NOT NULL DEFAULT false` + `ADD CONSTRAINT SocialPost_postUrl_unique UNIQUE ("postUrl")`
+- [x] T003 [P] Frissíteni `app/packages/db/src/schema.ts` socialPosts táblát: `hidden: boolean('hidden').notNull().default(false)` + `imageUrl: text('imageUrl')` + `.unique()` a postUrl-re
+- [x] T004 Lefuttatni a migrációt a Supabase-en (Supabase Studio SQL Editor-ban, vagy `supabase db push`)
 
 **Checkpoint**: A SocialPost tábla tartalmaz `hidden` oszlopot (DEFAULT false), `postUrl` UNIQUE constraintet, és a Drizzle séma naprakész.
 
@@ -31,8 +31,8 @@
 
 **⚠️ KRITIKUS**: Ez kell az US1 és US3 előtt is.
 
-- [ ] T005 Frissíteni `app/apps/web/app/_home/social-feed.tsx` szerveroldali lekérdezést: `.eq('hidden', false)` filter hozzáadása a `.from('SocialPost').select('*')` után
-- [ ] T006 Frissíteni `app/apps/web/app/_home/social-feed-client.tsx` `loadMore` függvényét: `.eq('hidden', false)` filter hozzáadása a Supabase lekérdezésbe
+- [x] T005 Frissíteni `app/apps/web/app/_home/social-feed.tsx` szerveroldali lekérdezést: `.eq('hidden', false)` filter hozzáadása a `.from('SocialPost').select('*')` után
+- [x] T006 Frissíteni `app/apps/web/app/_home/social-feed-client.tsx` `loadMore` függvényét: `.eq('hidden', false)` filter hozzáadása a Supabase lekérdezésbe
 
 **Checkpoint**: A weboldal social feed szekciójában csak a nem-rejtett posztok jelennek meg. Tesztelés: Supabase Studioba manuálisan beállítani egy poszt `hidden = true` → refresh → eltűnik az oldalról.
 
@@ -74,10 +74,10 @@
 
 **Independent Test**: `/admin/social-posts` oldalon egy poszt `Elrejtés` gombjára kattintani → weboldal frissítés → poszt eltűnik. Visszaállítás gombra kattintani → megjelenik.
 
-- [ ] T015 [US3] Létrehozni `app/apps/web/app/api/admin/social-posts/[id]/hidden/route.ts` fájlt: `POST` handler — `requireAdmin()`, toggle `hidden` értékét, visszaadja `{ hidden: boolean }` (minta: `app/apps/web/app/api/admin/news/[id]/featured/route.ts`)
-- [ ] T016 [US3] Létrehozni `app/apps/web/app/admin/(authed)/social-posts/hidden-toggle.tsx` kliens komponenst: `HiddenToggle` — `POST /api/admin/social-posts/${id}/hidden` → `router.refresh()` (minta: `app/apps/web/app/admin/(authed)/news/featured-toggle.tsx`)
-- [ ] T017 [US3] Létrehozni `app/apps/web/app/admin/(authed)/social-posts/page.tsx` admin oldalt: lista legutóbbi 100 SocialPost-ból `createdAt DESC` sorrendben, minden sornál `HiddenToggle` komponens, rejtett sorok szürke háttérrel
-- [ ] T018 [US3] Frissíteni `app/apps/web/app/admin/(authed)/admin-tabs.tsx` fájlt: `{ href: '/admin/social-posts', label: 'Social posztok' }` tab hozzáadása a TABS tömbhöz
+- [x] T015 [US3] Létrehozni `app/apps/web/app/api/admin/social-posts/[id]/hidden/route.ts` fájlt: `POST` handler — `requireAdmin()`, toggle `hidden` értékét, visszaadja `{ hidden: boolean }` (minta: `app/apps/web/app/api/admin/news/[id]/featured/route.ts`)
+- [x] T016 [US3] Létrehozni `app/apps/web/app/admin/(authed)/social-posts/hidden-toggle.tsx` kliens komponenst: `HiddenToggle` — `POST /api/admin/social-posts/${id}/hidden` → `router.refresh()` (minta: `app/apps/web/app/admin/(authed)/news/featured-toggle.tsx`)
+- [x] T017 [US3] Létrehozni `app/apps/web/app/admin/(authed)/social-posts/page.tsx` admin oldalt: lista legutóbbi 100 SocialPost-ból `createdAt DESC` sorrendben, minden sornál `HiddenToggle` komponens, rejtett sorok szürke háttérrel
+- [x] T018 [US3] Frissíteni `app/apps/web/app/admin/(authed)/admin-tabs.tsx` fájlt: `{ href: '/admin/social-posts', label: 'Social posztok' }` tab hozzáadása a TABS tömbhöz
 
 **Checkpoint**: Az `/admin/social-posts` oldalon láthatók a posztok és működik a toggle. Elrejtett poszt nem jelenik meg a weboldalon.
 
