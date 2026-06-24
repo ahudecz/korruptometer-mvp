@@ -26,7 +26,7 @@ export const aggregateKpiRollup = inngest.createFunction(
     id: 'aggregate-kpi-rollup',
     name: 'Aggregate / KPI rollup',
     concurrency: { limit: 1 },
-    debounce: { period: '10s', key: 'kpi-recompute' },
+    debounce: { period: '10s' },
   },
   [{ cron: '0 * * * *' }, { event: 'kpi.recompute' }],
   async ({ step }) => {
@@ -36,14 +36,13 @@ export const aggregateKpiRollup = inngest.createFunction(
       await db.transaction(async (tx) => {
         await tx.execute(sql`SELECT pg_advisory_xact_lock(${KPI_ROLLUP_LOCK_INT})`);
 
+        // Sentence / status KPIs still come from the curated Case table.
         const totals = await tx.execute<{
-          total_damage: string;
           total_prison: number;
           active: number;
           indictments: number;
         }>(sql`
           SELECT
-            COALESCE(SUM(amount), 0)::text          AS total_damage,
             COALESCE(SUM("sentenceYears"), 0)::int  AS total_prison,
             COUNT(*) FILTER (
               WHERE status IN ('Folyamatban','Vádemelés')
@@ -55,21 +54,41 @@ export const aggregateKpiRollup = inngest.createFunction(
           FROM "Case"
         `);
         const row = (totals as unknown as Array<{
-          total_damage: string;
           total_prison: number;
           active: number;
           indictments: number;
         }>)[0]!;
 
-        const sectorRows = await tx.execute<{ name: string; value: string }>(sql`
-          SELECT sector::text AS name, SUM(amount)::text AS value
-            FROM "Case"
-           GROUP BY sector
-           ORDER BY SUM(amount) DESC
+        // Damage figures come from the real grouped scandal catalog — the same
+        // source the public ADATBÁZIS lists. ScandalCatalog.damage_huf is the
+        // MAX member estimate per scandal (already de-double-counted), so a plain
+        // SUM across scandals is the correct cross-scandal total.
+        const damageRows = await tx.execute<{ total_damage: string }>(sql`
+          SELECT COALESCE(SUM(damage_huf), 0)::text AS total_damage
+            FROM "ScandalCatalog"
         `);
-        const bySector = (sectorRows as unknown as Array<{ name: string; value: string }>).map(
+        const totalDamage = BigInt(
+          (damageRows as unknown as Array<{ total_damage: string }>)[0]?.total_damage ?? '0',
+        );
+
+        // Donut: documented damage attributed by person (top 5 + "Egyéb"
+        // remainder), stored in the legacy `bySector` jsonb slot ({name,value}[]).
+        const personRows = await tx.execute<{ name: string; value: string }>(sql`
+          SELECT COALESCE(NULLIF(person, ''), 'Ismeretlen') AS name,
+                 SUM(damage_huf)::text                      AS value
+            FROM "ScandalCatalog"
+           WHERE damage_huf > 0
+           GROUP BY COALESCE(NULLIF(person, ''), 'Ismeretlen')
+           ORDER BY SUM(damage_huf) DESC
+        `);
+        const persons = (personRows as unknown as Array<{ name: string; value: string }>).map(
           (r) => ({ name: r.name, value: Number(r.value) }),
         );
+        const TOP_PERSONS = 5;
+        const topPersons = persons.slice(0, TOP_PERSONS);
+        const restSum = persons.slice(TOP_PERSONS).reduce((s, p) => s + p.value, 0);
+        const bySector =
+          restSum > 0 ? [...topPersons, { name: 'Egyéb', value: restSum }] : topPersons;
 
         const partnerRows = await tx.execute<{ partner_count: number }>(
           sql`SELECT COUNT(*)::int AS partner_count FROM "Source" WHERE enabled = true`,
@@ -83,7 +102,7 @@ export const aggregateKpiRollup = inngest.createFunction(
           .values({
             id: 'singleton',
             computedAt: new Date(),
-            totalDamage: BigInt(row.total_damage),
+            totalDamage,
             totalPrisonYears: row.total_prison,
             activeCases: row.active,
             newIndictmentsThisWeek: row.indictments,
@@ -94,7 +113,7 @@ export const aggregateKpiRollup = inngest.createFunction(
             target: schema.kpiSnapshots.id,
             set: {
               computedAt: new Date(),
-              totalDamage: BigInt(row.total_damage),
+              totalDamage,
               totalPrisonYears: row.total_prison,
               activeCases: row.active,
               newIndictmentsThisWeek: row.indictments,
