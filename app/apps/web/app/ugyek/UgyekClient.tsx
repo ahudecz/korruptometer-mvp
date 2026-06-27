@@ -26,7 +26,7 @@ function UgyekDetail({ entry }: { entry: typeof UGYEK[number] }) {
 
   return (
     <>
-      <div className="gal-detail-mug">
+      <div className={`gal-detail-mug${photoUrl ? '' : ' no-photo'}`}>
         <div className="rogue-mug-sm">
           {photoUrl ? (
             <img

@@ -2181,12 +2181,19 @@ button {
   letter-spacing: -0.02em;
   line-height: 1.1;
   margin-bottom: 6px;
+  /* Hosszú szavak (pl. „kenőpénzbotrány") elválasztása mobilon,
+     hogy ne lógjanak ki a kártyából. */
+  hyphens: auto;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .gal-detail-sub {
   font-size: 13px;
   color: rgba(255,255,255,0.45);
   margin-bottom: 14px;
+  hyphens: auto;
+  overflow-wrap: break-word;
 }
 
 .gal-detail-desc {
@@ -2194,6 +2201,8 @@ button {
   color: rgba(255,255,255,0.6);
   line-height: 1.6;
   margin-bottom: 16px;
+  hyphens: auto;
+  overflow-wrap: break-word;
 }
 
 .gal-detail-tags {
@@ -2341,16 +2350,21 @@ button {
   .gal-mobile-entry:nth-child(even) .gal-cases-label,
   .gal-mobile-entry:nth-child(even) .gal-case-title,
   .gal-mobile-entry:nth-child(even) .gal-case-desc,
-  .gal-mobile-entry:nth-child(even) .big-case-more-btn,
   .ugyek-mobile-entry:nth-child(even) .gal-detail-name,
   .ugyek-mobile-entry:nth-child(even) .gal-detail-sub,
   .ugyek-mobile-entry:nth-child(even) .gal-detail-desc,
   .ugyek-mobile-entry:nth-child(even) .gal-detail-amount-lbl,
   .ugyek-mobile-entry:nth-child(even) .gal-detail-amount-val,
   .ugyek-mobile-entry:nth-child(even) .ugyek-status-label,
-  .ugyek-mobile-entry:nth-child(even) .ugyek-status-value,
-  .ugyek-mobile-entry:nth-child(even) .big-case-more-btn {
+  .ugyek-mobile-entry:nth-child(even) .ugyek-status-value {
     color: var(--ink);
+  }
+
+  /* A "Teljes ügy →" gomb piros hátterű — a szöveg mindig fehér marad,
+     a fehér hátterű (páros) eseteknél is. */
+  .gal-mobile-entry:nth-child(even) .big-case-more-btn,
+  .ugyek-mobile-entry:nth-child(even) .big-case-more-btn {
+    color: #fff;
   }
 
   .ugyek-mobile-entry {
@@ -2397,6 +2411,28 @@ button {
 
   .gal-detail-body {
     padding-left: 0;
+  }
+
+  /* Ha nincs feltöltött kép, mobilon ne foglaljon helyet a placeholder:
+     a szöveg a kép képzeletbeli széléig kitölti a teljes szélességet,
+     a státusz badge inline megmarad a cím fölött. */
+  .gal-detail-mug.no-photo {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .gal-detail-mug.no-photo .rogue-mug-sm {
+    width: auto;
+  }
+  .gal-detail-mug.no-photo .person-photo-placeholder {
+    display: none;
+  }
+  .gal-detail-mug.no-photo .photo-credit {
+    display: none;
+  }
+  .gal-detail-mug.no-photo .status-strip {
+    position: static;
+    display: inline-flex;
+    border-radius: 2px;
   }
 }
 
@@ -3601,6 +3637,15 @@ button {
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 16px;
 }
+.media-grid:has(.mc-subgrid) {
+  grid-auto-rows: auto;
+}
+.media-card.mc-subgrid {
+  display: grid;
+  grid-row: span 6;
+  grid-template-rows: subgrid;
+  gap: 6px;
+}
 .media-card {
   background: #fff;
   border: 1px solid var(--line);
@@ -3624,6 +3669,10 @@ button {
   border: 2.5px solid #e8a000;
   background: #fffbf2;
 }
+.media-card.mc-pending-closed {
+  border: 2.5px solid #e86000;
+  background: #fff7f2;
+}
 
 /* Gumibélyegző overlay */
 .mc-stamp {
@@ -3646,6 +3695,7 @@ button {
   line-height: 1;
 }
 .media-card.mc-closed .mc-stamp { color: #e31937; }
+.media-card.mc-pending-closed .mc-stamp { color: #e86000; }
 .media-card.mc-fired-staff .mc-stamp { color: #c07800; }
 
 .media-card-logo {
@@ -3671,6 +3721,7 @@ button {
   object-position: center;
 }
 .media-card.mc-closed .media-card-logo img,
+.media-card.mc-pending-closed .media-card-logo img,
 .media-card.mc-fired-staff .media-card-logo img {
   filter: grayscale(0.75) opacity(0.8);
 }
@@ -3689,6 +3740,7 @@ button {
   line-height: 1.2;
 }
 .media-card.mc-closed .media-card-name { color: #888; }
+.media-card.mc-pending-closed .media-card-name { color: #7a3500; }
 .media-card.mc-fired-staff .media-card-name { color: #7a6000; }
 .media-card-editor {
   font-size: 11px;
@@ -3699,7 +3751,6 @@ button {
   color: var(--ink);
   line-height: 1.5;
   opacity: 0.65;
-  flex: 1;
   margin: 0;
 }
 .media-card-status {

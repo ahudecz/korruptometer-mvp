@@ -10,19 +10,20 @@ function logoSrc(entry: MediaOutletEntry): string | null {
   return `/api/img-proxy?url=${encodeURIComponent(entry.logoUrl)}`;
 }
 
-function MediaCard({ entry }: { entry: MediaOutletEntry }) {
+function MediaCard({ entry, subgrid = false }: { entry: MediaOutletEntry; subgrid?: boolean }) {
   const src = logoSrc(entry);
   const isClosed = entry.status === 'closed';
+  const isPendingClosed = entry.status === 'pending-closed';
   const isFired = entry.status === 'fired-staff';
 
-  const statusColor = isClosed ? '#e31937' : isFired ? '#e8a000' : '#5c5e62';
+  const statusColor = isClosed ? '#e31937' : isPendingClosed ? '#e86000' : isFired ? '#e8a000' : '#5c5e62';
 
   const imgStyle: React.CSSProperties = entry.logoScale
     ? { transform: `scale(${entry.logoScale})`, objectFit: 'cover' }
     : {};
 
   return (
-    <div className={`media-card mc-${entry.status}`}>
+    <div className={`media-card mc-${entry.status}${subgrid ? ' mc-subgrid' : ''}`}>
       <div className={`media-card-logo${entry.logoBgWhite ? ' bg-white' : ''}`}>
         {src ? (
           <img
@@ -44,17 +45,20 @@ function MediaCard({ entry }: { entry: MediaOutletEntry }) {
         )}
       </div>
       <div className="media-card-name">{entry.name}</div>
-      {entry.editorInChief && (
-        <div className="media-card-editor">{entry.editorInChief}</div>
-      )}
+      <div className="media-card-editor">{entry.editorInChief ?? ''}</div>
       <p className="media-card-desc">{entry.description}</p>
-      <div className="media-card-status" style={{ background: `${statusColor}22`, color: statusColor, border: `1px solid ${statusColor}55` }}>
+      <div className="media-card-status" style={{ background: `${statusColor}22`, color: statusColor, border: `1px solid ${statusColor}55`, marginTop: 'auto' }}>
         {entry.statusLabel}
       </div>
       <div className="media-card-owner">{entry.owner}</div>
-      {(isClosed || isFired) && (
+      {isPendingClosed && entry.sourceUrl && (
+        <div style={{ fontSize: '11px', color: '#999' }}>
+          * <a href={entry.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#e86000', textDecoration: 'underline' }}>{entry.sourceName ?? 'forrás'}</a> híre alapján
+        </div>
+      )}
+      {(isClosed || isPendingClosed || isFired) && (
         <div className="mc-stamp" aria-hidden="true">
-          {isClosed ? 'MEGSZŰNT' : (
+          {isClosed ? 'MEGSZŰNT' : isPendingClosed ? 'MEGSZŰNT*' : (
             <>
               <span style={{ fontSize: '0.55em', display: 'block', letterSpacing: '0.12em', lineHeight: 1.2, marginBottom: 2 }}>SZERKESZTŐSÉG</span>
               KIRÚGVA
@@ -80,7 +84,7 @@ export function MediaClosuresSection() {
         </p>
 
         {MEDIA_GROUPS.map(group => {
-          const STATUS_ORDER: Record<string, number> = { closed: 0, 'fired-staff': 1, active: 2 };
+          const STATUS_ORDER: Record<string, number> = { closed: 0, 'pending-closed': 1, 'fired-staff': 2, active: 3 };
           const entries = MEDIA_OUTLETS
             .filter(e => e.group === group.key)
             .sort((a, b) => (STATUS_ORDER[a.status] ?? 9) - (STATUS_ORDER[b.status] ?? 9));
@@ -90,7 +94,7 @@ export function MediaClosuresSection() {
               <div className="media-group-label">{group.label}</div>
               <div className="media-grid">
                 {entries.map(entry => (
-                  <MediaCard key={entry.id} entry={entry} />
+                  <MediaCard key={entry.id} entry={entry} subgrid={group.key === 'tv-youtube'} />
                 ))}
               </div>
             </div>

@@ -722,3 +722,25 @@ export const socialPosts = pgTable(
 
 export type SocialPost = typeof socialPosts.$inferSelect;
 export type NewSocialPost = typeof socialPosts.$inferInsert;
+
+// ─── Facebook Pages (sync target list) ───────────────────────────────────────
+
+export const facebookPages = pgTable(
+  'FacebookPage',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    pageId: text('pageId').notNull().unique(),
+    pageName: text('pageName').notNull(),
+    pageHandle: text('pageHandle'),
+    enabled: boolean('enabled').notNull().default(true),
+    lastSyncedAt: timestamp('lastSyncedAt', { withTimezone: true }),
+    consecutiveFailures: integer('consecutiveFailures').notNull().default(0),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    enabledIdx: index('FacebookPage_enabled_idx').on(t.enabled),
+  }),
+);
+
+export type FacebookPage = typeof facebookPages.$inferSelect;
+export type NewFacebookPage = typeof facebookPages.$inferInsert;

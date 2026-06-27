@@ -4,6 +4,9 @@ import { aggregateLinkArticles } from './functions/aggregate-link-articles';
 import { auditlogPartitionMaintenance } from './functions/auditlog-partition-maintenance';
 import { detectResignations } from './functions/detect-resignations';
 import { detectMediaClosures } from './functions/detect-media-closures';
+import { detectVerdicts } from './functions/detect-verdicts';
+import { detectAssetRecoveries } from './functions/detect-asset-recoveries';
+import { syncFacebookPosts } from './functions/sync-facebook-posts';
 import { gdprRetentionSweep } from './functions/gdpr-retention-sweep';
 import { kmonitorDiscoverTags } from './functions/kmonitor-discover-tags';
 import { kmonitorTraverseApprovedTags } from './functions/kmonitor-traverse-approved-tags';
@@ -36,4 +39,7 @@ export const functions = [
   kmonitorTraverseTag,
   detectResignations,
   detectMediaClosures,
+  detectVerdicts,
+  detectAssetRecoveries,
+  syncFacebookPosts,
 ];

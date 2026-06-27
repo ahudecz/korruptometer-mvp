@@ -1,4 +1,4 @@
-export type MediaStatus = 'active' | 'closed' | 'fired-staff';
+export type MediaStatus = 'active' | 'closed' | 'pending-closed' | 'fired-staff';
 export type MediaGroup = 'print-kesma' | 'online' | 'tv-youtube' | 'radio';
 
 export interface MediaOutletEntry {
@@ -14,6 +14,8 @@ export interface MediaOutletEntry {
   logoCredit?: string;
   logoBgWhite?: boolean;
   logoScale?: number;
+  sourceUrl?: string;
+  sourceName?: string;
 }
 
 export const MEDIA_OUTLETS: MediaOutletEntry[] = [
@@ -772,6 +774,19 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
   },
 
   // ─── TELEVÍZIÓ / YOUTUBE ────────────────────────────────────────────
+  {
+    id: 'megafon',
+    name: 'Megafon',
+    group: 'tv-youtube',
+    owner: 'NER-közeli (Habony Árpád köre)',
+    description: 'A NER egyik legaktívabb propagandacsatornája YouTube-on és online. A Media1 értesülése szerint 2026. június 26-án az utolsó alkalmazott is távozik — a megszűnés egyelőre nem 100%-ban megerősített hír.',
+    status: 'pending-closed',
+    statusLabel: 'Megszűnt* (2026. jún. 26.)',
+    sourceUrl: 'https://media1.hu/2026/06/25/veget-erhet-a-megafon-mukodese-penteken-az-utolso-alkalmazott-is-tavozik/',
+    sourceName: 'Media1',
+    logoUrl: '/images/media/megafon.webp',
+    logoCredit: 'Megafon',
+  },
   {
     id: 'tenyek',
     name: 'Tények',

@@ -58,7 +58,7 @@ const TOOL: Anthropic.Tool = {
       description: {
         type: 'string',
         description:
-          'One or two sentence summary of what happened, in Hungarian. Empty if not a resignation.',
+          'Maximum 4-6 word Hungarian label for what happened — shown in a chart, must be very short. E.g. "MCC kuratóriumi elnökről lemondott", "Kulturális Minisztériumból kirúgták". Empty if not a resignation.',
       },
       confidence: {
         type: 'number',

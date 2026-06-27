@@ -10,7 +10,9 @@
     "./locks": "./src/locks.ts",
     "./scrapers": "./src/scrapers.ts",
     "./ai": "./src/resignation-detect.ts",
-    "./ai-closures": "./src/media-closure-detect.ts"
+    "./ai-closures": "./src/media-closure-detect.ts",
+    "./ai-verdicts": "./src/court-verdict-detect.ts",
+    "./ai-assets": "./src/asset-recovery-detect.ts"
   },
   "scripts": {
     "lint": "eslint src",
@@ -25,6 +27,7 @@
     "kmdb:upsert": "tsx src/kmdb-upsert.ts",
     "kmdb:llm-tighten": "tsx src/kmdb-llm-tighten.ts",
     "scrape-now": "tsx src/scrape-now.ts",
+    "fb-sync-now": "tsx src/fb-sync-now.ts",
     "detect-now": "tsx src/detect-now.ts",
     "cleanup-articles": "tsx src/cleanup-articles.ts",
     "delete-foci": "tsx src/delete-foci.ts",

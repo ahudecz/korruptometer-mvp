@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e94560"/>
+      <stop offset="100%" style="stop-color:#c73652"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="180" fill="url(#bg)"/>
+
+  <!-- K letter - left vertical bar -->
+  <rect x="220" y="230" width="110" height="564" rx="20" fill="white"/>
+
+  <!-- K letter - upper diagonal arm -->
+  <polygon points="330,512 620,230 760,230 460,512" fill="white"/>
+
+  <!-- K letter - lower diagonal arm -->
+  <polygon points="330,512 460,512 760,794 620,794" fill="white"/>
+
+  <!-- Eye / magnifier accent circle -->
+  <circle cx="700" cy="720" r="130" fill="none" stroke="url(#accent)" stroke-width="28"/>
+  <circle cx="700" cy="720" r="55" fill="url(#accent)"/>
+
+  <!-- Magnifier handle -->
+  <rect x="793" y="803" width="115" height="36" rx="18" transform="rotate(45 793 803)" fill="url(#accent)"/>
+</svg>
