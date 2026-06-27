@@ -9,7 +9,7 @@ VALUES (
   'Mathias Corvinus Collegium (MCC)',
   'lemondás',
   '2026-06-19 00:00:00+00',
-  'Orbán Balázs, a Miniszterelnökség parlamenti és stratégiai államtitkára lemondott a Mathias Corvinus Collegium kuratóriumi elnöki tisztségéről.',
+  'Lemondott az MCC kuratóriumi elnöki posztjáról',
   false
 )
 ON CONFLICT DO NOTHING;
