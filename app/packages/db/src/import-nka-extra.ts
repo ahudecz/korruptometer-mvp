@@ -78,7 +78,7 @@ async function main() {
     process.exit(1);
   }
 
-  let inserted = 0, updated = 0, skipped = 0;
+  let inserted = 0, skipped = 0;
 
   console.log('\n📥 7 NKA cikk importálása...\n');
 

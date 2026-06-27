@@ -8,6 +8,7 @@ const TABS = [
   { href: '/admin/news', label: 'Hírek' },
   { href: '/admin/social-posts', label: 'Social posztok' },
   { href: '/admin/scraper-runs', label: 'Scraperek' },
+  { href: '/admin/investigations', label: 'Nyomozások' },
   { href: '/admin/resignations', label: 'Lemondások' },
   { href: '/admin/media-closures', label: 'Megszűnt-e?' },
   { href: '/admin/kmonitor-persons', label: 'K-Monitor személyek' },

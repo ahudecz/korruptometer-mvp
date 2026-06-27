@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable react/no-unescaped-entities -- Hungarian typographic quotes („ ") in display text */
 
 import Link from 'next/link';
 import { useState, useRef, useEffect, useMemo } from 'react';

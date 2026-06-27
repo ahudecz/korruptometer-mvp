@@ -103,13 +103,13 @@ describe('routeOutletByUrl', () => {
     ['https://www.telex.hu/foo', 'telex'],
     ['https://atlatszo.hu/foo', 'atlatszo'],
     ['https://hang.hu/foo', 'magyar-hang'],
+    ['https://24.hu/foo', '24hu'],
   ])('routes %s to %s', (url, expected) => {
     expect(routeOutletByUrl(url)).toBe(expected);
   });
 
   it.each([
     'https://mfor.hu/foo',
-    'https://24.hu/foo',
     'https://forbes.hu/foo',
     'https://pecsma.hu/foo',
     'https://web.archive.org/web/20260509/https://444.hu/foo',

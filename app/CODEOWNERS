@@ -1,3 +1,11 @@
 # Schema and migrations require explicit review.
 /app/packages/db/schema.ts        @ahudecz
 /app/supabase/migrations/**       @ahudecz
+
+# 002-investigation-engine — counsel-sensitive public-tier surface (FR-033).
+# Public-tier render path must NOT ship until counsel signs off on the redaction
+# policy doc. CODEOWNERS forces a counsel-tagged review for every change here.
+/app/apps/web/app/galeria/**                                  @ahudecz
+/app/apps/web/src/lib/public-render/**                        @ahudecz
+/app/docs/public-tier-redaction-policy.md                     @ahudecz
+/app/supabase/migrations/0011_investigation_engine.sql        @ahudecz

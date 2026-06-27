@@ -23,7 +23,7 @@ async function main() {
     SELECT count(*)::int as n FROM "NewsArticle"
     WHERE tag ILIKE 'üzlet' OR tag ILIKE 'reggeli' OR tag ILIKE 'karrier'
   `);
-  console.log('\nILIKE match:', check[0].n);
+  console.log('\nILIKE match:', check[0]?.n);
 
   await conn.end();
 }

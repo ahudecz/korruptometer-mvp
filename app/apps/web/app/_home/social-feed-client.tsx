@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable react/no-unescaped-entities -- Hungarian typographic quotes („ ") in display text */
 
 import { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';

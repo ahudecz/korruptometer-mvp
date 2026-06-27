@@ -47,13 +47,14 @@ async function main() {
       .from(schema.sources)
       .where(ilike(schema.sources.name, art.sourcePattern));
 
-    if (sources.length === 0) {
+    const source = sources[0];
+    if (!source) {
       console.error(`Forrás nem található: ${art.sourcePattern}`);
       continue;
     }
 
-    const sourceId = sources[0].id;
-    console.log(`Forrás: ${sources[0].name} (id=${sourceId})`);
+    const sourceId = source.id;
+    console.log(`Forrás: ${source.name} (id=${sourceId})`);
 
     const existing = await db
       .select({ id: schema.newsArticles.id })

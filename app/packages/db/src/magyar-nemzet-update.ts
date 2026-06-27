@@ -27,7 +27,7 @@ async function main() {
     .where(eq(schema.newsArticles.sourceUrl, csonkaUrl))
     .returning({ id: schema.newsArticles.id });
   if (deleted.length > 0) {
-    console.log(`🗑️  Törölve: Csonka András / Wicked cikk (${deleted[0].id})`);
+    console.log(`🗑️  Törölve: Csonka András / Wicked cikk (${deleted[0]?.id})`);
   } else {
     // Try by hash too
     const deleted2 = await db
@@ -35,7 +35,7 @@ async function main() {
       .where(eq(schema.newsArticles.sourceUrlHash, dedupHash(csonkaUrl)))
       .returning({ id: schema.newsArticles.id });
     if (deleted2.length > 0) {
-      console.log(`🗑️  Törölve hash alapján: ${deleted2[0].id}`);
+      console.log(`🗑️  Törölve hash alapján: ${deleted2[0]?.id}`);
     } else {
       console.log('⚠️  Csonka-cikk nem található a DB-ben (lehet, hogy már törölve volt).');
     }
@@ -47,12 +47,12 @@ async function main() {
     .from(schema.sources)
     .where(ilike(schema.sources.homepage, '%444.hu%'));
 
-  if (sources.length === 0) {
+  const source444 = sources[0];
+  if (!source444) {
     console.error('❌ 444.hu forrás nem található a sources táblában!');
     await conn.end();
     process.exit(1);
   }
-  const source444 = sources[0];
   console.log(`✅ 444.hu forrás: ${source444.id} (${source444.name})`);
 
   // ── 3. Insert Magyar Nemzet kirúgás article ──────────────────────────────

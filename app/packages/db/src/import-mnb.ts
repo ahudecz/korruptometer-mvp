@@ -72,7 +72,7 @@ async function main() {
   const sources = await db.select().from(schema.sources);
   const slugToId = Object.fromEntries(sources.map(s => [s.slug, s.id]));
 
-  let inserted = 0, updated = 0, skipped = 0;
+  let inserted = 0, skipped = 0;
 
   for (const url of URLS) {
     const canonical = canonicalUrl(url);

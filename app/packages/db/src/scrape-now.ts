@@ -10,6 +10,7 @@ loadEnv({ path: resolve(__dirname, '../../../.env') });
 
 import { createHash } from 'node:crypto';
 import { drizzle } from 'drizzle-orm/postgres-js';
+import { eq } from 'drizzle-orm';
 import postgres from 'postgres';
 import * as schema from './schema';
 import { adapters, isRelevant, shouldFeature } from '@korr/scrapers';
@@ -37,10 +38,11 @@ function canonicalUrl(url: string): string {
 }
 
 async function main() {
-  const sources = await db.select().from(schema.sources).where(
-    // only sources with a known adapter
-    (t) => t.enabled
-  );
+  const sources = await db
+    .select()
+    .from(schema.sources)
+    // only enabled sources (adapter presence is checked below)
+    .where(eq(schema.sources.enabled, true));
 
   let totalInserted = 0;
   let totalFound = 0;

@@ -1,71 +1,95 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { eq } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 
-import { fmtDate, fmtFt, fmtNumber } from '@korr/shared/format';
-import { Mugshot } from '@korr/ui/mugshot';
+import { fmtFt, fmtNumber } from '@korr/shared/format';
 
-import { getDb, schema } from '@/lib/db';
+import { getDb } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-type Hair = 'short' | 'bald' | 'wave' | 'cap' | 'slick';
-type Detention = 'loose' | 'wanted' | 'busted' | 'pretrial' | 'investig';
+type ScandalHeader = {
+  id: string;
+  name: string;
+  person: string | null;
+  institution: string | null;
+  summary: string | null;
+  article_count: number;
+  investigation_count: number;
+  damage_huf: string;
+  is_open: boolean;
+  offence_labels: string | null;
+};
 
-function statusPillClass(s: string): string {
-  if (s === 'Lezárva') return 'pill lezarva';
-  if (s === 'Vádemelés') return 'pill vad';
-  return 'pill folyamatban';
-}
+type Member = {
+  id: string;
+  caseName: string | null;
+  primaryPersonName: string | null;
+  primaryEntityName: string | null;
+  articleCount: number;
+};
+
+type Article = {
+  id: string;
+  headline: string;
+  excerpt: string | null;
+  sourceUrl: string;
+  publishedAt: Date;
+  tag: string | null;
+  source_name: string | null;
+};
 
 function fmtRelative(d: Date): string {
-  const diff = Date.now() - d.getTime();
+  const diff = Date.now() - new Date(d).getTime();
   const h = Math.floor(diff / 3_600_000);
   if (h < 1) return 'most';
   if (h < 24) return `${h} órája`;
   if (h < 48) return 'tegnap';
-  const days = Math.floor(h / 24);
-  return `${days} napja`;
+  return `${Math.floor(h / 24)} napja`;
 }
 
-export default async function CasePage({
+export default async function ScandalPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
   const db = getDb();
-  const { cases, rogueProfiles, newsArticles, sources } = schema;
 
-  const caseRow = await db.query.cases.findFirst({ where: eq(cases.id, id) });
-  if (!caseRow) {
-    notFound();
-  }
+  const headRes = (await db.execute(sql`
+    SELECT sc.id, sc.name, sc.person, sc.institution, sc.summary, sc.article_count,
+           sc.investigation_count, sc.damage_huf, sc.is_open,
+           (SELECT string_agg(o."labelHu", ', ' ORDER BY o."sortOrder")
+            FROM "OffenceTypeRef" o WHERE o.code = ANY(sc.offence_codes)) AS offence_labels
+    FROM "ScandalCatalog" sc WHERE sc.id = ${id} LIMIT 1
+  `)) as unknown as ScandalHeader[];
+  const scandal = headRes[0];
+  if (!scandal) notFound();
 
-  const profile = await db.query.rogueProfiles.findFirst({
-    where: eq(rogueProfiles.caseId, id),
-  });
+  const offenceLabels = scandal.offence_labels
+    ? scandal.offence_labels.split(', ').filter(Boolean)
+    : [];
 
-  const articles = await db
-    .select({
-      id: newsArticles.id,
-      headline: newsArticles.headline,
-      excerpt: newsArticles.excerpt,
-      sourceUrl: newsArticles.sourceUrl,
-      publishedAt: newsArticles.publishedAt,
-      tag: newsArticles.tag,
-      linkOverridden: newsArticles.linkOverridden,
-      sourceSlug: sources.slug,
-      sourceName: sources.name,
-    })
-    .from(newsArticles)
-    .leftJoin(sources, eq(newsArticles.sourceId, sources.id))
-    .where(eq(newsArticles.relatedCaseId, id))
-    .orderBy(newsArticles.publishedAt);
+  const members = (await db.execute(sql`
+    SELECT id, "caseName", "primaryPersonName", "primaryEntityName", "articleCount"
+    FROM "Investigation"
+    WHERE "scandalKey" = ${id} AND status NOT IN ('merged','dismissed')
+    ORDER BY "articleCount" DESC NULLS LAST
+  `)) as unknown as Member[];
 
-  const detention: Detention = (profile?.detention as Detention) ?? 'loose';
-  const isBusted = detention === 'busted';
-  const isWanted = detention === 'wanted';
+  const articles = (await db.execute(sql`
+    SELECT DISTINCT n.id, n.headline, n.excerpt, n."sourceUrl",
+           n."publishedAt", n.tag, s.name AS source_name
+    FROM "InvestigationArticleLink" l
+    JOIN "Investigation" i ON i.id = l."investigationId"
+    JOIN "NewsArticle" n ON n.id::text = l."articleId" AND l."articleSource" = 'news'
+    LEFT JOIN "Source" s ON s.id = n."sourceId"
+    WHERE i."scandalKey" = ${id}
+    ORDER BY n."publishedAt" DESC
+    LIMIT 30
+  `)) as unknown as Article[];
+
+  const damage = BigInt(scandal.damage_huf);
 
   return (
     <article className="case-detail">
@@ -73,126 +97,91 @@ export default async function CasePage({
         ← Adatbázis
       </Link>
       <div className="hero-eyebrow" style={{ marginBottom: 16 }}>
-        Ügy {caseRow.id}
+        Ügy
       </div>
-      <h1>{caseRow.name}</h1>
+      <h1>{scandal.name}</h1>
       <div className="meta">
-        <span>{caseRow.position}</span>
-        <span style={{ color: 'var(--line-strong)' }}>·</span>
-        <span>{caseRow.region}</span>
-        <span style={{ color: 'var(--line-strong)' }}>·</span>
-        <span>{caseRow.caseYear}</span>
-        <span className={statusPillClass(caseRow.status)}>{caseRow.status}</span>
+        {scandal.person && <span>{scandal.person}</span>}
+        {scandal.institution && (
+          <>
+            <span style={{ color: 'var(--line-strong)' }}>·</span>
+            <span>{scandal.institution}</span>
+          </>
+        )}
+        <span className={scandal.is_open ? 'pill folyamatban' : 'pill lezarva'}>
+          {scandal.is_open ? 'Folyamatban' : 'Lezárt'}
+        </span>
       </div>
 
-      <div className="case-detail-grid">
-        <div className={`rogue r-${detention}`} style={{ background: 'var(--ink)', color: '#fff' }}>
-          <div className="rogue-rank">
-            <span>{caseRow.id}</span>
-            <span className="id">{caseRow.region}</span>
-          </div>
-          <div className={`rogue-mug ${isBusted ? 'desat' : ''}`}>
-            <div className="corner-tag">{caseRow.id}</div>
-            <Mugshot
-              caseId={caseRow.id}
-              name={caseRow.name}
-              variant={profile?.variant ?? 0}
-              glasses={profile?.glasses ?? false}
-              hair={(profile?.hair as Hair) ?? 'short'}
-              detention={detention}
-            />
-            {isBusted && (
-              <>
-                <div className="stamp">BUSTED</div>
-                <div className="face-cross"></div>
-              </>
-            )}
-            {isWanted && <div className="stamp small">WANTED</div>}
-            <div className={`status-strip ${detention}`}>{profile?.detentionLabel ?? '—'}</div>
-          </div>
-          <div className="rogue-name">{caseRow.name}</div>
-          <div className="rogue-pos">
-            {caseRow.position} · {caseRow.region} · {caseRow.caseYear}
-          </div>
-          <div className="rogue-tags">
-            {(profile?.crimes ?? []).map((c) => (
-              <span key={c} className="tag">
-                {c}
-              </span>
-            ))}
-          </div>
-          <div className="rogue-amount">
-            <span className="lbl">Gyanúsítva</span>
-            <span className="val">{fmtFt(caseRow.amount)}</span>
-          </div>
+      {scandal.summary && (
+        <p style={{ maxWidth: 720, color: 'var(--ink-2)', marginTop: 16 }}>{scandal.summary}</p>
+      )}
+
+      <div className="case-stat-row" style={{ marginTop: 32 }}>
+        <div className="case-stat">
+          <div className="label">Becsült kár</div>
+          <div className="value">{damage > 0n ? fmtFt(damage) : '—'}</div>
         </div>
+        <div className="case-stat">
+          <div className="label">Kapcsolódó ügyek</div>
+          <div className="value">{fmtNumber(scandal.investigation_count)}</div>
+        </div>
+        <div className="case-stat">
+          <div className="label">Cikkek</div>
+          <div className="value">{fmtNumber(scandal.article_count)}</div>
+        </div>
+      </div>
 
-        <div>
-          <div className="case-stat-row">
-            <div className="case-stat">
-              <div className="label">Érintett összeg</div>
-              <div className="value">{fmtFt(caseRow.amount)}</div>
-            </div>
-            <div className="case-stat">
-              <div className="label">Szabadságvesztés</div>
-              <div className="value">{fmtNumber(caseRow.sentenceYears)} év</div>
-            </div>
-          </div>
-          <div className="case-stat-row">
-            <div className="case-stat">
-              <div className="label">Szektor</div>
-              <div className="value" style={{ fontSize: 24 }}>
-                {caseRow.sector}
-              </div>
-            </div>
-            <div className="case-stat">
-              <div className="label">Évszám</div>
-              <div className="value">{caseRow.caseYear}</div>
-            </div>
-          </div>
+      {offenceLabels.length > 0 && (
+        <div className="rogue-tags" style={{ marginTop: 24 }}>
+          {offenceLabels.map((l) => (
+            <span key={l} className="tag">
+              {l}
+            </span>
+          ))}
+        </div>
+      )}
 
-          {profile?.extraStatus && (
-            <div className="submission-assurance" style={{ marginTop: 32 }}>
-              <strong>Aktuális helyzet</strong>
-              {profile.extraStatus}
-            </div>
-          )}
-
+      {scandal.investigation_count > 1 && (
+        <>
           <div className="section-num" style={{ marginTop: 56, marginBottom: 24 }}>
-            Kapcsolódó hírek
+            Kapcsolódó ügyek
           </div>
-          {articles.length === 0 ? (
-            <p style={{ color: 'var(--muted)', fontSize: 14 }}>
-              Még nincs hozzárendelt cikk. A hírfolyam-illesztés a Phase 3 után
-              automatikusan kapcsolja össze a cikkeket az ügyekkel.
-            </p>
-          ) : (
-            <div className="news-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
-              {articles.map((a) => (
-                <a
-                  key={a.id}
-                  className="news-card"
-                  href={a.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <div className="news-meta">
-                    <span className="news-tag">{a.tag ?? a.sourceName ?? 'Hír'}</span>
-                    <span className="news-time">{fmtRelative(a.publishedAt)}</span>
-                  </div>
-                  <h3 className="news-headline">{a.headline}</h3>
-                  <p className="news-excerpt">{a.excerpt}</p>
-                  <span className="news-source">
-                    {a.sourceName ?? a.sourceSlug ?? 'Forrás'}
-                    {a.linkOverridden ? ' · szerk.' : ''}
-                  </span>
-                  <span style={{ display: 'none' }}>{fmtDate(a.publishedAt)}</span>
-                </a>
+          <table className="db-table">
+            <tbody>
+              {members.map((m) => (
+                <tr key={m.id}>
+                  <td>{m.caseName ?? '—'}</td>
+                  <td>{m.primaryPersonName ?? '—'}</td>
+                  <td>{m.primaryEntityName ?? '—'}</td>
+                  <td className="num">{fmtNumber(m.articleCount)} cikk</td>
+                </tr>
               ))}
-            </div>
-          )}
-        </div>
+            </tbody>
+          </table>
+        </>
+      )}
+
+      <div className="section-num" style={{ marginTop: 56, marginBottom: 24 }}>
+        Kapcsolódó hírek
       </div>
+      {articles.length === 0 ? (
+        <p style={{ color: 'var(--muted)', fontSize: 14 }}>Még nincs hozzárendelt cikk.</p>
+      ) : (
+        <div className="news-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+          {articles.map((a) => (
+            <a key={a.id} className="news-card" href={a.sourceUrl} target="_blank" rel="noopener noreferrer">
+              <div className="news-meta">
+                <span className="news-tag">{a.tag ?? a.source_name ?? 'Hír'}</span>
+                <span className="news-time">{fmtRelative(a.publishedAt)}</span>
+              </div>
+              <h3 className="news-headline">{a.headline}</h3>
+              {a.excerpt && <p className="news-excerpt">{a.excerpt}</p>}
+              <span className="news-source">{a.source_name ?? 'Forrás'}</span>
+            </a>
+          ))}
+        </div>
+      )}
     </article>
   );
 }
