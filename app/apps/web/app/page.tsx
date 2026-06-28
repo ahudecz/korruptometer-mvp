@@ -74,7 +74,7 @@ export default async function HomePage() {
     .select()
     .from(schema.politicalResignations)
     .orderBy(desc(schema.politicalResignations.pinned), desc(schema.politicalResignations.resignationDate))
-    .limit(10);
+    .limit(20);
 
   function articleSelect() {
     return db.select({
