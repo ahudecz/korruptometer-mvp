@@ -254,8 +254,13 @@ export default async function HomePage() {
 
   // Fall back gracefully if a fresh DB is empty (avoids a 500 page).
   const totalDamage = snapshot ? BigInt(snapshot.totalDamage) : 0n;
-  // No final convictions yet since the 2026-04-12 government change — hardcoded 0.
-  const totalPrisonYears = 0;
+  // Halmozott kiszabott börtönévek a tényleges ítéletekből (nem-előzetes sorok).
+  // Amíg nincs ilyen ítélet, ez 0 marad, és a hero az előzetes letartóztatások
+  // számát mutatja helyette (lásd lentebb a hero-stat blokkot).
+  const totalPrisonYears = (await db
+    .select({ s: sql<number>`coalesce(sum(${schema.courtVerdicts.sentenceYears}), 0)::int` })
+    .from(schema.courtVerdicts)
+    .where(sql`${schema.courtVerdicts.verdictType} != 'előzetesben'`))[0]?.s ?? 0;
   const activeCases = snapshot?.activeCases ?? 0;
   const newIndictments = snapshot?.newIndictmentsThisWeek ?? 0;
   const partnerCount = snapshot?.partnerCount ?? 0;
@@ -290,7 +295,9 @@ export default async function HomePage() {
   const tickerItems = [
     `${fmtNumber(activeCases)} aktív ügy`,
     `${fmtNumber(newIndictments)} új vádemelés ezen a héten`,
-    `${fmtNumber(totalPrisonYears)} év halmozott börtönbüntetés`,
+    totalPrisonYears > 0
+      ? `${fmtNumber(totalPrisonYears)} év halmozott börtönbüntetés`
+      : `${fmtNumber(pretrialCountDb)} fő előzetes letartóztatásban`,
     `${fmtFt(totalDamage)} dokumentált kár`,
     `${fmtNumber(partnerCount)} sajtótermék együttműködésével`,
     `Utolsó frissítés: ${fmtUpdatedAt(updatedAt)}`,
@@ -332,8 +339,20 @@ export default async function HomePage() {
               <div className="hero-stat-label">Dokumentált korrupciós ügy</div>
             </div>
             <div className="hero-stat">
-              <div className="hero-stat-value">{fmtNumber(totalPrisonYears)} év</div>
-              <div className="hero-stat-label">Kiszabott börtönbüntetés összesen</div>
+              {totalPrisonYears > 0 ? (
+                <>
+                  <div className="hero-stat-value">{fmtNumber(totalPrisonYears)} év</div>
+                  <div className="hero-stat-label">
+                    Kiszabott börtönbüntetés
+                    {pretrialCountDb > 0 ? ` · ${fmtNumber(pretrialCountDb)} fő előzetesben` : ' összesen'}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="hero-stat-value">{fmtNumber(pretrialCountDb)} fő</div>
+                  <div className="hero-stat-label">Előzetes letartóztatásban</div>
+                </>
+              )}
             </div>
             <div className="hero-stat">
               <div className="hero-stat-value">{resignationCount + closureCount}</div>
