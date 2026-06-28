@@ -1,7 +1,7 @@
 import 'server-only';
 import { eq } from 'drizzle-orm';
 
-import { adapters, canonicalUrl, dedupHash, isRelevant, shouldFeature } from '@korr/scrapers';
+import { adapters, canonicalUrl, dedupHash, isRelevant, isBreaking, shouldFeature } from '@korr/scrapers';
 import type { OutletSlug, ScrapedArticle } from '@korr/scrapers';
 import { schema } from '@/lib/db';
 import { getDb } from '@/lib/db';
@@ -170,6 +170,8 @@ async function persistArticles(
     let finalExcerpt = a.excerpt;
     let finalTag = a.tag ?? null;
     let finalFeatured = shouldFeature(a.headline, a.excerpt);
+    // Breaking-jelölt: börtön/eljárás-trigger + figyelt személy/ügy (kulcsszavas, AI nélkül).
+    const finalBreaking = isBreaking(a.headline, a.excerpt);
 
     // 2. AI-alapú finomítás: okosabb relevancia + excerpt + tag
     if (useAi) {
@@ -202,6 +204,7 @@ async function persistArticles(
         tag: finalTag,
         imageUrl: a.imageUrl ?? null,
         featured: finalFeatured,
+        isBreakingCandidate: finalBreaking,
       })
       .onConflictDoNothing({ target: schema.newsArticles.sourceUrlHash })
       .returning({ id: schema.newsArticles.id });

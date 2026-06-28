@@ -116,9 +116,11 @@ export const detectVerdicts = inngest.createFunction(
             sourceDates: [todayIso],
           });
 
+          // Egy detektált ítélet/előzetes börtönhöz kötődő esemény → breaking-jelölt,
+          // így megjelenik a breaking csíkban és az érintett doboz/végoldal breaking blokkjában.
           await db
             .update(schema.newsArticles)
-            .set({ tag: 'Ítélet' })
+            .set({ tag: 'Ítélet', isBreakingCandidate: true })
             .where(eq(schema.newsArticles.id, article.id));
 
           count++;
