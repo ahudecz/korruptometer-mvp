@@ -37,7 +37,10 @@ function provider(): string {
 
 function defaultModel(): string {
   if (process.env.LLM_MODEL) return process.env.LLM_MODEL;
-  return provider() === 'anthropic' ? 'claude-haiku-4-5-20251001' : 'gemini-2.5-flash';
+  // gpt-5-chat-latest = non-reasoning chat model available on the LangDock key.
+  // (Avoid reasoning models like gpt-5-mini/o3 here — they burn the token budget
+  // on hidden reasoning and return no tool call.) Switch via LLM_MODEL.
+  return provider() === 'anthropic' ? 'claude-haiku-4-5-20251001' : 'gpt-5-chat-latest';
 }
 
 export async function llmExtract<T>(opts: {
@@ -67,9 +70,13 @@ async function openaiCompatExtract<T>(
   if (!apiKey) throw new Error('LLM_API_KEY not set');
   const baseUrl = process.env.LLM_BASE_URL ?? DEFAULT_LANGDOCK_URL;
 
+  const timeoutMs = Number(process.env.LLM_TIMEOUT_MS ?? 30000);
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     const res = await fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
+      signal: ctrl.signal,
       headers: {
         'content-type': 'application/json',
         authorization: `Bearer ${apiKey}`,
@@ -137,6 +144,8 @@ async function openaiCompatExtract<T>(
   } catch (err) {
     console.error(`[llm] ${model} request failed:`, err instanceof Error ? err.message : err);
     return { data: null, inputTokens: 0, outputTokens: 0 };
+  } finally {
+    clearTimeout(timer);
   }
 }
 
