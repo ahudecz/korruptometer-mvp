@@ -105,7 +105,9 @@ export default async function LemondasokPage() {
   const kirugasCount = rows.filter(r => r.resignationType === 'kirúgás' && !r.name.includes('szerkesztőség')).length;
   const lemondasCount = rows.filter(r => r.resignationType === 'lemondás' || r.resignationType === 'felmentés').length;
   const osszes = kirugasCount + lemondasCount;
-  const szerkLeepitesCount = mediaLeepites.length;
+  // A szerkesztőségi tömeges kirúgások (Origo, Magyar Nemzet, stb.) "leépítés"-ként
+  // számítanak — a kirúgás-számból kimaradnak, de a táblázatban megjelennek.
+  const szerkLeepitesCount = mediaLeepites.length + rows.filter(r => r.name.includes('szerkesztőség')).length;
 
   return (
     <div className="news-section-wrap">

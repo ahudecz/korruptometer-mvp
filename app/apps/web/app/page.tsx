@@ -137,7 +137,17 @@ export default async function HomePage() {
     .orderBy(desc(schema.newsArticles.publishedAt))
     .limit(5);
 
-  const resignationCount = (await db.select({ c: count() }).from(schema.politicalResignations))[0]?.c ?? 0;
+  const resignationCount = (await db
+    .select({ c: count() })
+    .from(schema.politicalResignations)
+    .where(sql`${schema.politicalResignations.resignationType} IN ('lemondás','kirúgás','felmentés') AND ${schema.politicalResignations.name} NOT ILIKE '%szerkesztőség%'`))[0]?.c ?? 0;
+
+  // A szerkesztőségi tömeges kirúgásokat külön "leépítés"-ként számoljuk (nem a kirúgás-számban),
+  // de a listában továbbra is megjelennek.
+  const editorialLayoffCount = (await db
+    .select({ c: count() })
+    .from(schema.politicalResignations)
+    .where(sql`${schema.politicalResignations.name} ILIKE '%szerkesztőség%'`))[0]?.c ?? 0;
 
   const resignationsByType = await db
     .select({
@@ -330,7 +340,7 @@ export default async function HomePage() {
               <div className="hero-stat-label">Kiszabott börtönbüntetés összesen</div>
             </div>
             <div className="hero-stat">
-              <div className="hero-stat-value">{resignationCount + closureCount}</div>
+              <div className="hero-stat-value">{resignationCount + editorialLayoffCount + closureCount}</div>
               <div className="hero-stat-label">Lemondás, kirúgás és bezárás április 12. óta</div>
             </div>
           </div>
