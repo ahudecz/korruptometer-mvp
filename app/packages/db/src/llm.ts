@@ -67,7 +67,11 @@ async function openaiCompatExtract<T>(
   maxTokens: number,
 ): Promise<LlmResult<T>> {
   const apiKey = process.env.LLM_API_KEY;
-  if (!apiKey) throw new Error('LLM_API_KEY not set');
+  if (!apiKey) {
+    // No key configured (e.g. before the review engine ships) → no-op, don't
+    // throw, so the hourly detector crons stay green and simply write nothing.
+    return { data: null, inputTokens: 0, outputTokens: 0 };
+  }
   const baseUrl = process.env.LLM_BASE_URL ?? DEFAULT_LANGDOCK_URL;
 
   const timeoutMs = Number(process.env.LLM_TIMEOUT_MS ?? 30000);
@@ -168,7 +172,10 @@ async function anthropicExtract<T>(
 ): Promise<LlmResult<T>> {
   if (!_anthropic) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set');
+    if (!apiKey) {
+      // No key configured → no-op (see openaiCompatExtract).
+      return { data: null, inputTokens: 0, outputTokens: 0 };
+    }
     _anthropic = new Anthropic({ apiKey });
   }
   try {
