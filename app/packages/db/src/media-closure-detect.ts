@@ -2,9 +2,7 @@
  * LLM-based media closure / mass layoff detector.
  * Called from the Inngest detect-media-closures function.
  */
-import Anthropic from '@anthropic-ai/sdk';
-
-const MODEL = process.env.RESIGNATION_LLM_MODEL ?? 'claude-haiku-4-5-20251001';
+import { llmExtract, type LlmToolSpec } from './llm';
 
 export type MediaClosureExtraction = {
   isClosure: boolean;
@@ -15,10 +13,10 @@ export type MediaClosureExtraction = {
   confidence: number;
 };
 
-const TOOL: Anthropic.Tool = {
+const TOOL: LlmToolSpec = {
   name: 'extract_media_closure',
   description: 'Extract structured data about a Hungarian NER-aligned media closure, mass layoff, or cancelled event from a news article.',
-  input_schema: {
+  schema: {
     type: 'object' as const,
     properties: {
       isClosure: {
@@ -67,16 +65,6 @@ Csak akkor jelöld isClosure=true-val, ha:
 
 Ne jelöld, ha csak személycsere/főszerkesztő-váltás, vagy ha nem NER-közeli médiumról van szó.`;
 
-let _client: Anthropic | null = null;
-function getClient(): Anthropic {
-  if (!_client) {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set');
-    _client = new Anthropic({ apiKey });
-  }
-  return _client;
-}
-
 export async function detectMediaClosureFromArticle(
   headline: string,
   excerpt: string,
@@ -88,22 +76,11 @@ Szöveg: ${excerpt}
 
 Mai dátum: ${todayIso}`;
 
-  try {
-    const response = await getClient().messages.create({
-      model: MODEL,
-      max_tokens: 512,
-      system: SYSTEM_PROMPT,
-      tools: [TOOL],
-      tool_choice: { type: 'any' },
-      messages: [{ role: 'user', content: userMsg }],
-    });
-
-    const toolUse = response.content.find(
-      (b: Anthropic.ContentBlock) => b.type === 'tool_use',
-    );
-    if (!toolUse || toolUse.type !== 'tool_use') return null;
-    return toolUse.input as MediaClosureExtraction;
-  } catch {
-    return null;
-  }
+  const { data } = await llmExtract<MediaClosureExtraction>({
+    system: SYSTEM_PROMPT,
+    user: userMsg,
+    tool: TOOL,
+    maxTokens: 512,
+  });
+  return data;
 }

@@ -2,9 +2,7 @@
  * LLM-based court verdict / pretrial detention detector.
  * Called from the Inngest detect-verdicts function.
  */
-import Anthropic from '@anthropic-ai/sdk';
-
-const MODEL = process.env.RESIGNATION_LLM_MODEL ?? 'claude-haiku-4-5-20251001';
+import { llmExtract, type LlmToolSpec } from './llm';
 
 export type VerdictExtraction = {
   isVerdict: boolean;
@@ -21,10 +19,10 @@ export type VerdictExtraction = {
   confidence: number;
 };
 
-const TOOL: Anthropic.Tool = {
+const TOOL: LlmToolSpec = {
   name: 'extract_verdict',
   description: 'Extract structured data about a Hungarian court verdict, pretrial detention, or indictment from a news article.',
-  input_schema: {
+  schema: {
     type: 'object' as const,
     properties: {
       isVerdict: {
@@ -106,16 +104,6 @@ Ne jelöld, ha:
 - Más ország ügyéről van szó
 - Csak spekuláció vagy vélemény`;
 
-let _client: Anthropic | null = null;
-function getClient(): Anthropic {
-  if (!_client) {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set');
-    _client = new Anthropic({ apiKey });
-  }
-  return _client;
-}
-
 export async function detectVerdictFromArticle(
   headline: string,
   excerpt: string,
@@ -127,22 +115,11 @@ Szöveg: ${excerpt}
 
 Mai dátum: ${todayIso}`;
 
-  try {
-    const response = await getClient().messages.create({
-      model: MODEL,
-      max_tokens: 512,
-      system: SYSTEM_PROMPT,
-      tools: [TOOL],
-      tool_choice: { type: 'any' },
-      messages: [{ role: 'user', content: userMsg }],
-    });
-
-    const toolUse = response.content.find(
-      (b: Anthropic.ContentBlock) => b.type === 'tool_use',
-    );
-    if (!toolUse || toolUse.type !== 'tool_use') return null;
-    return toolUse.input as VerdictExtraction;
-  } catch {
-    return null;
-  }
+  const { data } = await llmExtract<VerdictExtraction>({
+    system: SYSTEM_PROMPT,
+    user: userMsg,
+    tool: TOOL,
+    maxTokens: 512,
+  });
+  return data;
 }

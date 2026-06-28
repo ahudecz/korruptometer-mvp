@@ -12,7 +12,8 @@
     "./ai": "./src/resignation-detect.ts",
     "./ai-closures": "./src/media-closure-detect.ts",
     "./ai-verdicts": "./src/court-verdict-detect.ts",
-    "./ai-assets": "./src/asset-recovery-detect.ts"
+    "./ai-assets": "./src/asset-recovery-detect.ts",
+    "./llm": "./src/llm.ts"
   },
   "scripts": {
     "lint": "eslint src",

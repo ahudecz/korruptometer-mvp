@@ -157,7 +157,12 @@ async function persistArticles(
   let totalInputTokens = 0;
   let totalOutputTokens = 0;
 
-  const useAi = Boolean(process.env.ANTHROPIC_API_KEY);
+  // A scrape-osztályozás (excerpt/tag finomítás) opcionális és külön költség —
+  // alapból KI van kapcsolva, csak SCRAPE_AI=1 esetén fut. A detektorok ettől
+  // függetlenül futnak (azok a lényeg). Bármelyik LLM-kulcs elég hozzá.
+  const useAi =
+    process.env.SCRAPE_AI === '1' &&
+    Boolean(process.env.LLM_API_KEY || process.env.ANTHROPIC_API_KEY);
 
   for (const a of scraped) {
     // 1. Gyors kulcsszavas előszűrés — ha nem releváns és nem default-relevant, skip
