@@ -1274,6 +1274,16 @@ export type NewInvestigationJobState =
 // Use placate-typescript export for the singleton cap (no client cares but Drizzle plays nice).
 export const _unused = sql`1`;
 
+// ─── Detection Review (003-detection-review-engine) ──────────────────────
+// Jóváhagyási állapot a hírekből detektált sorokhoz. Alapból 'approved' (a
+// meglévő, kézzel felvitt sorok és a ≥0.90 auto-publikált találatok); a
+// detektor a 'pending'/'rejected' értéket kifejezetten állítja be.
+export const reviewStatusEnum = pgEnum('review_status', [
+  'approved',
+  'pending',
+  'rejected',
+]);
+
 // ─── Political Resignations Tracker ──────────────────────────────────────
 
 export const resignationTypeEnum = pgEnum('resignation_type', [
@@ -1298,6 +1308,7 @@ export const politicalResignations = pgTable(
     sourceUrls: text('sourceUrls').array().notNull().default(sql`ARRAY[]::text[]`),
     sourceNames: text('sourceNames').array().notNull().default(sql`ARRAY[]::text[]`),
     relatedCaseId: text('relatedCaseId').references(() => cases.id, { onDelete: 'set null' }),
+    reviewStatus: reviewStatusEnum('reviewStatus').notNull().default('approved'),
     createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -1305,6 +1316,7 @@ export const politicalResignations = pgTable(
     resignationDateIdx: index('PoliticalResignation_resignationDate_idx').on(t.resignationDate),
     institutionIdx: index('PoliticalResignation_institution_idx').on(t.institution),
     typeIdx: index('PoliticalResignation_resignationType_idx').on(t.resignationType),
+    reviewStatusIdx: index('PoliticalResignation_reviewStatus_idx').on(t.reviewStatus),
   }),
 );
 
@@ -1330,12 +1342,14 @@ export const mediaClosures = pgTable(
     eventDate: timestamp('eventDate', { withTimezone: true }).notNull(),
     sourceUrl: text('sourceUrl'),
     sourceName: text('sourceName'),
+    reviewStatus: reviewStatusEnum('reviewStatus').notNull().default('approved'),
     createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => ({
     eventDateIdx: index('MediaClosure_eventDate_idx').on(t.eventDate),
     typeIdx: index('MediaClosure_eventType_idx').on(t.eventType),
+    reviewStatusIdx: index('MediaClosure_reviewStatus_idx').on(t.reviewStatus),
   }),
 );
 
@@ -1393,12 +1407,14 @@ export const courtVerdicts = pgTable(
     videoChannel: text('videoChannel'),
     videoTitle: text('videoTitle'),
     videoSummary: text('videoSummary'),
+    reviewStatus: reviewStatusEnum('reviewStatus').notNull().default('approved'),
     createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => ({
     verdictDateIdx: index('CourtVerdict_verdictDate_idx').on(t.verdictDate),
     personNameIdx: index('CourtVerdict_personName_idx').on(t.personName),
+    reviewStatusIdx: index('CourtVerdict_reviewStatus_idx').on(t.reviewStatus),
   }),
 );
 
