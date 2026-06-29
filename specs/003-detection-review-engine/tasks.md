@@ -72,7 +72,7 @@ Web-app monorepo: `app/packages/db/src/`, `app/apps/web/...`, `app/supabase/migr
 
 **Independent Test**: 0.93 nem-watchlist → azonnal publikus; 0.95 watchlist → pending.
 
-- [ ] T018 [US2] Igazold és fedd le teszttel az auto-publikálás + watchlist-kizárás ágat a `app/packages/db/src/review.test.ts`-ben (0.93 non-watchlist → approved; 0.95 watchlist → pending), és ellenőrizd, hogy a T008–T010 detektor-bekötés az `approved` ágat is helyesen alkalmazza
+- [x] T018 [US2] Igazold és fedd le teszttel az auto-publikálás + watchlist-kizárás ágat a `app/packages/db/src/review.test.ts`-ben (0.93 non-watchlist → approved; 0.95 watchlist → pending), és ellenőrizd, hogy a T008–T010 detektor-bekötés az `approved` ágat is helyesen alkalmazza
 - [ ] T019 [US2] Manuális acceptance: egy egyértelmű, nem-kiemelt hír auto-megjelenik a publikus oldalon; egy watchlist-személyes a review-soron marad (quickstart.md 1–2. pont)
 
 **Checkpoint**: US2 az US1-re épül (a `decideStatus` `approved` ága), de a tesztje/igazolása önálló.
@@ -86,7 +86,7 @@ Web-app monorepo: `app/packages/db/src/`, `app/apps/web/...`, `app/supabase/migr
 **Independent Test**: Két cikk „Kovács Zoltán"-ról 30 napon belül → egy bejegyzés.
 
 - [x] T020 [US3] Kösd be az `isDuplicate(...)` őrt a beszúrás elé mindhárom detektorban (T008–T010 helyén), minden státusz ellen, 30 napos ablakban (FR-009, FR-011)
-- [ ] T021 [P] [US3] Egységteszt a dedupra `app/packages/db/src/review.test.ts`-ben: azonos normalizált név eltérő intézménynévvel → duplikátum; `rejected` sor blokkolja az újra-létrehozást
+- [x] T021 [P] [US3] Egységteszt a dedupra `app/packages/db/src/review.test.ts`-ben: azonos normalizált név eltérő intézménynévvel → duplikátum; `rejected` sor blokkolja az újra-létrehozást
 
 **Checkpoint**: US3 finomítás — az US1/US2 nélküle is működik, de tisztább a lista.
 
@@ -94,7 +94,7 @@ Web-app monorepo: `app/packages/db/src/`, `app/apps/web/...`, `app/supabase/migr
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T022 [P] Dokumentáld a `LLM_PROVIDER` / `LLM_BASE_URL` / `LLM_API_KEY` / `LLM_MODEL` változókat a `app/.env.example`-ben
+- [x] T022 [P] Dokumentáld a `LLM_PROVIDER` / `LLM_BASE_URL` / `LLM_API_KEY` / `LLM_MODEL` változókat a `app/.env.example`-ben
 - [ ] T023 Teljes lokális smoke-teszt a `quickstart.md` szerint (pending→elfogad→publikus; watchlist→pending; eldob→nem tér vissza)
 - [ ] T024 Migráció a production DB-n (`0030`), majd kód-deploy (Vercel)
 - [ ] T025 **Csak a migráció + deploy után**: `LLM_API_KEY` + `LLM_MODEL=gpt-5-chat-latest` beállítása a Vercel production env-ben → a cron-detektorok elkezdik termelni a `pending`/`approved` sorokat

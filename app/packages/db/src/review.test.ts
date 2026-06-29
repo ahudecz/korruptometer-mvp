@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decideStatus } from './review';
+import { decideStatus, isDuplicate } from './review';
 import { isWatchlistPerson, normalizeName } from './watchlist';
 
 describe('decideStatus', () => {
@@ -59,5 +59,33 @@ describe('normalizeName', () => {
     expect(normalizeName('  Bús  Balázs! ')).toBe('bus balazs');
     expect(normalizeName('Kovács Zoltán')).toBe('kovacs zoltan');
     expect(normalizeName('Origo szerkesztőség (75%)')).toBe('origo szerkesztoseg 75');
+  });
+});
+
+// US2 — auto-publish vs. watchlist, exercised the way the detectors call it.
+describe('US2 auto-publish vs watchlist (combined)', () => {
+  it('auto-publishes a confident, non-watchlist person', () => {
+    expect(decideStatus(0.93, isWatchlistPerson('Kovács Zoltán'))).toBe('approved');
+  });
+  it('holds a confident watchlist person for review', () => {
+    expect(decideStatus(0.95, isWatchlistPerson('Polt Péter'))).toBe('pending');
+  });
+});
+
+// US3 — dedup guard (the SQL is mocked; we assert the function's own logic).
+describe('isDuplicate', () => {
+  it('is true when a matching row exists (institution is irrelevant)', async () => {
+    const db = { execute: async () => [{ exists: 1 }] };
+    expect(await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Kovács Zoltán')).toBe(true);
+  });
+  it('is false when no row exists', async () => {
+    const db = { execute: async () => [] };
+    expect(await isDuplicate(db, { table: 'MediaClosure', nameColumn: 'name' }, 'Origo.hu')).toBe(false);
+  });
+  it('short-circuits on an empty name without querying', async () => {
+    let queried = false;
+    const db = { execute: async () => { queried = true; return []; } };
+    expect(await isDuplicate(db, { table: 'CourtVerdict', nameColumn: 'personName' }, '   ')).toBe(false);
+    expect(queried).toBe(false);
   });
 });
