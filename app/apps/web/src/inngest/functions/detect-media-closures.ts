@@ -1,7 +1,8 @@
 import 'server-only';
-import { and, desc, eq, gte, sql } from 'drizzle-orm';
+import { desc, eq, gte } from 'drizzle-orm';
 
 import { detectMediaClosureFromArticle } from '@korr/db/ai-closures';
+import { decideStatus, isDuplicate } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
 import { inngest } from '../client';
 
@@ -68,23 +69,12 @@ export const detectMediaClosures = inngest.createFunction(
             todayIso,
           );
 
-          if (!result || !result.isClosure || result.confidence < 0.7) continue;
-          if (!result.name) continue;
+          if (!result || !result.isClosure || !result.name) continue;
 
-          // Dedup: skip if same name already recorded in last 14 days.
-          const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-          const existing = await db
-            .select({ id: schema.mediaClosures.id })
-            .from(schema.mediaClosures)
-            .where(
-              and(
-                sql`lower(${schema.mediaClosures.name}) = lower(${result.name})`,
-                gte(schema.mediaClosures.createdAt, fourteenDaysAgo),
-              ),
-            )
-            .limit(1);
-
-          if (existing.length > 0) continue;
+          // 003-review: media outlets aren't watchlist persons → confidence only.
+          const reviewStatus = decideStatus(result.confidence, false);
+          if (reviewStatus === 'discard') continue;
+          if (await isDuplicate(db, { table: 'MediaClosure', nameColumn: 'name' }, result.name)) continue;
 
           const fallbackDate = new Date(article.publishedAt as unknown as string);
           let eventDate: Date;
@@ -102,6 +92,7 @@ export const detectMediaClosures = inngest.createFunction(
             eventDate,
             sourceUrl: article.sourceUrl ?? null,
             sourceName: null,
+            reviewStatus,
           });
 
           await db

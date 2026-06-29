@@ -1,4 +1,4 @@
-import { desc } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { UGYEK } from '../_home/ugyek-config';
 import { GALERIA } from '../_home/galeria-config';
@@ -34,6 +34,7 @@ export default async function BirosagPage() {
   const rows = await db
     .select()
     .from(schema.courtVerdicts)
+    .where(eq(schema.courtVerdicts.reviewStatus, 'approved'))
     .orderBy(desc(schema.courtVerdicts.verdictDate));
 
   const serialized: SerializedVerdict[] = rows.map(r => {

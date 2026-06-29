@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { desc, sql } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -16,13 +16,15 @@ export async function GET(req: Request) {
     const rows = await db
       .select()
       .from(politicalResignations)
+      .where(eq(politicalResignations.reviewStatus, 'approved'))
       .orderBy(desc(politicalResignations.resignationDate))
       .limit(limit)
       .offset(offset);
 
     const countResult = await db
       .select({ count: sql`count(*)` })
-      .from(politicalResignations);
+      .from(politicalResignations)
+      .where(eq(politicalResignations.reviewStatus, 'approved'));
     const total = parseInt(String(countResult[0]?.count || 0));
 
     const headers = new Headers({

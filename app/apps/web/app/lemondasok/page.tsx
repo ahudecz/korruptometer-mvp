@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { getActiveBreaking, findBreakingForName, type BreakingArticle } from '@/lib/breaking';
 
@@ -76,6 +76,7 @@ async function fetchRows() {
   return db
     .select()
     .from(schema.politicalResignations)
+    .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
     .orderBy(desc(schema.politicalResignations.resignationDate))
     .limit(100);
 }
@@ -97,7 +98,7 @@ export default async function LemondasokPage() {
   const db = getDb();
   const [rows, mediaLeepites, breakingArticles] = await Promise.all([
     fetchRows(),
-    db.select().from(schema.mediaClosures).where(eq(schema.mediaClosures.eventType, 'leépítés')),
+    db.select().from(schema.mediaClosures).where(and(eq(schema.mediaClosures.eventType, 'leépítés'), eq(schema.mediaClosures.reviewStatus, 'approved'))),
     getActiveBreaking(),
   ]);
   const rest = rows.filter(r => !r.pinned);

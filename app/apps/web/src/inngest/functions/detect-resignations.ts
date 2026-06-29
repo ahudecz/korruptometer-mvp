@@ -1,28 +1,10 @@
 import 'server-only';
-import { and, desc, eq, gte, sql } from 'drizzle-orm';
+import { desc, eq, gte } from 'drizzle-orm';
 
 import { detectResignationFromArticle } from '@korr/db/ai';
+import { decideStatus, isDuplicate, isWatchlistPerson } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
 import { inngest } from '../client';
-
-const WATCHLIST_NAMES = [
-  'Sulyok Tamás',
-  'Polt Péter',
-  'Nagy Gábor Bálint',
-  'Varga Zs. András',
-  'Windisch László',
-  'Rigó Csaba Balázs',
-  'Koltay András',
-  'Senyei György',
-];
-
-function isWatchlistPerson(extractedName: string): boolean {
-  const n = extractedName.toLowerCase();
-  return WATCHLIST_NAMES.some(wn => {
-    const parts = wn.toLowerCase().split(' ').filter(p => p.length > 2);
-    return parts.every(part => n.includes(part));
-  });
-}
 
 const BATCH_SIZE = 20;
 // Scan articles published in the last 2 hours.
@@ -88,24 +70,15 @@ export const detectResignations = inngest.createFunction(
             todayIso,
           );
 
-          if (!result || !result.isResignation || result.confidence < 0.7) continue;
-          if (!result.name || !result.institution) continue;
+          if (!result || !result.isResignation || !result.name || !result.institution) continue;
 
-          // Dedup: skip if same name+institution already recorded in last 30 days.
-          const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-          const existing = await db
-            .select({ id: schema.politicalResignations.id })
-            .from(schema.politicalResignations)
-            .where(
-              and(
-                sql`lower(${schema.politicalResignations.name}) = lower(${result.name})`,
-                sql`lower(${schema.politicalResignations.institution}) = lower(${result.institution})`,
-                gte(schema.politicalResignations.createdAt, thirtyDaysAgo),
-              ),
-            )
-            .limit(1);
+          // 003-review: route by confidence + watchlist; discard below the floor.
+          const reviewStatus = decideStatus(result.confidence, isWatchlistPerson(result.name));
+          if (reviewStatus === 'discard') continue;
 
-          if (existing.length > 0) continue;
+          // Dedup by normalized name across ALL statuses within the window, so a
+          // rejected detection is not re-created (FR-009, FR-011).
+          if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, result.name)) continue;
 
           // article.publishedAt is serialized as string by Inngest JSON
           const fallbackDate = new Date(article.publishedAt as unknown as string);
@@ -127,6 +100,7 @@ export const detectResignations = inngest.createFunction(
             resignationDate,
             description: result.description.slice(0, 1000) || null,
             pinned,
+            reviewStatus,
           });
 
           // Tag the source article so it appears in /hirek under the 'Lemondás' filter.

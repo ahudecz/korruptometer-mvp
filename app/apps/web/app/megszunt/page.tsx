@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { desc } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { CrossLemondosok, CrossUgyek, CrossGaleria, CrossFelszolitottak } from '../_home/cross-promo';
 
@@ -32,6 +32,7 @@ export default async function MegszuntPage() {
   const rows = await db
     .select()
     .from(schema.mediaClosures)
+    .where(eq(schema.mediaClosures.reviewStatus, 'approved'))
     .orderBy(desc(schema.mediaClosures.eventDate))
     .limit(200);
 

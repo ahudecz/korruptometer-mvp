@@ -1,7 +1,8 @@
 import 'server-only';
-import { and, desc, eq, gte, sql } from 'drizzle-orm';
+import { desc, eq, gte } from 'drizzle-orm';
 
 import { detectVerdictFromArticle } from '@korr/db/ai-verdicts';
+import { decideStatus, isDuplicate, isWatchlistPerson } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
 import { inngest } from '../client';
 
@@ -69,24 +70,12 @@ export const detectVerdicts = inngest.createFunction(
             todayIso,
           );
 
-          if (!result || !result.isVerdict || result.confidence < 0.7) continue;
-          if (!result.personName || !result.verdictType) continue;
+          if (!result || !result.isVerdict || !result.personName || !result.verdictType) continue;
 
-          // Dedup: skip if same person + verdictType already recorded in last 30 days.
-          const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-          const existing = await db
-            .select({ id: schema.courtVerdicts.id })
-            .from(schema.courtVerdicts)
-            .where(
-              and(
-                sql`lower(${schema.courtVerdicts.personName}) = lower(${result.personName})`,
-                eq(schema.courtVerdicts.verdictType, result.verdictType),
-                gte(schema.courtVerdicts.createdAt, thirtyDaysAgo),
-              ),
-            )
-            .limit(1);
-
-          if (existing.length > 0) continue;
+          // 003-review: route by confidence + watchlist; discard below the floor.
+          const reviewStatus = decideStatus(result.confidence, isWatchlistPerson(result.personName));
+          if (reviewStatus === 'discard') continue;
+          if (await isDuplicate(db, { table: 'CourtVerdict', nameColumn: 'personName' }, result.personName)) continue;
 
           const fallbackDate = new Date(article.publishedAt as unknown as string);
           let verdictDate: Date;
@@ -114,6 +103,7 @@ export const detectVerdicts = inngest.createFunction(
             sourceNames: [],
             sourceHeadlines: article.headline ? [article.headline.slice(0, 500)] : [],
             sourceDates: [todayIso],
+            reviewStatus,
           });
 
           // Egy detektált ítélet/előzetes börtönhöz kötődő esemény → breaking-jelölt,

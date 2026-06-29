@@ -45,22 +45,22 @@ Web-app monorepo: `app/packages/db/src/`, `app/apps/web/...`, `app/supabase/migr
 
 ### Detektor-bekötés (státusz a beszúráskor)
 
-- [ ] T008 [US1] Kösd be a `decideStatus` + `isWatchlistPerson` döntést a `app/apps/web/src/inngest/functions/detect-resignations.ts`-be: `discard` → nincs insert; egyébként `reviewStatus = status` a beszúrásban (a jelenlegi `confidence < 0.7` skip lecserélve)
-- [ ] T009 [P] [US1] Ugyanez a `app/apps/web/src/inngest/functions/detect-media-closures.ts`-ben
-- [ ] T010 [P] [US1] Ugyanez a `app/apps/web/src/inngest/functions/detect-verdicts.ts`-ben
+- [x] T008 [US1] Kösd be a `decideStatus` + `isWatchlistPerson` döntést a `app/apps/web/src/inngest/functions/detect-resignations.ts`-be: `discard` → nincs insert; egyébként `reviewStatus = status` a beszúrásban (a jelenlegi `confidence < 0.7` skip lecserélve)
+- [x] T009 [P] [US1] Ugyanez a `app/apps/web/src/inngest/functions/detect-media-closures.ts`-ben
+- [x] T010 [P] [US1] Ugyanez a `app/apps/web/src/inngest/functions/detect-verdicts.ts`-ben
 
 ### Publikus olvasás szűrése (csak approved)
 
-- [ ] T011 [US1] `reviewStatus='approved'` szűrő a `app/apps/web/app/lemondasok/page.tsx` lekérdezésekbe (lista + összegző számok) és a `app/apps/web/app/api/resignations/route.ts`-be
-- [ ] T012 [P] [US1] `reviewStatus='approved'` szűrő a `app/apps/web/app/megszunt/page.tsx`-be
-- [ ] T013 [P] [US1] `reviewStatus='approved'` szűrő a `app/apps/web/app/birosagi-iteletek/page.tsx`-be
-- [ ] T014 [US1] `reviewStatus='approved'` szűrő a `app/apps/web/app/page.tsx` nyitóoldali számlálókba és listákba (`resignationCount`, `pretrialCountDb`, `eliteltCountDb`, `closureCount`, `topResignations`, `latestResignations5`)
+- [x] T011 [US1] `reviewStatus='approved'` szűrő a `app/apps/web/app/lemondasok/page.tsx` lekérdezésekbe (lista + összegző számok) és a `app/apps/web/app/api/resignations/route.ts`-be
+- [x] T012 [P] [US1] `reviewStatus='approved'` szűrő a `app/apps/web/app/megszunt/page.tsx`-be
+- [x] T013 [P] [US1] `reviewStatus='approved'` szűrő a `app/apps/web/app/birosagi-iteletek/page.tsx`-be
+- [x] T014 [US1] `reviewStatus='approved'` szűrő a `app/apps/web/app/page.tsx` nyitóoldali számlálókba és listákba (`resignationCount`, `pretrialCountDb`, `eliteltCountDb`, `closureCount`, `topResignations`, `latestResignations5`)
 
 ### Admin review-felület
 
-- [ ] T015 [US1] Hozd létre a review-oldalt `app/apps/web/app/admin/(authed)/review/page.tsx`: a 3 táblából a `pending` sorok típus szerint, kiolvasott mezők + forráscikk-hivatkozás
-- [ ] T016 [US1] Hozd létre az elfogad/eldob szerver-action-öket `app/apps/web/app/admin/(authed)/review/review-actions.ts`: `approveDetection`/`rejectDetection` (státusz beállítás + `revalidatePath`/`revalidateTag`), csak admin-szerep
-- [ ] T017 [US1] Vedd fel a „Review" fület/linket az admin navigációba `app/apps/web/app/admin/(authed)/admin-tabs.tsx`
+- [x] T015 [US1] Hozd létre a review-oldalt `app/apps/web/app/admin/(authed)/review/page.tsx`: a 3 táblából a `pending` sorok típus szerint, kiolvasott mezők + forráscikk-hivatkozás
+- [x] T016 [US1] Hozd létre az elfogad/eldob szerver-action-öket `app/apps/web/app/admin/(authed)/review/review-actions.ts`: `approveDetection`/`rejectDetection` (státusz beállítás + `revalidatePath`/`revalidateTag`), csak admin-szerep
+- [x] T017 [US1] Vedd fel a „Review" fület/linket az admin navigációba `app/apps/web/app/admin/(authed)/admin-tabs.tsx`
 
 **Checkpoint**: US1 önállóan tesztelhető és deployolható — ez az MVP (a bizalmi kapu).
 
@@ -85,7 +85,7 @@ Web-app monorepo: `app/packages/db/src/`, `app/apps/web/...`, `app/supabase/migr
 
 **Independent Test**: Két cikk „Kovács Zoltán"-ról 30 napon belül → egy bejegyzés.
 
-- [ ] T020 [US3] Kösd be az `isDuplicate(...)` őrt a beszúrás elé mindhárom detektorban (T008–T010 helyén), minden státusz ellen, 30 napos ablakban (FR-009, FR-011)
+- [x] T020 [US3] Kösd be az `isDuplicate(...)` őrt a beszúrás elé mindhárom detektorban (T008–T010 helyén), minden státusz ellen, 30 napos ablakban (FR-009, FR-011)
 - [ ] T021 [P] [US3] Egységteszt a dedupra `app/packages/db/src/review.test.ts`-ben: azonos normalizált név eltérő intézménynévvel → duplikátum; `rejected` sor blokkolja az újra-létrehozást
 
 **Checkpoint**: US3 finomítás — az US1/US2 nélküle is működik, de tisztább a lista.

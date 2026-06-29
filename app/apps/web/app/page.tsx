@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { count, desc, eq, ilike, or, sql } from 'drizzle-orm';
+import { and, count, desc, eq, ilike, or, sql } from 'drizzle-orm';
 
 import { fmtFt, fmtNumber } from '@korr/shared/format';
 import { Pie3D, type PieSlice } from '@korr/ui/pie3d';
@@ -73,6 +73,7 @@ export default async function HomePage() {
   const topResignations = await db
     .select()
     .from(schema.politicalResignations)
+    .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
     .orderBy(desc(schema.politicalResignations.pinned), desc(schema.politicalResignations.resignationDate))
     .limit(20);
 
@@ -143,7 +144,7 @@ export default async function HomePage() {
   const resignationCount = (await db
     .select({ c: count() })
     .from(schema.politicalResignations)
-    .where(sql`${schema.politicalResignations.resignationType} IN ('lemondás','kirúgás','felmentés') AND ${schema.politicalResignations.name} NOT ILIKE '%szerkesztőség%'`))[0]?.c ?? 0;
+    .where(sql`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} IN ('lemondás','kirúgás','felmentés') AND ${schema.politicalResignations.name} NOT ILIKE '%szerkesztőség%'`))[0]?.c ?? 0;
 
   const resignationsByType = await db
     .select({
@@ -151,18 +152,19 @@ export default async function HomePage() {
       cnt: sql<number>`count(*)::int`,
     })
     .from(schema.politicalResignations)
-    .where(sql`${schema.politicalResignations.resignationType} != 'Hivatalban van'`)
+    .where(sql`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} != 'Hivatalban van'`)
     .groupBy(schema.politicalResignations.resignationType)
     .orderBy(sql`count(*) desc`);
 
-  const closureCount = (await db.select({ c: count() }).from(schema.mediaClosures))[0]?.c ?? 0;
+  const closureCount = (await db.select({ c: count() }).from(schema.mediaClosures)
+    .where(eq(schema.mediaClosures.reviewStatus, 'approved')))[0]?.c ?? 0;
 
   const [pretrialCountDb, eliteltCountDb] = await Promise.all([
     db.select({ c: count() }).from(schema.courtVerdicts)
-      .where(eq(schema.courtVerdicts.verdictType, 'előzetesben'))
+      .where(and(eq(schema.courtVerdicts.reviewStatus, 'approved'), eq(schema.courtVerdicts.verdictType, 'előzetesben')))
       .then(r => r[0]?.c ?? 0),
     db.select({ c: count() }).from(schema.courtVerdicts)
-      .where(sql`${schema.courtVerdicts.verdictType} != 'előzetesben'`)
+      .where(sql`${schema.courtVerdicts.reviewStatus} = 'approved' AND ${schema.courtVerdicts.verdictType} != 'előzetesben'`)
       .then(r => r[0]?.c ?? 0),
   ]);
 
@@ -176,6 +178,7 @@ export default async function HomePage() {
   const latestResignations5 = await db
     .select()
     .from(schema.politicalResignations)
+    .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
     .orderBy(desc(schema.politicalResignations.resignationDate))
     .limit(5);
   const recentScandals = (await db.execute(sql`
