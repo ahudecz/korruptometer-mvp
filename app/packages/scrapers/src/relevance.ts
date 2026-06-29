@@ -148,3 +148,43 @@ export function isBreaking(headline: string, excerpt: string): boolean {
   if (!hasTrigger) return false;
   return BREAKING_MONITORED.some((m) => text.includes(m));
 }
+
+// ─── Scrape relevance tiering (003-detection-review-engine) ───────────────────
+// Ingyenes előszűrés, hogy a scrape-idejű AI CSAK a bizonytalan "maybe" kupacra
+// fusson. A "biztos jó" és "biztos kuka" eldől kulcsszó/URL alapján, AI nélkül.
+
+// URL-szekciók, amik egyértelműen nem magyar-politikai tartalom → biztos kuka.
+const FOREIGN_URL_SECTIONS = [
+  '/kulfold/', '/vilag/', '/world/', '/sport/', '/tech/',
+  '/gasztro/', '/utazas/', '/elet-stilus/', '/eletmod/', '/auto/',
+];
+
+// Néhány nagyon specifikus külföldi marker arra az esetre, ha az URL nem árulkodik.
+// Szándékosan szűk lista, hogy ne dobjon el valódi magyar-politikai cikket.
+const JUNK_TERMS = ['vučić', 'vucic', 'örmény népirtás'];
+
+export function isForeignOrJunk(headline: string, excerpt: string, url?: string): boolean {
+  if (url && FOREIGN_URL_SECTIONS.some((s) => url.toLowerCase().includes(s))) return true;
+  const text = `${headline} ${excerpt}`.toLowerCase();
+  return JUNK_TERMS.some((t) => text.includes(t));
+}
+
+export type ScrapeTier = 'in' | 'out' | 'maybe';
+
+/**
+ * 3 kupac:
+ *   'in'    — erős magyar-politikai kulcsszó → bemegy, AI nélkül (ingyen)
+ *   'out'   — külföld-szekció / szemét, vagy nincs kulcsszó nem-default forrásnál → eldobjuk, AI nélkül (ingyen)
+ *   'maybe' — megbízható tág forrás (relevantByDefault) kulcsszó nélkül → CSAK erre fut az AI
+ */
+export function scrapeRelevanceTier(
+  headline: string,
+  excerpt: string,
+  url: string,
+  relevantByDefault: boolean,
+): ScrapeTier {
+  if (isRelevant(headline, excerpt)) return 'in';
+  if (isForeignOrJunk(headline, excerpt, url)) return 'out';
+  if (relevantByDefault) return 'maybe';
+  return 'out';
+}

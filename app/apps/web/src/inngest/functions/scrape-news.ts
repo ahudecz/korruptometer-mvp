@@ -1,7 +1,7 @@
 import 'server-only';
 import { eq } from 'drizzle-orm';
 
-import { adapters, canonicalUrl, dedupHash, isRelevant, isBreaking, shouldFeature } from '@korr/scrapers';
+import { adapters, canonicalUrl, dedupHash, scrapeRelevanceTier, isBreaking, shouldFeature } from '@korr/scrapers';
 import type { OutletSlug, ScrapedArticle } from '@korr/scrapers';
 import { schema } from '@/lib/db';
 import { getDb } from '@/lib/db';
@@ -157,19 +157,18 @@ async function persistArticles(
   let totalInputTokens = 0;
   let totalOutputTokens = 0;
 
-  // A scrape-osztályozás (excerpt/tag finomítás) opcionális és külön költség —
-  // alapból KI van kapcsolva, csak SCRAPE_AI=1 esetén fut. A detektorok ettől
-  // függetlenül futnak (azok a lényeg). Bármelyik LLM-kulcs elég hozzá.
-  const useAi =
-    process.env.SCRAPE_AI === '1' &&
-    Boolean(process.env.LLM_API_KEY || process.env.ANTHROPIC_API_KEY);
+  // Scrape-relevancia 3 kupacban (003): a "biztos jó" és "biztos kuka" kulcsszó/
+  // URL alapján dől el INGYEN; az AI CSAK a bizonytalan "maybe" kupacra fut, ha
+  // van LLM-kulcs. Így olcsó marad, mégis kiszűri a külföld/szemét híreket.
+  const useAi = Boolean(process.env.LLM_API_KEY || process.env.ANTHROPIC_API_KEY);
 
   for (const a of scraped) {
-    // 1. Gyors kulcsszavas előszűrés — ha nem releváns és nem default-relevant, skip
-    const keywordPass = relevantByDefault || isRelevant(a.headline, a.excerpt);
-    if (!keywordPass) continue;
-
     const canonical = canonicalUrl(a.sourceUrl, allowlist);
+
+    // 1. Ingyenes előszűrés (kulcsszó + URL-szekció).
+    const tier = scrapeRelevanceTier(a.headline, a.excerpt, canonical, relevantByDefault);
+    if (tier === 'out') continue; // biztos kuka — AI nélkül eldobjuk
+
     const hash = dedupHash(canonical);
 
     let finalExcerpt = a.excerpt;
@@ -178,22 +177,20 @@ async function persistArticles(
     // Breaking-jelölt: börtön/eljárás-trigger + figyelt személy/ügy (kulcsszavas, AI nélkül).
     const finalBreaking = isBreaking(a.headline, a.excerpt);
 
-    // 2. AI-alapú finomítás: okosabb relevancia + excerpt + tag
-    if (useAi) {
+    // 2. AI CSAK a bizonytalan "maybe" kupacra (és csak ha van kulcs).
+    if (tier === 'maybe' && useAi) {
       try {
         const ai = await classifyArticle(a.headline, a.excerpt);
         totalInputTokens += ai.inputTokens;
         totalOutputTokens += ai.outputTokens;
 
-        // Ha az AI nem-relevánsnak ítéli ÉS nem relevantByDefault forrás, kihagyjuk
-        if (!ai.relevant && !relevantByDefault) continue;
+        if (!ai.relevant) continue; // az AI szerint szemét → eldobjuk
 
         finalExcerpt = ai.excerpt || a.excerpt;
         if (ai.tag) finalTag = ai.tag;
-        // Ha az AI relevansnak ítéli a lemondás/kirúgás kulcsszó nélkül is, featured lehet
         if (ai.relevant && ai.tag === 'lemondás') finalFeatured = true;
       } catch {
-        // API hiba esetén folytatjuk az eredeti adatokkal
+        // API hiba esetén megtartjuk (megbízható forrás), eredeti adatokkal
       }
     }
 
