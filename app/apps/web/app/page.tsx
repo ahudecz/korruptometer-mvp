@@ -18,7 +18,10 @@ import { BreakingBanner } from './_home/breaking-banner';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './_home/galeria-config';
 import { NewsCardImage } from './hirek/news-card-image';
 
-export const dynamic = 'force-dynamic';
+// 003: a nyitóoldalt gyorsítótárazzuk (ISR) a force-dynamic helyett — ez vágja
+// a legtöbb Fluid Active CPU-t. 10 percenként regenerálódik; az admin
+// elfogad/eldob ettől függetlenül revalidatePath-tal azonnal frissít.
+export const revalidate = 600;
 
 const PALETTE_MONEY = ['#e31937', '#171a20', '#5c5e62', '#9b9da1', '#cccccc', '#e6e6e6'];
 
@@ -396,7 +399,7 @@ export default async function HomePage() {
               </div>
             </div>
             <div className="stat-unit stat-unit-notice" style={{ marginTop: 16 }}>
-              NKA-botrány: 6 fő · Parkfenntartás: 6 politikus · összesen {pretrialCountDb} fő előzetesben ·{' '}
+              NKA-botrány: 6 fő · Parkfenntartás: 8 fő (6 politikus + 2 vállalkozó) · összesen {pretrialCountDb} fő előzetesben ·{' '}
               <a
                 href="/birosagi-iteletek"
                 style={{ color: 'var(--accent)', fontWeight: 600 }}

@@ -14,7 +14,7 @@ const FAILURE_DISABLE_THRESHOLD = 5;
 const ZERO_ARTICLE_ALERT_THRESHOLD = 5;
 
 /**
- * scrape.news (T151) — runs every 30 min on a cron, fans out one
+ * scrape.news (T151) — runs every 2 hours on a cron, fans out one
  * step.run per enabled Source, persists new NewsArticle rows deduped by
  * sourceUrlHash, writes a ScraperRun row, bumps Source.lastScrapedAt /
  * lastSuccessAt / consecutiveFailures, auto-disables a source after 5
@@ -27,7 +27,7 @@ const ZERO_ARTICLE_ALERT_THRESHOLD = 5;
  */
 export const scrapeNews = inngest.createFunction(
   { id: 'scrape-news', name: 'Scrape news', concurrency: 2 },
-  { cron: '*/30 * * * *' },
+  { cron: '0 */2 * * *' },
   async ({ step, logger }) => {
     const db = getDb();
 

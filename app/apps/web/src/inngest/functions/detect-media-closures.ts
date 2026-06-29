@@ -23,7 +23,7 @@ const CLOSURE_KEYWORDS = [
  */
 export const detectMediaClosures = inngest.createFunction(
   { id: 'detect-media-closures', name: 'Detect media closures', concurrency: 1 },
-  { cron: '30 * * * *' },
+  { cron: '40 */2 * * *' },
   async ({ step, logger }) => {
     const db = getDb();
 

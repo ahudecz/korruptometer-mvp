@@ -24,7 +24,7 @@ const VERDICT_KEYWORDS = [
  */
 export const detectVerdicts = inngest.createFunction(
   { id: 'detect-verdicts', name: 'Detect court verdicts and pretrial detentions', concurrency: 1 },
-  { cron: '15 * * * *' },
+  { cron: '30 */2 * * *' },
   async ({ step, logger }) => {
     const db = getDb();
 
