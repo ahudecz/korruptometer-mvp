@@ -120,6 +120,15 @@ export default async function AdatbazisPage({
         <h2 className="section-title">Az ügyek nyilvántartása.</h2>
       </div>
 
+      <p className="section-partner-note">
+        Együttműködő partnerünk a{' '}
+        <a href="https://k-monitor.hu" target="_blank" rel="noopener noreferrer">
+          <strong>K-Monitor</strong>
+        </a>{' '}
+        — az ő teljes, nyilvánosan hozzáférhető adatbázisuk (64 000+ dokumentált eset) szolgál
+        az itt látható elemzés alapjául. Az adatokat feldolgoztuk, szűrtük és rendszerezve jelenítjük meg.
+      </p>
+
       <CaseFilters offences={offences} initial={initial} />
 
       <div className="db-meta">

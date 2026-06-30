@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { desc } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { UGYEK } from '../_home/ugyek-config';
+import { FtValue } from '../_home/ft-value';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,16 +10,6 @@ const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.'
 
 function fmtDate(d: Date): string {
   return `${d.getFullYear()}. ${HU_MONTHS[d.getMonth()]} ${d.getDate()}.`;
-}
-
-function fmtFt(n: bigint): string {
-  const v = Number(n);
-  if (v >= 1_000_000_000) {
-    const b = Math.floor((v / 1_000_000_000) * 10) / 10;
-    return `${b.toLocaleString('hu-HU', { maximumFractionDigits: 1 })} Mrd Ft`;
-  }
-  if (v >= 1_000_000) return `${Math.floor(v / 1_000_000)} M Ft`;
-  return `${v.toLocaleString('hu-HU')} Ft`;
 }
 
 function firstSentence(text: string): string {
@@ -80,7 +71,7 @@ export default async function VisszaszerzettVagyonPage({
 
         <p className="rogues-deck" style={{ marginTop: 24, marginBottom: 40, color: 'var(--ink)' }}>
           Az eljárások során visszautalt, visszavont vagy visszakövetelt közpénzek nyilvántartása.
-          Összesen: <strong>{totalAll > 0n ? fmtFt(totalAll) : 'folyamatban'}</strong> — frissül
+          Összesen: <strong>{totalAll > 0n ? <FtValue n={totalAll} /> : 'folyamatban'}</strong> — frissül
           az ügyek előrehaladásával.
         </p>
 
@@ -116,7 +107,7 @@ export default async function VisszaszerzettVagyonPage({
                   )}
                   <div className="visszaszerzett-case-footer">
                     <div className="visszaszerzett-case-footer-lbl">Visszaszerzett vagyon összesen</div>
-                    <div className="visszaszerzett-case-total">{fmtFt(g.totalFt)}</div>
+                    <div className="visszaszerzett-case-total"><FtValue n={g.totalFt} /></div>
                   </div>
                 </Link>
               );
@@ -175,7 +166,7 @@ export default async function VisszaszerzettVagyonPage({
                     <td style={{ padding: '12px', color: 'var(--muted)', whiteSpace: 'nowrap' }}>{fmtDate(r.recoveredAt)}</td>
                     <td style={{ padding: '12px', fontWeight: 600, color: 'var(--ink)' }}>{r.caseLabel}</td>
                     <td style={{ padding: '12px', color: 'var(--muted)', maxWidth: 340 }}>{r.description}</td>
-                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 800, color: 'var(--accent)', whiteSpace: 'nowrap' }}>{fmtFt(r.amountFt)}</td>
+                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 800, color: 'var(--accent)', whiteSpace: 'nowrap' }}><FtValue n={r.amountFt} /></td>
                     <td style={{ padding: '12px' }}>
                       {r.sourceUrl ? (
                         <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--muted)', fontSize: 12 }}>

@@ -21,27 +21,46 @@ const HU_DATE = new Intl.DateTimeFormat('hu-HU', {
   day: '2-digit',
 });
 
-export function fmtFt(n: number | bigint): string {
+/**
+ * Strukturált pénz-formátum: a számérték és a mértékegység külön, hogy a UI
+ * reszponzívan válthasson hosszú ("Milliárd") és rövid ("Mrd") forma között.
+ * Csak a milliárdos sávnak van eltérő hosszú/rövid alakja; a többi azonos.
+ */
+export function fmtFtParts(n: number | bigint): {
+  value: string;
+  unitLong: string;
+  unitShort: string;
+} {
   const value = typeof n === 'bigint' ? Number(n) : n;
-  if (!Number.isFinite(value)) return '— Ft';
+  if (!Number.isFinite(value)) return { value: '—', unitLong: 'Ft', unitShort: 'Ft' };
   const abs = Math.abs(value);
 
   if (abs >= 1_000_000_000) {
-    const billions = Math.floor((abs / 1_000_000_000) * 10) / 10;
-    return `${formatHuDecimal(billions)} Mrd Ft`;
+    const billionsRaw = abs / 1_000_000_000;
+    // 100 Mrd alatt 1 tizedes (kifér, és pontosabb: „1,6 Mrd"); 100 Mrd felett
+    // tizedes nélkül, mert a hatalmas összeg (pl. 23 167) így fér egy sorba.
+    const value =
+      billionsRaw >= 100
+        ? HU_NUMBER.format(Math.floor(billionsRaw))
+        : (Math.floor(billionsRaw * 10) / 10).toLocaleString('hu-HU', { maximumFractionDigits: 1 });
+    return { value, unitLong: 'Milliárd Ft', unitShort: 'Mrd Ft' };
   }
   if (abs >= 1_000_000) {
-    return `${Math.floor(abs / 1_000_000)} M Ft`;
+    return { value: String(Math.floor(abs / 1_000_000)), unitLong: 'M Ft', unitShort: 'M Ft' };
   }
   if (abs >= 1_000) {
-    return `${Math.floor(abs / 1_000)} e Ft`;
+    return { value: String(Math.floor(abs / 1_000)), unitLong: 'e Ft', unitShort: 'e Ft' };
   }
-  return `${HU_NUMBER.format(abs)} Ft`;
+  return { value: HU_NUMBER.format(abs), unitLong: 'Ft', unitShort: 'Ft' };
 }
 
-function formatHuDecimal(n: number): string {
-  // 4.2 → "4,2" ; 4 → "4"
-  return n.toLocaleString('hu-HU', { maximumFractionDigits: 1 });
+/**
+ * Sztring pénz-formátum. Alapból a hosszú alak ("… Milliárd Ft"); `short: true`
+ * esetén a tömör "… Mrd Ft" (szűk helyekre, ahol a hosszú nem fér ki).
+ */
+export function fmtFt(n: number | bigint, opts?: { short?: boolean }): string {
+  const { value, unitLong, unitShort } = fmtFtParts(n);
+  return `${value} ${opts?.short ? unitShort : unitLong}`;
 }
 
 export function fmtNumber(n: number): string {

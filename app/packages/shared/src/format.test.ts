@@ -19,14 +19,25 @@ describe('fmtFt magnitude buckets', () => {
     expect(fmtFt(999_999_999)).toBe('999 M Ft');
   });
 
-  it('switches to Mrd Ft at 1 000 000 000 with one Hungarian decimal', () => {
-    expect(fmtFt(1_000_000_000)).toBe('1 Mrd Ft');
-    expect(fmtFt(4_200_000_000)).toBe('4,2 Mrd Ft');
-    expect(fmtFt(12_500_000_000)).toBe('12,5 Mrd Ft');
+  it('keeps one decimal below 100 Mrd (fits, more precise)', () => {
+    expect(fmtFt(1_000_000_000)).toBe('1 Milliárd Ft');
+    expect(fmtFt(1_690_000_000)).toBe('1,6 Milliárd Ft');
+    expect(fmtFt(2_560_000_000)).toBe('2,5 Milliárd Ft');
+    expect(fmtFt(50_900_000_000)).toBe('50,9 Milliárd Ft');
+  });
+
+  it('drops the decimal at/above 100 Mrd (huge sums must fit one line)', () => {
+    expect(fmtFt(100_000_000_000)).toBe('100 Milliárd Ft');
+    expect(fmtFt(250_900_000_000)).toBe('250 Milliárd Ft');
+  });
+
+  it('uses the short Mrd Ft form when opts.short is set', () => {
+    expect(fmtFt(1_690_000_000, { short: true })).toBe('1,6 Mrd Ft');
+    expect(fmtFt(250_000_000_000, { short: true })).toBe('250 Mrd Ft');
   });
 
   it('accepts bigint inputs', () => {
-    expect(fmtFt(4_200_000_000n)).toBe('4,2 Mrd Ft');
+    expect(fmtFt(1_690_000_000n)).toBe('1,6 Milliárd Ft');
   });
 });
 

@@ -94,10 +94,20 @@ Politikailag kötött személynek minősül:
 - NER-hez kötött vállalkozók, tanácsadók
 - Pártvezetők, politikai tisztségviselők
 
+FONTOS — nem politikusok is beleszámítanak: ha valakit egy POLITIKAI vagy
+KÖZPÉNZES korrupciós ügyben tartóztatnak le / állítanak bíróság elé, akkor
+akkor is jelöld, ha ő maga nem politikus és nem NER-közeli. Ide tartoznak pl.:
+- Közbeszerzést nyerő vállalkozók, alvállalkozók, cégtulajdonosok
+- Kenőpénz-közvetítők, strómanok, tanácsadók
+- Bárki, aki az ügy gyanúsítottja/vádlottja a politikusok mellett
+Példa: a parkfenntartási kenőpénzbotrányban a politikusok mellett letartóztatott
+parkfenntartó vállalkozó és a kenőpénz-közvetítő is beleszámít.
+
 Csak akkor jelöld isVerdict=true-val, ha:
 - Egyértelmű, hogy bírósági döntés, előzetes letartóztatás, vagy formális vádemelés történt
 - Magyar ügyre vonatkozik
-- Politikailag kötött személyről van szó
+- Az érintett politikailag kötött személy, VAGY egy politikai/közpénzes
+  korrupciós ügy gyanúsítottja/vádlottja (akkor is, ha nem politikus)
 
 Ne jelöld, ha:
 - Csak nyomozás folyik (előzetes letartóztatás nélkül)

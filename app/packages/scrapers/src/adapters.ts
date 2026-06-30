@@ -14,6 +14,7 @@ import { rtl } from './rtl';
 import { kmonitorNews } from './kmonitor-news';
 import { media1 } from './media1';
 import { portfolio } from './portfolio';
+import { panyiszabolcs } from './panyiszabolcs';
 import type { OutletAdapter, OutletSlug } from './types';
 
 export const adapters: Record<OutletSlug, OutletAdapter> = {
@@ -33,6 +34,7 @@ export const adapters: Record<OutletSlug, OutletAdapter> = {
   'kmonitor-news': kmonitorNews,
   media1,
   portfolio,
+  panyiszabolcs,
 };
 
 export function getAdapter(slug: string): OutletAdapter | null {

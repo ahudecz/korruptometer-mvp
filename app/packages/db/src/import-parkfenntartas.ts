@@ -54,9 +54,34 @@ async function main() {
       position: 'MSZP, volt OGY-képviselő',
       summary: 'Az MSZP korábbi országgyűlési képviselőjét 2026. június 4-én tartóztatta le a Fővárosi Törvényszék a parkfenntartási kenőpénzbotrányban. Gyanú: befolyással üzérkedés és vesztegetés.',
     },
-  ];
+    // A két vállalkozó — nem politikusok, de a politikai korrupciós ügyben
+    // tartóztatták le őket, ezért beleszámítanak az előzetesben lévők közé.
+    {
+      personName: 'Z. Zsolt',
+      position: 'Parkfenntartó vállalkozó (Pannon Park Forest Kft.)',
+      crimes: ['vesztegetés'],
+      summary: 'Z. Zsolt parkfenntartó vállalkozót — akinek cégei 2011–2024 között milliárdos közpénzes szerződéseket nyertek — 2026. június 4-én vette előzetes letartóztatásba a Fővárosi Törvényszék a parkfenntartási kenőpénzbotrányban. Vallomása szerint közel 2 milliárd forint kenőpénzt fizetett politikusoknak.',
+    },
+    {
+      personName: 'Pék',
+      position: 'Közvetítő a parkfenntartási kenőpénzbotrányban',
+      crimes: ['befolyással üzérkedés', 'vesztegetés'],
+      summary: '„Pék" — a kenőpénzt közvetítő személy — 2026. június 4-én került előzetes letartóztatásba a parkfenntartási kenőpénzbotrányban. A vallomások szerint rajta keresztül áramlott a kenőpénz Budapest több kerületének politikusaihoz.',
+    },
+  ] as Array<{ personName: string; position: string; summary: string; crimes?: string[] }>;
 
+  let added = 0;
   for (const p of persons) {
+    // Idempotens: ha már szerepel ugyanazon ügyben, kihagyjuk.
+    const existing = await sql`
+      SELECT 1 FROM "CourtVerdict"
+      WHERE "personName" = ${p.personName} AND "personUgyId" = ${'parkfenntartas'}
+      LIMIT 1
+    `;
+    if (existing.length > 0) {
+      console.log('Már létezik, kihagyva:', p.personName);
+      continue;
+    }
     const id = randomUUID();
     await sql`
       INSERT INTO "CourtVerdict" (
@@ -79,7 +104,7 @@ async function main() {
         ${id},
         ${p.personName},
         ${p.position},
-        ${pgArr(['befolyással üzérkedés', 'vesztegetés'])}::text[],
+        ${pgArr(p.crimes ?? ['befolyással üzérkedés', 'vesztegetés'])}::text[],
         ${0},
         ${null},
         ${'előzetesben'},
@@ -93,11 +118,12 @@ async function main() {
         ${'parkfenntartas'}
       )
     `;
+    added++;
     console.log('Hozzáadva:', p.personName, id);
   }
 
   await sql.end();
-  console.log('\nKész — 6 személy importálva a parkfenntartási ügyhöz.');
+  console.log(`\nKész — ${added} új személy importálva a parkfenntartási ügyhöz (összesen 8 érintett: 6 politikus + 2 vállalkozó).`);
 }
 
 main().catch(console.error);

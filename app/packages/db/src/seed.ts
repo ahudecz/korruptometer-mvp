@@ -81,6 +81,7 @@ const SOURCE_DATA = [
   { slug: 'valasz', name: 'Válasz Online', homepage: 'https://www.valaszonline.hu', tag: 'national' as const },
   { slug: 'nepszava', name: 'Népszava', homepage: 'https://nepszava.hu', tag: 'national' as const },
   { slug: 'jambor', name: 'Jámbor András', homepage: 'https://www.jamborandras.hu', tag: 'newsletter' as const },
+  { slug: 'panyiszabolcs', name: 'Panyi Szabolcs', homepage: 'https://panyiszabolcs.substack.com', tag: 'investigative' as const },
 ];
 
 const ARTICLE_SEED: { sourceSlug: string; headline: string; excerpt: string; url: string; published: string; tag: string | null; relatedCaseId: string | null; featured?: boolean }[] = [

@@ -44,6 +44,7 @@
     "add-nka-resignations": "tsx src/add-nka-resignations.ts",
     "import-hont": "tsx src/import-hont.ts",
     "add-rtl": "tsx src/add-rtl-source.ts",
+    "add-panyiszabolcs": "tsx src/add-panyiszabolcs-source.ts",
     "import-volvo-gate": "tsx src/import-volvo-gate.ts",
     "import-muzeum": "tsx src/import-muzeum.ts",
     "add-tv2-resignations": "tsx src/add-tv2-resignations.ts",
