@@ -7,6 +7,7 @@ import { FtValue } from '../../_home/ft-value';
 import { GALERIA } from '../../_home/galeria-config';
 import { WATCH_LIST } from '../../_home/watchlist-config';
 import { getCaseOverride } from '../../_home/case-detail-config';
+import { getCaseVideo } from '../../_home/case-video-registry';
 import { DamageFigure } from '../_components/damage-figure';
 import { CaseTimeline } from '../_components/case-timeline';
 import { DescBlock } from '../_components/desc-block';
@@ -167,6 +168,9 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
   // Only a vetted editorial summary appears in the hero.
   const summaryText = override?.summary ?? null;
 
+  // Per-person YouTube video (registry); override.video wins.
+  const caseVideo = override?.video ? null : getCaseVideo(scandal.person);
+
   // Procedural stage is only meaningful when we actually have corroborating
   // coverage. A lone default 'reported' on a 1-article case is noise, not fact.
   const procWeak =
@@ -269,6 +273,31 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
             <p className="ugy-sources-disclaimer" style={{ marginTop: 16 }}>{gen.attribution}</p>
           )}
         </div>
+
+        {/* ── Case video (registry, by primary person) ── */}
+        {caseVideo && (
+          <div className="person-video-section">
+            {(caseVideo.channel || caseVideo.title) && (
+              <div className="person-video-teaser">
+                {caseVideo.channel && <div className="person-video-teaser-channel">{caseVideo.channel}</div>}
+                {caseVideo.title && <h3 className="person-video-teaser-title">{caseVideo.title}</h3>}
+              </div>
+            )}
+            <div className="person-video-wrap">
+              <iframe
+                src={`https://www.youtube.com/embed/${caseVideo.videoId}`}
+                title={caseVideo.title ?? title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+            {caseVideo.moreUrl && (
+              <Link href={caseVideo.moreUrl} className="person-case-source" style={{ marginTop: 12, display: 'inline-block' }}>
+                {caseVideo.moreLabel ?? 'Tovább →'}
+              </Link>
+            )}
+          </div>
+        )}
 
         {/* ── Procedural timeline (only when corroborated, not a default stub) ── */}
         {/* Eljárási állapot elrejtve: a pipeline proceduralStage-e megbízhatatlan,
@@ -441,7 +470,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
                         </div>
                       )}
                       <Link href={`/adatbazis/${encodeURIComponent(r.id)}`} className="person-case-source">
-                        Részletek · {fmtNumber(r.article_count)} cikk →
+                        Részletek →
                       </Link>
                     </div>
                   </div>
