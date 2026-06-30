@@ -1,0 +1,95 @@
+{
+ "ner-milliardok": {
+  "blocks": [
+   {
+    "type": "text",
+    "content": "Mészáros Lőrinc az elmúlt másfél évtized alatt a Nemzeti Együttműködés Rendszerének (NER) egyik legjelentősebb üzletembere lett. Az Orbán-kormányzat alatt konszolidálódott hálózatban, amely a Simicska Lajossal való szakítás után több, kormányhoz közel álló vállalkozót támogatott, Mészáros kivételes helyzetűvé vált. Több száz milliárd forint közpénz áramlott az ő érdekeltségei alá, továbbá kollégáival, elsősorban Tiborcz Istvánnal együttműködve magántőkealapok révén újabb közpénzeket játszottak át magánkezekbe. Ezek az alapok a sajtó szerint többek között 2600 milliárd forintnyi közpénzt osztottak fel, melyből Mészáros és Tiborcz fennhatósága alá több száz milliárd került."
+   },
+   {
+    "type": "article-card",
+    "source": "HVG360",
+    "headline": "2600 milliárd forintnyi közpénznek menne utána a Tisza - tényleg vége Mészáros és Tiborcz rejtőzködésének?",
+    "date": "2026-06-10",
+    "url": "https://hvg.hu/360/20260610_magantokealap-tulajdonosok-nyilvanossag-tisza-kormany-ner",
+    "lead": "A Transparency International szerint Mészáros és Tiborcz fennatartása alatt több mint félezer milliárd forint közpénz áramlott magántőkealapokba, amely a kormányváltás után az EU-s nyomásra végre nyilvántartásra kerülhetne."
+   },
+   {
+    "type": "text",
+    "content": "A Hungarikum Alkusz biztosítási alkusz cég Mészáros Lőrinc és Keszthelyi Erik közös tulajdona lett 2018 után, amikor Mészáros belépett a korábban Keszthelyit egyedül vezető cégbe. Az elmúlt évek során a Hungarikum abszolút piaci elsőbbségre tett szert az állami és önkormányzati ügyfelekeknél, erőteljes politikai támogatást élvezve. A sajtó szerint a cég korábban akár 30–40 százalékos díjazási arányt gyakorolt a biztosítási díjból, amely a piacon szokásosnál kétszer magasabb volt. Az árbevétel és profit szédítő ütemben nőtt: öt év alatt mindkettő megközelítőleg a négyszeresére emelkedett. A 2024-es év során 28,5 milliárd forintos árbevételből csaknem 15 milliárd forint profit keletkezett, amelyből a két tulajdonos 8,6 milliárdot osztalékként vett ki fele-fele alapon."
+   },
+   {
+    "type": "article-card",
+    "source": "HVG360",
+    "headline": "Meglepő új stratégiát hirdetett a Hungarikum Alkusz, amely a kormányváltás után is kapaszkodik az állami ügyfelekbe",
+    "date": "2026-06-22",
+    "url": "https://hvg.hu/360/20260622_keszthelyi-erik-hungarikum-alkusz-kormanyvaltas-allam-ugyfel-biztositas",
+    "lead": "A Mészáros Lőrinc és Keszthelyi Erik tulajdonában lévő Hungarikum Alkusz az előző 13 évben monopóliumot szerzett az állami ügyfélkör biztosítási közvetítésében, ahol korábban akár 30-40 százalékos jutalékot érdemelt el."
+   },
+   {
+    "type": "text",
+    "content": "A magántőkealapok rendszere neuralgikus ponttá vált a közpénzátcsatornázás során. Ezek a jogi konstrukciók a sajtó szerint ideálisnak bizonyultak arra, hogy közpénzeket játsszanak át látszólag legális, papírozott módon magánkezekbe. A legalább 2600 milliárd forintnyi közpénz nyomán Mészáros és Tiborcz fennhatósága alá tekintélyes fővárosi ingatlanportfólió került, köztük Váci Greens irodaházak, Infopark-épületek és más presztízs ingatlanok. Az uniós nyomásra az Orbán-kormány arra kényszerült, hogy előírja a tényleges tulajdonosok nyilvántartását, azonban a nyilvánosságot brutálisan szűk körre korlátozta."
+   },
+   {
+    "type": "text",
+    "content": "A kormányváltás után a Tisza párt és az új kormányzat vizsgálatok megindítására készült. A Nemzeti Vagyonvisszaszerzési és Védelmi Hivatal (NVVH) feladata az elmúlt húsz év közvagyont érintő visszaéléseinek feltárása, korrupciós és vagyonkimentési konstrukciók kivizsgálása, valamint a jogellenesen megszerzett közvagyon visszaszerzésének támogatása lett. Az Integritás Hatóság vezetője, Bíró Ferenc szerint az elmúlt három évben a szervezet politikailag érzékeny ügyeket tártak fel, amelyekben a korrupció jelenlétét gyanúsítják. Az instancia arra használódott, hogy uniós pénzek szabályszerű elköltésé felügyeljék és a visszaéléseket feltárják."
+   },
+   {
+    "type": "article-card",
+    "source": "444",
+    "headline": "Mészáros Lőrinctől Rogánon át Lázár Jánosig: kiket és miket vizsgálhat a Vagyonvisszaszerzési Hivatal?",
+    "date": "2026-06-24",
+    "url": "https://444.hu/2026/06/24/meszaros-lorinctol-roganon-at-lazar-janosig-kiket-es-miket-vizsgalhat-a-vagyonvisszaszerzesi-hivatal",
+    "lead": "A kormányváltás után megalakított Nemzeti Vagyonvisszaszerzési és Védelmi Hivatal kifejezetten a korábbi húsz év közvagyont érintő visszaéléseinek és vagyonkimentési konstrukcióinak a kivizsgálására jött létre."
+   },
+   {
+    "type": "text",
+    "content": "A sajtó által feltárt számok szerint legalább 2600 milliárd forint közpénz irányított magántőkealapokba, illetve a Hungarikum alkusz évente több milliárd forintot szerzett az állami és önkormányzati ügyfélkörtől. A legfontosabb nyitott kérdés az, hogy az új hatóságok milyen eredményre jutnak a jogellenesen szerzett vagyon visszaszerzésében, illetve hogy Mészáros és társasága tevékenysége mennyire bizonyítható szisztematikus korrupció vagy jogellenességként. A sajtó szerint a felelősök felkutatása helyett az előző kormányzat unter időben próbálta elsimítani az ügyeket."
+   }
+  ],
+  "relatedNews": [
+   {
+    "source": "HVG360",
+    "headline": "Az MFB-t még azelőtt meg kell szabadítani a csontvázaktól, hogy százmilliárdok kerülnének oda az EU-ból",
+    "date": "2026-06-18",
+    "url": "https://hvg.hu/360/20260618_hitelezok-harca-bukik-mfb-haszonlesok-romeltakaritas-hvg"
+   },
+   {
+    "source": "444",
+    "headline": "Az igazi bőség utolsó éve: rengeteg pénzzel gyarapodtak még idén is a NER kegyeltjei",
+    "date": "2026-06-12",
+    "url": "https://444.hu/2026/06/12/az-igazi-boseg-utolso-eve-rengeteg-penzzel-gyarapodtak-meg-iden-is-a-ner-kegyeltjei"
+   },
+   {
+    "source": "24.hu",
+    "headline": "Elítélték a volt győri rendőrkapitány fiát az apja ellen folyó perben - letartóztatása után még egyszer lebukott az exrendőr",
+    "date": "2026-06-11",
+    "url": "https://24.hu/belfold/2026/06/11/vaczi-attila-gyori-rendorkapitany-buntetoper-24extra/"
+   },
+   {
+    "source": "mfor.hu",
+    "headline": "Lesz mit vizsgálni: 40 milliárd forint ömlött a választásokig a közmédiára",
+    "date": "2026-06-10",
+    "url": "https://mfor.hu/cikkek/makro/lesz-mit-vizsgalni-40-milliard-forint-omlott-a-valasztasokig-a-kozmediara.html"
+   },
+   {
+    "source": "HVG360",
+    "headline": "Tőkéstárs vagy tettestárs? Keresik a fogást Mészáros és Tiborcz bankjain",
+    "date": "2026-06-09",
+    "url": "https://hvg.hu/360/20260609_hvg-mbh-granit-mfb-mnb-allam-magantokealapok-meszaros-lorinc-tiborcz-istvan-matolcsy-adam-vagyonvisszaszerzes"
+   },
+   {
+    "source": "mfor.hu",
+    "headline": "Váratlanul véget ért Mészáros Lőrinc és Száraz István szárnyaló üzleti kapcsolata",
+    "date": "2026-06-08",
+    "url": "https://mfor.hu/cikkek/makro/varatlanul-veget-ert-meszaros-lorinc-es-szaraz-istvan-szarnyalo-uzleti-kapcsolata.html"
+   },
+   {
+    "source": "Portfolio",
+    "headline": "Kitálalt az állami hivatal vezetője: 60 ezer milliárd forintot lophattak el Magyarországon, két miniszter is megüzente, hogy álljon le",
+    "date": "2026-06-08",
+    "url": "https://www.portfolio.hu/unios-forrasok/20260608/kitalalt-az-allami-hivatal-vezetoje-60-ezer-milliard-forintot-lophattak-el-magyarorszagon-ket-miniszter-is-meguzente-hogy-alljon-le-841798"
+   }
+  ],
+  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
+ }
+}

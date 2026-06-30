@@ -3769,10 +3769,21 @@ button {
   margin-top: 4px;
   align-self: flex-start;
 }
+.media-card-owner-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
 .media-card-owner {
   font-size: 10px;
   color: var(--muted);
   letter-spacing: 0.05em;
+}
+.media-card-source {
+  font-size: 11px;
+  color: #999;
+  line-height: 1.4;
 }
 
 /* KPI–03 visszaszerzett vagyon ledger */
@@ -10637,3 +10648,109 @@ code {
   border-radius: 3px;
   color: var(--ink);
 }
+
+/* Pénzösszeg reszponzív mértékegysége (Milliárd ↔ Mrd) — lásd _home/ft-value.tsx.
+   Desktopon a teljes „Milliárd Ft", szűk (mobil) nézetben a tömör „Mrd Ft". */
+.ft-unit-short { display: none; }
+@media (max-width: 768px) {
+  .ft-unit-long { display: none; }
+  .ft-unit-short { display: inline; }
+}
+
+/* Az egység („Milliárd Ft" / „Mrd Ft") kisebb betűs a szám mellett, hogy a
+   hatalmas összegek (pl. 23 167 Mrd Ft) is egy sorba férjenek. Az em miatt a
+   szám betűméretéhez skálázódik. A nowrap megakadályozza a kettétörést. */
+.ft-amount { white-space: nowrap; }
+.ft-unit-long,
+.ft-unit-short,
+.ft-unit-fixed {
+  font-size: 0.55em;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+/* ── 004-case-detail-pages: damage figure + procedural timeline ─────────── */
+.case-section { margin-top: 56px; }
+
+.case-damage { display: flex; flex-direction: column; gap: 4px; }
+.case-damage-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--muted);
+}
+.case-damage-value { font-size: clamp(28px, 4vw, 40px); font-weight: 800; line-height: 1.05; color: var(--ink); }
+.case-damage--soft .case-damage-pending {
+  display: inline-block; font-size: 18px; font-weight: 700; color: var(--ink-2);
+  border: 1px dashed var(--line-strong); border-radius: 999px; padding: 4px 14px; width: fit-content;
+}
+.case-damage-basis { font-size: 13px; color: var(--ink-2); max-width: 560px; margin-top: 2px; }
+
+.case-timeline { margin-top: 8px; }
+.case-timeline-steps {
+  display: flex; flex-wrap: wrap; gap: 0; list-style: none; padding: 0; margin: 0;
+  counter-reset: step;
+}
+.case-timeline-step {
+  position: relative; flex: 1 1 0; min-width: 92px; padding: 0 4px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;
+}
+.case-timeline-step::before {
+  content: ''; position: absolute; top: 7px; left: -50%; width: 100%; height: 2px;
+  background: var(--line); z-index: 0;
+}
+.case-timeline-step:first-child::before { display: none; }
+.case-timeline-step.is-done::before,
+.case-timeline-step.is-current::before { background: var(--accent); }
+.case-timeline-marker {
+  position: relative; z-index: 1; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--bg); border: 2px solid var(--line-strong);
+}
+.case-timeline-step.is-done .case-timeline-marker { background: var(--accent); border-color: var(--accent); }
+.case-timeline-step.is-current .case-timeline-marker {
+  background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft);
+}
+.case-timeline-step-label { font-size: 11px; line-height: 1.25; color: var(--ink-2); }
+.case-timeline-step.is-current .case-timeline-step-label { color: var(--ink); font-weight: 700; }
+
+.case-timeline-terminal {
+  display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700;
+  color: var(--ink); border: 1px solid var(--line-strong); border-radius: 999px; padding: 8px 18px;
+}
+.case-timeline-terminal-dot { width: 10px; height: 10px; border-radius: 50%; background: #4a6a8a; }
+.case-timeline-authority { margin-top: 14px; font-size: 13px; color: var(--ink-2); }
+.case-timeline-note { margin-top: 10px; font-size: 13px; color: var(--muted); }
+
+@media (max-width: 640px) {
+  .case-timeline-steps { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .case-timeline-step { flex-direction: row; min-width: 0; width: 100%; gap: 12px; text-align: left; }
+  .case-timeline-step::before {
+    top: -7px; left: 7px; width: 2px; height: 14px;
+  }
+  .case-timeline-step:first-child::before { display: none; }
+  .case-timeline-step-label { font-size: 13px; }
+}
+
+/* ── 004 design-javítások: hero kár-doboz sötét háttéren, kattintható kártyák ── */
+/* #2 — a hero (sötét) háttéren a kár-doboz szövege legyen világos */
+.person-hero .case-damage-label { color: rgba(255,255,255,0.6); }
+.person-hero .case-damage-value { color: #fff; }
+.person-hero .case-damage-basis { color: rgba(255,255,255,0.82); }
+.person-hero .case-damage--soft .case-damage-pending {
+  color: #fff;
+  border-color: rgba(255,255,255,0.45);
+}
+
+/* #3 — kereszthivatkozás-kártyák: érzékelhető hover (emelkedés + háttér + szövegszín) */
+.ugyek-more-card { transition: border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s; }
+.ugyek-more-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.35); }
+.ugyek-more-card:hover .ugyek-more-title { color: #ff6b7d; }
+.ugyek-more-card:hover .ugyek-more-eyebrow,
+.ugyek-more-card:hover .ugyek-more-sub { color: rgba(255,255,255,0.88); }
+
+/* #4 — nyitóoldal / adatbázis táblasorok: a kattintható ügynév reagáljon sor-hoverre */
+.db-table tbody tr:hover .case-name { color: var(--accent); text-decoration: underline; }
+.case-name { transition: color 0.12s; }
+
+/* #4 — vissza-link hover-szín a végoldalon (a person-page/ugy-page kontextusban) */
+.back-link { transition: color 0.12s; }
+.ugy-page .back-link:hover,
+.person-page .back-link:hover { color: var(--accent); }
