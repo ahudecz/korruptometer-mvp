@@ -15,6 +15,11 @@ function fmtDateLong(d: Date): string {
 
 const VERDICT_PERSON_PHOTOS: Record<string, string> = {
   'Bús Balázs': '/images/persons/bus-balazs.png',
+  'Őrsi Gergely': '/images/persons/orsi-gergely.png',
+  'Láng Zsolt': '/images/persons/lang-zsolt.png',
+  'Puskás Péter': '/images/persons/puskas-peter.png',
+  'Molnár Zsolt': '/images/persons/molnar-zsolt.png',
+  'Ughy Attila': '/images/persons/ughy-attila.png',
 };
 
 const VERDICT_PERSON_QUOTES: Record<string, string> = {

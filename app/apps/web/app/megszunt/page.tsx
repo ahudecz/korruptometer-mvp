@@ -49,7 +49,7 @@ export default async function MegszuntPage() {
         </div>
 
         <p className="rogues-deck" style={{ marginTop: 24, marginBottom: 32, color: 'var(--ink)' }}>
-          NER-közeli médiumok, műsorok és rendezvények, amelyek 2026. április 12.
+          NER-közeli médiumok, műsorok, rendezvények és intézmények, amelyek 2026. április 12.
           óta megszűntek, leépítések áldozataivá váltak, vagy elmaradtak.
         </p>
 
