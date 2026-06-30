@@ -50,12 +50,14 @@ function MediaCard({ entry, subgrid = false }: { entry: MediaOutletEntry; subgri
       <div className="media-card-status" style={{ background: `${statusColor}22`, color: statusColor, border: `1px solid ${statusColor}55`, marginTop: 'auto' }}>
         {entry.statusLabel}
       </div>
-      <div className="media-card-owner">{entry.owner}</div>
-      {isPendingClosed && entry.sourceUrl && (
-        <div style={{ fontSize: '11px', color: '#999' }}>
-          * <a href={entry.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#e86000', textDecoration: 'underline' }}>{entry.sourceName ?? 'forrás'}</a> híre alapján
-        </div>
-      )}
+      <div className="media-card-owner-row">
+        <div className="media-card-owner">{entry.owner}</div>
+        {isPendingClosed && entry.sourceUrl && (
+          <div className="media-card-source">
+            * <a href={entry.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#e86000', textDecoration: 'underline' }}>{entry.sourceName ?? 'forrás'}</a> híre alapján
+          </div>
+        )}
+      </div>
       {(isClosed || isPendingClosed || isFired) && (
         <div className="mc-stamp" aria-hidden="true">
           {isClosed ? 'MEGSZŰNT' : isPendingClosed ? 'MEGSZŰNT*' : (
@@ -82,6 +84,42 @@ export function MediaClosuresSection() {
           A NER teljes sajtóbirodalma — KESMA napilapok, hetilapok, magazinok, online portálok, rádiók és TV-műsorok.
           A Mediaworks a KESMA leányvállalata. Ami megszűnt, azt jelöltük. Ami kirúgta az összes újságíróját, azt narancssárgával jelöltük.
         </p>
+
+        {/* Kiemelt breaking — intézmény megszűnése (Szuverenitásvédelmi Hivatal) */}
+        <a
+          href="https://telex.hu/velemeny/2026/06/30/szuverenitasvedelmi-hivatal-lanczi-tamas-nemzeti-erdek-borton"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'flex', gap: 16, alignItems: 'center', textDecoration: 'none', color: 'inherit',
+            margin: '8px 0 28px', padding: 16, border: '2px solid #E31937', borderRadius: 12,
+            background: '#fff9f9',
+          }}
+        >
+          <img
+            src="/images/persons/lanczi-tamas.png"
+            alt="Lánczi Tamás"
+            width={84}
+            height={84}
+            style={{ width: 84, height: 84, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
+          />
+          <div style={{ minWidth: 0 }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700,
+              letterSpacing: '0.06em', textTransform: 'uppercase', color: '#E31937', marginBottom: 6,
+            }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#E31937', display: 'inline-block' }} />
+              Breaking · 2026. jún. 30.
+            </span>
+            <div style={{ fontWeight: 700, fontSize: 16, lineHeight: 1.3, color: 'var(--ink)' }}>
+              Megszűnt a Szuverenitásvédelmi Hivatal
+            </div>
+            <p style={{ margin: '4px 0 0', fontSize: 13, lineHeight: 1.5, color: '#555' }}>
+              A Magyar Péter-kormány 2026. június 30-án megszüntette a Lánczi Tamás vezette
+              Szuverenitásvédelmi Hivatalt — az egyetlen intézmény a megszűntek között, nem médium. (Telex)
+            </p>
+          </div>
+        </a>
 
         {MEDIA_GROUPS.map(group => {
           const STATUS_ORDER: Record<string, number> = { closed: 0, 'pending-closed': 1, 'fired-staff': 2, active: 3 };
