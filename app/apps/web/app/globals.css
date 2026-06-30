@@ -10754,3 +10754,7 @@ code {
 .back-link { transition: color 0.12s; }
 .ugy-page .back-link:hover,
 .person-page .back-link:hover { color: var(--accent); }
+
+/* #3 (listák) — kattintható sor + nagyobb becsült kár szám */
+.db-table tbody tr.clickable-row { cursor: pointer; }
+.db-table .db-damage-cell { font-size: 17px; font-weight: 800; color: var(--ink); }

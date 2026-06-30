@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { sql } from 'drizzle-orm';
 
-import { fmtFt, fmtNumber } from '@korr/shared/format';
+import { fmtNumber } from '@korr/shared/format';
+import { FtValue } from '../_home/ft-value';
+import { CaseRow } from './_components/case-row';
 
 import { getDb } from '@/lib/db';
 
@@ -157,13 +159,12 @@ export default async function AdatbazisPage({
               <th>Felelős</th>
               <th>Intézmény</th>
               <th className="num">Cikkek</th>
-              <th>Státusz</th>
               <th className="num">Becsült kár (Ft)</th>
             </tr>
           </thead>
           <tbody>
             {page.map((c) => (
-              <tr key={c.id}>
+              <CaseRow key={c.id} href={`/adatbazis/${encodeURIComponent(c.id)}`}>
                 <td data-label="Ügy">
                   <Link href={`/adatbazis/${encodeURIComponent(c.id)}`} className="case-name">
                     {c.name}
@@ -179,15 +180,10 @@ export default async function AdatbazisPage({
                 <td className="num" data-label="Cikkek">
                   {fmtNumber(c.article_count)}
                 </td>
-                <td data-label="Státusz">
-                  <span className={c.is_open ? 'pill folyamatban' : 'pill lezarva'}>
-                    {c.is_open ? 'Folyamatban' : 'Lezárt'}
-                  </span>
+                <td className="num db-damage-cell" data-label="Becsült kár">
+                  {BigInt(c.damage_huf) > 0n ? <FtValue n={BigInt(c.damage_huf)} /> : '—'}
                 </td>
-                <td className="num" data-label="Becsült kár">
-                  {BigInt(c.damage_huf) > 0n ? fmtFt(BigInt(c.damage_huf)) : '—'}
-                </td>
-              </tr>
+              </CaseRow>
             ))}
           </tbody>
         </table>

@@ -13,6 +13,8 @@ import { ResignationsSection } from './_home/resignations-section';
 import { MediaClosuresSection } from './_home/media-closures-section';
 import { SubmissionCTA } from './_home/submission-cta';
 import { SocialFeed } from './_home/social-feed';
+import { FtValue } from './_home/ft-value';
+import { CaseRow } from './adatbazis/_components/case-row';
 import { BigCasesSection, type BigCaseConfig } from './_home/big-cases-section';
 import { BreakingBanner } from './_home/breaking-banner';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './_home/galeria-config';
@@ -337,7 +339,7 @@ export default async function HomePage() {
 
           <div className="hero-stats">
             <div className="hero-stat">
-              <div className="hero-stat-value">{fmtFt(totalDamage)}</div>
+              <div className="hero-stat-value"><FtValue n={totalDamage} mode="long" /></div>
               <div className="hero-stat-label">Dokumentált kár összesen</div>
             </div>
             <div className="hero-stat">
@@ -373,7 +375,7 @@ export default async function HomePage() {
               <div className="stat-label">Becsült / lehetséges kár</div>
               <div className="stat-id">/ KPI–01</div>
             </div>
-            <div className="stat-value">{fmtFt(totalDamage)}</div>
+            <div className="stat-value"><FtValue n={totalDamage} mode="short" /></div>
             <div className="stat-unit">
               K-Monitor adatbázis · valós dokumentált adatok · 8 ügy · 2017–2021
             </div>
@@ -417,7 +419,7 @@ export default async function HomePage() {
                 <Link href="/visszaszerzett-vagyon" className="stat-card-list-link">Teljes lista →</Link>
               </div>
             </div>
-            <div className="stat-value">{totalRecoveredFt > 0n ? fmtFt(totalRecoveredFt) : '—'}</div>
+            <div className="stat-value">{totalRecoveredFt > 0n ? <FtValue n={totalRecoveredFt} /> : '—'}</div>
             <div className="stat-unit stat-unit-fresh">
               frissül az eljárások előrehaladásával
             </div>
@@ -428,7 +430,7 @@ export default async function HomePage() {
                   <div className="stat-recovered-bar" />
                   <div className="stat-recovered-body">
                     <span className="stat-recovered-case">{r.caseLabel}</span>
-                    <span className="stat-recovered-amt">{fmtFt(r.amountFt)}</span>
+                    <span className="stat-recovered-amt"><FtValue n={r.amountFt} /></span>
                   </div>
                   <div className="stat-recovered-note">{r.description} · {fmtRecoveryDate(r.recoveredAt)}</div>
                 </Link>
@@ -764,13 +766,12 @@ export default async function HomePage() {
               <th>Felelős</th>
               <th>Intézmény</th>
               <th className="num">Cikkek</th>
-              <th>Státusz</th>
               <th className="num">Becsült kár (Ft)</th>
             </tr>
           </thead>
           <tbody>
             {recentScandals.map((c) => (
-              <tr key={c.id}>
+              <CaseRow key={c.id} href={`/adatbazis/${encodeURIComponent(c.id)}`}>
                 <td data-label="Ügy">
                   <Link href={`/adatbazis/${encodeURIComponent(c.id)}`} className="case-name">
                     {c.name}
@@ -786,15 +787,10 @@ export default async function HomePage() {
                 <td className="num" data-label="Cikkek">
                   {fmtNumber(c.article_count)}
                 </td>
-                <td data-label="Státusz">
-                  <span className={c.is_open ? 'pill folyamatban' : 'pill lezarva'}>
-                    {c.is_open ? 'Folyamatban' : 'Lezárt'}
-                  </span>
+                <td className="num db-damage-cell" data-label="Becsült kár">
+                  {BigInt(c.damage_huf) > 0n ? <FtValue n={BigInt(c.damage_huf)} /> : '—'}
                 </td>
-                <td className="num" data-label="Becsült kár">
-                  {BigInt(c.damage_huf) > 0n ? fmtFt(BigInt(c.damage_huf)) : '—'}
-                </td>
-              </tr>
+              </CaseRow>
             ))}
           </tbody>
         </table>
