@@ -78,6 +78,7 @@ type ProcRow = { proceduralStage: string | null; competentAuthority: string | nu
 type Member = { id: string; caseName: string | null; primaryPersonName: string | null; primaryEntityName: string | null; articleCount: number };
 type CrossRef = { id: string; name: string; person: string | null; institution: string | null; article_count: number; damage_huf: string; offence_labels: string | null };
 type Article = { id: string; headline: string; excerpt: string | null; sourceUrl: string; publishedAt: Date; source_name: string | null };
+type KmdbRow = { news_id: number; title: string; source_url: string; kmdb_url: string; newspaper: string | null; pub_time: string | null; total: number };
 
 export default async function ScandalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -97,7 +98,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
   const scandal = headRes[0];
   if (!scandal) notFound();
 
-  const [damageRows, procRows, members, crossRefs, articles] = await Promise.all([
+  const [damageRows, procRows, members, crossRefs, articles, kmdbArticles] = await Promise.all([
     db.execute(sql`
       SELECT d."totalHighHuf", d.confidence, d.basis, d.components
       FROM "DamageEstimate" d JOIN "Investigation" i ON i.id = d."investigationId"
@@ -133,6 +134,13 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
       WHERE i."scandalKey" = ${id}
       ORDER BY n."publishedAt" DESC LIMIT 24
     `) as unknown as Promise<Article[]>,
+    (db.execute(sql`
+      SELECT news_id, title, source_url, kmdb_url, newspaper, pub_time,
+             count(*) OVER()::int AS total
+      FROM "KmdbArticle"
+      WHERE ${scandal.person}::text IS NOT NULL AND ${scandal.person} = ANY(persons)
+      ORDER BY pub_time DESC LIMIT 40
+    `) as unknown as Promise<KmdbRow[]>).catch(() => [] as KmdbRow[]), // KmdbArticle may be absent (prod)
   ]);
 
   const damage = BigInt(scandal.damage_huf);
@@ -170,6 +178,17 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
 
   // Per-person YouTube video (registry); override.video wins.
   const caseVideo = override?.video ? null : getCaseVideo(scandal.person);
+
+  // Related news: curated (generated) set if present, otherwise the responsible
+  // person's real K-Monitor articles. Plus any daily-scrape linked articles.
+  const usingGenNews = (gen?.relatedNews?.length ?? 0) > 0;
+  const newsList: { source: string; date: string | null; headline: string; url: string }[] = [
+    ...(usingGenNews
+      ? gen!.relatedNews!.map((a) => ({ source: a.source, date: a.date, headline: a.headline, url: a.url }))
+      : kmdbArticles.map((a) => ({ source: a.newspaper ?? 'Forrás', date: a.pub_time, headline: a.title, url: a.source_url }))),
+    ...articles.map((a) => ({ source: a.source_name ?? 'Forrás', date: a.publishedAt.toISOString(), headline: a.headline, url: a.sourceUrl })),
+  ];
+  const kmdbTotal = kmdbArticles[0]?.total ?? 0;
 
   // Procedural stage is only meaningful when we actually have corroborating
   // coverage. A lone default 'reported' on a 1-article case is noise, not fact.
@@ -376,25 +395,22 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
           </div>
         )}
 
-        {/* ── Related news (K-Monitor sourced + daily scrape) — above persons ── */}
-        {(gen?.relatedNews?.length || articles.length > 0) ? (
+        {/* ── Related news — curated set, else the person's real K-Monitor articles ── */}
+        {newsList.length > 0 ? (
           <div className="person-news">
             <h2 className="person-section-title">Kapcsolódó hírek</h2>
             <p className="person-section-note">
-              A K-Monitor sajtóadatbázisból és a napi hírfolyamból — minden új cikk azonnal megjelenik.
+              {usingGenNews
+                ? 'A K-Monitor sajtóadatbázisból — az ügyhöz kötődő legfontosabb cikkek.'
+                : `A K-Monitor sajtóadatbázisból — ${fmtNumber(kmdbTotal)} cikk a felelős személyhez (a 40 legfrissebb).`}
             </p>
             <div className="person-news-list">
-              {gen?.relatedNews?.map((a, i) => (
-                <a key={`g${i}`} href={a.url} target="_blank" rel="noopener noreferrer" className="person-news-item">
+              {newsList.map((a, i) => (
+                <a key={i} href={a.url} target="_blank" rel="noopener noreferrer" className="person-news-item">
                   <span className="person-news-source">{a.source}</span>
-                  <span className="person-news-date">{fmtDate(new Date(a.date))}</span>
-                  <span className="person-news-headline">{a.headline}</span>
-                </a>
-              ))}
-              {articles.map((a) => (
-                <a key={a.id} href={a.sourceUrl} target="_blank" rel="noopener noreferrer" className="person-news-item">
-                  <span className="person-news-source">{a.source_name ?? 'Forrás'}</span>
-                  <span className="person-news-date">{fmtDate(a.publishedAt)}</span>
+                  <span className="person-news-date">
+                    {a.date && !Number.isNaN(Date.parse(a.date)) ? fmtDate(new Date(a.date)) : ''}
+                  </span>
                   <span className="person-news-headline">{a.headline}</span>
                 </a>
               ))}
