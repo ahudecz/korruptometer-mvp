@@ -47,9 +47,32 @@ const GALLERY_PERSONS = [
   'Semjén Zsolt',
 ];
 
+// Tisza-kormány miniszterei — kirúgás/felmentés esetén szerkesztői jóváhagyás kell.
+const MINISTER_PERSONS = [
+  'Magyar Péter',
+  'Orbán Anita',
+  'Ruff Bálint',
+  'Kármán András',
+  'Pósfai Gábor',
+  'Görög Márta',
+  'Hegedűs Zsolt',
+  'Lannert Judit',
+  'Kapitány István',
+  'Vitézy Dávid',
+  'Ruszin-Szendi Romulusz',
+  'Bóna Szabolcs',
+  'Kátai-Németh Vilmos',
+  'Lőrincz Viktória',
+  'Gajdos László',
+  'Tarr Zoltán',
+  'Tanács Zoltán',
+  'Forsthoffer Ágnes',
+];
+
 export const WATCHLIST_PERSONS: readonly string[] = [
   ...CALLED_TO_RESIGN,
   ...GALLERY_PERSONS,
+  ...MINISTER_PERSONS,
 ];
 
 // Pre-normalised token sets for matching.

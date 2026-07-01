@@ -72,10 +72,63 @@ const KEYWORDS = [
 // 'tisztítótűz' csak akkor releváns, ha politikai kontextusban szerepel
 const TISZTITOTUZ_CONTEXT = ['magyar péter', 'fidesz', 'vagyonvisszaszerzés'];
 
+// ─── Tisza-kormány / állami cégek — kirúgás-kombináció ────────────────────
+// Csak akkor 'in', ha a névre/cégre ÉS kirúgás/felmentés szóra egyszerre illeszkedik.
+// Így pl. Vitézy közlekedési híreit nem gyűjti be, csak a pozícióváltásait.
+const RESIGN_WATCHLIST_NAMES = [
+  // Tisza-kormány miniszterei
+  'magyar péter',
+  'orbán anita',
+  'ruff bálint',
+  'kármán andrás', 'kármán',
+  'pósfai gábor',
+  'görög márta',
+  'hegedűs zsolt',
+  'lannert judit',
+  'kapitány istván',
+  'vitézy dávid', 'vitézy',
+  'ruszin-szendi romulusz',
+  'bóna szabolcs',
+  'kátai-németh vilmos',
+  'lőrincz viktória',
+  'gajdos lászló',
+  'tarr zoltán',
+  'tanács zoltán',
+  'forsthoffer ágnes', 'forsthoffer',
+  // Legfőbb állami cégek
+  'mvm ', 'mvm zrt',
+  'máv ', 'máv-start', 'máv zrt',
+  'mol nyrt', 'mol zrt',
+  'magyar posta',
+  'nkm ', 'nkm energia',
+  'szerencsejáték zrt', 'szerencsejáték',
+  'mfb ', 'magyar fejlesztési bank',
+  'eximbank',
+  'hungarocontrol',
+  'bkk ', 'budapesti közlekedési',
+  'nhkv ',
+  'mti ', 'magyar távirati iroda',
+] as const;
+
+const RESIGN_TRIGGERS = [
+  'lemondott', 'lemondás', 'lemond',
+  'kirúgták', 'kirúgás', 'kirúgta',
+  'felmentette', 'felmentés', 'felmentették',
+  'leváltotta', 'leváltás', 'menesztette', 'menesztés',
+  'visszahívták', 'visszahívás',
+] as const;
+
+function isResignWatchlistEvent(headline: string, excerpt: string): boolean {
+  const text = `${headline} ${excerpt}`.toLowerCase();
+  if (!RESIGN_WATCHLIST_NAMES.some((n) => text.includes(n))) return false;
+  return RESIGN_TRIGGERS.some((t) => text.includes(t));
+}
+
 export function isRelevant(headline: string, excerpt: string): boolean {
   const text = `${headline} ${excerpt}`.toLowerCase();
   if (KEYWORDS.some((kw) => text.includes(kw))) return true;
   if (text.includes('tisztítótűz') && TISZTITOTUZ_CONTEXT.some((ctx) => text.includes(ctx))) return true;
+  if (isResignWatchlistEvent(headline, excerpt)) return true;
   return false;
 }
 

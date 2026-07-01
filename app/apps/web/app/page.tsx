@@ -401,7 +401,7 @@ export default async function HomePage() {
               </div>
             </div>
             <div className="stat-unit stat-unit-notice" style={{ marginTop: 16 }}>
-              NKA-botrány: 6 fő · Parkfenntartás: 8 fő (6 politikus + 2 vállalkozó) · összesen {pretrialCountDb} fő előzetesben ·{' '}
+              NKA-botrány: 6 fő · Parkfenntartás: 7 fő (5 politikus + 2 vállalkozó, Puskás kiengedve) · összesen {pretrialCountDb} fő előzetesben ·{' '}
               <a
                 href="/birosagi-iteletek"
                 style={{ color: 'var(--accent)', fontWeight: 600 }}
@@ -606,19 +606,19 @@ export default async function HomePage() {
           },
           {
             id: 'parkfenntartas',
-            eyebrow: 'Aktív · 8 személy előzetesben',
+            eyebrow: 'Aktív · 7 személy előzetesben',
             title: 'Parkfenntartási kenőpénzbotrány',
             responsible: 'Több felelős — minden pártból',
             videoId: '7A-NUGjuKGg',
-            summary: '8 személyt tartóztattak le 2026. június 4-én — köztük Őrsi Gergely (DK) II. kerületi polgármestert, Láng Zsolt (Fidesz) volt polgármestert és négy más politikust. Z. Zsolt parkfenntartó vállalkozó cégei 2011–2024 között közel 2 milliárd forint kenőpénzt fizethettek budapesti politikusoknak milliárdos közpénzes szerződésekért cserébe.',
+            summary: '8 személyt tartóztattak le 2026. június 4-én — köztük Őrsi Gergely (DK) II. kerületi polgármestert, Láng Zsolt (Fidesz) volt polgármestert és négy más politikust. Puskás Péter letartóztatását 2026. július 1-jén megszüntette az ügyészség. A maradék 7 letartóztatását +3 hónappal hosszabbították meg.',
             breakingAlert: {
-              source: 'Telex / Fővárosi Törvényszék',
-              headline: '8 személy letartóztatva — Őrsi Gergely polgármester is előzetesben',
-              lead: '2026. június 4-én a Fővárosi Törvényszék 30 napra letartóztatott hat politikust és két vállalkozót. Gyanú: befolyással üzérkedés és vesztegetés a parkfenntartási szerződések körül.',
-              url: 'https://telex.hu/belfold/2026/06/04/orsi-gergely-reakcio-letartoztatas',
+              source: 'Telex',
+              headline: 'Puskás Péter kiengedve — a többi 7 gyanúsított marad előzetesben',
+              lead: 'Az ügyészség 2026. július 1-jén megszüntette Puskás Péter letartóztatását, mert különös okai megszűntek. Őrsi Gergely, Láng Zsolt, Molnár Zsolt, Szkaliczki Tünde, Matisz Károly és a két vállalkozó letartóztatása +3 hónappal hosszabbodik.',
+              url: 'https://telex.hu/belfold/2026/07/01/obudai-korrupcios-ugy-vadlott-letartoztatas-megszuntetese-fidesz',
             },
             statusItems: [
-              { icon: '🔴', label: 'Letartóztatva', value: '8 személy — Fidesz, DK, Momentum, MSZP + 2 vállalkozó' },
+              { icon: '🟡', label: 'Letartóztatva', value: '7 személy előzetesben — Puskás Péter (Fidesz) kiengedve 2026. júl. 1.' },
               { icon: '⚖️', label: 'Gyanú', value: 'Befolyással üzérkedés · Vesztegetés · 30 nap előzetes' },
               { icon: '💰', label: 'Kenőpénz', value: '2+ milliárd Ft kenőpénz · 35+ Mrd Ft szerződésállomány' },
               { icon: '🏙️', label: 'Területek', value: 'II., III., VIII., XIII., XIV. ker. + vidéki önkormányzatok' },

@@ -25,7 +25,7 @@ const RESIGNATION_KEYWORDS = [
  */
 export const detectResignations = inngest.createFunction(
   { id: 'detect-resignations', name: 'Detect political resignations', concurrency: 1 },
-  { cron: '20 */2 * * *' },
+  { cron: '20 * * * *' },
   async ({ step, logger }) => {
     const db = getDb();
 

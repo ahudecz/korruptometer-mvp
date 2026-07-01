@@ -187,7 +187,7 @@ export const UGYEK: UgyekConfig[] = [
 
   {
     id: 'parkfenntartas',
-    eyebrow: 'Aktív · 8 személy előzetesben',
+    eyebrow: 'Aktív · 7 személy előzetesben',
     title: 'Parkfenntartási kenőpénzbotrány',
     responsible: 'Több felelős',
     estimatedDamage: '2+ milliárd Ft kenőpénz',
@@ -210,7 +210,7 @@ export const UGYEK: UgyekConfig[] = [
       { id: '94cOBsarL00', label: 'Kapcsolódó riport', title: 'Parkfenntartási kenőpénzbotrány — dokumentáció' },
       { id: 'HDzrxp3GAkE', label: 'Kapcsolódó riport', title: 'Parkfenntartási korrupció — részletek' },
     ],
-    summary: '8 személyt tartóztattak le 2026. június 4-én — köztük Őrsi Gergely (DK) II. kerületi polgármestert, Láng Zsolt (Fidesz) volt polgármestert és négy más politikust. Z. Zsolt parkfenntartó vállalkozó cégei 2011–2024 között közel 2 milliárd forint kenőpénzt fizethettek budapesti politikusoknak milliárdos közpénzes szerződésekért cserébe — minden nagy párt érintett.',
+    summary: '8 személyt tartóztattak le 2026. június 4-én — köztük Őrsi Gergely (DK) II. kerületi polgármestert, Láng Zsolt (Fidesz) volt polgármestert és négy más politikust. Puskás Péter letartóztatását 2026. július 1-jén megszüntette az ügyészség. A maradék 7 gyanúsított letartóztatását +3 hónappal hosszabbította meg. Z. Zsolt parkfenntartó vállalkozó cégei 2011–2024 között közel 2 milliárd forint kenőpénzt fizethettek budapesti politikusoknak milliárdos közpénzes szerződésekért cserébe — minden nagy párt érintett.',
     description: `A parkfenntartási kenőpénzbotrány egyedülálló a magyar korrupciós ügyekben: egy átpárti, szisztematikus kenőpénz-rendszert tárt fel a budapesti önkormányzati közpénzek körül — amelybe Fidesz, DK, Momentum és MSZP politikusok egyaránt belekeveredtek.
 
 Z. Zsolt parkfenntartó vállalkozó és cégei — köztük a Pannon Park Forest Kft. — 2011 és 2024 között milliárdos közpénzes szerződéseket nyertek Budapest több kerületében és vidéki önkormányzatoknál is. A „Pék" nevű közvetítőn keresztül áramló kenőpénz politikusokat ért el a II., III., VIII., XIII. és XIV. kerületben egyaránt.
@@ -219,7 +219,7 @@ A Fővárosi Törvényszék 2026. június 4-én 30 napra letartóztatott hat pol
 
 Kerényi György, a Klub Rádió újságírója 2020-ban már részletesen megírta a botrány főbb vonásait — sem az ügyészség, sem a rendőrség nem reagált. A tényleges nyomozás 6 évvel később, 2026-ban indult el.`,
     statusItems: [
-      { icon: '🔴', label: 'Letartóztatva', value: '8 személy — 6 politikus (Fidesz, DK, Momentum, MSZP) + 2 vállalkozó · 2026. jún. 4.' },
+      { icon: '🔴', label: 'Letartóztatva', value: '8 személy — 6 politikus (Fidesz, DK, Momentum, MSZP) + 2 vállalkozó · 2026. jún. 4. · Puskás Péter kiengedve 2026. júl. 1.' },
       { icon: '⚖️', label: 'Gyanú', value: 'Befolyással üzérkedés · Vesztegetés — Fővárosi Törvényszék, 30 nap előzetes' },
       { icon: '💰', label: 'Kenőpénz', value: '2+ milliárd Ft kenőpénz · 35+ milliárd Ft szerződésállomány' },
       { icon: '🏙️', label: 'Érintett területek', value: 'II., III., VIII., XIII., XIV. kerület + vidéki önkormányzatok · 2011–2024' },
@@ -296,6 +296,14 @@ Kerényi György, a Klub Rádió újságírója 2020-ban már részletesen megí
             date: '2026. június 5.',
           },
         ],
+      },
+      {
+        type: 'article-card',
+        source: 'Telex',
+        headline: 'Megszüntették Puskás Péter letartóztatását — a többi 7 gyanúsított marad előzetesben',
+        lead: 'Az ügyészség Puskás Péter esetében megszüntette a kényszerintézkedést, mert különös okai időközben megszűntek. Őrsi Gergely, Láng Zsolt, Molnár Zsolt, Szkaliczki Tünde, Matisz Károly és a két vállalkozó letartóztatását +3 hónappal hosszabbítja meg.',
+        url: 'https://telex.hu/belfold/2026/07/01/obudai-korrupcios-ugy-vadlott-letartoztatas-megszuntetese-fidesz',
+        date: '2026. július 1.',
       },
       {
         type: 'quote',
