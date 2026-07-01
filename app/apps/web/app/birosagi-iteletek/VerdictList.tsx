@@ -36,16 +36,34 @@ const YEAR_RANGES: Record<string, [number, number | null]> = {
   '15+':   [15, null],
 };
 
+// Lezárt / elengedett státuszok — ezek külön szekcióba kerülnek az oldal alján
+const RELEASED_TYPES = ['szabadlábra helyezve', 'eljárás megszűnt', 'felmentve'] as const;
+type ReleasedType = typeof RELEASED_TYPES[number];
+function isReleased(t: string): t is ReleasedType {
+  return (RELEASED_TYPES as readonly string[]).includes(t);
+}
+
+function releasedLabel(t: string) {
+  if (t === 'szabadlábra helyezve') return 'KIENGEDVE';
+  if (t === 'eljárás megszűnt') return 'MEGSZŰNT';
+  if (t === 'felmentve') return 'FELMENTVE';
+  return t.toUpperCase();
+}
+
 function verdictTypeLabel(t: string) {
   if (t === 'jogerős') return 'Jogerős ítélet';
   if (t === 'elsőfokú') return 'Elsőfokú ítélet';
   if (t === 'fellebbezés alatt') return 'Fellebbezés alatt';
+  if (t === 'szabadlábra helyezve') return 'Szabadlábra helyezve';
+  if (t === 'eljárás megszűnt') return 'Eljárás megszűnt';
+  if (t === 'felmentve') return 'Felmentve';
   return t;
 }
 function verdictTypeColor(t: string) {
   if (t === 'jogerős') return '#E31937';
   if (t === 'elsőfokú') return '#FF9D00';
   if (t === 'fellebbezés alatt') return '#4B7AFF';
+  if (isReleased(t)) return '#5c5e62';
   return '#888';
 }
 
@@ -84,6 +102,12 @@ function VerdictCard({ r }: { r: SerializedVerdict }) {
         {r.verdictType === 'előzetesben' ? (
           <div className="verdict-sentence-badge verdict-sentence-badge--pretrial">
             <span className="verdict-pretrial-label">ELŐZETESBEN</span>
+          </div>
+        ) : isReleased(r.verdictType) ? (
+          <div className="verdict-sentence-badge verdict-sentence-badge--released">
+            <span className="verdict-pretrial-label" style={{ background: '#5c5e6222', color: '#5c5e62', border: '1px solid #5c5e6244' }}>
+              {releasedLabel(r.verdictType)}
+            </span>
           </div>
         ) : (
           <div className="verdict-sentence-badge">
@@ -211,10 +235,12 @@ export function VerdictList({ rows }: { rows: SerializedVerdict[] }) {
   }), [rows, search, verdictTypeFilter, crimeFilter, yearRange, courtFilter]);
 
   const hasFilter = search || verdictTypeFilter !== 'all' || crimeFilter.length > 0 || yearRange !== 'all' || courtFilter !== 'all';
-  const nonPretrial = filtered.filter(r => r.verdictType !== 'előzetesben');
+  const activeFiltered  = filtered.filter(r => !isReleased(r.verdictType));
+  const releasedFiltered = filtered.filter(r => isReleased(r.verdictType));
+  const nonPretrial = activeFiltered.filter(r => r.verdictType !== 'előzetesben');
   const totalYears = nonPretrial.reduce((s, r) => s + r.sentenceYears, 0);
   const jogerosCount = nonPretrial.filter(r => r.verdictType === 'jogerős').length;
-  const pretrialCount = filtered.filter(r => r.verdictType === 'előzetesben').length;
+  const pretrialCount = activeFiltered.filter(r => r.verdictType === 'előzetesben').length;
 
   function clearAll() {
     setSearch(''); setVerdictTypeFilter('all'); setCrimeFilter([]); setYearRange('all'); setCourtFilter('all');
@@ -288,12 +314,16 @@ export function VerdictList({ rows }: { rows: SerializedVerdict[] }) {
           <span className="verdict-filter-label">Típus</span>
           <div className="verdict-pills">
             {[
-              { val: 'all',                label: 'Összes' },
-              { val: 'előzetesben',         label: 'Előzetesben' },
-              { val: 'elsőfokú',           label: 'Elsőfokú' },
-              { val: 'jogerős',            label: 'Jogerős' },
-              { val: 'fellebbezés alatt',  label: 'Fellebbezés alatt' },
-            ].map(({ val, label }) => (
+              { val: 'all',                   label: 'Összes' },
+              { val: 'előzetesben',            label: 'Előzetesben' },
+              { val: 'elsőfokú',              label: 'Elsőfokú' },
+              { val: 'jogerős',               label: 'Jogerős' },
+              { val: 'fellebbezés alatt',     label: 'Fellebbezés alatt' },
+              { val: 'szabadlábra helyezve',  label: 'Kiengedve' },
+              { val: 'eljárás megszűnt',      label: 'Megszűnt' },
+              { val: 'felmentve',             label: 'Felmentve' },
+            ].filter(({ val }) => val === 'all' || rows.some(r => r.verdictType === val))
+            .map(({ val, label }) => (
               <button
                 key={val}
                 type="button"
@@ -397,16 +427,33 @@ export function VerdictList({ rows }: { rows: SerializedVerdict[] }) {
         </div>
       </div>
 
-      {/* Kártyák */}
+      {/* Kártyák — aktív (előzetesben + ítéletek) */}
       <div className="verdict-list" style={{ marginTop: 20 }}>
-        {filtered.length === 0 ? (
+        {activeFiltered.length === 0 ? (
           <div style={{ padding: '40px 24px', textAlign: 'center', color: '#888', border: '1px dashed #e0e0e0', borderRadius: 12 }}>
             Nincs a feltételeknek megfelelő ítélet.
           </div>
         ) : (
-          filtered.map(r => <VerdictCard key={r.id} r={r} />)
+          activeFiltered.map(r => <VerdictCard key={r.id} r={r} />)
         )}
       </div>
+
+      {/* Lezárt / kiengedett szekció */}
+      {releasedFiltered.length > 0 && (
+        <div style={{ marginTop: 48 }}>
+          <div style={{ borderTop: '2px solid #e0e0e0', paddingTop: 32, marginBottom: 24 }}>
+            <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
+              Szabadlábra helyezve / Eljárás megszűnt
+            </h3>
+            <p style={{ fontSize: 13, color: '#888', margin: 0 }}>
+              Az alábbi személyek letartóztatása megszűnt vagy az ellenük folyó eljárás lezárult — az ügy azonban folyamatban van.
+            </p>
+          </div>
+          <div className="verdict-list">
+            {releasedFiltered.map(r => <VerdictCard key={r.id} r={r} />)}
+          </div>
+        </div>
+      )}
     </>
   );
 }
