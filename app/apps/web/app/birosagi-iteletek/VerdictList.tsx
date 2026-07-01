@@ -105,7 +105,7 @@ function VerdictCard({ r }: { r: SerializedVerdict }) {
           </div>
         ) : isReleased(r.verdictType) ? (
           <div className="verdict-sentence-badge verdict-sentence-badge--released">
-            <span className="verdict-pretrial-label" style={{ background: '#5c5e6222', color: '#5c5e62', border: '1px solid #5c5e6244' }}>
+            <span className="verdict-pretrial-label" style={{ background: '#1a7a3c', color: '#fff', border: '1px solid #1a7a3c' }}>
               {releasedLabel(r.verdictType)}
             </span>
           </div>
