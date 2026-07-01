@@ -18,6 +18,7 @@ import { CaseRow } from './adatbazis/_components/case-row';
 import { BigCasesSection, type BigCaseConfig } from './_home/big-cases-section';
 import { BreakingBanner } from './_home/breaking-banner';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './_home/galeria-config';
+import { UGYEK } from './_home/ugyek-config';
 import { NewsCardImage } from './hirek/news-card-image';
 
 // 003: a nyitóoldalt gyorsítótárazzuk (ISR) a force-dynamic helyett — ez vágja
@@ -164,13 +165,18 @@ export default async function HomePage() {
   const closureCount = (await db.select({ c: count() }).from(schema.mediaClosures)
     .where(eq(schema.mediaClosures.reviewStatus, 'approved')))[0]?.c ?? 0;
 
-  const [pretrialCountDb, eliteltCountDb] = await Promise.all([
+  const [pretrialCountDb, eliteltCountDb, pretrialByUgy] = await Promise.all([
     db.select({ c: count() }).from(schema.courtVerdicts)
       .where(and(eq(schema.courtVerdicts.reviewStatus, 'approved'), eq(schema.courtVerdicts.verdictType, 'előzetesben')))
       .then(r => r[0]?.c ?? 0),
     db.select({ c: count() }).from(schema.courtVerdicts)
       .where(sql`${schema.courtVerdicts.reviewStatus} = 'approved' AND ${schema.courtVerdicts.verdictType} != 'előzetesben'`)
       .then(r => r[0]?.c ?? 0),
+    db.select({ ugyId: schema.courtVerdicts.personUgyId, n: sql<number>`count(*)::int` })
+      .from(schema.courtVerdicts)
+      .where(and(eq(schema.courtVerdicts.reviewStatus, 'approved'), eq(schema.courtVerdicts.verdictType, 'előzetesben')))
+      .groupBy(schema.courtVerdicts.personUgyId)
+      .orderBy(sql`count(*) desc`),
   ]);
 
   const allRecoveries = await db
@@ -401,13 +407,25 @@ export default async function HomePage() {
               </div>
             </div>
             <div className="stat-unit stat-unit-notice" style={{ marginTop: 16 }}>
-              NKA-botrány: 6 fő · Parkfenntartás: 7 fő (5 politikus + 2 vállalkozó, Puskás kiengedve) · összesen {pretrialCountDb} fő előzetesben ·{' '}
-              <a
-                href="/birosagi-iteletek"
-                style={{ color: 'var(--accent)', fontWeight: 600 }}
-              >
-                Részletek →
-              </a>
+              {pretrialByUgy.map(({ ugyId, n }) => {
+                const ugy = ugyId ? UGYEK.find(u => u.id === ugyId) : null;
+                const label = ugy?.title ?? ugyId ?? 'Egyéb';
+                const href = ugy ? `/ugyek/${ugyId}` : '/birosagi-iteletek';
+                return (
+                  <div key={ugyId ?? '__other'}>
+                    <Link href={href} style={{ color: 'var(--accent)', fontWeight: 600 }}>
+                      {label}
+                    </Link>
+                    {': '}{n} fő előzetesben
+                  </div>
+                );
+              })}
+              <div style={{ marginTop: 4 }}>
+                Összesen{' '}
+                <Link href="/birosagi-iteletek" style={{ color: 'var(--accent)', fontWeight: 600 }}>
+                  {pretrialCountDb} fő előzetesben →
+                </Link>
+              </div>
             </div>
           </div>
 
