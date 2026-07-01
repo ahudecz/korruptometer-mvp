@@ -147,16 +147,40 @@ function VerdictCard({ r }: { r: SerializedVerdict }) {
 
         {r.sourceUrls.length > 0 && (
           <div className="verdict-sources-section">
-            <div className="verdict-sources-heading">Sajtóforrások</div>
-            <div className="verdict-source-cards">
-              {r.sourceUrls.map((url, i) => (
-                <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="person-news-item verdict-source-card">
-                  <span className="person-news-source">{r.sourceNames[i] ?? 'Forrás'}</span>
-                  {r.sourceDates[i] && <span className="person-news-date">{r.sourceDates[i]}</span>}
-                  <span className="person-news-headline">{r.sourceHeadlines[i] ?? url}</span>
-                </a>
-              ))}
-            </div>
+            {/* Released típusnál az első forrás (= az átsorolás oka) keretes article-card-ként */}
+            {isReleased(r.verdictType) && r.sourceUrls[0] && (
+              <a
+                href={r.sourceUrls[0]}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ugy-block-article-card"
+                style={{ marginBottom: 16 }}
+              >
+                <div className="ugy-block-article-meta">
+                  <span className="ugy-block-article-source">{r.sourceNames[0] ?? 'Forrás'}</span>
+                  {r.sourceDates[0] && <span className="ugy-block-article-date">{r.sourceDates[0]}</span>}
+                </div>
+                <div className="ugy-block-article-headline">{r.sourceHeadlines[0] ?? r.sourceUrls[0]}</div>
+                <span className="ugy-block-article-arrow">Cikk olvasása →</span>
+              </a>
+            )}
+            {/* Többi forrás kis linkként — released esetén kihagyja az elsőt */}
+            {r.sourceUrls.slice(isReleased(r.verdictType) ? 1 : 0).length > 0 && (
+              <>
+                <div className="verdict-sources-heading">Sajtóforrások</div>
+                <div className="verdict-source-cards">
+                  {r.sourceUrls.slice(isReleased(r.verdictType) ? 1 : 0).map((url, i) => (
+                    <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="person-news-item verdict-source-card">
+                      <span className="person-news-source">{r.sourceNames[(isReleased(r.verdictType) ? 1 : 0) + i] ?? 'Forrás'}</span>
+                      {r.sourceDates[(isReleased(r.verdictType) ? 1 : 0) + i] && (
+                        <span className="person-news-date">{r.sourceDates[(isReleased(r.verdictType) ? 1 : 0) + i]}</span>
+                      )}
+                      <span className="person-news-headline">{r.sourceHeadlines[(isReleased(r.verdictType) ? 1 : 0) + i] ?? url}</span>
+                    </a>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         )}
 
