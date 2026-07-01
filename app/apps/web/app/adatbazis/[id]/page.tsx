@@ -84,7 +84,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
   const { id } = await params;
   const db = getDb();
   const override = getCaseOverride(id);
-  const gen = (generatedContent as Record<string, { blocks: DescriptionBlock[]; relatedNews?: { source: string; headline: string; date: string; url: string }[]; attribution?: string }>)[id];
+  const gen = (generatedContent as Record<string, { title?: string; filesKey?: string; blocks: DescriptionBlock[]; relatedNews?: { source: string; headline: string; date: string; url: string }[]; attribution?: string }>)[id];
   // Editorial override wins; otherwise the LLM-generated (K-Monitor sourced) blocks.
   const richBlocks: DescriptionBlock[] | undefined = override?.descriptionBlocks ?? gen?.blocks;
 
@@ -134,13 +134,20 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
       WHERE i."scandalKey" = ${id}
       ORDER BY n."publishedAt" DESC LIMIT 24
     `) as unknown as Promise<Article[]>,
-    (db.execute(sql`
-      SELECT news_id, title, source_url, kmdb_url, newspaper, pub_time,
-             count(*) OVER()::int AS total
-      FROM "KmdbArticle"
-      WHERE ${scandal.person}::text IS NOT NULL AND ${scandal.person} = ANY(persons)
-      ORDER BY pub_time DESC LIMIT 40
-    `) as unknown as Promise<KmdbRow[]>).catch(() => [] as KmdbRow[]), // KmdbArticle may be absent (prod)
+    // Phase 2: if a curated K-Monitor filesKey exists, query by case (precise);
+    // otherwise fall back to person-wide articles (broader but less specific).
+    (db.execute(gen?.filesKey
+      ? sql`SELECT news_id, title, source_url, kmdb_url, newspaper, pub_time,
+                   count(*) OVER()::int AS total
+            FROM "KmdbArticle"
+            WHERE ${gen.filesKey} = ANY(files)
+            ORDER BY pub_time DESC LIMIT 40`
+      : sql`SELECT news_id, title, source_url, kmdb_url, newspaper, pub_time,
+                   count(*) OVER()::int AS total
+            FROM "KmdbArticle"
+            WHERE ${scandal.person}::text IS NOT NULL AND ${scandal.person} = ANY(persons)
+            ORDER BY pub_time DESC LIMIT 40`
+    ) as unknown as Promise<KmdbRow[]>).catch(() => [] as KmdbRow[]),
   ]);
 
   const damage = BigInt(scandal.damage_huf);
