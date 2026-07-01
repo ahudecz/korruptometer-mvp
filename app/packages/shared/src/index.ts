@@ -8,3 +8,4 @@ export * from './storage';
 export * from './virus-scan';
 export * from './slack';
 export * from './sealed-box-monitor';
+export * from './investigation';

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   version="1.0"
+   width="800"
+   height="270"
+   id="svg2">
+  <defs
+     id="defs4" />
+  <g
+     id="layer1">
+    <rect
+       width="367.84335"
+       height="250.35718"
+       x="422.82465"
+       y="6.3679309"
+       id="rect2433"
+       style="opacity:1;fill:#c2141a;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:9;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <path
+       d="M 168.031,152.23759 C 167.61972,126.36434 161.69067,107.38869 150.24376,95.310736 C 138.79655,83.23309 124.29846,77.260334 106.74933,77.392232 C 98.194541,77.286729 89.250405,79.163138 79.916921,83.021537 C 70.583201,86.880249 62.331528,93.35522 55.161823,102.44645 L 54.469438,102.44645 L 54.469438,2.8640058 L 3.2281269,2.8640058 L 3.2281269,257.84573 L 54.469438,257.84573 L 54.469438,150.65184 C 55.024756,137.69548 58.847597,128.64373 65.938037,123.49666 C 73.028399,118.34991 80.053831,115.87886 87.014489,116.08345 C 97.949308,116.34137 105.68169,120.18661 110.21156,127.61948 C 114.74112,135.05259 116.93396,144.52721 116.78984,156.04328 L 116.78984,257.84573 L 168.031,257.84573 L 168.031,152.23759 z M 254.98588,81.197918 L 203.74465,81.197918 L 203.74465,257.84573 L 254.98588,257.84573 L 254.98588,81.197918 z M 397.98201,78.343634 C 396.29404,78.026735 394.56293,77.788865 392.78865,77.630102 C 391.01414,77.47173 388.93675,77.392388 386.55664,77.392232 C 377.25175,77.405625 368.16334,80.312778 359.29142,86.113614 C 350.41934,91.914841 343.58142,100.53056 338.77765,111.96063 L 337.39272,111.96063 L 335.31541,81.197918 L 291.34484,81.197918 C 291.70552,89.067135 292.02289,97.511093 292.29703,106.52964 C 292.57108,115.54849 292.71528,125.49878 292.72977,136.38057 L 292.72977,257.84573 L 343.971,257.84573 L 343.971,166.50901 C 344.22344,151.47792 348.13283,140.31189 355.69932,133.01092 C 363.26574,125.71018 372.97439,122.07625 384.82545,122.10915 C 387.40763,122.10931 389.77349,122.18865 391.92309,122.34702 C 394.07246,122.50571 396.09212,122.74358 397.98201,123.06063 L 397.98201,78.343634 z M 206.03484,49.725907 L 241.00097,49.725907 L 267.57514,7.7665426 L 221.41996,7.7665426 L 206.03484,49.725907 z"
+       id="text2396"
+       style="font-size:42.30735779px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#004275;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Kozuka Gothic Pro B;-inkscape-font-specification:Kozuka Gothic Pro B Bold" />
+    <text
+       x="195.17857"
+       y="270.04074"
+       id="text2424"
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold"><tspan
+         x="195.17857"
+         y="270.04074"
+         id="tspan2426" /></text>
+    <path
+       d="M 422.82467,43.895387 L 590.61717,43.895387 L 590.61717,79.380566 L 523.26249,79.380566 L 523.26249,256.72515 L 488.90267,256.72515 L 488.90267,79.380566 L 422.82467,79.380566 L 422.82467,43.895387 z M 574.87357,43.895387 L 615.07197,43.895387 L 670.35433,178.27563 L 725.51474,43.895387 L 765.71309,43.895387 L 670.29332,256.72515 L 574.87357,43.895387 z"
+       id="text2428"
+       style="font-size:31.8851738px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold" />
+  </g>
+</svg>

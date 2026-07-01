@@ -11,6 +11,7 @@ export const atlatszo: OutletAdapter = {
   slug: 'atlatszo',
   homepage: 'https://atlatszo.hu',
   queryAllowlist: [],
+  relevantByDefault: true,
   async crawl(_limit?: number): Promise<ScrapedArticle[]> {
     const xml = await httpGet('https://atlatszo.hu/feed/');
     return parseRss(xml);

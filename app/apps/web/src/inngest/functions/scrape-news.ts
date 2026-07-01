@@ -1,11 +1,12 @@
 import 'server-only';
 import { eq } from 'drizzle-orm';
 
-import { adapters, canonicalUrl, dedupHash } from '@korr/scrapers';
+import { adapters, canonicalUrl, dedupHash, scrapeRelevanceTier, isBreaking, shouldFeature } from '@korr/scrapers';
 import type { OutletSlug, ScrapedArticle } from '@korr/scrapers';
 import { schema } from '@/lib/db';
 import { getDb } from '@/lib/db';
 import { postEditorAlert } from '@/lib/slack';
+import { classifyArticle } from '@/lib/ai-classify';
 
 import { inngest } from '../client';
 
@@ -13,7 +14,7 @@ const FAILURE_DISABLE_THRESHOLD = 5;
 const ZERO_ARTICLE_ALERT_THRESHOLD = 5;
 
 /**
- * scrape.news (T151) — runs every 30 min on a cron, fans out one
+ * scrape.news (T151) — runs every 2 hours on a cron, fans out one
  * step.run per enabled Source, persists new NewsArticle rows deduped by
  * sourceUrlHash, writes a ScraperRun row, bumps Source.lastScrapedAt /
  * lastSuccessAt / consecutiveFailures, auto-disables a source after 5
@@ -26,7 +27,7 @@ const ZERO_ARTICLE_ALERT_THRESHOLD = 5;
  */
 export const scrapeNews = inngest.createFunction(
   { id: 'scrape-news', name: 'Scrape news', concurrency: 2 },
-  { cron: '*/30 * * * *' },
+  { cron: '0 */2 * * *' },
   async ({ step, logger }) => {
     const db = getDb();
 
@@ -52,7 +53,7 @@ export const scrapeNews = inngest.createFunction(
 
         try {
           const scraped = await adapter.crawl();
-          const inserted = await persistArticles(source.id, adapter.queryAllowlist, scraped);
+          const inserted = await persistArticles(source.id, adapter.queryAllowlist, scraped, adapter.relevantByDefault ?? false, logger);
           const finishedAt = new Date();
           await db
             .update(schema.scraperRuns)
@@ -129,6 +130,15 @@ export const scrapeNews = inngest.createFunction(
         name: 'aggregate.link-articles',
         data: { articleIds: insertedIds },
       });
+      // T020 — fan out one investigation.article.ingested per new article
+      // so the extraction Inngest function (FR-001) picks it up.
+      await step.sendEvent(
+        'emit-ingested',
+        insertedIds.map((id) => ({
+          name: 'investigation.article.ingested' as const,
+          data: { articleSource: 'news' as const, articleId: id },
+        })),
+      );
     }
 
     return { sources: sources.length, newArticles: insertedIds.length };
@@ -139,26 +149,74 @@ async function persistArticles(
   sourceId: string,
   allowlist: readonly string[],
   scraped: ScrapedArticle[],
+  relevantByDefault: boolean,
+  logger?: { info?: (...a: unknown[]) => void },
 ): Promise<string[]> {
   const db = getDb();
   const insertedIds: string[] = [];
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
+
+  // Scrape-relevancia 3 kupacban (003): a "biztos jó" és "biztos kuka" kulcsszó/
+  // URL alapján dől el INGYEN; az AI CSAK a bizonytalan "maybe" kupacra fut, ha
+  // van LLM-kulcs. Így olcsó marad, mégis kiszűri a külföld/szemét híreket.
+  const useAi = Boolean(process.env.LLM_API_KEY || process.env.ANTHROPIC_API_KEY);
+
   for (const a of scraped) {
     const canonical = canonicalUrl(a.sourceUrl, allowlist);
+
+    // 1. Ingyenes előszűrés (kulcsszó + URL-szekció).
+    const tier = scrapeRelevanceTier(a.headline, a.excerpt, canonical, relevantByDefault);
+    if (tier === 'out') continue; // biztos kuka — AI nélkül eldobjuk
+
     const hash = dedupHash(canonical);
+
+    let finalExcerpt = a.excerpt;
+    let finalTag = a.tag ?? null;
+    let finalFeatured = shouldFeature(a.headline, a.excerpt);
+    // Breaking-jelölt: börtön/eljárás-trigger + figyelt személy/ügy (kulcsszavas, AI nélkül).
+    const finalBreaking = isBreaking(a.headline, a.excerpt);
+
+    // 2. AI CSAK a bizonytalan "maybe" kupacra (és csak ha van kulcs).
+    if (tier === 'maybe' && useAi) {
+      try {
+        const ai = await classifyArticle(a.headline, a.excerpt);
+        totalInputTokens += ai.inputTokens;
+        totalOutputTokens += ai.outputTokens;
+
+        if (!ai.relevant) continue; // az AI szerint szemét → eldobjuk
+
+        finalExcerpt = ai.excerpt || a.excerpt;
+        if (ai.tag) finalTag = ai.tag;
+        if (ai.relevant && ai.tag === 'lemondás') finalFeatured = true;
+      } catch {
+        // API hiba esetén megtartjuk (megbízható forrás), eredeti adatokkal
+      }
+    }
+
     const inserted = await db
       .insert(schema.newsArticles)
       .values({
         sourceId,
         headline: a.headline.slice(0, 500),
-        excerpt: a.excerpt,
+        excerpt: finalExcerpt,
         sourceUrl: canonical,
         sourceUrlHash: hash,
         publishedAt: a.publishedAt,
-        tag: a.tag ?? null,
+        tag: finalTag,
+        imageUrl: a.imageUrl ?? null,
+        featured: finalFeatured,
+        isBreakingCandidate: finalBreaking,
       })
       .onConflictDoNothing({ target: schema.newsArticles.sourceUrlHash })
       .returning({ id: schema.newsArticles.id });
     if (inserted[0]) insertedIds.push(inserted[0].id);
   }
+
+  if (useAi && (totalInputTokens > 0 || totalOutputTokens > 0)) {
+    const costUsd = ((totalInputTokens / 1_000_000) * 0.8 + (totalOutputTokens / 1_000_000) * 4).toFixed(5);
+    logger?.info?.(`AI classify: ${totalInputTokens} in + ${totalOutputTokens} out tokens = ~$${costUsd}`);
+  }
+
   return insertedIds;
 }

@@ -68,7 +68,7 @@ export function Pie3D({
   if (total === 0) {
     return (
       <svg
-        viewBox="0 0 560 260"
+        viewBox="0 52 560 208"
         className={className}
         role="img"
         aria-label={ariaLabel}
@@ -103,12 +103,12 @@ export function Pie3D({
     isRight: boolean;
   };
   const outs: Out[] = prepared
-    .filter((s) => s.pct < 8)
+    .filter((s) => s.pct >= 2.5 && s.pct < 8)
     .map((s) => {
       const isFront = s.mid > 90 && s.mid < 270;
       const yShift = isFront ? H : 0;
       const sliceEdge = ept(s.mid);
-      const labelPos = ept(s.mid, RX + 42, RY + 32);
+      const labelPos = ept(s.mid, RX + 22, RY + 14);
       return {
         s,
         sx: sliceEdge.x,
@@ -119,7 +119,9 @@ export function Pie3D({
       };
     });
 
-  const minGap = 20;
+  const minGap = 18;
+  const YMIN = 58;
+  const YMAX = 244;
   for (const side of [true, false]) {
     const grp = outs.filter((l) => l.isRight === side);
     const top = grp.filter((l) => l.y < CY).sort((a, b) => b.y - a.y);
@@ -127,18 +129,18 @@ export function Pie3D({
     for (let i = 1; i < top.length; i++) {
       const prev = top[i - 1]!;
       const cur = top[i]!;
-      if (prev.y - cur.y < minGap) cur.y = prev.y - minGap;
+      if (prev.y - cur.y < minGap) cur.y = Math.max(YMIN, prev.y - minGap);
     }
     for (let i = 1; i < bot.length; i++) {
       const prev = bot[i - 1]!;
       const cur = bot[i]!;
-      if (cur.y - prev.y < minGap) cur.y = prev.y + minGap;
+      if (cur.y - prev.y < minGap) cur.y = Math.min(YMAX, prev.y + minGap);
     }
   }
 
   return (
     <svg
-      viewBox="0 0 560 260"
+      viewBox="0 52 560 208"
       className={className}
       role="img"
       aria-label={ariaLabel}
@@ -226,14 +228,22 @@ export function Pie3D({
           })}
       </g>
 
-      {/* outside labels (slices < 8%) */}
+      {/* outside labels (2.5% ≤ slice < 8%) — elbow connector */}
       <g>
         {outs.map((l, i) => {
-          const tx = l.isRight ? l.x + 8 : l.x - 8;
+          // Elbow: slice edge → short radial arm → horizontal to label
+          const ARM = 10;
+          const ex = l.isRight ? l.sx + ARM : l.sx - ARM;
+          const tx = l.isRight ? l.x + 6 : l.x - 6;
           return (
             <g key={`out-${i}`}>
-              <path d={`M ${l.sx} ${l.sy} L ${l.x} ${l.y}`} stroke={l.s.color} strokeWidth={1} fill="none" />
-              <circle cx={l.x} cy={l.y} r={3} fill={l.s.color} />
+              <path
+                d={`M ${l.sx} ${l.sy} L ${ex} ${l.y} L ${l.x} ${l.y}`}
+                stroke={l.s.color}
+                strokeWidth={1}
+                fill="none"
+              />
+              <circle cx={l.x} cy={l.y} r={2.5} fill={l.s.color} />
               <text
                 x={tx}
                 y={l.y - 1}

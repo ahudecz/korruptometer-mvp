@@ -21,7 +21,21 @@ const CRIMES = [
   'Közbeszerzési csalás',
   'EU-csalás',
   'Hivatali visszaélés',
+  'Sikkasztás',
+  'Vesztegetés',
+  'Hűtlen kezelés',
+  'Pénzmosás',
+  'Zsarolás',
+  'Tiltott pártfinanszírozás',
+  'Adócsalás',
+  'Befolyással való üzérkedés',
+  'Nepotizmus',
 ];
+
+interface FormProps {
+  initialName?: string;
+  initialCrimes?: string[];
+}
 
 type SubmitState =
   | { kind: 'idle' }
@@ -40,7 +54,7 @@ function fmtSize(b: number): string {
  * 01-tesla/index.html (sections .form-section #01..#04 + .file-drop + .form-toggles).
  * Posts to /api/submissions (Phase 2 endpoint) when submitted.
  */
-export function MockupSubmissionForm() {
+export function MockupSubmissionForm({ initialName = '', initialCrimes = [] }: FormProps = {}) {
   const [state, setState] = useState<SubmitState>({ kind: 'idle' });
   const [files, setFiles] = useState<File[]>([]);
   const [drag, setDrag] = useState(false);
@@ -133,6 +147,7 @@ export function MockupSubmissionForm() {
               type="text"
               required
               minLength={2}
+              defaultValue={initialName}
               placeholder="Pl. Példa Péter, vagy »ismeretlen«"
             />
           </div>
@@ -173,10 +188,21 @@ export function MockupSubmissionForm() {
         <div className="crime-checks">
           {CRIMES.map((c, i) => (
             <div className="crime-check" key={c}>
-              <input type="checkbox" id={`c${i + 1}`} name={`crime:${c}`} />
+              <input type="checkbox" id={`c${i + 1}`} name={`crime:${c}`} defaultChecked={initialCrimes.includes(c)} />
               <label htmlFor={`c${i + 1}`}>{c}</label>
             </div>
           ))}
+        </div>
+        <div className="form-row single" style={{ marginTop: 14 }}>
+          <div className="form-field">
+            <label htmlFor="s-crime-other">Egyéb</label>
+            <input
+              id="s-crime-other"
+              name="crimeOther"
+              type="text"
+              placeholder="Írd le röviden, ha nem szerepel fent"
+            />
+          </div>
         </div>
         <div className="form-row single" style={{ marginTop: 18 }}>
           <div className="form-field">

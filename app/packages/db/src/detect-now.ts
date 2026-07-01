@@ -1,0 +1,132 @@
+/**
+ * Egyszeri lemondás-detektor — végigmegy a DB-ben lévő cikkeken,
+ * Claude Haiku-val megvizsgálja őket, és beírja a találatokat.
+ * Használat: pnpm --filter @korr/db detect-now
+ */
+import { resolve } from 'node:path';
+import { config as loadEnv } from 'dotenv';
+
+loadEnv({ path: resolve(__dirname, '../../../.env.local') });
+loadEnv({ path: resolve(__dirname, '../../../.env') });
+
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import { and, desc, gte, sql } from 'drizzle-orm';
+import * as schema from './schema';
+import { detectResignationFromArticle } from './resignation-detect';
+
+const DB_URL = process.env.DATABASE_URL;
+if (!DB_URL) throw new Error('DATABASE_URL not set');
+if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not set');
+
+const conn = postgres(DB_URL, { prepare: false, max: 1 });
+const db = drizzle(conn, { schema });
+
+const KEYWORDS = [
+  'lemond', 'kirúg', 'felment', 'leváltott', 'leváltják', 'lemondott',
+  'kirúgták', 'felmentették', 'távozik', 'távozott', 'mond le',
+  'leváltás', 'menesztés', 'menesztette', 'menesztik',
+  'elbocsát', 'elbocsátja', 'elbocsátják', 'elbocsátotta', 'elbocsátottak',
+  'megszünteti', 'megszüntetik', 'bezárják', 'bezárja', 'leáll', 'megszűnik',
+  'munkavállal', 'dolgozóit',
+];
+
+async function main() {
+  const todayIso = new Date().toISOString().slice(0, 10);
+
+  // Az összes cikket végignézzük (nem csak az utolsó 2 óra)
+  const articles = await db
+    .select({
+      id: schema.newsArticles.id,
+      headline: schema.newsArticles.headline,
+      excerpt: schema.newsArticles.excerpt,
+      publishedAt: schema.newsArticles.publishedAt,
+    })
+    .from(schema.newsArticles)
+    .orderBy(desc(schema.newsArticles.publishedAt))
+    .limit(1000);
+
+  const candidates = articles.filter((a) => {
+    const text = `${a.headline} ${a.excerpt}`.toLowerCase();
+    return KEYWORDS.some((kw) => text.includes(kw));
+  });
+
+  console.log(`📚 Összesen: ${articles.length} cikk, ${candidates.length} lemondás-gyanús\n`);
+
+  let inserted = 0;
+  let skipped = 0;
+  let filtered = 0;
+
+  for (const article of candidates) {
+    process.stdout.write(`🤖 „${article.headline.slice(0, 60)}…" → `);
+
+    const result = await detectResignationFromArticle(
+      article.headline,
+      article.excerpt,
+      todayIso,
+    );
+
+    if (!result || !result.isResignation || result.confidence < 0.7) {
+      console.log(`nem politikai lemondás (confidence: ${result?.confidence ?? 0})`);
+      filtered++;
+      continue;
+    }
+
+    if (!result.name || !result.institution) {
+      console.log(`hiányzó adat, kihagyva`);
+      filtered++;
+      continue;
+    }
+
+    // Dedup: ugyanaz a személy+intézmény 30 napon belül
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const existing = await db
+      .select({ id: schema.politicalResignations.id })
+      .from(schema.politicalResignations)
+      .where(
+        and(
+          sql`lower(${schema.politicalResignations.name}) = lower(${result.name})`,
+          sql`lower(${schema.politicalResignations.institution}) = lower(${result.institution})`,
+          gte(schema.politicalResignations.createdAt, thirtyDaysAgo),
+        ),
+      )
+      .limit(1);
+
+    if (existing.length > 0) {
+      console.log(`már létezik: ${result.name}`);
+      skipped++;
+      continue;
+    }
+
+    let resignationDate: Date;
+    try {
+      resignationDate = new Date(result.resignationDate);
+      if (isNaN(resignationDate.getTime())) resignationDate = new Date(article.publishedAt);
+    } catch {
+      resignationDate = new Date(article.publishedAt);
+    }
+
+    await db.insert(schema.politicalResignations).values({
+      name: result.name.slice(0, 200),
+      position: result.position.slice(0, 200),
+      institution: result.institution.slice(0, 200),
+      resignationType: result.resignationType,
+      resignationDate,
+      description: result.description.slice(0, 1000) || null,
+    });
+
+    // Cikk megjelölése a /hirek Lemondás szűrőhöz
+    await db
+      .update(schema.newsArticles)
+      .set({ tag: 'Lemondás' })
+      .where(sql`id = ${article.id}`);
+
+    console.log(`✅ beírva: ${result.name} (${result.resignationType}, ${result.confidence.toFixed(2)})`);
+    inserted++;
+  }
+
+  console.log(`\n✅ Kész: ${inserted} új lemondás beírva, ${skipped} duplikált, ${filtered} kiszűrve`);
+  await conn.end();
+}
+
+main().catch(e => { console.error(e.message); process.exit(1); });

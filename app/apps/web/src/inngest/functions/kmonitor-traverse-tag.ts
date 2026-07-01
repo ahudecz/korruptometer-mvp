@@ -177,6 +177,15 @@ export const kmonitorTraverseTag = inngest.createFunction(
         name: 'aggregate.link-articles',
         data: { articleIds: insertedIds },
       });
+      // T020 — fan out one investigation.article.ingested per new article
+      // so the extraction Inngest function (FR-001) picks it up.
+      await step.sendEvent(
+        'emit-ingested',
+        insertedIds.map((id) => ({
+          name: 'investigation.article.ingested' as const,
+          data: { articleSource: 'news' as const, articleId: id },
+        })),
+      );
     }
 
     return {

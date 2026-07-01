@@ -59,7 +59,7 @@ export default async function AdminLayout({
       <nav className="admin-nav" aria-label="Admin">
         <div className="admin-nav-inner">
           <Link href="/admin" className="admin-brand">
-            Korruptométer
+            Kegyencjárat
           </Link>
           <span className="admin-brand-sep" aria-hidden />
           <span className="admin-brand-context">Admin · Ügyirat-kezelő</span>

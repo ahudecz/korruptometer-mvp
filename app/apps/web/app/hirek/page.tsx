@@ -1,20 +1,30 @@
-import Link from 'next/link';
+import type { Metadata } from 'next';
 import { and, desc, eq, sql } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 
 import { NewsFilters } from './news-filters';
 
+export const metadata: Metadata = {
+  title: 'Hírek',
+  description: 'Releváns hírek és cikkek a dokumentált korrupciós ügyekről — automatikusan gyűjtve, naprakészen.',
+  openGraph: { title: 'Hírek — Kegyencjárat', description: 'Releváns hírek a dokumentált korrupciós ügyekről.' },
+};
+import { NewsGrid } from './news-grid';
+
 export const revalidate = 120;
 
-function fmtRelative(d: Date): string {
-  const diff = Date.now() - d.getTime();
-  const h = Math.floor(diff / 3_600_000);
-  if (h < 1) return 'most';
-  if (h < 24) return `${h} órája`;
-  if (h < 48) return 'tegnap';
-  const days = Math.floor(h / 24);
-  return `${days} napja`;
+function headlineKey(headline: string): string {
+  const words = headline
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(' ')
+    .filter(w => w.length > 4);
+  return words.sort().slice(0, 7).join(' ');
 }
 
 export default async function HirekPage({
@@ -37,7 +47,8 @@ export default async function HirekPage({
         ? filters[0]
         : and(...filters);
 
-  const rows = await db
+  // Initial SSR batch — fetch 120, dedup to 40
+  const rawRows = await db
     .select({
       id: schema.newsArticles.id,
       headline: schema.newsArticles.headline,
@@ -45,8 +56,11 @@ export default async function HirekPage({
       sourceUrl: schema.newsArticles.sourceUrl,
       publishedAt: schema.newsArticles.publishedAt,
       tag: schema.newsArticles.tag,
+      imageUrl: schema.newsArticles.imageUrl,
       featured: schema.newsArticles.featured,
       relatedCaseId: schema.newsArticles.relatedCaseId,
+      isBreakingCandidate: schema.newsArticles.isBreakingCandidate,
+      breakingOverride: schema.newsArticles.breakingOverride,
       sourceSlug: schema.sources.slug,
       sourceName: schema.sources.name,
     })
@@ -54,21 +68,56 @@ export default async function HirekPage({
     .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId))
     .where(where)
     .orderBy(desc(schema.newsArticles.publishedAt))
-    .limit(40);
+    .limit(120);
+
+  const seen = new Set<string>();
+  const initialArticles = rawRows
+    .filter((a) => {
+      const key = headlineKey(a.headline);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 40)
+    .map((a) => {
+      const isBreaking = (a.breakingOverride ?? a.isBreakingCandidate) === true;
+      return {
+        ...a,
+        publishedAt: a.publishedAt.toISOString(),
+        isBreaking,
+        featured: isBreaking ? true : a.featured,
+      };
+    });
+
+  // Ha pontosan 120 sort kaptunk vissza, valószínűleg van még több
+  const initialHasMore = rawRows.length >= 120;
 
   const tagRows = await db
-    .selectDistinct({ tag: schema.newsArticles.tag })
+    .select({ tag: schema.newsArticles.tag, count: sql<number>`count(*)::int` })
     .from(schema.newsArticles)
-    .where(sql`${schema.newsArticles.tag} IS NOT NULL`);
-  const tags = tagRows.map((r) => r.tag).filter((t): t is string => !!t);
+    .where(sql`${schema.newsArticles.tag} IS NOT NULL`)
+    .groupBy(schema.newsArticles.tag)
+    .orderBy(sql`count(*) desc`)
+    .limit(30);
+  const EXCLUDED_TAGS = new Set([
+    'john healey', 'direkt36', 'magyar hang plusz', 'podcast',
+    'hvg360', 'híradó', 'házon kívül', 'gyorshír',
+    'vadhajtások', 'kriptovaluta', 'foci vb 2026',
+  ]);
+  const tags = tagRows
+    .map((r) => r.tag)
+    .filter((t): t is string => !!t && !EXCLUDED_TAGS.has(t.toLowerCase()));
 
   const outletRows = await db
     .select({ slug: schema.sources.slug, name: schema.sources.name })
     .from(schema.sources)
     .where(eq(schema.sources.enabled, true));
 
-  const featured = rows.find((a) => a.featured) ?? rows[0];
-  const rest = rows.filter((a) => a.id !== featured?.id);
+  const activeFilters = {
+    tag: sp.tag,
+    outlet: sp.outlet,
+    featured: sp.featured,
+  };
 
   return (
     <div className="news-section-wrap">
@@ -80,58 +129,12 @@ export default async function HirekPage({
 
         <NewsFilters tags={tags} outlets={outletRows} />
 
-        {rows.length === 0 ? (
-          <div className="empty-state" style={{ marginTop: 32 }}>
-            Nincs találat a megadott szűrőkre.
-          </div>
-        ) : (
-          <div className="news-grid" style={{ marginTop: 32 }}>
-            {featured && (
-              <a
-                href={featured.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="news-card feature"
-              >
-                <div className="news-meta">
-                  <span className="news-tag">★ Kiemelt</span>
-                  <span className="news-time">{fmtRelative(featured.publishedAt)}</span>
-                </div>
-                <h3 className="news-headline">{featured.headline}</h3>
-                <p className="news-excerpt">{featured.excerpt}</p>
-                <span className="news-source">{featured.sourceName ?? featured.sourceSlug ?? 'Forrás'}</span>
-              </a>
-            )}
-            {rest.map((a) => (
-              <a
-                key={a.id}
-                href={a.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="news-card"
-              >
-                <div className="news-meta">
-                  <span className="news-tag">{a.tag ?? 'Hír'}</span>
-                  <span className="news-time">{fmtRelative(a.publishedAt)}</span>
-                </div>
-                <h3 className="news-headline">{a.headline}</h3>
-                <p className="news-excerpt">{a.excerpt}</p>
-                {a.relatedCaseId && (
-                  <Link
-                    href={`/adatbazis/${a.relatedCaseId}`}
-                    className="news-source"
-                    style={{ color: 'var(--accent)' }}
-                  >
-                    Kapcsolódó ügy: {a.relatedCaseId}
-                  </Link>
-                )}
-                {!a.relatedCaseId && (
-                  <span className="news-source">{a.sourceName ?? a.sourceSlug ?? 'Forrás'}</span>
-                )}
-              </a>
-            ))}
-          </div>
-        )}
+        <NewsGrid
+          key={`${sp.tag ?? ''}-${sp.outlet ?? ''}-${sp.featured ?? ''}`}
+          initialArticles={initialArticles}
+          initialHasMore={initialHasMore}
+          filters={activeFilters}
+        />
       </section>
     </div>
   );

@@ -10,6 +10,7 @@ export { clipExcerpt, EXCERPT_MAX, parseDate } from './parse';
 export { extractFromListing, parseListingHtml } from './extract';
 export { parseRss } from './rss';
 export { adapters, getAdapter, routeOutletByUrl } from './adapters';
+export { isRelevant, shouldFeature, isBreaking, scrapeRelevanceTier, isForeignOrJunk } from './relevance';
 export {
   parseKMonitorTagIndex,
   parseKMonitorTagPage,
@@ -30,3 +31,22 @@ export type {
   OutletSlug,
   OutletRunResult,
 } from './types';
+export type {
+  Adapter,
+  AdapterQuery,
+  RawExternalRecord,
+  ExternalSourceSystem as ExternalAdapterSourceSystem,
+} from './adapters/types';
+export { tedAdapter } from './adapters/ted';
+export { ekrAdapter } from './adapters/ekr';
+export { keAdapter } from './adapters/ke';
+export { palyazatAdapter } from './adapters/palyazat';
+export { ecegjegyzekAdapter } from './adapters/ecegjegyzek';
+export { opencorporatesAdapter } from './adapters/opencorporates';
+export { integritasAdapter } from './adapters/integritas';
+export { olafAdapter } from './adapters/olaf';
+export { kshAdapter } from './adapters/ksh';
+export { eurostatAdapter } from './adapters/eurostat';
+export { kmonitorAdapter } from './adapters/kmonitor-adapter';
+export { atlatszoAdapter } from './adapters/atlatszo';
+export { webarchiveAdapter } from './adapters/webarchive';

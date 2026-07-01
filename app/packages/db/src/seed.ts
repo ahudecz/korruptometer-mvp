@@ -74,6 +74,14 @@ const SOURCE_DATA = [
   { slug: 'hvg', name: 'HVG', homepage: 'https://hvg.hu', tag: 'national' as const },
   { slug: 'magyar-hang', name: 'Magyar Hang', homepage: 'https://hang.hu', tag: 'national' as const },
   { slug: 'atlatszo', name: 'Átlátszó', homepage: 'https://atlatszo.hu', tag: 'investigative' as const },
+  { slug: '24hu', name: '24.hu', homepage: 'https://24.hu', tag: 'national' as const },
+  { slug: 'kontroll', name: 'Kontroll', homepage: 'https://kontroll.hu', tag: 'national' as const },
+  { slug: 'vastagbor', name: 'Vastagbőr', homepage: 'https://vastagbor.hu', tag: 'newsletter' as const },
+  { slug: 'direkt36', name: 'Direkt36', homepage: 'https://direkt36.hu', tag: 'investigative' as const },
+  { slug: 'valasz', name: 'Válasz Online', homepage: 'https://www.valaszonline.hu', tag: 'national' as const },
+  { slug: 'nepszava', name: 'Népszava', homepage: 'https://nepszava.hu', tag: 'national' as const },
+  { slug: 'jambor', name: 'Jámbor András', homepage: 'https://www.jamborandras.hu', tag: 'newsletter' as const },
+  { slug: 'panyiszabolcs', name: 'Panyi Szabolcs', homepage: 'https://panyiszabolcs.substack.com', tag: 'investigative' as const },
 ];
 
 const ARTICLE_SEED: { sourceSlug: string; headline: string; excerpt: string; url: string; published: string; tag: string | null; relatedCaseId: string | null; featured?: boolean }[] = [

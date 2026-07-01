@@ -4,6 +4,8 @@ import postgres from 'postgres';
 import * as schema from './schema';
 
 export * from './schema';
+export * from './review';
+export * from './watchlist';
 
 let cachedClient: ReturnType<typeof drizzle<typeof schema>> | null = null;
 

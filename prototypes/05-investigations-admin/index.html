@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KORRUPTOMÉTER — Admin · Nyomozások</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600;700;800;900&family=Archivo+Narrow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #171a20;
+    --ink-2: #393c41;
+    --muted: #5c5e62;
+    --line: #e6e6e6;
+    --line-strong: #cccccc;
+    --accent: #e31937;
+    --accent-soft: #fee5e8;
+    --surface: #f4f4f4;
+    --ok: #058c42;
+    --warn: #b45309;
+    --crit: #8b1a1a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--ink); }
+  body {
+    font-family: 'Archivo', system-ui, sans-serif;
+    font-weight: 400;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; cursor: pointer; background: none; border: 0; color: inherit; }
+  ::selection { background: var(--ink); color: #fff; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ───── Top app bar ───── */
+  .nav {
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .nav-inner {
+    max-width: 1480px;
+    margin: 0 auto;
+    padding: 14px 32px;
+    display: flex; align-items: center; gap: 28px;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  .brand::before {
+    content: '';
+    width: 8px; height: 8px; background: var(--accent); border-radius: 50%;
+  }
+  .brand-sep { color: var(--line-strong); }
+  .brand-context {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.16em;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .nav-links {
+    display: flex; gap: 22px; margin-left: auto;
+    font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600;
+  }
+  .nav-links a { color: var(--muted); padding: 4px 0; }
+  .nav-links a.is-active { color: var(--ink); border-bottom: 2px solid var(--accent); }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-user {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .nav-user strong { color: var(--ink); font-weight: 700; }
+  .nav-logout {
+    border: 1px solid var(--line-strong); padding: 7px 14px; font-size: 10.5px;
+    letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600; color: var(--ink);
+    transition: background .15s, color .15s, border .15s;
+  }
+  .nav-logout:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+  /* ───── Screen toggle (mockup only) ───── */
+  .screen-toggle {
+    position: fixed; right: 32px; bottom: 32px; z-index: 100;
+    display: flex; gap: 0; background: var(--ink); padding: 4px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+  }
+  .screen-toggle button {
+    color: #fff; padding: 10px 18px; font-size: 10.5px; letter-spacing: 0.22em;
+    text-transform: uppercase; font-weight: 600;
+  }
+  .screen-toggle button.is-active { background: var(--accent); }
+
+  /* ───── Page frame ───── */
+  .page { max-width: 1480px; margin: 0 auto; padding: 36px 32px 80px; }
+  .eyebrow {
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--muted);
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::before {
+    content: ''; width: 22px; height: 1px; background: var(--accent);
+  }
+  .page-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 32px; padding-bottom: 32px; border-bottom: 1px solid var(--line);
+  }
+  h1.page-title {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-weight: 500;
+    font-size: clamp(56px, 7vw, 96px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+  }
+  .page-title em { font-style: normal; color: var(--accent); }
+  .page-sub {
+    max-width: 360px;
+    color: var(--muted); font-size: 13px; line-height: 1.55;
+  }
+  .page-sub strong { color: var(--ink); font-weight: 600; }
+
+  /* ───── KPI strip ───── */
+  .kpis {
+    display: grid; grid-template-columns: repeat(6, 1fr);
+    border-bottom: 1px solid var(--line);
+    margin-top: 32px;
+  }
+  .kpi {
+    padding: 28px 24px 30px;
+    border-right: 1px solid var(--line);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .kpi:last-child { border-right: 0; }
+  .kpi-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .kpi-value {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-weight: 600;
+    font-size: 44px; line-height: 1; letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .kpi-value.with-accent { color: var(--accent); }
+  .kpi-unit { font-size: 14px; color: var(--muted); font-weight: 500; margin-left: 4px; }
+  .kpi-delta {
+    font-size: 11px; color: var(--muted); letter-spacing: 0.04em;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .kpi-delta .up { color: var(--ok); font-weight: 600; }
+  .kpi-delta .down { color: var(--accent); font-weight: 600; }
+
+  /* ───── Filter strip ───── */
+  .filters {
+    display: flex; align-items: center; gap: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 0;
+  }
+  .filter-group {
+    display: flex; align-items: center; gap: 8px;
+    padding: 18px 24px; border-right: 1px solid var(--line);
+  }
+  .filter-group:last-child { border-right: 0; margin-left: auto; padding-right: 0; }
+  .filter-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--muted); margin-right: 4px;
+  }
+  .pill {
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600;
+    padding: 6px 11px; border: 1px solid var(--line); color: var(--muted);
+    background: var(--bg); transition: all .15s;
+  }
+  .pill:hover { color: var(--ink); border-color: var(--ink); }
+  .pill.is-active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .pill.is-danger.is-active { background: var(--accent); border-color: var(--accent); }
+  .search-input {
+    padding: 10px 14px; border: 1px solid var(--line);
+    font-size: 12px; letter-spacing: 0.04em; font-family: inherit;
+    width: 260px; color: var(--ink);
+  }
+  .search-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--ink); }
+
+  /* ───── Master/Detail layout ───── */
+  .triage {
+    display: grid; grid-template-columns: minmax(420px, 460px) 1fr;
+    min-height: 720px;
+  }
+  .rail {
+    border-right: 1px solid var(--line);
+    background: var(--bg);
+  }
+  .rail-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--line);
+    font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase;
+    font-weight: 600; color: var(--muted);
+  }
+  .rail-count strong { color: var(--ink); font-weight: 700; }
+  .rail-sort {
+    display: flex; gap: 14px;
+  }
+  .rail-sort a { color: var(--muted); border-bottom: 1px solid transparent; padding-bottom: 2px; }
+  .rail-sort a.is-active { color: var(--ink); border-bottom-color: var(--accent); }
+  .rail-list { list-style: none; }
+  .rail-item {
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    grid-template-rows: auto auto auto;
+    column-gap: 14px;
+    row-gap: 4px;
+    padding: 18px 24px 20px;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    transition: background .12s;
+    position: relative;
+  }
+  .rail-item:hover { background: var(--surface); }
+  .rail-item.is-selected { background: #fafafa; }
+  .rail-item.is-selected::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent);
+  }
+  .rail-rank {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-weight: 500; font-size: 24px; line-height: 1; color: var(--muted);
+    align-self: start;
+    grid-row: 1 / span 2;
+  }
+  .rail-name {
+    font-size: 16px; font-weight: 700; letter-spacing: -0.01em;
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .rail-entity { font-size: 12px; color: var(--muted); grid-column: 2; grid-row: 2; }
+  .rail-score {
+    grid-column: 3; grid-row: 1 / span 2;
+    text-align: right;
+    align-self: center;
+  }
+  .rail-score-q {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-size: 28px; font-weight: 600; line-height: 1; letter-spacing: -0.02em;
+  }
+  .rail-score-grade {
+    font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 600;
+    color: var(--muted); margin-top: 4px;
+  }
+  .rail-meta {
+    grid-column: 2 / span 2; grid-row: 3;
+    display: flex; gap: 10px; align-items: center; margin-top: 6px;
+    font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); font-weight: 600;
+  }
+  .tag {
+    padding: 3px 7px; border: 1px solid var(--line);
+    font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700;
+    color: var(--muted);
+  }
+  .tag.tier-internal { color: var(--ink); border-color: var(--ink); }
+  .tag.tier-journalist { color: var(--warn); border-color: var(--warn); }
+  .tag.tier-prosecutor { color: var(--crit); border-color: var(--crit); }
+  .tag.tier-public { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tag.status-new { color: var(--ink); border-color: var(--ink); }
+  .tag.status-dismissed { color: var(--muted); }
+  .tag.status-merged { color: var(--muted); text-decoration: line-through; }
+  .tag.has-redflag { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-soft); }
+
+  /* ───── Preview pane (list screen) ───── */
+  .preview {
+    padding: 36px 40px 48px;
+  }
+  .preview-head {
+    display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap;
+    padding-bottom: 22px; border-bottom: 1px solid var(--line);
+    margin-bottom: 28px;
+  }
+  .preview-name {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-weight: 500;
+    font-size: clamp(40px, 5vw, 64px);
+    line-height: 0.96; letter-spacing: -0.02em;
+  }
+  .preview-entity {
+    font-size: 14px; color: var(--muted);
+    font-family: 'Archivo Narrow', sans-serif;
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+  }
+  .preview-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    border: 1px solid var(--line);
+    margin-bottom: 28px;
+  }
+  .preview-cell {
+    padding: 22px 22px 24px;
+    border-right: 1px solid var(--line);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .preview-cell:last-child { border-right: 0; }
+  .preview-cell-label {
+    font-size: 9.5px; font-weight: 600; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .preview-cell-value {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-weight: 600; font-size: 32px; line-height: 1; letter-spacing: -0.02em;
+  }
+  .preview-cell-value.accent { color: var(--accent); }
+  .preview-cell-foot { font-size: 11px; color: var(--muted); }
+  .preview-actions {
+    display: flex; gap: 0; flex-wrap: wrap;
+    border: 1px solid var(--line);
+    margin-bottom: 28px;
+  }
+  .action {
+    flex: 1 1 0; min-width: 0;
+    padding: 16px 18px;
+    border-right: 1px solid var(--line);
+    text-align: left;
+    display: flex; flex-direction: column; gap: 4px;
+    transition: background .12s;
+    cursor: pointer;
+  }
+  .action:last-child { border-right: 0; }
+  .action:hover { background: var(--surface); }
+  .action.primary { background: var(--accent); color: #fff; }
+  .action.primary:hover { background: var(--ink); }
+  .action.primary .action-key { background: rgba(255,255,255,0.2); color: #fff; }
+  .action-key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0; width: 18px; height: 18px;
+    background: var(--surface); color: var(--muted);
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 2px; align-self: flex-start;
+  }
+  .action-label {
+    font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700;
+  }
+
+  /* ───── Detail screen ───── */
+  .detail {
+    padding-top: 0;
+  }
+  .detail-hero {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 56px;
+    padding: 40px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .detail-left .breadcrumb {
+    font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 22px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .breadcrumb .sep { color: var(--line-strong); }
+  .detail-name {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-weight: 500;
+    font-size: clamp(64px, 9vw, 128px);
+    line-height: 0.92; letter-spacing: -0.025em;
+  }
+  .detail-entity {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-weight: 400;
+    font-size: 22px; color: var(--muted);
+    margin-top: 14px;
+    letter-spacing: 0.02em;
+  }
+  .detail-meta {
+    display: flex; flex-wrap: wrap; gap: 14px;
+    margin-top: 28px;
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600;
+    color: var(--muted);
+  }
+  .detail-meta .dot { width: 4px; height: 4px; background: var(--line-strong); border-radius: 50%; align-self: center; }
+  .detail-right {
+    display: flex; flex-direction: column; gap: 0;
+    border-left: 1px solid var(--line);
+    padding-left: 56px;
+  }
+  .score-block {
+    padding: 22px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .score-block:last-child { border-bottom: 0; }
+  .score-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--muted);
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .score-label span { color: var(--ink); }
+  .score-value {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-weight: 600;
+    font-size: 64px; line-height: 1; letter-spacing: -0.03em;
+    margin-top: 8px;
+    color: var(--ink);
+  }
+  .score-value.accent { color: var(--accent); }
+  .score-foot {
+    margin-top: 8px;
+    font-size: 11px; color: var(--muted);
+  }
+  .score-bar {
+    margin-top: 14px;
+    height: 4px; background: var(--surface); position: relative;
+  }
+  .score-bar > i {
+    display: block; height: 100%; background: var(--accent);
+  }
+  .score-bar-marks {
+    display: flex; justify-content: space-between; margin-top: 8px;
+    font-size: 9.5px; letter-spacing: 0.16em; color: var(--muted); font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  /* Sticky action bar */
+  .actionbar {
+    position: sticky; top: 58px; z-index: 30;
+    background: var(--bg);
+    display: flex; flex-wrap: wrap; gap: 0;
+    border-bottom: 1px solid var(--line);
+    margin: 0 -32px;
+    padding: 0 32px;
+  }
+  .actionbar .action { border-right: 1px solid var(--line); border-bottom: 0; }
+  .actionbar .action:first-child { padding-left: 32px; }
+  .actionbar .action:last-child { border-right: 0; }
+
+  /* ───── Panels ───── */
+  .panels {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .panel {
+    border-right: 1px solid var(--line);
+    padding: 36px 40px;
+  }
+  .panel:last-child { border-right: 0; }
+  .panel.wide { grid-column: 1 / -1; border-right: 0; }
+  .panel-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 24px;
+  }
+  .panel-title {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-weight: 600; font-size: 26px; letter-spacing: -0.01em;
+    display: flex; align-items: baseline; gap: 14px;
+  }
+  .panel-title .count {
+    font-size: 14px; color: var(--muted); font-weight: 500;
+  }
+  .panel-action {
+    font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700;
+    color: var(--accent); padding-bottom: 2px;
+    border-bottom: 1px solid var(--accent);
+  }
+  .panel-action:hover { color: var(--ink); border-color: var(--ink); }
+
+  /* Claims */
+  .claim {
+    padding: 22px 0 24px;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 160px 1fr 110px;
+    gap: 28px;
+    align-items: start;
+  }
+  .claim:last-child { border-bottom: 0; }
+  .claim-mech {
+    font-size: 10.5px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700;
+    color: var(--ink);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .claim-mech .mech-tag {
+    align-self: flex-start;
+    background: var(--accent-soft); color: var(--accent);
+    padding: 5px 9px; font-size: 10px;
+  }
+  .claim-mech .mech-amt {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-size: 28px; line-height: 1; font-weight: 600; letter-spacing: -0.02em;
+    color: var(--ink); text-transform: none;
+  }
+  .claim-mech .mech-amt small {
+    font-size: 11px; color: var(--muted); letter-spacing: 0.12em; font-weight: 600;
+    margin-left: 4px;
+  }
+  .claim-body { font-size: 14px; line-height: 1.55; color: var(--ink-2); }
+  .claim-body .parties {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 12px;
+  }
+  .party-chip {
+    padding: 4px 9px;
+    background: var(--surface);
+    font-size: 11px; letter-spacing: 0.04em; font-weight: 600;
+  }
+  .party-chip.person::before {
+    content: '●'; color: var(--accent); margin-right: 6px; font-size: 10px;
+  }
+  .party-chip.entity::before {
+    content: '▪'; color: var(--ink); margin-right: 6px; font-size: 10px;
+  }
+  .claim-body blockquote {
+    border-left: 2px solid var(--accent);
+    padding: 4px 0 4px 16px;
+    font-style: italic;
+    color: var(--ink);
+    margin-top: 8px;
+  }
+  .claim-source {
+    font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--muted); font-weight: 600;
+    margin-top: 10px;
+    display: flex; gap: 14px;
+  }
+  .claim-conf {
+    text-align: right;
+  }
+  .claim-conf-bar {
+    height: 3px; background: var(--surface); margin-bottom: 8px;
+  }
+  .claim-conf-bar > i { display: block; height: 100%; background: var(--ink); }
+  .claim-conf-value {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-size: 28px; font-weight: 600; line-height: 1;
+  }
+  .claim-conf-label {
+    font-size: 9.5px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted);
+    margin-top: 4px; font-weight: 600;
+  }
+
+  /* External evidence */
+  .evidence-empty {
+    border: 1px dashed var(--line-strong);
+    padding: 32px;
+    text-align: center;
+    color: var(--muted); font-size: 13px; line-height: 1.6;
+  }
+  .evidence-empty strong { color: var(--ink); font-weight: 700; }
+  .evidence-empty button {
+    margin-top: 14px;
+    padding: 10px 16px; background: var(--ink); color: #fff;
+    font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700;
+  }
+  .evidence-empty button:hover { background: var(--accent); }
+
+  .ext-row {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: 84px 1fr auto;
+    align-items: center; gap: 16px;
+  }
+  .ext-system {
+    font-size: 10px; letter-spacing: 0.2em; font-weight: 700;
+    text-transform: uppercase; color: var(--ink);
+    padding: 4px 8px;
+    border: 1px solid var(--ink);
+    text-align: center;
+  }
+  .ext-title { font-size: 13px; }
+  .ext-title small { display: block; color: var(--muted); font-size: 11px; margin-top: 3px; }
+  .ext-grade {
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700;
+    color: var(--muted);
+  }
+  .ext-grade.crit { color: var(--accent); }
+
+  /* Red flags */
+  .flag {
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    border: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 92px 1fr 28px;
+    gap: 16px;
+    align-items: center;
+  }
+  .flag-sev {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700;
+    padding: 4px 8px;
+    text-align: center;
+  }
+  .flag-sev.low { background: var(--surface); color: var(--muted); }
+  .flag-sev.medium { background: #fff4d6; color: var(--warn); }
+  .flag-sev.high { background: var(--accent-soft); color: var(--accent); }
+  .flag-sev.critical { background: var(--accent); color: #fff; }
+  .flag-rule { font-weight: 700; font-size: 13px; letter-spacing: -0.01em; }
+  .flag-rule small { display: block; color: var(--muted); font-weight: 400; font-size: 12px; margin-top: 3px; }
+  .flag-verdict { color: var(--muted); font-size: 16px; text-align: center; }
+  .flag-verdict.pass { color: var(--ok); }
+  .flag-verdict.fail { color: var(--accent); }
+
+  /* Articles list */
+  .article {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    gap: 18px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+    align-items: center;
+  }
+  .article:last-child { border-bottom: 0; }
+  .article-src {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700;
+    color: var(--muted);
+  }
+  .article-headline { font-weight: 600; font-size: 14px; line-height: 1.35; letter-spacing: -0.005em; }
+  .article-meta { font-size: 11px; color: var(--muted); margin-top: 3px; letter-spacing: 0.04em; }
+  .article-date {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-size: 11px; letter-spacing: 0.06em; color: var(--muted);
+    text-align: right;
+  }
+
+  /* Benchmarks */
+  .bench-row {
+    display: grid; grid-template-columns: 1fr 80px 80px 80px 60px;
+    align-items: center; gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+  }
+  .bench-row:last-child { border-bottom: 0; }
+  .bench-row .dim { font-weight: 700; }
+  .bench-row .num { font-family: 'Archivo Narrow', sans-serif; font-size: 18px; font-weight: 600; }
+  .bench-row .num.hi { color: var(--accent); }
+  .bench-head {
+    font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700;
+    color: var(--muted);
+  }
+
+  /* Audit log */
+  .audit {
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+  .audit li {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: 100px 1fr 140px;
+    gap: 18px; font-size: 12px;
+  }
+  .audit li .act {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700;
+    color: var(--ink);
+  }
+  .audit li .who { color: var(--muted); }
+  .audit li .when { color: var(--muted); text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+  /* ───── Footer ───── */
+  .foot {
+    margin-top: 64px;
+    padding: 24px 0;
+    border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between;
+    font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--muted); font-weight: 600;
+  }
+  .foot strong { color: var(--ink); }
+
+  /* Helpers */
+  .hide { display: none !important; }
+  .show-list .screen-detail { display: none; }
+  .show-detail .screen-list { display: none; }
+</style>
+</head>
+<body class="show-list">
+
+<!-- ─────────────────────────────────────────── Nav ─────────────────────────────────────────── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="brand">Korruptométer</div>
+    <div class="brand-sep">/</div>
+    <div class="brand-context">Admin · Ügyirat-kezelő</div>
+    <div class="nav-links">
+      <a href="#">Sor</a>
+      <a href="#">Scraperek</a>
+      <a href="#" class="is-active">Nyomozások</a>
+      <a href="#">K-Monitor Személyek</a>
+      <a href="#">Címkék</a>
+      <a href="#">DSR</a>
+      <a href="#">Szerkesztők</a>
+    </div>
+    <div class="nav-user">
+      Bejelentkezve mint <strong>BOOTSTRAP ADMIN</strong> · ADMIN
+    </div>
+    <button class="nav-logout">Kilépés</button>
+  </div>
+</nav>
+
+<!-- ────────────────────────────────────── Screen toggle ─────────────────────────────────── -->
+<div class="screen-toggle" aria-label="Mock-up view toggle">
+  <button data-view="list" class="is-active">List</button>
+  <button data-view="detail">Detail</button>
+</div>
+
+<!-- ═════════════════════════════════════ LIST SCREEN ════════════════════════════════════════ -->
+<main class="page screen-list">
+
+  <header class="page-head">
+    <div>
+      <div class="eyebrow">07 / Nyomozások · Ügyirat-kezelő</div>
+      <h1 class="page-title">Hét<br>nyitott<br><em>nyomozás.</em></h1>
+    </div>
+    <p class="page-sub">
+      Automatikus klaszterezésből származó <strong>nyomozásaink</strong>. Cikkenkénti
+      állítás-kinyerés (Haiku 4.5) → mechanizmus-szintű csoportosítás → reviewer-vezérelt
+      külső evidencia + vörös zászlók + pontozás. Minden átlépés audit-naplóba kerül.
+    </p>
+  </header>
+
+  <!-- KPI strip -->
+  <section class="kpis" aria-label="KPI">
+    <div class="kpi">
+      <div class="kpi-label">Aktív nyomozás</div>
+      <div class="kpi-value">7</div>
+      <div class="kpi-delta"><span class="up">+5</span> · 24 óra</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Új allítás</div>
+      <div class="kpi-value">23</div>
+      <div class="kpi-delta">3 cikkből · Haiku 4.5</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Várja a reviewer-t</div>
+      <div class="kpi-value with-accent">5</div>
+      <div class="kpi-delta">Nyomás: xref még nem futott</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Vörös zászló</div>
+      <div class="kpi-value">0</div>
+      <div class="kpi-delta">Szabályrendszer még nem futott</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Becsült kár</div>
+      <div class="kpi-value">4,0<span class="kpi-unit">Mrd Ft</span></div>
+      <div class="kpi-delta">Egy bejelölt összeg</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">LLM költés · ma</div>
+      <div class="kpi-value">53<span class="kpi-unit">Ft</span></div>
+      <div class="kpi-delta">102 hívás · plafon 50&nbsp;000 Ft</div>
+    </div>
+  </section>
+
+  <!-- Filters -->
+  <section class="filters" aria-label="Szűrők">
+    <div class="filter-group">
+      <span class="filter-label">Állapot</span>
+      <button class="pill is-active">Új <span class="num">7</span></button>
+      <button class="pill">Elvetve</button>
+      <button class="pill">Összevonva</button>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Szint</span>
+      <button class="pill is-active">Belső</button>
+      <button class="pill">Újságíró</button>
+      <button class="pill">Ügyész</button>
+      <button class="pill is-danger">Publikus</button>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Rendezés</span>
+      <button class="pill is-active">Friss</button>
+      <button class="pill">Mennyiségi</button>
+      <button class="pill">Cikkszám</button>
+    </div>
+    <div class="filter-group">
+      <input type="search" class="search-input" placeholder="Név szerint kovacs laszlo…">
+    </div>
+  </section>
+
+  <!-- Triage layout -->
+  <section class="triage">
+
+    <aside class="rail" aria-label="Nyomozások listája">
+      <div class="rail-head">
+        <div class="rail-count"><strong>7</strong> találat · 7 nyomozásból</div>
+        <div class="rail-sort">
+          <a class="is-active">Friss ↓</a>
+          <a>Pont</a>
+        </div>
+      </div>
+      <ul class="rail-list">
+        <li class="rail-item is-selected" data-id="szabo">
+          <div class="rail-rank">01</div>
+          <div class="rail-name">Szabó Péter</div>
+          <div class="rail-entity">Korm-Tech Zrt.</div>
+          <div class="rail-score">
+            <div class="rail-score-q">0.00</div>
+            <div class="rail-score-grade">újságírói</div>
+          </div>
+          <div class="rail-meta">
+            <span class="tag tier-internal">Belső</span>
+            <span class="tag status-new">Új</span>
+            <span class="tag">1 cikk</span>
+            <span class="tag has-redflag">3 állítás · 4 Mrd Ft</span>
+          </div>
+        </li>
+        <li class="rail-item" data-id="krausz">
+          <div class="rail-rank">02</div>
+          <div class="rail-name">Krausz Ferenc alapítványa</div>
+          <div class="rail-entity">Krausz Ferenc alapítványa</div>
+          <div class="rail-score">
+            <div class="rail-score-q">0.00</div>
+            <div class="rail-score-grade">újságírói</div>
+          </div>
+          <div class="rail-meta">
+            <span class="tag tier-internal">Belső</span>
+            <span class="tag status-new">Új</span>
+            <span class="tag">1 cikk</span>
+          </div>
+        </li>
+        <li class="rail-item" data-id="omolnar">
+          <div class="rail-rank">03</div>
+          <div class="rail-name">Ómolnár Miklós</div>
+          <div class="rail-entity">Ripost</div>
+          <div class="rail-score">
+            <div class="rail-score-q">0.00</div>
+            <div class="rail-score-grade">újságírói</div>
+          </div>
+          <div class="rail-meta">
+            <span class="tag tier-internal">Belső</span>
+            <span class="tag status-new">Új</span>
+            <span class="tag">1 cikk</span>
+          </div>
+        </li>
+        <li class="rail-item" data-id="danube">
+          <div class="rail-rank">04</div>
+          <div class="rail-name">Danube Institute</div>
+          <div class="rail-entity">Danube Institute</div>
+          <div class="rail-score">
+            <div class="rail-score-q">0.00</div>
+            <div class="rail-score-grade">újságírói</div>
+          </div>
+          <div class="rail-meta">
+            <span class="tag tier-internal">Belső</span>
+            <span class="tag status-new">Új</span>
+            <span class="tag">1 cikk</span>
+          </div>
+        </li>
+        <li class="rail-item" data-id="nagym">
+          <div class="rail-rank">05</div>
+          <div class="rail-name">Nagy Márton</div>
+          <div class="rail-entity">Nemzetgazdasági Minisztérium</div>
+          <div class="rail-score">
+            <div class="rail-score-q">0.00</div>
+            <div class="rail-score-grade">újságírói</div>
+          </div>
+          <div class="rail-meta">
+            <span class="tag tier-internal">Belső</span>
+            <span class="tag status-new">Új</span>
+            <span class="tag">1 cikk</span>
+          </div>
+        </li>
+        <li class="rail-item" data-id="rogan">
+          <div class="rail-rank">06</div>
+          <div class="rail-name">Rogán Antal</div>
+          <div class="rail-entity">—</div>
+          <div class="rail-score">
+            <div class="rail-score-q">0.00</div>
+            <div class="rail-score-grade">újságírói</div>
+          </div>
+          <div class="rail-meta">
+            <span class="tag tier-internal">Belső</span>
+            <span class="tag status-new">Új</span>
+            <span class="tag">1 cikk</span>
+          </div>
+        </li>
+        <li class="rail-item" data-id="straba">
+          <div class="rail-rank">07</div>
+          <div class="rail-name">Straba</div>
+          <div class="rail-entity">Straba</div>
+          <div class="rail-score">
+            <div class="rail-score-q">0.00</div>
+            <div class="rail-score-grade">újságírói</div>
+          </div>
+          <div class="rail-meta">
+            <span class="tag tier-internal">Belső</span>
+            <span class="tag status-new">Új</span>
+            <span class="tag">1 cikk</span>
+          </div>
+        </li>
+      </ul>
+    </aside>
+
+    <section class="preview" aria-label="Kiválasztott nyomozás">
+
+      <div class="preview-head">
+        <div>
+          <div class="eyebrow">№ 26a68471 · gyanú alatt</div>
+          <h2 class="preview-name">Szabó Péter</h2>
+          <div class="preview-entity">ügyvezető · Korm-Tech Zrt.</div>
+        </div>
+        <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+          <span class="tag tier-internal">Belső</span>
+          <span class="tag status-new">Új</span>
+        </div>
+      </div>
+
+      <div class="preview-grid">
+        <div class="preview-cell">
+          <span class="preview-cell-label">Cikkek</span>
+          <span class="preview-cell-value">1</span>
+          <span class="preview-cell-foot">[news] Új vádemelés a 12 Mrd Ft beszerzésben</span>
+        </div>
+        <div class="preview-cell">
+          <span class="preview-cell-label">Állítások</span>
+          <span class="preview-cell-value">3</span>
+          <span class="preview-cell-foot">overpricing · related_party · no_bid</span>
+        </div>
+        <div class="preview-cell">
+          <span class="preview-cell-label">Mennyiségi pont</span>
+          <span class="preview-cell-value accent">0.00</span>
+          <span class="preview-cell-foot">Külső rekord még nincs</span>
+        </div>
+        <div class="preview-cell">
+          <span class="preview-cell-label">Minőségi szint</span>
+          <span class="preview-cell-value" style="font-size:22px; padding-top:4px;">Újságírói</span>
+          <span class="preview-cell-foot">investigative_journalism</span>
+        </div>
+      </div>
+
+      <div class="preview-actions">
+        <button class="action primary">
+          <span class="action-key">X</span>
+          <span class="action-label">Cross-reference</span>
+        </button>
+        <button class="action">
+          <span class="action-key">R</span>
+          <span class="action-label">Vörös zászlók</span>
+        </button>
+        <button class="action">
+          <span class="action-key">H</span>
+          <span class="action-label">Hipotézis-hurok</span>
+        </button>
+        <button class="action">
+          <span class="action-key">M</span>
+          <span class="action-label">Mélytulajdoni eszkaláció</span>
+        </button>
+        <button class="action">
+          <span class="action-key">E</span>
+          <span class="action-label">Elvetés</span>
+        </button>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 28px;">
+        <!-- Top claim preview -->
+        <div>
+          <div class="eyebrow" style="margin-bottom: 14px;">Vezető állítás</div>
+          <div style="border: 1px solid var(--line); padding: 22px;">
+            <div style="display: flex; gap: 12px; align-items: baseline; margin-bottom: 12px;">
+              <span class="mech-tag" style="background: var(--accent-soft); color: var(--accent); padding: 5px 9px; font-size: 10px; letter-spacing: 0.2em; font-weight: 700; text-transform: uppercase;">Túlárazás</span>
+              <span style="font-family: 'Archivo Narrow'; font-size: 32px; font-weight: 600; letter-spacing: -0.02em;">4 000 000 000<small style="font-size: 12px; color: var(--muted); margin-left: 4px;">Ft · stated</small></span>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px;">
+              <span class="party-chip person">Szabó Péter · ügyvezető</span>
+              <span class="party-chip entity">Korm-Tech Zrt. · nyertes pályázó</span>
+              <span class="party-chip entity">Közbeszerzési Hatóság · megrendelő</span>
+            </div>
+            <blockquote style="border-left: 2px solid var(--accent); padding: 4px 0 4px 16px; font-style: italic; color: var(--ink); font-size: 13.5px; line-height: 1.55;">
+              Szabó Péter, a Korm-Tech Zrt. ügyvezetője felárral, kb. 4 milliárd forint
+              túlárazással adta el a rendszer-integrációs szolgáltatást a Közbeszerzési
+              Hatóságnak 2021 és 2023 között.
+            </blockquote>
+            <div class="claim-source" style="margin-top: 14px;">
+              <span>Forrás · p:3</span>
+              <span>Bizonyíték · 85%</span>
+              <span>Haiku 4.5 · v.manual01</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Side panels -->
+        <div>
+          <div class="eyebrow" style="margin-bottom: 14px;">Pipeline</div>
+          <ul style="list-style: none; border-top: 1px solid var(--line);">
+            <li style="padding: 14px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 24px 1fr auto; gap: 12px; align-items: center; font-size: 12.5px;">
+              <span style="color: var(--ok); font-size: 14px;">✓</span>
+              <div>
+                <strong style="font-weight: 700;">Állítás-kinyerés</strong>
+                <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Haiku 4.5 · 1 055 / 1 006 tok · 2,5 Ft</div>
+              </div>
+              <span class="mono" style="font-size: 11px; color: var(--muted);">14:14:49</span>
+            </li>
+            <li style="padding: 14px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 24px 1fr auto; gap: 12px; align-items: center; font-size: 12.5px;">
+              <span style="color: var(--ok); font-size: 14px;">✓</span>
+              <div>
+                <strong style="font-weight: 700;">Klaszterezés</strong>
+                <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">3 állítás · 1 új nyomozás</div>
+              </div>
+              <span class="mono" style="font-size: 11px; color: var(--muted);">14:14:51</span>
+            </li>
+            <li style="padding: 14px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 24px 1fr auto; gap: 12px; align-items: center; font-size: 12.5px;">
+              <span style="color: var(--muted); font-size: 14px;">○</span>
+              <div>
+                <strong style="font-weight: 700; color: var(--muted);">Cross-reference</strong>
+                <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Reviewer-trigger · 11 forrás</div>
+              </div>
+              <span class="mono" style="font-size: 11px; color: var(--accent);">vár</span>
+            </li>
+            <li style="padding: 14px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 24px 1fr auto; gap: 12px; align-items: center; font-size: 12.5px;">
+              <span style="color: var(--muted); font-size: 14px;">○</span>
+              <div>
+                <strong style="font-weight: 700; color: var(--muted);">Vörös zászlók</strong>
+                <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Külső rekord után</div>
+              </div>
+              <span class="mono" style="font-size: 11px; color: var(--muted);">—</span>
+            </li>
+            <li style="padding: 14px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 24px 1fr auto; gap: 12px; align-items: center; font-size: 12.5px;">
+              <span style="color: var(--muted); font-size: 14px;">○</span>
+              <div>
+                <strong style="font-weight: 700; color: var(--muted);">Pontozás</strong>
+                <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Mennyiségi + minőségi</div>
+              </div>
+              <span class="mono" style="font-size: 11px; color: var(--muted);">—</span>
+            </li>
+          </ul>
+          <a href="#" onclick="setView('detail');return false;" class="panel-action" style="display: inline-block; margin-top: 18px;">Teljes nyomozás &nbsp;→</a>
+        </div>
+      </div>
+
+    </section>
+  </section>
+
+  <footer class="foot">
+    <div>Forrás <strong>K-Monitor</strong> · kmdb_base · CC-BY-SA-4.0</div>
+    <div>Bejelentkezve <strong>ahudecz@gmail.com</strong></div>
+  </footer>
+</main>
+
+
+<!-- ═════════════════════════════════════ DETAIL SCREEN ═════════════════════════════════════ -->
+<main class="page screen-detail">
+
+  <!-- Hero -->
+  <header class="detail-hero">
+    <div class="detail-left">
+      <div class="breadcrumb">
+        <a href="#" onclick="setView('list');return false;">Nyomozások</a>
+        <span class="sep">/</span>
+        <span>№ 26a68471</span>
+        <span class="sep">/</span>
+        <span style="color: var(--accent);">Új</span>
+      </div>
+      <h1 class="detail-name">Szabó<br>Péter.</h1>
+      <div class="detail-entity">ügyvezető — Korm-Tech Zrt.</div>
+      <div class="detail-meta">
+        <span>1 cikk</span><span class="dot"></span>
+        <span>3 állítás</span><span class="dot"></span>
+        <span>3 mechanizmus</span><span class="dot"></span>
+        <span>4 érintett fél</span><span class="dot"></span>
+        <span style="color: var(--accent);">Reviewer döntésre vár</span>
+      </div>
+    </div>
+    <aside class="detail-right">
+      <div class="score-block">
+        <div class="score-label">Mennyiségi pont<span>0.00 / 10</span></div>
+        <div class="score-value accent">0.00</div>
+        <div class="score-foot">Független jelzések száma · staleness-súlyozással</div>
+        <div class="score-bar"><i style="width: 0%;"></i></div>
+        <div class="score-bar-marks"><span>0</span><span>10</span></div>
+      </div>
+      <div class="score-block">
+        <div class="score-label">Minőségi szint<span>Újságírói</span></div>
+        <div class="score-value" style="font-size: 36px; line-height: 1.05; letter-spacing: -0.01em;">investigative_journalism</div>
+        <div class="score-foot">Legmagasabb látott evidence_grade az evidenciák között.</div>
+      </div>
+      <div class="score-block">
+        <div class="score-label">Disclosure-szint<span>Belső</span></div>
+        <div class="score-value" style="font-size: 36px; line-height: 1.05;">internal</div>
+        <div class="score-foot">Promotálás `journalist` / `prosecutor` / `public` szintre csak counsel-jóváhagyással.</div>
+      </div>
+    </aside>
+  </header>
+
+  <!-- Sticky action bar -->
+  <section class="actionbar" aria-label="Műveletek">
+    <button class="action primary">
+      <span class="action-key">X</span>
+      <span class="action-label">Cross-reference futtatása</span>
+    </button>
+    <button class="action">
+      <span class="action-key">R</span>
+      <span class="action-label">Vörös zászlók ellenőrzése</span>
+    </button>
+    <button class="action">
+      <span class="action-key">H</span>
+      <span class="action-label">Hipotézis-hurok</span>
+    </button>
+    <button class="action">
+      <span class="action-key">M</span>
+      <span class="action-label">Mélytulajdoni eszkaláció</span>
+    </button>
+    <button class="action">
+      <span class="action-key">F</span>
+      <span class="action-label">Fizetős eredmény rögzítése</span>
+    </button>
+    <button class="action">
+      <span class="action-key">E</span>
+      <span class="action-label">Elvetés</span>
+    </button>
+    <button class="action">
+      <span class="action-key">Ö</span>
+      <span class="action-label">Összevonás</span>
+    </button>
+  </section>
+
+  <!-- Claims (wide) -->
+  <section class="panels" style="grid-template-columns: 1fr;">
+    <div class="panel wide">
+      <div class="panel-head">
+        <h2 class="panel-title">Állítások <span class="count">3</span></h2>
+        <a href="#" class="panel-action">Bekezdés-lokátorok megnyitása</a>
+      </div>
+
+      <article class="claim">
+        <div class="claim-mech">
+          <span class="mech-tag">Túlárazás</span>
+          <div class="mech-amt">4 000 000 000<small>Ft · stated</small></div>
+          <div style="font-size: 10.5px; letter-spacing: 0.18em; color: var(--muted); font-weight: 600;">overpricing</div>
+        </div>
+        <div class="claim-body">
+          <div class="parties">
+            <span class="party-chip person">Szabó Péter · ügyvezető</span>
+            <span class="party-chip entity">Korm-Tech Zrt. · nyertes pályázó</span>
+            <span class="party-chip entity">Közbeszerzési Hatóság · megrendelő</span>
+          </div>
+          <blockquote>
+            Szabó Péter, a Korm-Tech Zrt. ügyvezetője felárral, kb. 4 milliárd forint
+            túlárazással adta el a rendszer-integrációs szolgáltatást a Közbeszerzési
+            Hatóságnak 2021 és 2023 között.
+          </blockquote>
+          <div class="claim-source">
+            <span>Forrás · p:3</span>
+            <span>atlatszo.hu/2026/04/01/uj-vademeles-12-milliard</span>
+          </div>
+        </div>
+        <div class="claim-conf">
+          <div class="claim-conf-bar"><i style="width: 85%;"></i></div>
+          <div class="claim-conf-value">85<small style="font-size: 14px; color: var(--muted);">%</small></div>
+          <div class="claim-conf-label">Bizonyítottság</div>
+        </div>
+      </article>
+
+      <article class="claim">
+        <div class="claim-mech">
+          <span class="mech-tag">Közeli érdekeltség</span>
+          <div class="mech-amt" style="font-size: 16px;">összeg nincs</div>
+          <div style="font-size: 10.5px; letter-spacing: 0.18em; color: var(--muted); font-weight: 600;">related_party</div>
+        </div>
+        <div class="claim-body">
+          <div class="parties">
+            <span class="party-chip person">Szabó Péter · ügyvezető</span>
+            <span class="party-chip person">Szabó Géza · tulajdonos</span>
+            <span class="party-chip entity">Korm-Tech Zrt. · nyertes pályázó</span>
+          </div>
+          <blockquote>
+            A Korm-Tech Zrt., amelynek egyik tulajdonosa Szabó Péter közeli rokona,
+            Szabó Géza.
+          </blockquote>
+          <div class="claim-source">
+            <span>Forrás · p:3</span>
+            <span>atlatszo.hu/2026/04/01/uj-vademeles-12-milliard</span>
+          </div>
+        </div>
+        <div class="claim-conf">
+          <div class="claim-conf-bar"><i style="width: 90%;"></i></div>
+          <div class="claim-conf-value">90<small style="font-size: 14px; color: var(--muted);">%</small></div>
+          <div class="claim-conf-label">Bizonyítottság</div>
+        </div>
+      </article>
+
+      <article class="claim">
+        <div class="claim-mech">
+          <span class="mech-tag">Versenytárgyalás nélküli</span>
+          <div class="mech-amt" style="font-size: 16px;">összeg nincs</div>
+          <div style="font-size: 10.5px; letter-spacing: 0.18em; color: var(--muted); font-weight: 600;">no_bid</div>
+        </div>
+        <div class="claim-body">
+          <div class="parties">
+            <span class="party-chip entity">Korm-Tech Zrt. · kizárólagos nyertes</span>
+          </div>
+          <blockquote>
+            A nyertes pályázó kizárólag egyetlen ajánlattevő volt, a Korm-Tech Zrt. […]
+            a versenytársak nem értesültek a tenderről időben.
+          </blockquote>
+          <div class="claim-source">
+            <span>Forrás · p:3</span>
+            <span>atlatszo.hu/2026/04/01/uj-vademeles-12-milliard</span>
+          </div>
+        </div>
+        <div class="claim-conf">
+          <div class="claim-conf-bar"><i style="width: 80%;"></i></div>
+          <div class="claim-conf-value">80<small style="font-size: 14px; color: var(--muted);">%</small></div>
+          <div class="claim-conf-label">Bizonyítottság</div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- External evidence + Red flags -->
+  <section class="panels">
+    <div class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Külső evidencia <span class="count">0</span></h2>
+        <a href="#" class="panel-action">Forrás-lista</a>
+      </div>
+      <div class="evidence-empty">
+        <strong>Cross-reference még nem futott.</strong><br>
+        TED · EKR · KE · Pályázat.gov · Cégjegyzék · OpenCorporates · Integritás · OLAF · KSH · Eurostat · Webarchive
+        <br>
+        <button onclick="alert('investigation.xref.requested elküldve')">Indítás · 11 forrás</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Vörös zászlók <span class="count">0 / 2</span></h2>
+        <a href="#" class="panel-action">Szabályrendszer</a>
+      </div>
+      <div class="flag">
+        <span class="flag-sev low">Alacsony</span>
+        <div class="flag-rule">amount_concentration<small>Egyetlen forrásból; kohorsz nélkül nem futtatható.</small></div>
+        <span class="flag-verdict">N/A</span>
+      </div>
+      <div class="flag">
+        <span class="flag-sev low">Alacsony</span>
+        <div class="flag-rule">evidence_grade_floor<small>Csak hírforrás (investigative_journalism); külső rekord még nincs.</small></div>
+        <span class="flag-verdict">N/A</span>
+      </div>
+      <div class="flag" style="opacity: 0.5; border-style: dashed;">
+        <span class="flag-sev medium">Közepes</span>
+        <div class="flag-rule">single_source_dominance<small>Aktiválódik xref után.</small></div>
+        <span class="flag-verdict">○</span>
+      </div>
+      <div class="flag" style="opacity: 0.5; border-style: dashed;">
+        <span class="flag-sev high">Magas</span>
+        <div class="flag-rule">related_party_overlap<small>Aktiválódik mélytulajdoni eszkaláció után.</small></div>
+        <span class="flag-verdict">○</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Articles + Benchmarks + Audit -->
+  <section class="panels" style="grid-template-columns: 1.4fr 1fr;">
+    <div class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Kapcsolódó cikkek <span class="count">1</span></h2>
+        <a href="#" class="panel-action">Cikk-listához</a>
+      </div>
+      <article class="article">
+        <span class="article-src">News · Átlátszó</span>
+        <div>
+          <div class="article-headline">Új vádemelés a 12 milliárdos állami beszerzési ügyben</div>
+          <div class="article-meta">3 állítás · 1 055 input / 1 006 output token · Haiku 4.5</div>
+        </div>
+        <div class="article-date">2026.04.01<br><span style="color: var(--muted); font-size: 10px;">48 napja</span></div>
+      </article>
+      <article class="article" style="opacity: 0.55; border-style: dashed; border-color: var(--line);">
+        <span class="article-src">Cluster</span>
+        <div>
+          <div class="article-headline">Cikkjelölt: várható kapcsolódó publikációk</div>
+          <div class="article-meta">Cluster-job automatikusan ide csatolja a hasonló cikkeket.</div>
+        </div>
+        <div class="article-date">—</div>
+      </article>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Benchmark <span class="count">0 / 6</span></h2>
+        <a href="#" class="panel-action">Dimenziók</a>
+      </div>
+      <div class="bench-row bench-head">
+        <span class="dim">Dimenzió</span>
+        <span>P50</span>
+        <span>P90</span>
+        <span>Mért</span>
+        <span style="text-align:right;">σ</span>
+      </div>
+      <div class="bench-row">
+        <span class="dim">Ár / km</span>
+        <span class="num">— Ft</span>
+        <span class="num">— Ft</span>
+        <span class="num">— Ft</span>
+        <span style="text-align:right; color: var(--muted);">—</span>
+      </div>
+      <div class="bench-row">
+        <span class="dim">Túlárazás %</span>
+        <span class="num">— %</span>
+        <span class="num">— %</span>
+        <span class="num hi">+33%</span>
+        <span style="text-align:right; color: var(--accent); font-weight: 700;">+2.1</span>
+      </div>
+      <div class="bench-row">
+        <span class="dim">Single-source dominancia</span>
+        <span class="num">38%</span>
+        <span class="num">74%</span>
+        <span class="num hi">100%</span>
+        <span style="text-align:right; color: var(--accent); font-weight: 700;">+3.4</span>
+      </div>
+      <div class="bench-row">
+        <span class="dim">Cégalapítás-idő</span>
+        <span class="num">— hó</span>
+        <span class="num">— hó</span>
+        <span class="num">— hó</span>
+        <span style="text-align:right; color: var(--muted);">—</span>
+      </div>
+      <p style="margin-top: 18px; font-size: 11px; color: var(--muted); line-height: 1.55;">
+        A benchmark-job <strong style="color: var(--ink);">investigation.xref.source.completed</strong> eseményre fut le; akkor töltik fel az 1 / 6 dimenzió.
+      </p>
+    </div>
+  </section>
+
+  <!-- Audit -->
+  <section class="panels" style="grid-template-columns: 1fr;">
+    <div class="panel wide">
+      <div class="panel-head">
+        <h2 class="panel-title">Audit-napló</h2>
+        <a href="#" class="panel-action">Teljes napló</a>
+      </div>
+      <ul class="audit">
+        <li>
+          <span class="act">Created</span>
+          <span class="who">Inngest · investigation.cluster · run 01KRXQMD9R</span>
+          <span class="when">2026-05-18 14:14:51</span>
+        </li>
+        <li>
+          <span class="act">Claims · 3</span>
+          <span class="who">Inngest · investigation.extract-claims · 1 055/1 006 token</span>
+          <span class="when">2026-05-18 14:14:49</span>
+        </li>
+        <li>
+          <span class="act">Ingested</span>
+          <span class="who">Event investigation.article.ingested · manual-trigger</span>
+          <span class="when">2026-05-18 14:14:48</span>
+        </li>
+        <li>
+          <span class="act">Article</span>
+          <span class="who">News scraper · atlatszo.hu · ed50f2f5-…</span>
+          <span class="when">2026-04-01 09:12:00</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div>Forrás <strong>K-Monitor</strong> · kmdb_base · CC-BY-SA-4.0</div>
+    <div>Mockup · 05-investigations-admin · Tesla tokens</div>
+  </footer>
+</main>
+
+
+<script>
+  // Screen toggle for the mockup
+  const body = document.body;
+  document.querySelectorAll('.screen-toggle button').forEach(btn => {
+    btn.addEventListener('click', () => setView(btn.dataset.view));
+  });
+  function setView(v) {
+    body.classList.remove('show-list', 'show-detail');
+    body.classList.add('show-' + v);
+    document.querySelectorAll('.screen-toggle button').forEach(b => {
+      b.classList.toggle('is-active', b.dataset.view === v);
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Rail item selection (visual only — single-active)
+  document.querySelectorAll('.rail-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.rail-item').forEach(i => i.classList.remove('is-selected'));
+      item.classList.add('is-selected');
+    });
+  });
+
+  // Tiny keyboard affordance: T toggles view
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.key === 't' || e.key === 'T') {
+      setView(body.classList.contains('show-list') ? 'detail' : 'list');
+    }
+  });
+</script>
+</body>
+</html>

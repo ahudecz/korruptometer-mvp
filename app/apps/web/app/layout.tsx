@@ -2,14 +2,38 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { SiteFooter } from '@korr/ui/site-footer';
+import { NavMobile } from './nav-mobile';
+import { FooterScrollFix } from './footer-scroll-fix';
+import { CookieBanner } from './_home/cookie-banner';
 
 import './globals.css';
 
+const appUrl = process.env.NEXT_PUBLIC_APP_URL?.startsWith('http')
+  ? process.env.NEXT_PUBLIC_APP_URL
+  : 'https://korruptometer.vercel.app';
+
 export const metadata: Metadata = {
-  title: 'KORRUPTOMÉTER — Magyarországi korrupció nyomon követése',
+  title: {
+    default: 'KEGYENCJÁRAT — Magyarországi korrupció nyomon követése',
+    template: '%s — Kegyencjárat',
+  },
   description:
-    'Független, közforrású adatbázis a Magyarországon dokumentált korrupciós ügyekről. Minden eset nyomon követhető a vádemeléstől az ítéletig — adatokra, nem szólamokra alapozva.',
-  metadataBase: new URL('http://localhost:3000'),
+    'Független, közforrású adatbázis a Magyarországon dokumentált korrupciós ügyekről, a 2026. április 12-i rendszerváltás óta történt személyi változásokról és a propaganda megszűnéséről. Minden korrupciós eset nyomon követhető a vádemeléstől az ítéletig — adatokra, nem szólamokra alapozva.',
+  metadataBase: new URL(appUrl),
+  openGraph: {
+    siteName: 'Kegyencjárat',
+    type: 'website',
+    locale: 'hu_HU',
+    title: 'KEGYENCJÁRAT — Magyarországi korrupció nyomon követése',
+    description:
+      'Független, közforrású adatbázis a Magyarországon dokumentált korrupciós ügyekről — adatokra, nem szólamokra alapozva.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'KEGYENCJÁRAT — Magyarországi korrupció nyomon követése',
+    description:
+      'Független, közforrású adatbázis a Magyarországon dokumentált korrupciós ügyekről — adatokra, nem szólamokra alapozva.',
+  },
 };
 
 export default function RootLayout({
@@ -24,14 +48,14 @@ export default function RootLayout({
         <nav className="nav" role="banner">
           <div className="nav-inner">
             <Link href="/" className="brand">
-              Korruptométer
+              Kegyencjárat
             </Link>
             <ul className="nav-links" aria-label="Fő navigáció">
               <li>
-                <Link href="/#dashboard">Áttekintés</Link>
+                <Link href="/galeria">Galéria</Link>
               </li>
               <li>
-                <Link href="/galeria">Galéria</Link>
+                <Link href="/ugyek">Ügyek</Link>
               </li>
               <li>
                 <Link href="/adatbazis">Adatbázis</Link>
@@ -40,21 +64,25 @@ export default function RootLayout({
                 <Link href="/hirek">Hírek</Link>
               </li>
               <li>
-                <Link href="/bejelentes">Bejelentés</Link>
+                <Link href="/lemondasok">Lemondott-e?</Link>
+              </li>
+              <li>
+                <Link href="/birosagi-iteletek">Börtönben van-e?</Link>
+              </li>
+              <li>
+                <Link href="/megszunt">Megszűnt-e?</Link>
               </li>
             </ul>
             <Link href="/bejelentes" className="nav-cta">
               Bejelentés tétele
             </Link>
-            <button className="hamburger" aria-label="Menu" type="button">
-              <span></span>
-              <span></span>
-              <span></span>
-            </button>
+            <NavMobile />
           </div>
         </nav>
         <main id="fooldal">{children}</main>
         <SiteFooter />
+        <FooterScrollFix />
+        <CookieBanner />
       </body>
     </html>
   );
