@@ -503,6 +503,17 @@ button {
 }
 
 /* ============ DATABASE ============ */
+.db-filters-wrap {
+  margin-bottom: 24px;
+}
+.db-search-wrap {
+  margin-bottom: 12px;
+  max-width: 100%;
+}
+.db-dropdown-filters {
+  margin-bottom: 0;
+  padding: 10px 12px;
+}
 .db-controls {
   display: grid;
   grid-template-columns: 1.5fr repeat(4, 1fr) auto;
@@ -2714,11 +2725,17 @@ button {
 }
 
 .person-case-title {
+  display: block;
   font-family: 'Archivo', sans-serif;
   font-weight: 700;
   font-size: 18px;
   color: var(--ink);
   margin-bottom: 8px;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.person-case-title:hover {
+  color: var(--accent);
 }
 
 .person-case-desc {
@@ -4283,13 +4300,11 @@ button {
 
 .social-post-media {
   margin: 0 -20px 14px;
-  overflow: hidden;
 }
 
 .social-post-media img {
   width: 100%;
-  max-height: 280px;
-  object-fit: cover;
+  height: auto;
   display: block;
 }
 
@@ -5031,7 +5046,7 @@ button {
     width: 100%;
   }
   .db-table tr {
-    border: 1px solid var(--line);
+    border: 1px solid #e0e0e0;
     margin-bottom: 12px;
     padding: 14px 18px;
     border-radius: 8px;
@@ -5056,6 +5071,33 @@ button {
   }
   .db-table td:first-child::before {
     display: none;
+  }
+  /* Zebra-csíkozás: páros kártyák szürke alap */
+  .db-table tbody tr:nth-child(even) {
+    background: var(--surface);
+  }
+  /* Tap: páratlan → szürke, páros → sötétebb szürke */
+  .db-table tbody tr:nth-child(odd):active {
+    background: var(--surface);
+  }
+  .db-table tbody tr:nth-child(even):active {
+    background: #e0e0e0;
+  }
+  /* Mobilon a cikkszám sor felesleges, eltűnik */
+  .db-table td[data-label="Cikkek"] {
+    display: none;
+  }
+  /* Az ügy neve legyen nagyobb és piros a kárösszegnél */
+  .db-table .case-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1.3;
+  }
+  /* A kárösszeg maradjon kisebb mint a cím */
+  .db-table .db-damage-cell {
+    font-size: 14px;
+    font-weight: 700;
   }
   .site-footer {
     grid-template-columns: 1fr;
@@ -9209,7 +9251,7 @@ body:has(.admin-nav) > main {
 }
 .big-case-breaking-alert--mobile {
   margin-top: 12px;
-  margin-bottom: 0;
+  margin-bottom: 20px;
 }
 
 .ugy-block-quote {
@@ -10246,31 +10288,68 @@ body:has(.admin-nav) > main {
 }
 .verdict-suggestion-item:hover { background: #f3f4f6; }
 
-/* Szűrők konténer */
+/* Szűrők konténer — kártya, belül blokkok */
 .verdict-filters {
+  margin-bottom: 24px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+  /* NEM overflow:hidden — a dropdown panelek abszolút pozícióban lelógnak */
+}
+/* border-radius a sarkoknál a belső elemeken */
+.verdict-filters-blocks:first-child > .verdict-filter-block:first-child {
+  border-radius: 14px 14px 0 0;
+}
+@media (min-width: 768px) {
+  .verdict-filters-blocks:first-child > .verdict-filter-block:first-child {
+    border-radius: 14px 0 0 0;
+  }
+  .verdict-filters-blocks:first-child > .verdict-filter-block:last-child {
+    border-radius: 0 14px 0 0;
+  }
+}
+.verdict-filters-blocks {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 24px;
-  padding: 16px 20px;
-  background: #f7f8fa;
-  border: 1px solid #ebebeb;
-  border-radius: 12px;
 }
-.verdict-filter-group {
+@media (min-width: 768px) {
+  .verdict-filters-blocks { flex-direction: row; align-items: stretch; }
+}
+.verdict-filter-block {
+  padding: 18px 20px;
+  border-bottom: 1px solid #f0f1f3;
+}
+.verdict-filter-block:last-child { border-bottom: none; }
+@media (min-width: 768px) {
+  .verdict-filter-block {
+    flex: 1;
+    padding: 20px 24px;
+    border-bottom: none;
+    border-right: 1px solid #f0f1f3;
+  }
+  .verdict-filter-block:last-child { border-right: none; }
+  /* dropdowns blokk egyenlő helyet kap, nem auto */
+  .verdict-filter-block--dropdowns { flex: 1; }
+}
+.verdict-filter-block-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: #bbbec4;
+  margin-bottom: 10px;
+}
+.verdict-filters-footer {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.verdict-filter-label {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  color: #888;
-  min-width: 110px;
-  flex-shrink: 0;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 20px;
+  border-top: 1px solid #f0f1f3;
+  background: #fafbfc;
+  border-radius: 0 0 14px 14px;
 }
 .verdict-pills {
   display: flex;
@@ -10295,13 +10374,12 @@ body:has(.admin-nav) > main {
   color: #fff;
 }
 
-/* Dropdown sor */
+/* Dropdown sor a blokkon belül */
 .verdict-filter-dropdowns {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  padding-top: 4px;
 }
 .verdict-dropdown-wrap { position: relative; }
 .verdict-dropdown-btn {
@@ -10311,8 +10389,8 @@ body:has(.admin-nav) > main {
   background: #fff;
   border: 1.5px solid #ddd;
   border-radius: 8px;
-  padding: 7px 12px;
-  font-size: 13px;
+  padding: 12px 14px;
+  font-size: 14px;
   font-weight: 500;
   color: #555;
   cursor: pointer;
@@ -10379,19 +10457,18 @@ body:has(.admin-nav) > main {
   border: 1.5px solid #E31937;
   color: #E31937;
   border-radius: 8px;
-  padding: 7px 12px;
-  font-size: 13px;
+  padding: 12px 14px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: background .12s;
 }
 .verdict-clear-all:hover { background: #fff0f0; }
 
-/* Találatok száma */
+/* Találatok száma — a footer sávban */
 .verdict-result-meta {
-  font-size: 13px;
-  color: #888;
-  padding-top: 4px;
+  font-size: 12px;
+  color: #aaa;
 }
 
 /* ─── Verdict Cards (/birosagi-iteletek) ──────────────────────────── */
@@ -10639,6 +10716,145 @@ body:has(.admin-nav) > main {
   .verdict-sentence-years { font-size: 22px; }
 }
 
+/* ─── Verdict Row Layout (collapsible accordion) ─────────────────── */
+.vlist {
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  background: #fff;
+}
+
+.vrow-card { border-bottom: 1px solid #f0f0f0; }
+.vrow-card:last-child { border-bottom: none; }
+
+.vrow-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  transition: background 0.13s;
+}
+.vrow-header:hover { background: #f7f8fa; }
+.vrow-header:hover .vrow-chevron { color: #E31937; }
+.vrow-header:hover .vrow-name { color: #E31937; }
+.vrow-card--open > .vrow-header { background: #f7f8fa; }
+
+.vrow-chevron {
+  color: #ccc;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  transition: transform 0.18s, color 0.13s;
+}
+.vrow-card--open > .vrow-header .vrow-chevron {
+  transform: rotate(90deg);
+  color: #E31937;
+}
+
+.vrow-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 7px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.vrow-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 20%;
+  display: block;
+}
+.vrow-avatar-placeholder {
+  width: 50px;
+  height: 50px;
+  border-radius: 7px;
+  background: #e8e8e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #999;
+}
+
+.vrow-identity { flex: 1; min-width: 0; }
+.vrow-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.25;
+}
+.vrow-position {
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.vrow-crimes { display: flex; flex-wrap: wrap; gap: 4px; flex-shrink: 0; max-width: 220px; }
+.vrow-crime-tag {
+  background: #fff0f0;
+  color: #b00020;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.vrow-court { font-size: 12px; color: #666; white-space: nowrap; flex-shrink: 0; }
+
+.vrow-badge {
+  flex-shrink: 0;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  padding: 5px 10px;
+  text-align: center;
+}
+.vrow-badge--pretrial { background: #171a20; color: #fff; }
+.vrow-badge--pretrial span { font-size: 10px; font-weight: 900; letter-spacing: 0.12em; }
+.vrow-badge--released { background: #1a7a3c; color: #fff; border: 1px solid #1a7a3c; }
+.vrow-badge--released span { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; }
+.vrow-badge--sentence { background: #E31937; color: #fff; }
+.vrow-badge-years { font-size: 22px; font-weight: 900; line-height: 1; }
+.vrow-badge-unit { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; }
+.vrow-badge-months { font-size: 10px; opacity: 0.85; }
+
+.vrow-detail {
+  padding: 20px 24px 24px;
+  border-top: 1px solid #ebebeb;
+  background: #fafafa;
+}
+.vrow-detail-top { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 16px; }
+.vrow-detail-meta { flex: 1; }
+.vrow-detail-sentence { font-size: 13px; color: #555; margin-top: 6px; }
+
+@media (max-width: 700px) {
+  .vrow-header { gap: 8px; padding: 10px 12px; flex-wrap: wrap; }
+  .vrow-crimes { max-width: 100%; order: 4; flex-basis: 100%; margin-top: 2px; }
+  .vrow-court { display: none; }
+  .vrow-detail { padding: 16px; }
+  .vrow-detail-top { flex-direction: column; }
+}
+
 /* ─── Inline code ─────────────────────────────────────────────────── */
 code {
   font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
@@ -10657,15 +10873,11 @@ code {
   .ft-unit-short { display: inline; }
 }
 
-/* Az egység („Milliárd Ft" / „Mrd Ft") kisebb betűs a szám mellett, hogy a
-   hatalmas összegek (pl. 23 167 Mrd Ft) is egy sorba férjenek. Az em miatt a
-   szám betűméretéhez skálázódik. A nowrap megakadályozza a kettétörést. */
 .ft-amount { white-space: nowrap; }
 .ft-unit-long,
 .ft-unit-short,
 .ft-unit-fixed {
-  font-size: 0.55em;
-  font-weight: 700;
+  font-weight: inherit;
   letter-spacing: 0;
 }
 
@@ -10758,3 +10970,194 @@ code {
 /* #3 (listák) — kattintható sor + nagyobb becsült kár szám */
 .db-table tbody tr.clickable-row { cursor: pointer; }
 .db-table .db-damage-cell { font-size: 17px; font-weight: 800; color: var(--ink); }
+
+
+/* ═══════════════════════════════════════════════════════
+   404 — NOT FOUND
+   ═══════════════════════════════════════════════════════ */
+.nf-page {
+  min-height: 100vh;
+  background: #0e0e0f;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Prison strip ── */
+.nf-prison-wrap {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #111;
+}
+.nf-prison-track {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+}
+.nf-cell {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.nf-cell-photo-wrap {
+  position: relative;
+  padding-bottom: 108%;
+  overflow: hidden;
+  background: #222;
+}
+.nf-cell-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(35%) contrast(1.05);
+  transition: transform 0.4s ease;
+}
+.nf-cell:hover .nf-cell-photo { transform: scale(1.04); }
+
+/* Sötét overlay */
+.nf-cell-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,.15) 0%, rgba(0,0,0,.55) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Rácsok */
+.nf-bars {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  pointer-events: none;
+}
+.nf-bar {
+  flex: 0 0 14px;
+  margin-right: 38px;
+  background: linear-gradient(90deg, rgba(10,10,10,.92) 0%, rgba(30,30,30,.8) 50%, rgba(10,10,10,.92) 100%);
+  box-shadow: 2px 0 6px rgba(0,0,0,.5), -2px 0 6px rgba(0,0,0,.5);
+}
+.nf-bar:last-child { margin-right: 0; }
+
+/* Névtábla */
+.nf-cell-plate {
+  background: #161618;
+  border-top: 2px solid #E31937;
+  padding: 7px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.nf-cell-name {
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: .02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nf-cell-sub {
+  font-size: 8px;
+  color: #777;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Padló-vonal */
+.nf-prison-floor {
+  height: 4px;
+  background: linear-gradient(90deg, #8B0000, #E31937 30%, #E31937 70%, #8B0000);
+  opacity: .6;
+}
+
+/* ── Szöveg & CTA ── */
+.nf-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 28px 24px 32px;
+  gap: 12px;
+}
+.nf-eyebrow {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: .2em;
+  color: #E31937;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.nf-headline {
+  font-size: clamp(24px, 3.6vw, 38px);
+  font-weight: 900;
+  line-height: 1.18;
+  color: #fff;
+  margin: 0;
+  letter-spacing: -.01em;
+}
+.nf-sub {
+  font-size: 14px;
+  color: #888;
+  max-width: 500px;
+  line-height: 1.6;
+  margin: 0;
+}
+.nf-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 6px;
+}
+.nf-link {
+  display: inline-block;
+  padding: 8px 16px;
+  border: 1.5px solid #333;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ccc;
+  text-decoration: none;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.nf-link:hover {
+  border-color: #E31937;
+  color: #fff;
+  background: rgba(227,25,55,.08);
+}
+.nf-link--primary {
+  background: #E31937;
+  border-color: #E31937;
+  color: #fff;
+}
+.nf-link--primary:hover {
+  background: #c01530;
+  border-color: #c01530;
+}
+
+/* Mobilon kisebb fotók */
+@media (max-width: 600px) {
+  .nf-bar { flex: 0 0 10px; margin-right: 26px; }
+  .nf-cell-name { font-size: 9px; }
+  .nf-cell-sub { display: none; }
+}
+
+/* Mobilon nagyobb, görgethetős elrendezés (viewport-fit csak desktopon kell) */
+@media (max-width: 768px) {
+  .nf-cell-photo-wrap { padding-bottom: 140%; }
+  .nf-eyebrow { font-size: 40px; letter-spacing: .25em; }
+  .nf-headline { font-size: 28px; }
+  .nf-body { padding: 36px 20px 48px; gap: 16px; }
+  .nf-sub { font-size: 15px; }
+  .nf-links { gap: 10px; margin-top: 10px; }
+  .nf-link { font-size: 14px; padding: 10px 18px; }
+}

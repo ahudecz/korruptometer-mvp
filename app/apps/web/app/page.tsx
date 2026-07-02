@@ -19,12 +19,14 @@ import { BigCasesSection, type BigCaseConfig } from './_home/big-cases-section';
 import { BreakingBanner } from './_home/breaking-banner';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './_home/galeria-config';
 import { UGYEK } from './_home/ugyek-config';
+import { autoDisplayTitle, getCaseDisplayTitle } from './_home/case-detail-config';
 import { NewsCardImage } from './hirek/news-card-image';
 
-// 003: a nyitóoldalt gyorsítótárazzuk (ISR) a force-dynamic helyett — ez vágja
-// a legtöbb Fluid Active CPU-t. 10 percenként regenerálódik; az admin
-// elfogad/eldob ettől függetlenül revalidatePath-tal azonnal frissít.
-export const revalidate = 600;
+// ISR (revalidate=600) próbál build-idős statikus generálást, ami >60s-ot vesz
+// igénybe (20+ DB lekérdezés) és Vercel build-timeout-ot okoz. force-dynamic
+// megkerüli a build-time generálást; a Next.js cache és revalidatePath lefedi
+// az újrafrissítési igényt. Visszaállítható ISR-re, ha a DB gyorsabb lesz.
+export const dynamic = 'force-dynamic';
 
 const PALETTE_MONEY = ['#e31937', '#171a20', '#5c5e62', '#9b9da1', '#cccccc', '#e6e6e6'];
 
@@ -792,7 +794,7 @@ export default async function HomePage() {
               <CaseRow key={c.id} href={`/adatbazis/${encodeURIComponent(c.id)}`}>
                 <td data-label="Ügy">
                   <Link href={`/adatbazis/${encodeURIComponent(c.id)}`} className="case-name">
-                    {c.name}
+                    {autoDisplayTitle(c.name, c.person ?? null, getCaseDisplayTitle(c.id))}
                   </Link>
                   {c.investigation_count > 1 && (
                     <div className="case-id">{fmtNumber(c.investigation_count)} kapcsolódó ügy</div>

@@ -34,7 +34,7 @@ const VIDEOS: Record<string, CaseVideo> = {
   [normPerson('Tiborcz István')]: { videoId: 'jxlGamO6cZo' },
   [normPerson('Matolcsy György')]: { videoId: 'r6hrhIeykdc' },
   [normPerson('Kósa Lajos')]: { videoId: 'ZdeulAaa8J0' },
-  [normPerson('Habony Árpád')]: { videoId: 'oLnmzAlDTNM' },
+  [normPerson('Habony Árpád')]: { videoId: 'LDTH5Ea9Cio' },
   [normPerson('Tarsoly Csaba')]: { videoId: 'U0Agw-tk6Qo' },
   [normPerson('Horváth Csaba')]: { videoId: 'lFQxesQQcCU' },
   [normPerson('Orbán Balázs')]: { videoId: 'bLp9BT3me6Y' },

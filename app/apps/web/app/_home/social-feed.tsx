@@ -26,7 +26,7 @@ export async function SocialFeed() {
     return (
       <section className="section social-feed-section" id="social">
         <div className="section-head">
-          <div className="section-num">/ Oknyomozók, Események, Abszolút Parlament</div>
+          <div className="section-num">/ Oknyomozók, Bloggerek, Események, Abszolút Parlament</div>
           <h2 className="section-title">A legfontosabb hangok.</h2>
         </div>
         <p className="rogues-deck" style={{ marginBottom: 32 }}>

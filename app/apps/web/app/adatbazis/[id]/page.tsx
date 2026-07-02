@@ -6,14 +6,13 @@ import { fmtNumber } from '@korr/shared/format';
 import { FtValue } from '../../_home/ft-value';
 import { GALERIA } from '../../_home/galeria-config';
 import { WATCH_LIST } from '../../_home/watchlist-config';
-import { getCaseOverride } from '../../_home/case-detail-config';
+import { getCaseOverride, cleanTitle, autoDisplayTitle, PERSON_PHOTOS } from '../../_home/case-detail-config';
 import { getCaseVideo } from '../../_home/case-video-registry';
 import { DamageFigure } from '../_components/damage-figure';
 import { CaseTimeline } from '../_components/case-timeline';
 import { DescBlock } from '../_components/desc-block';
 import type { DescriptionBlock } from '../../_home/ugyek-config';
 import generatedContent from '../../_home/case-content.generated.json';
-
 import { getDb } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -34,13 +33,24 @@ function imgSrc(url: string): string {
 }
 
 const NUMBER_IN_NAME = /\d[\d\s.,]*\s*(milli[aá]rd|mrd|milli[oó]|md)\b/i;
-function cleanTitle(name: string): string {
-  const c = name
-    .replace(/[\s—-]*\b\d[\d\s.,]*\s*(milli[aá]rd(os)?|mrd\.?|milli[oó]s?|md)\b\s*(forint(os)?|ft|eur[oó]s?|eur[oó])?/gi, ' ')
-    .replace(/\s{2,}/g, ' ')
-    .replace(/\s+[—-]\s*$/, '')
-    .trim();
-  return c.length >= 4 ? c : name;
+
+// Tokenize a scandal key for title-relevance scoring.
+// Min length 3 to capture short but specific abbreviations (mcc, mol, nka, tao).
+// Stop list covers generic Hungarian nouns that would match unrelated articles.
+const STOP_TOKENS = new Set([
+  'ugy', 'eset', 'per', 'botrany', 'vallalat', 'allami', 'allam', 'ugyek', 'korrupcios',
+  'szerzodes', 'gyar', 'ingatlan', 'beruhazas', 'tamogatas', 'biznisz', 'kozpenz',
+  'vezerigazgato', 'fejlesztes', 'kozbeszerzesi', 'kozossegi',
+]);
+function tokenizeKey(id: string): string[] {
+  return id.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+    .split('-')
+    .filter(t => t.length >= 3 && !/^\d+$/.test(t) && !STOP_TOKENS.has(t));
+}
+function scoreTitle(title: string, id: string): number {
+  const tokens = tokenizeKey(id);
+  const n = title.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  return tokens.filter(t => n.includes(t)).length;
 }
 
 // Auto-generated placeholder summaries ("X — besorolatlan (1 cikk)") carry no
@@ -81,12 +91,15 @@ type Article = { id: string; headline: string; excerpt: string | null; sourceUrl
 type KmdbRow = { news_id: number; title: string; source_url: string; kmdb_url: string; newspaper: string | null; pub_time: string | null; total: number };
 
 export default async function ScandalPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+  const { id: rawId } = await params;
+  const id = (() => { try { return decodeURIComponent(rawId).normalize('NFC'); } catch { return rawId; } })();
   const db = getDb();
   const override = getCaseOverride(id);
-  const gen = (generatedContent as Record<string, { title?: string; filesKey?: string; blocks: DescriptionBlock[]; relatedNews?: { source: string; headline: string; date: string; url: string }[]; attribution?: string }>)[id];
+  type GenEntry = { title?: string; filesKey?: string; blocks: DescriptionBlock[]; relatedNews?: { source: string; headline: string; date: string; url: string }[]; attribution?: string };
+  const gen = (generatedContent as Record<string, GenEntry>)[id];
   // Editorial override wins; otherwise the LLM-generated (K-Monitor sourced) blocks.
   const richBlocks: DescriptionBlock[] | undefined = override?.descriptionBlocks ?? gen?.blocks;
+  // Injektált article-card — feltöltve a DB-lekérdezések után (ld. displayBlocks).
 
   const headRes = (await db.execute(sql`
     SELECT sc.id, sc.name, sc.person, sc.institution, sc.summary, sc.article_count,
@@ -98,7 +111,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
   const scandal = headRes[0];
   if (!scandal) notFound();
 
-  const [damageRows, procRows, members, crossRefs, articles, kmdbArticles] = await Promise.all([
+  const [damageRows, procRows, members, crossRefs, articles, kmdbArticles, linkedKmdbArticles] = await Promise.all([
     db.execute(sql`
       SELECT d."totalHighHuf", d.confidence, d.basis, d.components
       FROM "DamageEstimate" d JOIN "Investigation" i ON i.id = d."investigationId"
@@ -134,6 +147,15 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
       WHERE i."scandalKey" = ${id}
       ORDER BY n."publishedAt" DESC LIMIT 24
     `) as unknown as Promise<Article[]>,
+    // InvestigationArticleLink → KmdbArticle; több cikket kérünk, hogy cím alapján rangsorolhassuk
+    db.execute(sql`
+      SELECT DISTINCT k.news_id, k.title, k.source_url, k.newspaper, k.pub_time
+      FROM "InvestigationArticleLink" l
+      JOIN "Investigation" i ON i.id = l."investigationId"
+      JOIN "KmdbArticle" k ON k.news_id::text = l."articleId" AND l."articleSource" = 'kmonitor'
+      WHERE i."scandalKey" = ${id}
+      ORDER BY k.pub_time DESC LIMIT 20
+    `) as unknown as Promise<KmdbRow[]>,
     // Phase 2: if a curated K-Monitor filesKey exists, query by case (precise);
     // otherwise fall back to person-wide articles (broader but less specific).
     (db.execute(gen?.filesKey
@@ -166,13 +188,21 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
   const basisText = override?.damageText ?? (basis ? BASIS_LABEL[basis] : null);
 
   // ── Hero ──
-  const title = override?.title ?? cleanTitle(scandal.name);
+  const title = autoDisplayTitle(scandal.name, scandal.person, override?.title ?? gen?.title);
   const galeriaEntry = override?.hidePhoto
     ? null
     : override?.galeriaId
       ? GALERIA.find((g) => g.id === override.galeriaId)
       : GALERIA.find((g) => norm(g.name) === norm(scandal.person));
-  const photoUrl = galeriaEntry?.photoUrl ?? null;
+  const watchEntry = (!override?.hidePhoto && !galeriaEntry)
+    ? WATCH_LIST.find((w) => norm(w.name) === norm(scandal.person))
+    : null;
+  const personPhotoEntry = (!override?.hidePhoto && !galeriaEntry && !watchEntry)
+    ? (PERSON_PHOTOS[scandal.person ?? ''] ?? null)
+    : null;
+  const photoUrl = galeriaEntry?.photoUrl ?? watchEntry?.photoUrl ?? personPhotoEntry?.photoUrl ?? null;
+  const photoCredit = galeriaEntry?.photoCredit ?? watchEntry?.photoCredit ?? personPhotoEntry?.photoCredit ?? null;
+  const photoObjectPosition = galeriaEntry?.photoObjectPosition ?? watchEntry?.objectPosition ?? personPhotoEntry?.photoObjectPosition ?? null;
   const initials = (scandal.person ?? scandal.name).split(' ').slice(0, 2).map((w) => w[0]).join('');
   const badgeColor = scandal.is_open ? '#e31937' : '#4a6a8a';
 
@@ -196,6 +226,52 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
     ...articles.map((a) => ({ source: a.source_name ?? 'Forrás', date: a.publishedAt.toISOString(), headline: a.headline, url: a.sourceUrl })),
   ];
   const kmdbTotal = kmdbArticles[0]?.total ?? 0;
+
+  // Ha a leírásban nincs article-card, injektálunk egyet — csak ügy-specifikus forrásból.
+  // Prioritás: 1) filesKey-szűrt K-Monitor, 2) legjobb cím-egyezésű linked KmdbArticle,
+  // 3) legjobb cím-egyezésű scrape-elt NewsArticle. Ha nincs min. 1 tokenegyezés, nem injektálunk.
+  const hasArticleCard = richBlocks?.some(b => b.type === 'article-card') ?? false;
+  let injectedCard: DescriptionBlock | null = null;
+  if (!hasArticleCard) {
+    const byFilesKey = gen?.filesKey && kmdbArticles.length > 0 ? kmdbArticles[0] : null;
+    const linked = linkedKmdbArticles.length > 0
+      ? [...linkedKmdbArticles].sort((a, b) => scoreTitle(b.title, id) - scoreTitle(a.title, id)).find(a => scoreTitle(a.title, id) > 0) ?? null
+      : null;
+    const scraped = articles.length > 0
+      ? [...articles].sort((a, b) => scoreTitle(b.headline, id) - scoreTitle(a.headline, id)).find(a => scoreTitle(a.headline, id) > 0) ?? null
+      : null;
+    const src = byFilesKey ?? linked ?? scraped ?? null;
+    if (src) {
+      injectedCard = 'headline' in src
+        ? { type: 'article-card', source: src.source_name ?? 'Forrás', headline: src.headline, date: src.publishedAt.toISOString().slice(0, 10), url: src.sourceUrl }
+        : { type: 'article-card', source: src.newspaper ?? 'K-Monitor', headline: src.title, date: src.pub_time ?? undefined, url: src.source_url };
+    }
+  }
+  const displayBlocks: DescriptionBlock[] | undefined =
+    richBlocks && injectedCard ? [...richBlocks, injectedCard] : richBlocks;
+
+  // Pinned cross-refs: override-ban megadott ID-k kerülnek előre.
+  // Ha egy pinned ügy nem szerepel az auto-lekérdezésben (más person/institution),
+  // külön fetch-eljük és beillesztjük az elejére.
+  const pinnedIds = override?.pinnedCrossRefIds ?? [];
+  let orderedCrossRefs = crossRefs;
+  if (pinnedIds.length > 0) {
+    const missingIds = pinnedIds.filter(pid => !crossRefs.find(r => r.id === pid));
+    const extraRefs: CrossRef[] = missingIds.length > 0
+      ? (await db.execute(sql`
+          SELECT sc.id, sc.name, sc.person, sc.institution, sc.article_count, sc.damage_huf,
+            (SELECT string_agg(o."labelHu", ', ' ORDER BY o."sortOrder")
+             FROM "OffenceTypeRef" o WHERE o.code = ANY(sc.offence_codes)) AS offence_labels
+          FROM "ScandalCatalog" sc
+          WHERE sc.id = ANY(${missingIds}::text[])
+        `) as unknown as CrossRef[])
+      : [];
+    const allRefs = [...crossRefs, ...extraRefs];
+    orderedCrossRefs = [
+      ...pinnedIds.map(pid => allRefs.find(r => r.id === pid)).filter((r): r is CrossRef => r != null),
+      ...allRefs.filter(r => !pinnedIds.includes(r.id)),
+    ];
+  }
 
   // Procedural stage is only meaningful when we actually have corroborating
   // coverage. A lone default 'reported' on a 1-article case is noise, not fact.
@@ -246,18 +322,18 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
         <div className="person-hero-inner">
           <div className="person-hero-photo">
             {photoUrl ? (
-              <img src={imgSrc(photoUrl)} alt={scandal.person ?? title} className="person-photo-img" />
+              <img src={imgSrc(photoUrl)} alt={scandal.person ?? title} className="person-photo-img" style={photoObjectPosition ? { objectPosition: photoObjectPosition } : undefined} />
             ) : (
               <div className="person-photo-placeholder"><span>{initials || '?'}</span></div>
             )}
-            {galeriaEntry?.photoCredit && <div className="photo-credit">{galeriaEntry.photoCredit}</div>}
+            {photoCredit && <div className="photo-credit">{photoCredit}</div>}
           </div>
 
           <div className="person-hero-text">
             <div className="person-hero-eyebrow">Adatbázis · ügy</div>
             <h1 className="person-hero-name">{title}</h1>
             <div className="person-hero-sub">
-              {[scandal.person, scandal.institution].filter(Boolean).join(' · ') || '—'}
+              {[scandal.person, override?.institution ?? scandal.institution].filter(Boolean).join(' · ') || '—'}
             </div>
 
             <div className="person-hero-amount">
@@ -284,8 +360,8 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
             hiányában az érintett személyek ártatlannak tekintendők.
           </p>
           <div className="ugy-description-body">
-            {richBlocks?.length ? (
-              richBlocks.map((b, i) => <DescBlock key={i} block={b} />)
+            {displayBlocks?.length ? (
+              displayBlocks.map((b, i) => <DescBlock key={i} block={b} />)
             ) : summaryText ? (
               <p>{summaryText}</p>
             ) : (
@@ -377,6 +453,50 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
           </div>
         )}
 
+        {/* ── Related cases — galeria numbered "person-case" design (1:1) ── */}
+        {orderedCrossRefs.length > 0 && (
+          <div className="person-cases">
+            <h2 className="person-section-title">Kapcsolódó ügyek</h2>
+            <p className="person-section-note">
+              Ugyanahhoz a személyhez vagy intézményhez köthető további ügyek az adatbázisból.
+            </p>
+            {orderedCrossRefs.map((r, i) => {
+              const rd = BigInt(r.damage_huf);
+              const showDmg = rd > 0n && r.article_count >= 3;
+              const tags = r.offence_labels ? r.offence_labels.split(', ').filter(Boolean) : [];
+              return (
+                <div key={r.id} className="person-case-card">
+                  <div className="person-case-num">/ {String(i + 1).padStart(2, '0')}</div>
+                  <div className="person-case-body">
+                    <Link href={`/adatbazis/${encodeURIComponent(r.id)}`} className="person-case-title">{cleanTitle(r.name)}</Link>
+                    {(r.person || r.institution) && (
+                      <p className="person-case-desc">
+                        {[r.person, r.institution].filter(Boolean).join(' · ')}
+                      </p>
+                    )}
+                    <div className="person-case-footer">
+                      {showDmg && (
+                        <div className="person-case-dmg">
+                          <span className="person-case-dmg-lbl">Becsült kár</span>
+                          <span className="person-case-dmg-val"><FtValue n={rd} /></span>
+                        </div>
+                      )}
+                      {tags.length > 0 && (
+                        <div className="person-case-crimes">
+                          {tags.map((t) => <span key={t} className="tag">{t}</span>)}
+                        </div>
+                      )}
+                      <Link href={`/adatbazis/${encodeURIComponent(r.id)}`} className="person-case-source">
+                        Részletek →
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {/* ── Member investigations (clickable cards) ── */}
         {scandal.investigation_count > 1 && (
           <div className="case-section">
@@ -409,7 +529,9 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
             <p className="person-section-note">
               {usingGenNews
                 ? 'A K-Monitor sajtóadatbázisból — az ügyhöz kötődő legfontosabb cikkek.'
-                : `A K-Monitor sajtóadatbázisból — ${fmtNumber(kmdbTotal)} cikk a felelős személyhez (a 40 legfrissebb).`}
+                : gen?.filesKey
+                  ? `A K-Monitor sajtóadatbázisból — ${fmtNumber(kmdbTotal)} cikk ehhez az ügyhez (a 40 legfrissebb).`
+                  : `A K-Monitor sajtóadatbázisból — ${fmtNumber(kmdbTotal)} cikk a felelős személyhez (a 40 legfrissebb).`}
             </p>
             <div className="person-news-list">
               {newsList.map((a, i) => (
@@ -456,50 +578,6 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
                 </Link>
               ))}
             </div>
-          </div>
-        )}
-
-        {/* ── Related cases — galeria numbered "person-case" design (1:1) ── */}
-        {crossRefs.length > 0 && (
-          <div className="person-cases">
-            <h2 className="person-section-title">Kapcsolódó ügyek</h2>
-            <p className="person-section-note">
-              Ugyanahhoz a személyhez vagy intézményhez köthető további ügyek az adatbázisból.
-            </p>
-            {crossRefs.map((r, i) => {
-              const rd = BigInt(r.damage_huf);
-              const showDmg = rd > 0n && r.article_count >= 3; // csak ha egyértelmű
-              const tags = r.offence_labels ? r.offence_labels.split(', ').filter(Boolean) : [];
-              return (
-                <div key={r.id} className="person-case-card">
-                  <div className="person-case-num">/ {String(i + 1).padStart(2, '0')}</div>
-                  <div className="person-case-body">
-                    <h3 className="person-case-title">{cleanTitle(r.name)}</h3>
-                    {(r.person || r.institution) && (
-                      <p className="person-case-desc">
-                        {[r.person, r.institution].filter(Boolean).join(' · ')}
-                      </p>
-                    )}
-                    <div className="person-case-footer">
-                      {showDmg && (
-                        <div className="person-case-dmg">
-                          <span className="person-case-dmg-lbl">Becsült kár</span>
-                          <span className="person-case-dmg-val"><FtValue n={rd} /></span>
-                        </div>
-                      )}
-                      {tags.length > 0 && (
-                        <div className="person-case-crimes">
-                          {tags.map((t) => <span key={t} className="tag">{t}</span>)}
-                        </div>
-                      )}
-                      <Link href={`/adatbazis/${encodeURIComponent(r.id)}`} className="person-case-source">
-                        Részletek →
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
           </div>
         )}
 

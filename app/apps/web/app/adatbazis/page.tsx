@@ -4,6 +4,7 @@ import { sql } from 'drizzle-orm';
 import { fmtNumber } from '@korr/shared/format';
 import { FtValue } from '../_home/ft-value';
 import { CaseRow } from './_components/case-row';
+import { autoDisplayTitle, getCaseDisplayTitle } from '../_home/case-detail-config';
 
 import { getDb } from '@/lib/db';
 
@@ -112,6 +113,15 @@ export default async function AdatbazisPage({
     next.set('off', String(off + PAGE_SIZE));
     return `/adatbazis?${next.toString()}`;
   }
+  function prevHref() {
+    const next = new URLSearchParams(flat);
+    const prev = off - PAGE_SIZE;
+    if (prev <= 0) next.delete('off'); else next.set('off', String(prev));
+    return `/adatbazis?${next.toString()}`;
+  }
+  const rangeFrom = off + 1;
+  const rangeTo = off + page.length;
+  const showRange = off > 0 || hasMore;
 
   return (
     <section className="section" id="database">
@@ -133,8 +143,11 @@ export default async function AdatbazisPage({
 
       <div className="db-meta">
         <div className="db-count">
-          <strong>{fmtNumber(page.length)}</strong> találat {fmtNumber(total)} ügyből
-          {hasMore ? ' (folytatható)' : ''}
+          {showRange ? (
+            <><strong>{fmtNumber(rangeFrom)}–{fmtNumber(rangeTo)}</strong> találat {fmtNumber(total)} ügyből</>
+          ) : (
+            <><strong>{fmtNumber(page.length)}</strong> találat {fmtNumber(total)} ügyből</>
+          )}
         </div>
         <div className="db-sort">
           <a href={sortHref('damage_desc')}>
@@ -176,7 +189,7 @@ export default async function AdatbazisPage({
               <CaseRow key={c.id} href={`/adatbazis/${encodeURIComponent(c.id)}`}>
                 <td data-label="Ügy">
                   <Link href={`/adatbazis/${encodeURIComponent(c.id)}`} className="case-name">
-                    {c.name}
+                    {autoDisplayTitle(c.name, c.person ?? null, getCaseDisplayTitle(c.id))}
                   </Link>
                   {c.investigation_count > 1 && (
                     <div className="case-id">{fmtNumber(c.investigation_count)} kapcsolódó ügy</div>
@@ -198,24 +211,48 @@ export default async function AdatbazisPage({
         </table>
       )}
 
-      {hasMore && (
-        <div style={{ marginTop: 24, textAlign: 'center' }}>
-          <Link
-            href={nextHref()}
-            style={{
-              display: 'inline-block',
-              background: 'var(--ink)',
-              color: '#fff',
-              padding: '14px 28px',
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              textDecoration: 'none',
-            }}
-          >
-            További találatok →
-          </Link>
+      {(off > 0 || hasMore) && (
+        <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+          {off > 0 && (
+            <Link
+              href={prevHref()}
+              style={{
+                display: 'inline-block',
+                border: '2px solid var(--ink)',
+                color: 'var(--ink)',
+                background: 'transparent',
+                padding: '12px 24px',
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                textDecoration: 'none',
+              }}
+            >
+              ← Előző {PAGE_SIZE}
+            </Link>
+          )}
+          <span style={{ fontSize: 13, color: 'var(--muted)', minWidth: 120, textAlign: 'center' }}>
+            {fmtNumber(rangeFrom)}–{fmtNumber(rangeTo)} / {fmtNumber(total)}
+          </span>
+          {hasMore && (
+            <Link
+              href={nextHref()}
+              style={{
+                display: 'inline-block',
+                background: 'var(--ink)',
+                color: '#fff',
+                padding: '12px 24px',
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                textDecoration: 'none',
+              }}
+            >
+              Következő {PAGE_SIZE} →
+            </Link>
+          )}
         </div>
       )}
     </section>

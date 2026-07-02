@@ -5,33 +5,92 @@ import { getDb, schema } from '@/lib/db';
 
 import { inngest } from '../client';
 
-const FB_API = 'https://graph.facebook.com/v25.0';
-const POSTS_PER_PAGE = 20;
-const FAILURE_DISABLE_THRESHOLD = 5;
+const APIFY_API = 'https://api.apify.com/v2';
+const ACTOR_ID = 'apify~facebook-posts-scraper';
+const RESULTS_PER_PAGE = 3;
+const MIN_TEXT_LENGTH = 20;
+const STORAGE_BUCKET = 'social-images';
 
-interface FbPost {
-  id: string;
-  message?: string;
-  story?: string;
-  permalink_url: string;
-  full_picture?: string;
-  created_time: string;
+interface ApifyPost {
+  facebookUrl: string;
+  pageName: string;
+  url: string;
+  time: string;
+  text: string;
+  media?: Array<{ thumbnail?: string }>;
 }
 
-interface FbResponse {
-  data: FbPost[];
-  error?: { message: string };
+interface ApifyRunResponse {
+  data: { id: string; status: string; defaultDatasetId: string };
+}
+
+async function resolveAndStoreImage(
+  rawUrl: string,
+  storageKey: string,
+  supabaseUrl: string,
+  supabaseKey: string,
+): Promise<string | null> {
+  if (!rawUrl) return null;
+  try {
+    const u = new URL(rawUrl);
+
+    // Facebook external proxy → extract original URL (no upload needed)
+    if (u.hostname.startsWith('external-') && u.hostname.includes('fbcdn.net')) {
+      const originalUrl = u.searchParams.get('url');
+      return originalUrl ? decodeURIComponent(originalUrl) : null;
+    }
+
+    // Direct Facebook CDN → download + upload to Supabase Storage
+    if (u.hostname.includes('fbcdn.net')) {
+      const imgRes = await fetch(rawUrl, {
+        headers: { 'Referer': 'https://www.facebook.com/', 'User-Agent': 'Mozilla/5.0' },
+      });
+      if (!imgRes.ok) return null;
+
+      const contentType = imgRes.headers.get('content-type') ?? 'image/jpeg';
+      const ext = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg';
+      const filename = `${storageKey}.${ext}`;
+      const buffer = await imgRes.arrayBuffer();
+
+      const uploadRes = await fetch(
+        `${supabaseUrl}/storage/v1/object/${STORAGE_BUCKET}/${filename}`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': contentType,
+            'x-upsert': 'true',
+          },
+          body: buffer,
+        },
+      );
+      if (!uploadRes.ok) return null;
+      return `${supabaseUrl}/storage/v1/object/public/${STORAGE_BUCKET}/${filename}`;
+    }
+
+    return rawUrl;
+  } catch {
+    return null;
+  }
+}
+
+function storageKeyFromPostUrl(postUrl: string): string {
+  const m = postUrl.match(/\/(\d+)\/?$/);
+  return m ? `fb-${m[1]}` : `fb-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
 export const syncFacebookPosts = inngest.createFunction(
-  { id: 'sync-facebook-posts', name: 'Sync Facebook posts', concurrency: 3 },
-  [{ cron: '0 */6 * * *' }, { event: 'facebook.sync' }],
+  { id: 'sync-facebook-posts', name: 'Sync Facebook posts', concurrency: 1 },
+  [{ event: 'facebook.sync' }],
   async ({ step, logger }) => {
     const db = getDb();
-    const appToken = `${process.env.FACEBOOK_APP_ID}|${process.env.FACEBOOK_APP_SECRET}`;
+    const token = process.env.APIFY_TOKEN;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
 
-    if (!process.env.FACEBOOK_APP_ID || !process.env.FACEBOOK_APP_SECRET) {
-      logger?.warn?.('sync-facebook-posts: FACEBOOK_APP_ID vagy FACEBOOK_APP_SECRET hiányzik');
+    if (!token) {
+      logger?.warn?.('sync-facebook-posts: APIFY_TOKEN hiányzik');
       return { pages: 0, inserted: 0 };
     }
 
@@ -39,69 +98,83 @@ export const syncFacebookPosts = inngest.createFunction(
       db.select().from(schema.facebookPages).where(eq(schema.facebookPages.enabled, true)),
     );
 
-    let totalInserted = 0;
-
-    for (const page of pages) {
-      const result = await step.run(`fetch-${page.pageId}`, async () => {
-        try {
-          const params = new URLSearchParams({
-            fields: 'message,story,permalink_url,full_picture,created_time',
-            limit: String(POSTS_PER_PAGE),
-            access_token: appToken,
-          });
-          const res = await fetch(`${FB_API}/${page.pageId}/posts?${params}`);
-          if (!res.ok) {
-            const body = await res.text();
-            throw new Error(`HTTP ${res.status}: ${body.slice(0, 200)}`);
-          }
-          const json = (await res.json()) as FbResponse;
-          if (json.error) throw new Error(json.error.message);
-
-          const posts = json.data ?? [];
-          let inserted = 0;
-
-          for (const post of posts) {
-            const content = post.message || post.story;
-            if (!content) continue;
-            await db
-              .insert(schema.socialPosts)
-              .values({
-                authorName: page.pageName,
-                authorHandle: page.pageHandle ?? null,
-                platform: 'facebook',
-                postUrl: post.permalink_url,
-                content,
-                imageUrl: post.full_picture ?? null,
-                postedAt: new Date(post.created_time),
-              })
-              .onConflictDoNothing({ target: schema.socialPosts.postUrl });
-            inserted++;
-          }
-
-          await db
-            .update(schema.facebookPages)
-            .set({ lastSyncedAt: new Date(), consecutiveFailures: 0 })
-            .where(eq(schema.facebookPages.id, page.id));
-
-          return { ok: true, inserted };
-        } catch (err) {
-          const message = err instanceof Error ? err.message : 'unknown';
-          const nextFailures = page.consecutiveFailures + 1;
-          await db
-            .update(schema.facebookPages)
-            .set({
-              consecutiveFailures: nextFailures,
-              enabled: nextFailures < FAILURE_DISABLE_THRESHOLD,
-            })
-            .where(eq(schema.facebookPages.id, page.id));
-          logger?.warn?.(`sync-facebook-posts: ${page.pageId} failed (${nextFailures}x): ${message}`);
-          return { ok: false, inserted: 0 };
-        }
-      });
-
-      if (result.ok) totalInserted += result.inserted;
+    if (pages.length === 0) {
+      logger?.info?.('sync-facebook-posts: nincs engedélyezett oldal');
+      return { pages: 0, inserted: 0 };
     }
 
-    return { pages: pages.length, inserted: totalInserted };
+    const pageUrlMap = new Map(
+      pages.map(p => [
+        `https://www.facebook.com/${p.pageHandle ?? p.pageId}`,
+        p.pageName,
+      ]),
+    );
+
+    const startUrls = pages.map(p => ({
+      url: `https://www.facebook.com/${p.pageHandle ?? p.pageId}`,
+    }));
+
+    const { datasetId, runId } = await step.run('trigger-apify', async () => {
+      const res = await fetch(
+        `${APIFY_API}/acts/${ACTOR_ID}/runs?token=${token}&waitForFinish=55`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ startUrls, resultsLimit: RESULTS_PER_PAGE }),
+        },
+      );
+      if (!res.ok) {
+        const body = await res.text();
+        throw new Error(`Apify run sikertelen: HTTP ${res.status}: ${body.slice(0, 200)}`);
+      }
+      const json = (await res.json()) as ApifyRunResponse;
+      return { datasetId: json.data.defaultDatasetId, runId: json.data.id, status: json.data.status };
+    });
+
+    const posts = await step.run('fetch-apify-results', async () => {
+      const statusRes = await fetch(`${APIFY_API}/actor-runs?token=${token}&limit=5&desc=1`);
+      if (statusRes.ok) {
+        const statusJson = await statusRes.json() as { data: { items: Array<{ id: string; status: string }> } };
+        const run = statusJson.data.items.find(r => r.id === runId);
+        if (run && run.status !== 'SUCCEEDED') {
+          logger?.warn?.(`sync-facebook-posts: run ${runId} még ${run.status}`);
+        }
+      }
+      const res = await fetch(`${APIFY_API}/datasets/${datasetId}/items?token=${token}&clean=true`);
+      if (!res.ok) throw new Error(`Apify dataset hiba: HTTP ${res.status}`);
+      return (await res.json()) as ApifyPost[];
+    });
+
+    const inserted = await step.run('store-posts', async () => {
+      let count = 0;
+      for (const post of posts) {
+        const content = post.text?.trim() ?? '';
+        if (content.length < MIN_TEXT_LENGTH) continue;
+
+        const authorName = pageUrlMap.get(post.facebookUrl) ?? post.pageName;
+        const handle = post.facebookUrl.replace('https://www.facebook.com/', '');
+        const rawImageUrl = post.media?.[0]?.thumbnail ?? null;
+        const storageKey = storageKeyFromPostUrl(post.url);
+        const imageUrl = rawImageUrl
+          ? await resolveAndStoreImage(rawImageUrl, storageKey, supabaseUrl, supabaseKey)
+          : null;
+
+        await db
+          .insert(schema.socialPosts)
+          .values({ authorName, authorHandle: handle, platform: 'facebook', postUrl: post.url, content, imageUrl, postedAt: new Date(post.time) })
+          .onConflictDoNothing({ target: schema.socialPosts.postUrl });
+        count++;
+      }
+
+      await db
+        .update(schema.facebookPages)
+        .set({ lastSyncedAt: new Date(), consecutiveFailures: 0 })
+        .where(eq(schema.facebookPages.enabled, true));
+
+      return count;
+    });
+
+    logger?.info?.(`sync-facebook-posts: ${pages.length} oldal, ${posts.length} poszt scraped, ${inserted} beillesztve`);
+    return { pages: pages.length, scraped: posts.length, inserted };
   },
 );
