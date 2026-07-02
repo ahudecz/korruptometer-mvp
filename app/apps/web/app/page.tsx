@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { unstable_cache } from 'next/cache';
 import { and, count, desc, eq, ilike, or, sql } from 'drizzle-orm';
 
 import { fmtFt, fmtNumber } from '@korr/shared/format';
@@ -24,6 +25,69 @@ import { NewsCardImage } from './hirek/news-card-image';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
+
+// Date-mentes lekérdezések cache-elve — nincs serialization probléma, warm kérésnél 0ms
+type ScandalRow = { id: string; name: string; person: string | null; institution: string | null; article_count: number; investigation_count: number; damage_huf: string; is_open: boolean };
+const getCachedScandalCatalog = unstable_cache(
+  async () => {
+    const { getDb } = await import('@/lib/db');
+    const { sql: s } = await import('drizzle-orm');
+    const db = getDb();
+    return (await db.execute(s`SELECT id, name, person, institution, article_count, investigation_count, damage_huf, is_open FROM "ScandalCatalog" ORDER BY damage_huf DESC, id ASC LIMIT 8`)) as unknown as ScandalRow[];
+  },
+  ['scandal-catalog'],
+  { revalidate: 300 },
+);
+const getCachedOffenceTypes = unstable_cache(
+  async () => {
+    const { getDb } = await import('@/lib/db');
+    const { sql: s } = await import('drizzle-orm');
+    const db = getDb();
+    return (await db.execute(s`SELECT code, "labelHu" AS label FROM "OffenceTypeRef" ORDER BY "sortOrder", "labelHu"`)) as unknown as Array<{ code: string; label: string }>;
+  },
+  ['offence-types'],
+  { revalidate: 3600 },
+);
+const getCachedResignationCount = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { count: cnt, sql: s } = await import('drizzle-orm');
+    const db = getDb();
+    return db.select({ c: cnt() }).from(schema.politicalResignations).where(s`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} IN ('lemondás','kirúgás','felmentés') AND ${schema.politicalResignations.name} NOT ILIKE '%szerkesztőség%'`).then(r => r[0]?.c ?? 0);
+  },
+  ['resignation-count'],
+  { revalidate: 300 },
+);
+const getCachedResignationsByType = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { sql: s } = await import('drizzle-orm');
+    const db = getDb();
+    return db.select({ type: schema.politicalResignations.resignationType, cnt: s<number>`count(*)::int` }).from(schema.politicalResignations).where(s`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} != 'Hivatalban van'`).groupBy(schema.politicalResignations.resignationType).orderBy(s`count(*) desc`);
+  },
+  ['resignations-by-type'],
+  { revalidate: 300 },
+);
+const getCachedClosureCount = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { count: cnt, eq: eqF } = await import('drizzle-orm');
+    const db = getDb();
+    return db.select({ c: cnt() }).from(schema.mediaClosures).where(eqF(schema.mediaClosures.reviewStatus, 'approved')).then(r => r[0]?.c ?? 0);
+  },
+  ['closure-count'],
+  { revalidate: 300 },
+);
+const getCachedYearSpan = unstable_cache(
+  async () => {
+    const { getDb } = await import('@/lib/db');
+    const { sql: s } = await import('drizzle-orm');
+    const db = getDb();
+    return (await db.execute(s`SELECT min(extract(year from "publishedAt"))::int AS min_y, max(extract(year from "publishedAt"))::int AS max_y FROM "NewsArticle"`)) as unknown as Array<{ min_y: number | null; max_y: number | null }>;
+  },
+  ['year-span'],
+  { revalidate: 3600 },
+);
 
 const PALETTE_MONEY = ['#e31937', '#171a20', '#5c5e62', '#9b9da1', '#cccccc', '#e6e6e6'];
 
@@ -133,17 +197,9 @@ export default async function HomePage() {
       ))
       .orderBy(desc(schema.newsArticles.publishedAt))
       .limit(100),
-    db.select({ c: count() }).from(schema.politicalResignations)
-      .where(sql`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} IN ('lemondás','kirúgás','felmentés') AND ${schema.politicalResignations.name} NOT ILIKE '%szerkesztőség%'`)
-      .then(r => r[0]?.c ?? 0),
-    db.select({ type: schema.politicalResignations.resignationType, cnt: sql<number>`count(*)::int` })
-      .from(schema.politicalResignations)
-      .where(sql`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} != 'Hivatalban van'`)
-      .groupBy(schema.politicalResignations.resignationType)
-      .orderBy(sql`count(*) desc`),
-    db.select({ c: count() }).from(schema.mediaClosures)
-      .where(eq(schema.mediaClosures.reviewStatus, 'approved'))
-      .then(r => r[0]?.c ?? 0),
+    getCachedResignationCount(),
+    getCachedResignationsByType(),
+    getCachedClosureCount(),
     db.select({ c: count() }).from(schema.courtVerdicts)
       .where(and(eq(schema.courtVerdicts.reviewStatus, 'approved'), eq(schema.courtVerdicts.verdictType, 'előzetesben')))
       .then(r => r[0]?.c ?? 0),
@@ -161,17 +217,10 @@ export default async function HomePage() {
       .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
       .orderBy(desc(schema.politicalResignations.resignationDate))
       .limit(5),
-    db.execute(sql`
-      SELECT id, name, person, institution, article_count, investigation_count, damage_huf, is_open
-      FROM "ScandalCatalog" ORDER BY damage_huf DESC, id ASC LIMIT 8
-    `) as unknown as Promise<Array<{ id: string; name: string; person: string | null; institution: string | null; article_count: number; investigation_count: number; damage_huf: string; is_open: boolean }>>,
-    db.execute(sql`SELECT code, "labelHu" AS label FROM "OffenceTypeRef" ORDER BY "sortOrder", "labelHu"`) as unknown as Promise<Array<{ code: string; label: string }>>,
+    getCachedScandalCatalog(),
+    getCachedOffenceTypes(),
     getActiveBreaking(),
-    db.execute(sql`
-      SELECT min(extract(year from "publishedAt"))::int AS min_y,
-             max(extract(year from "publishedAt"))::int AS max_y
-      FROM "NewsArticle"
-    `) as unknown as Promise<Array<{ min_y: number | null; max_y: number | null }>>,
+    getCachedYearSpan(),
     db.select({ s: sql<number>`coalesce(sum(${schema.courtVerdicts.sentenceYears}), 0)::int` })
       .from(schema.courtVerdicts)
       .where(sql`${schema.courtVerdicts.verdictType} != 'előzetesben'`)

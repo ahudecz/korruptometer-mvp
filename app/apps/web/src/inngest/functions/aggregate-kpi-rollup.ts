@@ -124,6 +124,17 @@ export const aggregateKpiRollup = inngest.createFunction(
       });
     });
 
+    await step.run('refresh-scandal-catalog', async () => {
+      const db = getDb();
+      // Refresh the materialized view (0030 migration) so homepage reads instant data.
+      // Gracefully no-ops if the migration hasn't been applied yet (still a regular VIEW).
+      try {
+        await db.execute(sql`REFRESH MATERIALIZED VIEW CONCURRENTLY "ScandalCatalog"`);
+      } catch {
+        // VIEW not yet converted to MATERIALIZED VIEW — skip silently
+      }
+    });
+
     await step.run('revalidate-stats', async () => {
       revalidateTag('stats');
     });
