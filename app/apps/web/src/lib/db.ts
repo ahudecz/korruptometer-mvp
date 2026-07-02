@@ -17,7 +17,7 @@ export function getDb() {
   if (!url) {
     throw new Error('DATABASE_URL is not set');
   }
-  const sql = postgres(url, { prepare: false, max: 1 });
+  const sql = postgres(url, { prepare: false, max: 5 });
   cachedClient = drizzle(sql, { schema });
   return cachedClient;
 }
