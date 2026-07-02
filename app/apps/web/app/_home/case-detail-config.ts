@@ -32,7 +32,7 @@ export interface CaseDetailOverride {
   damageLabel?: string;
   /** Curated body blocks (text, breaking-group, quote, pdf-link, …). */
   descriptionBlocks?: DescriptionBlock[];
-  video?: { id: string; summary?: string };
+  video?: { id: string; channel?: string; title?: string; summary?: string };
   additionalVideos?: BigCaseVideo[];
   /** galeria/watchlist ids rendered as related-person cards. */
   relatedPersonIds?: string[];
@@ -96,6 +96,27 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     damageText:
       'A hivatkozott ~1135 Mrd Ft a cégcsoport elnyert közbeszerzéseinek értéke — nem azonosított konkrét kár. Ellenőrzés alatt.',
     relatedPersonIds: ['balasy-gyula', 'rogan-antal'],
+    video: { id: 'RJ-nGkKzhoY', channel: 'Telex', title: 'Rogán és Balásy 16 évig tolták az arcunkba a hazugságaikat', summary: 'Az országot beborító kék plakátok és a kormányzati információnak álcázott propaganda Orbán Viktor kormányzásának szimbólumai lettek. Megnéztük honnan indult és hova jutott tizenhat év alatt a Fidesz tömegmanipulációs gépezete, aminek az egyik legfőbb felelőse és nyertese Balásy Gyula, a héten sírva ajánlotta fel a cégeit az államnak.' },
+  },
+  {
+    scandalKey: 'familiabar-rogan-balasy-propagandapenz',
+    video: { id: 'RJ-nGkKzhoY', channel: 'Telex', title: 'Rogán és Balásy 16 évig tolták az arcunkba a hazugságaikat', summary: 'Az országot beborító kék plakátok és a kormányzati információnak álcázott propaganda Orbán Viktor kormányzásának szimbólumai lettek. Megnéztük honnan indult és hova jutott tizenhat év alatt a Fidesz tömegmanipulációs gépezete, aminek az egyik legfőbb felelőse és nyertese Balásy Gyula, a héten sírva ajánlotta fel a cégeit az államnak.' },
+  },
+  {
+    scandalKey: 'rogan-balasy-lounge-design',
+    video: { id: 'RJ-nGkKzhoY', channel: 'Telex', title: 'Rogán és Balásy 16 évig tolták az arcunkba a hazugságaikat', summary: 'Az országot beborító kék plakátok és a kormányzati információnak álcázott propaganda Orbán Viktor kormányzásának szimbólumai lettek. Megnéztük honnan indult és hova jutott tizenhat év alatt a Fidesz tömegmanipulációs gépezete, aminek az egyik legfőbb felelőse és nyertese Balásy Gyula, a héten sírva ajánlotta fel a cégeit az államnak.' },
+  },
+  {
+    scandalKey: 'rogan-balasy-it-szerz',
+    video: { id: 'RJ-nGkKzhoY', channel: 'Telex', title: 'Rogán és Balásy 16 évig tolták az arcunkba a hazugságaikat', summary: 'Az országot beborító kék plakátok és a kormányzati információnak álcázott propaganda Orbán Viktor kormányzásának szimbólumai lettek. Megnéztük honnan indult és hova jutott tizenhat év alatt a Fidesz tömegmanipulációs gépezete, aminek az egyik legfőbb felelőse és nyertese Balásy Gyula, a héten sírva ajánlotta fel a cégeit az államnak.' },
+  },
+  {
+    scandalKey: 'rogan-szuverenitasvedelem-balasy-kommunikacio',
+    video: { id: 'RJ-nGkKzhoY', channel: 'Telex', title: 'Rogán és Balásy 16 évig tolták az arcunkba a hazugságaikat', summary: 'Az országot beborító kék plakátok és a kormányzati információnak álcázott propaganda Orbán Viktor kormányzásának szimbólumai lettek. Megnéztük honnan indult és hova jutott tizenhat év alatt a Fidesz tömegmanipulációs gépezete, aminek az egyik legfőbb felelőse és nyertese Balásy Gyula, a héten sírva ajánlotta fel a cégeit az államnak.' },
+  },
+  {
+    scandalKey: 'ezusthajo-balasy-felmegas-kozbeszerzesi-ugy',
+    video: { id: 'RJ-nGkKzhoY', channel: 'Telex', title: 'Rogán és Balásy 16 évig tolták az arcunkba a hazugságaikat', summary: 'Az országot beborító kék plakátok és a kormányzati információnak álcázott propaganda Orbán Viktor kormányzásának szimbólumai lettek. Megnéztük honnan indult és hova jutott tizenhat év alatt a Fidesz tömegmanipulációs gépezete, aminek az egyik legfőbb felelőse és nyertese Balásy Gyula, a héten sírva ajánlotta fel a cégeit az államnak.' },
   },
   {
     scandalKey: 'meszaros-b-plus-n-szindikatus',
