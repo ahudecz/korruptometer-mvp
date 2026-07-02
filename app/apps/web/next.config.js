@@ -42,9 +42,7 @@ const securityHeaders = [
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  experimental: {
-    typedRoutes: false,
-  },
+  typedRoutes: false,
   async redirects() {
     return [
       { source: '/adatbazis/budapest-airport-ter-utalmeneti', destination: '/adatbazis/budapest-airport-megterulesi-ugy', permanent: true },
