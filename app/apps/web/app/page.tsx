@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { unstable_cache } from 'next/cache';
 import { and, count, desc, eq, ilike, or, sql } from 'drizzle-orm';
 
 import { fmtFt, fmtNumber } from '@korr/shared/format';
@@ -23,9 +24,30 @@ import { autoDisplayTitle, getCaseDisplayTitle } from './_home/case-detail-confi
 import { NewsCardImage } from './hirek/news-card-image';
 
 export const dynamic = 'force-dynamic';
-// Supabase Transaction Pooler cold start akár 15-20s; 30s limit megakadályozza
-// a Vercel 10s default timeout-ot.
 export const maxDuration = 30;
+
+// Lassú/stabil queryek cache-elve — ScandalCatalog komplex CTE, OffenceTypeRef statikus.
+// force-dynamic + unstable_cache = page mindig fresh, de a DB nem hívódik minden requestnél.
+const getCachedScandalCatalog = unstable_cache(
+  async () => {
+    const db = getDb();
+    return (await db.execute(sql`
+      SELECT id, name, person, institution, article_count, investigation_count, damage_huf, is_open
+      FROM "ScandalCatalog" ORDER BY damage_huf DESC, id ASC LIMIT 8
+    `)) as unknown as Array<{ id: string; name: string; person: string | null; institution: string | null; article_count: number; investigation_count: number; damage_huf: string; is_open: boolean }>;
+  },
+  ['scandal-catalog'],
+  { revalidate: 600 }
+);
+
+const getCachedOffenceTypes = unstable_cache(
+  async () => {
+    const db = getDb();
+    return (await db.execute(sql`SELECT code, "labelHu" AS label FROM "OffenceTypeRef" ORDER BY "sortOrder", "labelHu"`)) as unknown as Array<{ code: string; label: string }>;
+  },
+  ['offence-types'],
+  { revalidate: 3600 }
+);
 
 const PALETTE_MONEY = ['#e31937', '#171a20', '#5c5e62', '#9b9da1', '#cccccc', '#e6e6e6'];
 
@@ -112,7 +134,8 @@ export default async function HomePage() {
     pretrialCountDb,
     eliteltCountDb,
     pretrialByUgy,
-    allRecoveries,
+    latestRecoveriesDb,
+    totalRecoveredRaw,
     latestResignations5,
     recentScandals,
     offRows,
@@ -171,16 +194,14 @@ export default async function HomePage() {
       .where(and(eq(schema.courtVerdicts.reviewStatus, 'approved'), eq(schema.courtVerdicts.verdictType, 'előzetesben')))
       .groupBy(schema.courtVerdicts.personUgyId)
       .orderBy(sql`count(*) desc`),
-    db.select().from(schema.assetRecoveries).orderBy(desc(schema.assetRecoveries.recoveredAt)),
+    db.select().from(schema.assetRecoveries).orderBy(desc(schema.assetRecoveries.recoveredAt)).limit(5),
+    db.select({ total: sql<string>`coalesce(sum("amountFt"::bigint), 0)::text` }).from(schema.assetRecoveries).then(r => r[0]?.total ?? '0'),
     db.select().from(schema.politicalResignations)
       .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
       .orderBy(desc(schema.politicalResignations.resignationDate))
       .limit(5),
-    db.execute(sql`
-      SELECT id, name, person, institution, article_count, investigation_count, damage_huf, is_open
-      FROM "ScandalCatalog" ORDER BY damage_huf DESC, id ASC LIMIT 8
-    `) as unknown as Promise<Array<{ id: string; name: string; person: string | null; institution: string | null; article_count: number; investigation_count: number; damage_huf: string; is_open: boolean }>>,
-    db.execute(sql`SELECT code, "labelHu" AS label FROM "OffenceTypeRef" ORDER BY "sortOrder", "labelHu"`) as unknown as Promise<Array<{ code: string; label: string }>>,
+    getCachedScandalCatalog(),
+    getCachedOffenceTypes(),
     db.select({
         id: schema.newsArticles.id,
         headline: schema.newsArticles.headline,
@@ -218,8 +239,8 @@ export default async function HomePage() {
 
   const resignationCount = resignationCountRaw;
   const closureCount = closureCountRaw;
-  const latestRecoveries = allRecoveries.slice(0, 5);
-  const totalRecoveredFt = allRecoveries.reduce((s, r) => s + r.amountFt, 0n);
+  const latestRecoveries = latestRecoveriesDb;
+  const totalRecoveredFt = BigInt(totalRecoveredRaw);
   const offences = offRows.map((o) => ({ code: o.code, label: o.label }));
   const recentArticles = recentArticlesRaw.map(a => ({
     ...a,
