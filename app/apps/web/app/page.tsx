@@ -22,11 +22,10 @@ import { UGYEK } from './_home/ugyek-config';
 import { autoDisplayTitle, getCaseDisplayTitle } from './_home/case-detail-config';
 import { NewsCardImage } from './hirek/news-card-image';
 
-// ISR (revalidate=600) próbál build-idős statikus generálást, ami >60s-ot vesz
-// igénybe (20+ DB lekérdezés) és Vercel build-timeout-ot okoz. force-dynamic
-// megkerüli a build-time generálást; a Next.js cache és revalidatePath lefedi
-// az újrafrissítési igényt. Visszaállítható ISR-re, ha a DB gyorsabb lesz.
 export const dynamic = 'force-dynamic';
+// Supabase Transaction Pooler cold start akár 15-20s; 30s limit megakadályozza
+// a Vercel 10s default timeout-ot.
+export const maxDuration = 30;
 
 const PALETTE_MONEY = ['#e31937', '#171a20', '#5c5e62', '#9b9da1', '#cccccc', '#e6e6e6'];
 
