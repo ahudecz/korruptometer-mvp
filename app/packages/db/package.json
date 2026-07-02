@@ -52,7 +52,11 @@
     "import-szolo-utca": "tsx src/import-szolo-utca.ts",
     "import-lelegeztetogep": "tsx src/import-lelegeztetogep.ts",
     "import-aranykonvoj": "tsx src/import-aranykonvoj.ts",
-    "import-mnb-extra": "tsx src/import-mnb-extra.ts"
+    "import-mnb-extra": "tsx src/import-mnb-extra.ts",
+    "add-facebook-pages": "tsx src/add-facebook-pages.ts",
+    "fb-sync-apify": "tsx src/fb-sync-apify.ts",
+    "backfill-social-images": "tsx src/backfill-social-images.ts",
+    "bulk-case-content": "tsx src/bulk-case-content.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.2",

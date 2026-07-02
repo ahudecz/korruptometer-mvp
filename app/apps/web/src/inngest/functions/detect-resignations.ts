@@ -104,9 +104,14 @@ export const detectResignations = inngest.createFunction(
           });
 
           // Tag the source article so it appears in /hirek under the 'Lemondás' filter.
+          // Watchlist persons (pinned) and auto-approved detections are marked as
+          // breaking candidates so the BreakingBanner fires without manual override.
           await db
             .update(schema.newsArticles)
-            .set({ tag: 'Lemondás' })
+            .set({
+              tag: 'Lemondás',
+              isBreakingCandidate: pinned || reviewStatus === 'approved',
+            })
             .where(eq(schema.newsArticles.id, article.id));
 
           count++;

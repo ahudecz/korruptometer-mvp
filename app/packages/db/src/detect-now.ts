@@ -11,8 +11,9 @@ loadEnv({ path: resolve(__dirname, '../../../.env') });
 
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { and, desc, gte, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, sql } from 'drizzle-orm';
 import * as schema from './schema';
+import { isWatchlistPerson } from './watchlist';
 import { detectResignationFromArticle } from './resignation-detect';
 
 const DB_URL = process.env.DATABASE_URL;
@@ -115,11 +116,12 @@ async function main() {
       description: result.description.slice(0, 1000) || null,
     });
 
-    // Cikk megjelölése a /hirek Lemondás szűrőhöz
+    // Cikk megjelölése a /hirek Lemondás szűrőhöz, watchlist személyeknél breaking candidate
+    const pinned = isWatchlistPerson(result.name);
     await db
       .update(schema.newsArticles)
-      .set({ tag: 'Lemondás' })
-      .where(sql`id = ${article.id}`);
+      .set({ tag: 'Lemondás', isBreakingCandidate: pinned })
+      .where(eq(schema.newsArticles.id, article.id));
 
     console.log(`✅ beírva: ${result.name} (${result.resignationType}, ${result.confidence.toFixed(2)})`);
     inserted++;

@@ -68,8 +68,7 @@ async function openaiCompatExtract<T>(
 ): Promise<LlmResult<T>> {
   const apiKey = process.env.LLM_API_KEY;
   if (!apiKey) {
-    // No key configured (e.g. before the review engine ships) → no-op, don't
-    // throw, so the hourly detector crons stay green and simply write nothing.
+    console.error('[llm] LLM_API_KEY is not set — detection pipeline is silently disabled. Set LLM_API_KEY (LangDock) or switch to LLM_PROVIDER=anthropic on Vercel.');
     return { data: null, inputTokens: 0, outputTokens: 0 };
   }
   const baseUrl = process.env.LLM_BASE_URL ?? DEFAULT_LANGDOCK_URL;
@@ -173,7 +172,7 @@ async function anthropicExtract<T>(
   if (!_anthropic) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      // No key configured → no-op (see openaiCompatExtract).
+      console.error('[llm] ANTHROPIC_API_KEY is not set — detection pipeline is silently disabled.');
       return { data: null, inputTokens: 0, outputTokens: 0 };
     }
     _anthropic = new Anthropic({ apiKey });
