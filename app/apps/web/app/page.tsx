@@ -22,9 +22,8 @@ import { UGYEK } from './_home/ugyek-config';
 import { autoDisplayTitle, getCaseDisplayTitle } from './_home/case-detail-config';
 import { NewsCardImage } from './hirek/news-card-image';
 
-// ISR: build-kor renderel, CDN-ről szolgál, 5 percenként frissül háttérben.
-// A user soha nem vár DB-t — a Vercel 10s limit irreleváns.
-export const revalidate = 300;
+export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 const PALETTE_MONEY = ['#e31937', '#171a20', '#5c5e62', '#9b9da1', '#cccccc', '#e6e6e6'];
 
@@ -83,29 +82,13 @@ export default async function HomePage() {
     .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId));
   }
 
-  const HOMEPAGE_NEWS_TOPICS = [
-    '%NKA%', '%MNB%', '%KESMA%', '%Mediaworks%',
-    '%lélegeztetőgép%', '%aranykonvoj%', '%hatvanpuszta%', '%batida%',
-    '%Mészáros Lőrinc%', '%Rogán%', '%Matolcsy%',
-    '%Tiborcz%', '%Balásy%', '%Lázár János%',
-    '%volvo%gate%', '%volvo-gate%',
-    '%pesti srácok%', '%világgazdaság%',
-    '%parkfenntart%', '%Őrsi Gergely%',
-    '%Mandiner%',
-  ] as const;
-
-  // Összes független DB-lekérdezés párhuzamosan — ISR miatt csak build-kor és
-  // 5 percenként háttérben fut, user mindig CDN cache-t kap.
+  // 22 egyedi query → 14: az összes ILIKE/cikk-query (8 db) egybevonva egyetlen
+  // DB-scant jelent tag-szűrő + ILIKE ANY(ARRAY[...]) kombinációval.
+  // Az eredményt JS-ben bontjuk szét témánként — 1 tábla-scan vs. 8.
   const [
     snapshot,
     topResignations,
-    nkaArticles,
-    mnbArticles,
-    hatvanArticles,
-    aranyArticles,
-    volvoArticles,
-    lelegArticles,
-    parkArticles,
+    allArticlesRaw,
     resignationCountRaw,
     resignationsByType,
     closureCountRaw,
@@ -117,7 +100,6 @@ export default async function HomePage() {
     latestResignations5,
     recentScandals,
     offRows,
-    recentArticlesRaw,
     breakingArticles,
     yearSpanRes,
     totalPrisonYearsRaw,
@@ -127,27 +109,30 @@ export default async function HomePage() {
       .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
       .orderBy(desc(schema.politicalResignations.pinned), desc(schema.politicalResignations.resignationDate))
       .limit(20),
-    articleSelect().where(eq(schema.newsArticles.tag, 'NKA')).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
-    articleSelect().where(eq(schema.newsArticles.tag, 'MNB')).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
-    articleSelect().where(ilike(schema.newsArticles.headline, '%hatvanpuszta%')).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
-    articleSelect().where(ilike(schema.newsArticles.headline, '%aranykonvoj%')).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
-    articleSelect().where(or(
-      ilike(schema.newsArticles.headline, '%volvo gate%'),
-      ilike(schema.newsArticles.headline, '%volvo-gate%'),
-      ilike(schema.newsArticles.headline, '%bánki erik%'),
-      ilike(schema.newsArticles.headline, '%tüke busz%'),
-      eq(schema.newsArticles.tag, 'volvo-gate'),
-    )).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
-    articleSelect().where(or(
-      ilike(schema.newsArticles.headline, '%lélegeztetőgép%'),
-      ilike(schema.newsArticles.headline, '%fourcardinal%'),
-    )).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
-    articleSelect().where(or(
-      ilike(schema.newsArticles.headline, '%parkfenntartás%'),
-      ilike(schema.newsArticles.headline, '%parkfenntartá%'),
-      ilike(schema.newsArticles.headline, '%Őrsi Gergely%'),
-      ilike(schema.newsArticles.headline, '%Puskás Péter%'),
-    )).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
+    db.select({
+        id: schema.newsArticles.id,
+        headline: schema.newsArticles.headline,
+        excerpt: schema.newsArticles.excerpt,
+        sourceUrl: schema.newsArticles.sourceUrl,
+        publishedAt: schema.newsArticles.publishedAt,
+        tag: schema.newsArticles.tag,
+        featured: schema.newsArticles.featured,
+        imageUrl: schema.newsArticles.imageUrl,
+        isBreakingCandidate: schema.newsArticles.isBreakingCandidate,
+        breakingOverride: schema.newsArticles.breakingOverride,
+        sourceName: schema.sources.name,
+      })
+      .from(schema.newsArticles)
+      .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId))
+      .where(or(
+        eq(schema.newsArticles.featured, true),
+        eq(schema.newsArticles.breakingOverride, true),
+        eq(schema.newsArticles.isBreakingCandidate, true),
+        sql`${schema.newsArticles.tag} IN ('NKA', 'MNB', 'volvo-gate')`,
+        sql`${schema.newsArticles.headline} ILIKE ANY(ARRAY['%hatvanpuszta%','%aranykonvoj%','%volvo gate%','%volvo-gate%','%bánki erik%','%tüke busz%','%lélegeztetőgép%','%fourcardinal%','%parkfenntartás%','%parkfenntartá%','%Őrsi Gergely%','%Puskás Péter%','%KESMA%','%Mediaworks%','%batida%','%Mészáros Lőrinc%','%Rogán%','%Matolcsy%','%Tiborcz%','%Balásy%','%Lázár János%','%volvo%gate%','%pesti srácok%','%világgazdaság%','%parkfenntart%','%Mandiner%','%NKA%','%MNB%'])`,
+      ))
+      .orderBy(desc(schema.newsArticles.publishedAt))
+      .limit(100),
     db.select({ c: count() }).from(schema.politicalResignations)
       .where(sql`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} IN ('lemondás','kirúgás','felmentés') AND ${schema.politicalResignations.name} NOT ILIKE '%szerkesztőség%'`)
       .then(r => r[0]?.c ?? 0),
@@ -181,29 +166,6 @@ export default async function HomePage() {
       FROM "ScandalCatalog" ORDER BY damage_huf DESC, id ASC LIMIT 8
     `) as unknown as Promise<Array<{ id: string; name: string; person: string | null; institution: string | null; article_count: number; investigation_count: number; damage_huf: string; is_open: boolean }>>,
     db.execute(sql`SELECT code, "labelHu" AS label FROM "OffenceTypeRef" ORDER BY "sortOrder", "labelHu"`) as unknown as Promise<Array<{ code: string; label: string }>>,
-    db.select({
-        id: schema.newsArticles.id,
-        headline: schema.newsArticles.headline,
-        excerpt: schema.newsArticles.excerpt,
-        sourceUrl: schema.newsArticles.sourceUrl,
-        publishedAt: schema.newsArticles.publishedAt,
-        tag: schema.newsArticles.tag,
-        featured: schema.newsArticles.featured,
-        imageUrl: schema.newsArticles.imageUrl,
-        isBreakingCandidate: schema.newsArticles.isBreakingCandidate,
-        breakingOverride: schema.newsArticles.breakingOverride,
-        sourceName: schema.sources.name,
-      })
-      .from(schema.newsArticles)
-      .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId))
-      .where(or(
-        eq(schema.newsArticles.featured, true),
-        eq(schema.newsArticles.breakingOverride, true),
-        eq(schema.newsArticles.isBreakingCandidate, true),
-        ...HOMEPAGE_NEWS_TOPICS.map(p => ilike(schema.newsArticles.headline, p)),
-      ))
-      .orderBy(desc(schema.newsArticles.publishedAt))
-      .limit(10),
     getActiveBreaking(),
     db.execute(sql`
       SELECT min(extract(year from "publishedAt"))::int AS min_y,
@@ -216,12 +178,22 @@ export default async function HomePage() {
       .then(r => r[0]?.s ?? 0),
   ]);
 
+  // allArticlesRaw → per-topic szétválasztás JS-ben (nincs extra DB-hívás)
+  const hl = (a: { headline: string }) => a.headline.toLowerCase();
+  const nkaArticles    = allArticlesRaw.filter(a => a.tag === 'NKA').slice(0, 5);
+  const mnbArticles    = allArticlesRaw.filter(a => a.tag === 'MNB').slice(0, 5);
+  const hatvanArticles = allArticlesRaw.filter(a => hl(a).includes('hatvanpuszta')).slice(0, 5);
+  const aranyArticles  = allArticlesRaw.filter(a => hl(a).includes('aranykonvoj')).slice(0, 5);
+  const volvoArticles  = allArticlesRaw.filter(a => a.tag === 'volvo-gate' || (hl(a).includes('volvo') && (hl(a).includes('gate') || hl(a).includes('bánki') || hl(a).includes('tüke')))).slice(0, 5);
+  const lelegArticles  = allArticlesRaw.filter(a => hl(a).includes('lélegeztetőgép') || hl(a).includes('fourcardinal')).slice(0, 5);
+  const parkArticles   = allArticlesRaw.filter(a => hl(a).includes('parkfenntart') || hl(a).includes('őrsi') || hl(a).includes('puskás')).slice(0, 5);
+
   const resignationCount = resignationCountRaw;
   const closureCount = closureCountRaw;
   const latestRecoveries = latestRecoveriesDb;
   const totalRecoveredFt = BigInt(totalRecoveredRaw);
   const offences = offRows.map((o) => ({ code: o.code, label: o.label }));
-  const recentArticles = recentArticlesRaw.map(a => ({
+  const recentArticles = allArticlesRaw.slice(0, 10).map(a => ({
     ...a,
     isBreaking: (a.breakingOverride ?? a.isBreakingCandidate) === true,
   }));
