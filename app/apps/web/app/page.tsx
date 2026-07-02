@@ -73,18 +73,6 @@ function fmtUpdatedAt(d: Date): string {
 export default async function HomePage() {
   const db = getDb();
 
-  const snapshot = await db.query.kpiSnapshots.findFirst({
-    where: eq(schema.kpiSnapshots.id, 'singleton'),
-  });
-
-
-  const topResignations = await db
-    .select()
-    .from(schema.politicalResignations)
-    .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
-    .orderBy(desc(schema.politicalResignations.pinned), desc(schema.politicalResignations.resignationDate))
-    .limit(20);
-
   function articleSelect() {
     return db.select({
       id: schema.newsArticles.id,
@@ -97,124 +85,6 @@ export default async function HomePage() {
     .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId));
   }
 
-  const nkaArticles = await articleSelect()
-    .where(eq(schema.newsArticles.tag, 'NKA'))
-    .orderBy(desc(schema.newsArticles.publishedAt))
-    .limit(5);
-
-  const mnbArticles = await articleSelect()
-    .where(eq(schema.newsArticles.tag, 'MNB'))
-    .orderBy(desc(schema.newsArticles.publishedAt))
-    .limit(5);
-
-  const hatvanArticles = await articleSelect()
-    .where(ilike(schema.newsArticles.headline, '%hatvanpuszta%'))
-    .orderBy(desc(schema.newsArticles.publishedAt))
-    .limit(5);
-
-  const aranyArticles = await articleSelect()
-    .where(ilike(schema.newsArticles.headline, '%aranykonvoj%'))
-    .orderBy(desc(schema.newsArticles.publishedAt))
-    .limit(5);
-
-  const volvoArticles = await articleSelect()
-    .where(or(
-      ilike(schema.newsArticles.headline, '%volvo gate%'),
-      ilike(schema.newsArticles.headline, '%volvo-gate%'),
-      ilike(schema.newsArticles.headline, '%bánki erik%'),
-      ilike(schema.newsArticles.headline, '%tüke busz%'),
-      eq(schema.newsArticles.tag, 'volvo-gate'),
-    ))
-    .orderBy(desc(schema.newsArticles.publishedAt))
-    .limit(5);
-
-  const lelegArticles = await articleSelect()
-    .where(or(
-      ilike(schema.newsArticles.headline, '%lélegeztetőgép%'),
-      ilike(schema.newsArticles.headline, '%fourcardinal%'),
-    ))
-    .orderBy(desc(schema.newsArticles.publishedAt))
-    .limit(5);
-
-  const parkArticles = await articleSelect()
-    .where(or(
-      ilike(schema.newsArticles.headline, '%parkfenntartás%'),
-      ilike(schema.newsArticles.headline, '%parkfenntartá%'),
-      ilike(schema.newsArticles.headline, '%Őrsi Gergely%'),
-      ilike(schema.newsArticles.headline, '%Puskás Péter%'),
-    ))
-    .orderBy(desc(schema.newsArticles.publishedAt))
-    .limit(5);
-
-  // A szerkesztőségi tömeges kirúgások a MediaClosure táblában "leépítés"-ként vannak nyilvántartva
-  // (és ott számolódnak a closureCount-ban), ezért itt kihagyjuk őket, hogy a /lemondasok oldal
-  // összegzésével (16) egyezzen a szám, és ne duplázódjon.
-  const resignationCount = (await db
-    .select({ c: count() })
-    .from(schema.politicalResignations)
-    .where(sql`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} IN ('lemondás','kirúgás','felmentés') AND ${schema.politicalResignations.name} NOT ILIKE '%szerkesztőség%'`))[0]?.c ?? 0;
-
-  const resignationsByType = await db
-    .select({
-      type: schema.politicalResignations.resignationType,
-      cnt: sql<number>`count(*)::int`,
-    })
-    .from(schema.politicalResignations)
-    .where(sql`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} != 'Hivatalban van'`)
-    .groupBy(schema.politicalResignations.resignationType)
-    .orderBy(sql`count(*) desc`);
-
-  const closureCount = (await db.select({ c: count() }).from(schema.mediaClosures)
-    .where(eq(schema.mediaClosures.reviewStatus, 'approved')))[0]?.c ?? 0;
-
-  const [pretrialCountDb, eliteltCountDb, pretrialByUgy] = await Promise.all([
-    db.select({ c: count() }).from(schema.courtVerdicts)
-      .where(and(eq(schema.courtVerdicts.reviewStatus, 'approved'), eq(schema.courtVerdicts.verdictType, 'előzetesben')))
-      .then(r => r[0]?.c ?? 0),
-    db.select({ c: count() }).from(schema.courtVerdicts)
-      .where(sql`${schema.courtVerdicts.reviewStatus} = 'approved' AND ${schema.courtVerdicts.verdictType} != 'előzetesben'`)
-      .then(r => r[0]?.c ?? 0),
-    db.select({ ugyId: schema.courtVerdicts.personUgyId, n: sql<number>`count(*)::int` })
-      .from(schema.courtVerdicts)
-      .where(and(eq(schema.courtVerdicts.reviewStatus, 'approved'), eq(schema.courtVerdicts.verdictType, 'előzetesben')))
-      .groupBy(schema.courtVerdicts.personUgyId)
-      .orderBy(sql`count(*) desc`),
-  ]);
-
-  const allRecoveries = await db
-    .select()
-    .from(schema.assetRecoveries)
-    .orderBy(desc(schema.assetRecoveries.recoveredAt));
-  const latestRecoveries = allRecoveries.slice(0, 5);
-  const totalRecoveredFt = allRecoveries.reduce((s, r) => s + r.amountFt, 0n);
-
-  const latestResignations5 = await db
-    .select()
-    .from(schema.politicalResignations)
-    .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
-    .orderBy(desc(schema.politicalResignations.resignationDate))
-    .limit(5);
-  const recentScandals = (await db.execute(sql`
-    SELECT id, name, person, institution, article_count, investigation_count, damage_huf, is_open
-    FROM "ScandalCatalog"
-    ORDER BY damage_huf DESC, id ASC
-    LIMIT 8
-  `)) as unknown as Array<{
-    id: string;
-    name: string;
-    person: string | null;
-    institution: string | null;
-    article_count: number;
-    investigation_count: number;
-    damage_huf: string;
-    is_open: boolean;
-  }>;
-
-  const offRows = (await db.execute(
-    sql`SELECT code, "labelHu" AS label FROM "OffenceTypeRef" ORDER BY "sortOrder", "labelHu"`,
-  )) as unknown as Array<{ code: string; label: string }>;
-  const offences = offRows.map((o) => ({ code: o.code, label: o.label }));
-
   const HOMEPAGE_NEWS_TOPICS = [
     '%NKA%', '%MNB%', '%KESMA%', '%Mediaworks%',
     '%lélegeztetőgép%', '%aranykonvoj%', '%hatvanpuszta%', '%batida%',
@@ -226,9 +96,93 @@ export default async function HomePage() {
     '%Mandiner%',
   ] as const;
 
-  const [recentArticlesRaw, breakingArticles] = await Promise.all([
-    db
-      .select({
+  // Összes független DB-lekérdezés párhuzamosan — cold start hatás minimalizálva.
+  const [
+    snapshot,
+    topResignations,
+    nkaArticles,
+    mnbArticles,
+    hatvanArticles,
+    aranyArticles,
+    volvoArticles,
+    lelegArticles,
+    parkArticles,
+    resignationCountRaw,
+    resignationsByType,
+    closureCountRaw,
+    pretrialCountDb,
+    eliteltCountDb,
+    pretrialByUgy,
+    allRecoveries,
+    latestResignations5,
+    recentScandals,
+    offRows,
+    recentArticlesRaw,
+    breakingArticles,
+    yearSpanRes,
+    totalPrisonYearsRaw,
+  ] = await Promise.all([
+    db.query.kpiSnapshots.findFirst({ where: eq(schema.kpiSnapshots.id, 'singleton') }),
+    db.select().from(schema.politicalResignations)
+      .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
+      .orderBy(desc(schema.politicalResignations.pinned), desc(schema.politicalResignations.resignationDate))
+      .limit(20),
+    articleSelect().where(eq(schema.newsArticles.tag, 'NKA')).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
+    articleSelect().where(eq(schema.newsArticles.tag, 'MNB')).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
+    articleSelect().where(ilike(schema.newsArticles.headline, '%hatvanpuszta%')).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
+    articleSelect().where(ilike(schema.newsArticles.headline, '%aranykonvoj%')).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
+    articleSelect().where(or(
+      ilike(schema.newsArticles.headline, '%volvo gate%'),
+      ilike(schema.newsArticles.headline, '%volvo-gate%'),
+      ilike(schema.newsArticles.headline, '%bánki erik%'),
+      ilike(schema.newsArticles.headline, '%tüke busz%'),
+      eq(schema.newsArticles.tag, 'volvo-gate'),
+    )).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
+    articleSelect().where(or(
+      ilike(schema.newsArticles.headline, '%lélegeztetőgép%'),
+      ilike(schema.newsArticles.headline, '%fourcardinal%'),
+    )).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
+    articleSelect().where(or(
+      ilike(schema.newsArticles.headline, '%parkfenntartás%'),
+      ilike(schema.newsArticles.headline, '%parkfenntartá%'),
+      ilike(schema.newsArticles.headline, '%Őrsi Gergely%'),
+      ilike(schema.newsArticles.headline, '%Puskás Péter%'),
+    )).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
+    // A szerkesztőségi tömeges kirúgások a MediaClosure táblában "leépítés"-ként vannak nyilvántartva
+    // ezért itt kihagyjuk őket, hogy a /lemondasok oldal összegzésével egyezzen a szám.
+    db.select({ c: count() }).from(schema.politicalResignations)
+      .where(sql`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} IN ('lemondás','kirúgás','felmentés') AND ${schema.politicalResignations.name} NOT ILIKE '%szerkesztőség%'`)
+      .then(r => r[0]?.c ?? 0),
+    db.select({ type: schema.politicalResignations.resignationType, cnt: sql<number>`count(*)::int` })
+      .from(schema.politicalResignations)
+      .where(sql`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} != 'Hivatalban van'`)
+      .groupBy(schema.politicalResignations.resignationType)
+      .orderBy(sql`count(*) desc`),
+    db.select({ c: count() }).from(schema.mediaClosures)
+      .where(eq(schema.mediaClosures.reviewStatus, 'approved'))
+      .then(r => r[0]?.c ?? 0),
+    db.select({ c: count() }).from(schema.courtVerdicts)
+      .where(and(eq(schema.courtVerdicts.reviewStatus, 'approved'), eq(schema.courtVerdicts.verdictType, 'előzetesben')))
+      .then(r => r[0]?.c ?? 0),
+    db.select({ c: count() }).from(schema.courtVerdicts)
+      .where(sql`${schema.courtVerdicts.reviewStatus} = 'approved' AND ${schema.courtVerdicts.verdictType} != 'előzetesben'`)
+      .then(r => r[0]?.c ?? 0),
+    db.select({ ugyId: schema.courtVerdicts.personUgyId, n: sql<number>`count(*)::int` })
+      .from(schema.courtVerdicts)
+      .where(and(eq(schema.courtVerdicts.reviewStatus, 'approved'), eq(schema.courtVerdicts.verdictType, 'előzetesben')))
+      .groupBy(schema.courtVerdicts.personUgyId)
+      .orderBy(sql`count(*) desc`),
+    db.select().from(schema.assetRecoveries).orderBy(desc(schema.assetRecoveries.recoveredAt)),
+    db.select().from(schema.politicalResignations)
+      .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
+      .orderBy(desc(schema.politicalResignations.resignationDate))
+      .limit(5),
+    db.execute(sql`
+      SELECT id, name, person, institution, article_count, investigation_count, damage_huf, is_open
+      FROM "ScandalCatalog" ORDER BY damage_huf DESC, id ASC LIMIT 8
+    `) as unknown as Promise<Array<{ id: string; name: string; person: string | null; institution: string | null; article_count: number; investigation_count: number; damage_huf: string; is_open: boolean }>>,
+    db.execute(sql`SELECT code, "labelHu" AS label FROM "OffenceTypeRef" ORDER BY "sortOrder", "labelHu"`) as unknown as Promise<Array<{ code: string; label: string }>>,
+    db.select({
         id: schema.newsArticles.id,
         headline: schema.newsArticles.headline,
         excerpt: schema.newsArticles.excerpt,
@@ -243,40 +197,39 @@ export default async function HomePage() {
       })
       .from(schema.newsArticles)
       .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId))
-      .where(
-        or(
-          eq(schema.newsArticles.featured, true),
-          eq(schema.newsArticles.breakingOverride, true),
-          eq(schema.newsArticles.isBreakingCandidate, true),
-          ...HOMEPAGE_NEWS_TOPICS.map(p => ilike(schema.newsArticles.headline, p)),
-        )
-      )
+      .where(or(
+        eq(schema.newsArticles.featured, true),
+        eq(schema.newsArticles.breakingOverride, true),
+        eq(schema.newsArticles.isBreakingCandidate, true),
+        ...HOMEPAGE_NEWS_TOPICS.map(p => ilike(schema.newsArticles.headline, p)),
+      ))
       .orderBy(desc(schema.newsArticles.publishedAt))
       .limit(10),
     getActiveBreaking(),
+    db.execute(sql`
+      SELECT min(extract(year from "publishedAt"))::int AS min_y,
+             max(extract(year from "publishedAt"))::int AS max_y
+      FROM "NewsArticle"
+    `) as unknown as Promise<Array<{ min_y: number | null; max_y: number | null }>>,
+    db.select({ s: sql<number>`coalesce(sum(${schema.courtVerdicts.sentenceYears}), 0)::int` })
+      .from(schema.courtVerdicts)
+      .where(sql`${schema.courtVerdicts.verdictType} != 'előzetesben'`)
+      .then(r => r[0]?.s ?? 0),
   ]);
 
+  const resignationCount = resignationCountRaw;
+  const closureCount = closureCountRaw;
+  const latestRecoveries = allRecoveries.slice(0, 5);
+  const totalRecoveredFt = allRecoveries.reduce((s, r) => s + r.amountFt, 0n);
+  const offences = offRows.map((o) => ({ code: o.code, label: o.label }));
   const recentArticles = recentArticlesRaw.map(a => ({
     ...a,
     isBreaking: (a.breakingOverride ?? a.isBreakingCandidate) === true,
   }));
 
-  // Year span of the underlying news corpus (for the KPI-01 caption).
-  const yearSpanRes = (await db.execute(sql`
-    SELECT min(extract(year from "publishedAt"))::int AS min_y,
-           max(extract(year from "publishedAt"))::int AS max_y
-    FROM "NewsArticle"
-  `)) as unknown as Array<{ min_y: number | null; max_y: number | null }>;
-
   // Fall back gracefully if a fresh DB is empty (avoids a 500 page).
   const totalDamage = snapshot ? BigInt(snapshot.totalDamage) : 0n;
-  // Halmozott kiszabott börtönévek a tényleges ítéletekből (nem-előzetes sorok).
-  // Amíg nincs ilyen ítélet, ez 0 marad, és a hero az előzetes letartóztatások
-  // számát mutatja helyette (lásd lentebb a hero-stat blokkot).
-  const totalPrisonYears = (await db
-    .select({ s: sql<number>`coalesce(sum(${schema.courtVerdicts.sentenceYears}), 0)::int` })
-    .from(schema.courtVerdicts)
-    .where(sql`${schema.courtVerdicts.verdictType} != 'előzetesben'`))[0]?.s ?? 0;
+  const totalPrisonYears = totalPrisonYearsRaw;
   const activeCases = snapshot?.activeCases ?? 0;
   const newIndictments = snapshot?.newIndictmentsThisWeek ?? 0;
   const partnerCount = snapshot?.partnerCount ?? 0;
@@ -393,10 +346,7 @@ export default async function HomePage() {
           <div className="stat-card">
             <div className="stat-card-head">
               <div className="stat-label">Börtönben van-e?</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div className="stat-id">/ KPI–02</div>
-                <Link href="/birosagi-iteletek" className="stat-card-list-link">Részletek →</Link>
-              </div>
+              <div className="stat-id">/ KPI–02</div>
             </div>
             <div className="stat-status-grid stat-status-grid--2">
               <div className="stat-status-item">
@@ -414,30 +364,22 @@ export default async function HomePage() {
                 const label = ugy?.title ?? ugyId ?? 'Egyéb';
                 const href = ugy ? `/ugyek/${ugyId}` : '/birosagi-iteletek';
                 return (
-                  <div key={ugyId ?? '__other'}>
-                    <Link href={href} style={{ color: 'var(--accent)', fontWeight: 600 }}>
+                  <div key={ugyId ?? '__other'} style={{ marginBottom: 2 }}>
+                    <Link href={href} className="stat-case-link">
                       {label}
                     </Link>
                     {': '}{n} fő előzetesben
                   </div>
                 );
               })}
-              <div style={{ marginTop: 4 }}>
-                Összesen{' '}
-                <Link href="/birosagi-iteletek" style={{ color: 'var(--accent)', fontWeight: 600 }}>
-                  {pretrialCountDb} fő előzetesben →
-                </Link>
-              </div>
             </div>
+            <Link href="/birosagi-iteletek" className="stat-card-list-link stat-card-corner-link">Részletek →</Link>
           </div>
 
           <div className="stat-card">
             <div className="stat-card-head">
               <div className="stat-label">Visszaszerzett vagyon</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div className="stat-id">/ KPI–03</div>
-                <Link href="/visszaszerzett-vagyon" className="stat-card-list-link">Teljes lista →</Link>
-              </div>
+              <div className="stat-id">/ KPI–03</div>
             </div>
             <div className="stat-value">{totalRecoveredFt > 0n ? <FtValue n={totalRecoveredFt} /> : '—'}</div>
             <div className="stat-unit stat-unit-fresh">
@@ -459,15 +401,13 @@ export default async function HomePage() {
                 <div className="stat-recovered-more">Még nincs rögzített visszaszerzés.</div>
               )}
             </div>
+            <Link href="/visszaszerzett-vagyon" className="stat-card-list-link stat-card-corner-link">Teljes lista →</Link>
           </div>
 
           <div className="stat-card">
             <div className="stat-card-head">
               <div className="stat-label">Lemondások és kirúgások</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div className="stat-id">/ KPI–04</div>
-                <Link href="/lemondasok" className="stat-card-list-link">Teljes lista →</Link>
-              </div>
+              <div className="stat-id">/ KPI–04</div>
             </div>
             <div className="stat-value">{fmtNumber(resignationCount)}</div>
             <div className="stat-unit stat-unit-fresh">
@@ -476,26 +416,39 @@ export default async function HomePage() {
             <h3 className="stat-card-list-title">Legfrissebb személyi változások</h3>
             {latestResignations5.length > 0 ? (
               <div className="stat-resigned-list">
-                {latestResignations5.map((r) => (
-                  <div key={r.id} className="stat-resigned-item">
-                    <span
-                      className="stat-resigned-dot"
-                      style={{ background: RESIGNATION_TYPE_COLOR[r.resignationType] ?? '#888' }}
-                    />
-                    <div className="stat-resigned-body">
-                      <span className="stat-resigned-name">{r.name}</span>
-                      <span className="stat-resigned-pos">{r.position}</span>
+                {latestResignations5.map((r) => {
+                  const sourceUrl = r.sourceUrls?.[0];
+                  const inner = (
+                    <>
+                      <span
+                        className="stat-resigned-dot"
+                        style={{ background: RESIGNATION_TYPE_COLOR[r.resignationType] ?? '#888' }}
+                      />
+                      <div className="stat-resigned-body">
+                        <span className="stat-resigned-name">{r.name}</span>
+                        <span className="stat-resigned-pos">{r.position}</span>
+                      </div>
+                      {r.description && (
+                        <span className="stat-resigned-desc">{r.description}</span>
+                      )}
+                      <span className="stat-resigned-date">{fmtShortDate(r.resignationDate)}</span>
+                    </>
+                  );
+                  return sourceUrl ? (
+                    <a key={r.id} href={sourceUrl} target="_blank" rel="noopener noreferrer" className="stat-resigned-item stat-resigned-item--link">
+                      {inner}
+                    </a>
+                  ) : (
+                    <div key={r.id} className="stat-resigned-item">
+                      {inner}
                     </div>
-                    {r.description && (
-                      <span className="stat-resigned-desc">{r.description}</span>
-                    )}
-                    <span className="stat-resigned-date">{fmtShortDate(r.resignationDate)}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="stat-unit" style={{ marginTop: 24 }}>Még nem érkezett adat.</div>
             )}
+            <Link href="/lemondasok" className="stat-card-list-link stat-card-corner-link">Teljes lista →</Link>
           </div>
         </div>
       </section>
