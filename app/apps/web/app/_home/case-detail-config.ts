@@ -32,7 +32,7 @@ export interface CaseDetailOverride {
   damageLabel?: string;
   /** Curated body blocks (text, breaking-group, quote, pdf-link, …). */
   descriptionBlocks?: DescriptionBlock[];
-  video?: { id: string; channel?: string; title?: string; summary?: string };
+  video?: { id: string; summary?: string };
   additionalVideos?: BigCaseVideo[];
   /** galeria/watchlist ids rendered as related-person cards. */
   relatedPersonIds?: string[];
@@ -237,7 +237,8 @@ export function getCaseDisplayTitle(scandalKey: string): string | null {
 
 /** Levágja a "335 milliárd forint" típusú összegeket (pipeline artefakt a névből).
  *  (?!\w) helyett \b — mert \b JS-ben ASCII-alapú és ékezetes végű szavaknál (millió, milliárd) nem megbízható. */
-export function cleanTitle(name: string): string {
+export function cleanTitle(name: string | null | undefined): string {
+  if (!name) return '';
   const c = name
     .replace(/[\s—-]*\b\d[\d\s.,]*\s*(milli[aá]rd(os)?|mrd\.?|milli[oó]s?|md)(?!\w)\s*(forint(os)?|ft|eur[oó]s?|eur[oó])?/gi, ' ')
     .replace(/\s{2,}/g, ' ')
@@ -310,7 +311,7 @@ function stripLeadingPerson(title: string, person: string | null): string {
  * Sorrend: kézi override → auto-tisztított DB név (szám + személy levágva).
  */
 export function autoDisplayTitle(
-  name: string,
+  name: string | null | undefined,
   person: string | null,
   overrideTitle?: string | null,
 ): string {

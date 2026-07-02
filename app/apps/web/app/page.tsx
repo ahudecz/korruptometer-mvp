@@ -767,7 +767,7 @@ export default async function HomePage() {
               <CaseRow key={c.id} href={`/adatbazis/${encodeURIComponent(c.id)}`}>
                 <td data-label="Ügy">
                   <Link href={`/adatbazis/${encodeURIComponent(c.id)}`} className="case-name">
-                    {autoDisplayTitle(c.name, c.person ?? null, getCaseDisplayTitle(c.id))}
+                    {autoDisplayTitle(c.name ?? '', c.person ?? null, getCaseDisplayTitle(c.id))}
                   </Link>
                   {c.investigation_count > 1 && (
                     <div className="case-id">{fmtNumber(c.investigation_count)} kapcsolódó ügy</div>
