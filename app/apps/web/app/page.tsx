@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { unstable_cache } from 'next/cache';
 import { and, count, desc, eq, ilike, or, sql } from 'drizzle-orm';
 
 import { fmtFt, fmtNumber } from '@korr/shared/format';
@@ -23,50 +22,9 @@ import { UGYEK } from './_home/ugyek-config';
 import { autoDisplayTitle, getCaseDisplayTitle } from './_home/case-detail-config';
 import { NewsCardImage } from './hirek/news-card-image';
 
-export const dynamic = 'force-dynamic';
-export const maxDuration = 30;
-
-// Lassú/stabil queryek cache-elve (300s TTL) — ILIKE full-scan és komplex CTE-k
-// elkerülik a hideghívás-timeoutot a Vercel 10s Hobby limitnél.
-const getCachedScandalCatalog = unstable_cache(
-  async () => {
-    const db = getDb();
-    return (await db.execute(sql`
-      SELECT id, name, person, institution, article_count, investigation_count, damage_huf, is_open
-      FROM "ScandalCatalog" ORDER BY damage_huf DESC, id ASC LIMIT 8
-    `)) as unknown as Array<{ id: string; name: string; person: string | null; institution: string | null; article_count: number; investigation_count: number; damage_huf: string; is_open: boolean }>;
-  },
-  ['scandal-catalog'],
-  { revalidate: 300 }
-);
-
-const getCachedOffenceTypes = unstable_cache(
-  async () => {
-    const db = getDb();
-    return (await db.execute(sql`SELECT code, "labelHu" AS label FROM "OffenceTypeRef" ORDER BY "sortOrder", "labelHu"`)) as unknown as Array<{ code: string; label: string }>;
-  },
-  ['offence-types'],
-  { revalidate: 3600 }
-);
-
-type ArticleRow = { id: string; headline: string; sourceUrl: string; publishedAt: Date; sourceName: string | null };
-
-const getCachedNkaArticles    = unstable_cache(async () => { const db = getDb(); return db.select({ id: schema.newsArticles.id, headline: schema.newsArticles.headline, sourceUrl: schema.newsArticles.sourceUrl, publishedAt: schema.newsArticles.publishedAt, sourceName: schema.sources.name }).from(schema.newsArticles).leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId)).where(eq(schema.newsArticles.tag, 'NKA')).orderBy(desc(schema.newsArticles.publishedAt)).limit(5) as Promise<ArticleRow[]>; }, ['articles-nka'],    { revalidate: 300 });
-const getCachedMnbArticles    = unstable_cache(async () => { const db = getDb(); return db.select({ id: schema.newsArticles.id, headline: schema.newsArticles.headline, sourceUrl: schema.newsArticles.sourceUrl, publishedAt: schema.newsArticles.publishedAt, sourceName: schema.sources.name }).from(schema.newsArticles).leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId)).where(eq(schema.newsArticles.tag, 'MNB')).orderBy(desc(schema.newsArticles.publishedAt)).limit(5) as Promise<ArticleRow[]>; }, ['articles-mnb'],    { revalidate: 300 });
-const getCachedHatvanArticles = unstable_cache(async () => { const db = getDb(); return db.select({ id: schema.newsArticles.id, headline: schema.newsArticles.headline, sourceUrl: schema.newsArticles.sourceUrl, publishedAt: schema.newsArticles.publishedAt, sourceName: schema.sources.name }).from(schema.newsArticles).leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId)).where(ilike(schema.newsArticles.headline, '%hatvanpuszta%')).orderBy(desc(schema.newsArticles.publishedAt)).limit(5) as Promise<ArticleRow[]>; }, ['articles-hatvan'],  { revalidate: 300 });
-const getCachedAranyArticles  = unstable_cache(async () => { const db = getDb(); return db.select({ id: schema.newsArticles.id, headline: schema.newsArticles.headline, sourceUrl: schema.newsArticles.sourceUrl, publishedAt: schema.newsArticles.publishedAt, sourceName: schema.sources.name }).from(schema.newsArticles).leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId)).where(ilike(schema.newsArticles.headline, '%aranykonvoj%')).orderBy(desc(schema.newsArticles.publishedAt)).limit(5) as Promise<ArticleRow[]>; }, ['articles-arany'],   { revalidate: 300 });
-const getCachedVolvoArticles  = unstable_cache(async () => { const db = getDb(); return db.select({ id: schema.newsArticles.id, headline: schema.newsArticles.headline, sourceUrl: schema.newsArticles.sourceUrl, publishedAt: schema.newsArticles.publishedAt, sourceName: schema.sources.name }).from(schema.newsArticles).leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId)).where(or(ilike(schema.newsArticles.headline, '%volvo gate%'), ilike(schema.newsArticles.headline, '%volvo-gate%'), ilike(schema.newsArticles.headline, '%bánki erik%'), ilike(schema.newsArticles.headline, '%tüke busz%'), eq(schema.newsArticles.tag, 'volvo-gate'))).orderBy(desc(schema.newsArticles.publishedAt)).limit(5) as Promise<ArticleRow[]>; }, ['articles-volvo'],   { revalidate: 300 });
-const getCachedLelegArticles  = unstable_cache(async () => { const db = getDb(); return db.select({ id: schema.newsArticles.id, headline: schema.newsArticles.headline, sourceUrl: schema.newsArticles.sourceUrl, publishedAt: schema.newsArticles.publishedAt, sourceName: schema.sources.name }).from(schema.newsArticles).leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId)).where(or(ilike(schema.newsArticles.headline, '%lélegeztetőgép%'), ilike(schema.newsArticles.headline, '%fourcardinal%'))).orderBy(desc(schema.newsArticles.publishedAt)).limit(5) as Promise<ArticleRow[]>; }, ['articles-leleg'],   { revalidate: 300 });
-const getCachedParkArticles   = unstable_cache(async () => { const db = getDb(); return db.select({ id: schema.newsArticles.id, headline: schema.newsArticles.headline, sourceUrl: schema.newsArticles.sourceUrl, publishedAt: schema.newsArticles.publishedAt, sourceName: schema.sources.name }).from(schema.newsArticles).leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId)).where(or(ilike(schema.newsArticles.headline, '%parkfenntartás%'), ilike(schema.newsArticles.headline, '%parkfenntartá%'), ilike(schema.newsArticles.headline, '%Őrsi Gergely%'), ilike(schema.newsArticles.headline, '%Puskás Péter%'))).orderBy(desc(schema.newsArticles.publishedAt)).limit(5) as Promise<ArticleRow[]>; }, ['articles-park'],    { revalidate: 300 });
-
-const getCachedResignationCount = unstable_cache(async () => { const db = getDb(); return db.select({ c: count() }).from(schema.politicalResignations).where(sql`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} IN ('lemondás','kirúgás','felmentés') AND ${schema.politicalResignations.name} NOT ILIKE '%szerkesztőség%'`).then(r => r[0]?.c ?? 0); }, ['resignation-count'], { revalidate: 300 });
-const getCachedResignationsByType = unstable_cache(async () => { const db = getDb(); return db.select({ type: schema.politicalResignations.resignationType, cnt: sql<number>`count(*)::int` }).from(schema.politicalResignations).where(sql`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} != 'Hivatalban van'`).groupBy(schema.politicalResignations.resignationType).orderBy(sql`count(*) desc`); }, ['resignations-by-type'], { revalidate: 300 });
-const getCachedClosureCount = unstable_cache(async () => { const db = getDb(); return db.select({ c: count() }).from(schema.mediaClosures).where(eq(schema.mediaClosures.reviewStatus, 'approved')).then(r => r[0]?.c ?? 0); }, ['closure-count'], { revalidate: 300 });
-const getCachedPretrialCount = unstable_cache(async () => { const db = getDb(); return db.select({ c: count() }).from(schema.courtVerdicts).where(and(eq(schema.courtVerdicts.reviewStatus, 'approved'), eq(schema.courtVerdicts.verdictType, 'előzetesben'))).then(r => r[0]?.c ?? 0); }, ['pretrial-count'], { revalidate: 300 });
-const getCachedEliteltCount  = unstable_cache(async () => { const db = getDb(); return db.select({ c: count() }).from(schema.courtVerdicts).where(sql`${schema.courtVerdicts.reviewStatus} = 'approved' AND ${schema.courtVerdicts.verdictType} NOT IN ('előzetesben', 'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve')`).then(r => r[0]?.c ?? 0); }, ['elitelt-count'], { revalidate: 300 });
-const getCachedTotalPrisonYears = unstable_cache(async () => { const db = getDb(); return db.select({ s: sql<number>`coalesce(sum(${schema.courtVerdicts.sentenceYears}), 0)::int` }).from(schema.courtVerdicts).where(sql`${schema.courtVerdicts.verdictType} != 'előzetesben'`).then(r => r[0]?.s ?? 0); }, ['total-prison-years'], { revalidate: 300 });
-const getCachedYearSpan = unstable_cache(async () => { const db = getDb(); return db.execute(sql`SELECT min(extract(year from "publishedAt"))::int AS min_y, max(extract(year from "publishedAt"))::int AS max_y FROM "NewsArticle"`) as unknown as Promise<Array<{ min_y: number | null; max_y: number | null }>>; }, ['year-span'], { revalidate: 3600 });
-const getCachedTotalRecovered = unstable_cache(async () => { const db = getDb(); return db.select({ total: sql<string>`coalesce(sum("amountFt"::bigint), 0)::text` }).from(schema.assetRecoveries).then(r => r[0]?.total ?? '0'); }, ['total-recovered'], { revalidate: 300 });
+// ISR: build-kor renderel, CDN-ről szolgál, 5 percenként frissül háttérben.
+// A user soha nem vár DB-t — a Vercel 10s limit irreleváns.
+export const revalidate = 300;
 
 const PALETTE_MONEY = ['#e31937', '#171a20', '#5c5e62', '#9b9da1', '#cccccc', '#e6e6e6'];
 
@@ -113,6 +71,18 @@ function fmtUpdatedAt(d: Date): string {
 export default async function HomePage() {
   const db = getDb();
 
+  function articleSelect() {
+    return db.select({
+      id: schema.newsArticles.id,
+      headline: schema.newsArticles.headline,
+      sourceUrl: schema.newsArticles.sourceUrl,
+      publishedAt: schema.newsArticles.publishedAt,
+      sourceName: schema.sources.name,
+    })
+    .from(schema.newsArticles)
+    .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId));
+  }
+
   const HOMEPAGE_NEWS_TOPICS = [
     '%NKA%', '%MNB%', '%KESMA%', '%Mediaworks%',
     '%lélegeztetőgép%', '%aranykonvoj%', '%hatvanpuszta%', '%batida%',
@@ -124,8 +94,8 @@ export default async function HomePage() {
     '%Mandiner%',
   ] as const;
 
-  // Cachelt queryek párhuzamosan — a lassú ILIKE-k és count-ok unstable_cache-ben (300s TTL),
-  // csak a friss/personalised queryek mennek közvetlen DB-re cold startonként.
+  // Összes független DB-lekérdezés párhuzamosan — ISR miatt csak build-kor és
+  // 5 percenként háttérben fut, user mindig CDN cache-t kap.
   const [
     snapshot,
     topResignations,
@@ -157,31 +127,60 @@ export default async function HomePage() {
       .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
       .orderBy(desc(schema.politicalResignations.pinned), desc(schema.politicalResignations.resignationDate))
       .limit(20),
-    getCachedNkaArticles(),
-    getCachedMnbArticles(),
-    getCachedHatvanArticles(),
-    getCachedAranyArticles(),
-    getCachedVolvoArticles(),
-    getCachedLelegArticles(),
-    getCachedParkArticles(),
-    getCachedResignationCount(),
-    getCachedResignationsByType(),
-    getCachedClosureCount(),
-    getCachedPretrialCount(),
-    getCachedEliteltCount(),
+    articleSelect().where(eq(schema.newsArticles.tag, 'NKA')).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
+    articleSelect().where(eq(schema.newsArticles.tag, 'MNB')).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
+    articleSelect().where(ilike(schema.newsArticles.headline, '%hatvanpuszta%')).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
+    articleSelect().where(ilike(schema.newsArticles.headline, '%aranykonvoj%')).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
+    articleSelect().where(or(
+      ilike(schema.newsArticles.headline, '%volvo gate%'),
+      ilike(schema.newsArticles.headline, '%volvo-gate%'),
+      ilike(schema.newsArticles.headline, '%bánki erik%'),
+      ilike(schema.newsArticles.headline, '%tüke busz%'),
+      eq(schema.newsArticles.tag, 'volvo-gate'),
+    )).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
+    articleSelect().where(or(
+      ilike(schema.newsArticles.headline, '%lélegeztetőgép%'),
+      ilike(schema.newsArticles.headline, '%fourcardinal%'),
+    )).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
+    articleSelect().where(or(
+      ilike(schema.newsArticles.headline, '%parkfenntartás%'),
+      ilike(schema.newsArticles.headline, '%parkfenntartá%'),
+      ilike(schema.newsArticles.headline, '%Őrsi Gergely%'),
+      ilike(schema.newsArticles.headline, '%Puskás Péter%'),
+    )).orderBy(desc(schema.newsArticles.publishedAt)).limit(5),
+    db.select({ c: count() }).from(schema.politicalResignations)
+      .where(sql`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} IN ('lemondás','kirúgás','felmentés') AND ${schema.politicalResignations.name} NOT ILIKE '%szerkesztőség%'`)
+      .then(r => r[0]?.c ?? 0),
+    db.select({ type: schema.politicalResignations.resignationType, cnt: sql<number>`count(*)::int` })
+      .from(schema.politicalResignations)
+      .where(sql`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} != 'Hivatalban van'`)
+      .groupBy(schema.politicalResignations.resignationType)
+      .orderBy(sql`count(*) desc`),
+    db.select({ c: count() }).from(schema.mediaClosures)
+      .where(eq(schema.mediaClosures.reviewStatus, 'approved'))
+      .then(r => r[0]?.c ?? 0),
+    db.select({ c: count() }).from(schema.courtVerdicts)
+      .where(and(eq(schema.courtVerdicts.reviewStatus, 'approved'), eq(schema.courtVerdicts.verdictType, 'előzetesben')))
+      .then(r => r[0]?.c ?? 0),
+    db.select({ c: count() }).from(schema.courtVerdicts)
+      .where(sql`${schema.courtVerdicts.reviewStatus} = 'approved' AND ${schema.courtVerdicts.verdictType} NOT IN ('előzetesben', 'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve')`)
+      .then(r => r[0]?.c ?? 0),
     db.select({ ugyId: schema.courtVerdicts.personUgyId, n: sql<number>`count(*)::int` })
       .from(schema.courtVerdicts)
       .where(and(eq(schema.courtVerdicts.reviewStatus, 'approved'), eq(schema.courtVerdicts.verdictType, 'előzetesben')))
       .groupBy(schema.courtVerdicts.personUgyId)
       .orderBy(sql`count(*) desc`),
     db.select().from(schema.assetRecoveries).orderBy(desc(schema.assetRecoveries.recoveredAt)).limit(5),
-    getCachedTotalRecovered(),
+    db.select({ total: sql<string>`coalesce(sum("amountFt"::bigint), 0)::text` }).from(schema.assetRecoveries).then(r => r[0]?.total ?? '0'),
     db.select().from(schema.politicalResignations)
       .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
       .orderBy(desc(schema.politicalResignations.resignationDate))
       .limit(5),
-    getCachedScandalCatalog(),
-    getCachedOffenceTypes(),
+    db.execute(sql`
+      SELECT id, name, person, institution, article_count, investigation_count, damage_huf, is_open
+      FROM "ScandalCatalog" ORDER BY damage_huf DESC, id ASC LIMIT 8
+    `) as unknown as Promise<Array<{ id: string; name: string; person: string | null; institution: string | null; article_count: number; investigation_count: number; damage_huf: string; is_open: boolean }>>,
+    db.execute(sql`SELECT code, "labelHu" AS label FROM "OffenceTypeRef" ORDER BY "sortOrder", "labelHu"`) as unknown as Promise<Array<{ code: string; label: string }>>,
     db.select({
         id: schema.newsArticles.id,
         headline: schema.newsArticles.headline,
@@ -206,8 +205,15 @@ export default async function HomePage() {
       .orderBy(desc(schema.newsArticles.publishedAt))
       .limit(10),
     getActiveBreaking(),
-    getCachedYearSpan(),
-    getCachedTotalPrisonYears(),
+    db.execute(sql`
+      SELECT min(extract(year from "publishedAt"))::int AS min_y,
+             max(extract(year from "publishedAt"))::int AS max_y
+      FROM "NewsArticle"
+    `) as unknown as Promise<Array<{ min_y: number | null; max_y: number | null }>>,
+    db.select({ s: sql<number>`coalesce(sum(${schema.courtVerdicts.sentenceYears}), 0)::int` })
+      .from(schema.courtVerdicts)
+      .where(sql`${schema.courtVerdicts.verdictType} != 'előzetesben'`)
+      .then(r => r[0]?.s ?? 0),
   ]);
 
   const resignationCount = resignationCountRaw;
