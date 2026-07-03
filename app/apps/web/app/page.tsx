@@ -89,6 +89,21 @@ const getCachedYearSpan = unstable_cache(
   ['year-span'],
   { revalidate: 3600 },
 );
+// [perf] diagnosztika mutatta: az uncached db.execute(sql`...`) a Promise.all-ban
+// időnként sose fejeződik be (nincs siker, nincs hiba log — csak lefagy a
+// function 60s-ig). Minden MÁS db.execute() hívás ebben a fájlban unstable_cache
+// mögött fut — ez volt az egyetlen kivétel. Ugyanaz a minta most itt is.
+const getCachedTotalDamage = unstable_cache(
+  async () => {
+    const { getDb } = await import('@/lib/db');
+    const { sql: s } = await import('drizzle-orm');
+    const db = getDb();
+    const r = (await db.execute(s`SELECT coalesce(sum(damage_huf), 0)::text AS total FROM "ScandalCatalog"`)) as unknown as Array<{ total: string }>;
+    return r[0]?.total ?? '0';
+  },
+  ['total-damage'],
+  { revalidate: 300 },
+);
 
 type CachedArticle = {
   id: string; headline: string; excerpt: string | null; sourceUrl: string; publishedAt: string;
@@ -306,8 +321,7 @@ export default async function HomePage() {
       .where(and(eq(schema.mediaClosures.reviewStatus, 'approved'), eq(schema.mediaClosures.pinned, true)))
       .orderBy(desc(schema.mediaClosures.eventDate))
       .limit(5)),
-    timed('totalDamage', db.execute(sql`SELECT coalesce(sum(damage_huf), 0)::text AS total FROM "ScandalCatalog"`)
-      .then((r) => (r as unknown as Array<{ total: string }>)[0]?.total ?? '0')),
+    timed('totalDamage(cached)', getCachedTotalDamage()),
   ]);
   console.log(`[perf] Promise.all TOTAL: ${Date.now() - allStart}ms`);
 
