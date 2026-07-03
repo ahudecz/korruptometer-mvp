@@ -16,18 +16,12 @@ export const DEDUP_WINDOW_DAYS = 30; // FR-009
 /**
  * Decide what to do with a detection.
  *
- *   confidence < 0.70                       → 'discard'   (FR-005, universal floor)
- *   watchlist person                        → 'pending'   (FR-006, never auto-approve)
- *   confidence >= 0.90 (and not watchlist)  → 'approved'  (FR-003)
- *   0.70 <= confidence < 0.90               → 'pending'   (FR-004)
- *
- * Note: the <0.70 floor applies to watchlist persons too — discarding a
- * low-confidence detection never publishes a false claim, so it is safe and
- * keeps the review queue clean. Watchlist persons are never 'approved'.
+ *   confidence < 0.70           → 'discard'   (FR-005, universal floor)
+ *   confidence >= 0.90          → 'approved'  (FR-003, watchlist included)
+ *   0.70 <= confidence < 0.90   → 'pending'   (FR-004)
  */
-export function decideStatus(confidence: number, isWatchlist: boolean): ReviewDecision {
+export function decideStatus(confidence: number, _isWatchlist: boolean): ReviewDecision {
   if (confidence < REVIEW_FLOOR) return 'discard';
-  if (isWatchlist) return 'pending';
   if (confidence >= AUTO_PUBLISH_THRESHOLD) return 'approved';
   return 'pending';
 }

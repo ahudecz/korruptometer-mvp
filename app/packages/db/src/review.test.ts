@@ -9,25 +9,22 @@ describe('decideStatus', () => {
     expect(decideStatus(0.0, false)).toBe('discard');
   });
 
-  it('auto-publishes >= 0.90 for non-watchlist (FR-003)', () => {
+  it('auto-publishes >= 0.90 regardless of watchlist (FR-003)', () => {
     expect(decideStatus(0.9, false)).toBe('approved');
     expect(decideStatus(0.93, false)).toBe('approved');
     expect(decideStatus(1.0, false)).toBe('approved');
+    expect(decideStatus(0.95, true)).toBe('approved');
+    expect(decideStatus(0.9, true)).toBe('approved');
   });
 
   it('queues 0.70–0.8999 for review (FR-004)', () => {
     expect(decideStatus(0.7, false)).toBe('pending');
     expect(decideStatus(0.82, false)).toBe('pending');
     expect(decideStatus(0.8999, false)).toBe('pending');
-  });
-
-  it('never auto-approves a watchlist person, even at high confidence (FR-006)', () => {
-    expect(decideStatus(0.95, true)).toBe('pending');
-    expect(decideStatus(0.9, true)).toBe('pending');
     expect(decideStatus(0.75, true)).toBe('pending');
   });
 
-  it('still discards a watchlist person below the floor (no false publish, no flood)', () => {
+  it('discards below the floor regardless of watchlist', () => {
     expect(decideStatus(0.5, true)).toBe('discard');
   });
 });
@@ -67,8 +64,8 @@ describe('US2 auto-publish vs watchlist (combined)', () => {
   it('auto-publishes a confident, non-watchlist person', () => {
     expect(decideStatus(0.93, isWatchlistPerson('Kovács Zoltán'))).toBe('approved');
   });
-  it('holds a confident watchlist person for review', () => {
-    expect(decideStatus(0.95, isWatchlistPerson('Polt Péter'))).toBe('pending');
+  it('auto-publishes a confident watchlist person too', () => {
+    expect(decideStatus(0.95, isWatchlistPerson('Polt Péter'))).toBe('approved');
   });
 });
 
