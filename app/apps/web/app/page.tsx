@@ -245,6 +245,7 @@ export default async function HomePage() {
     _yearSpanRes,
     latestClosuresRaw,
     pinnedClosuresRaw,
+    totalDamageRaw,
   ] = await Promise.all([
     db.query.kpiSnapshots.findFirst({ where: eq(schema.kpiSnapshots.id, 'singleton') }),
     db.select().from(schema.politicalResignations)
@@ -286,6 +287,8 @@ export default async function HomePage() {
       .where(and(eq(schema.mediaClosures.reviewStatus, 'approved'), eq(schema.mediaClosures.pinned, true)))
       .orderBy(desc(schema.mediaClosures.eventDate))
       .limit(5),
+    db.execute(sql`SELECT coalesce(sum(damage_huf), 0)::text AS total FROM "ScandalCatalog"`)
+      .then((r) => (r as unknown as Array<{ total: string }>)[0]?.total ?? '0'),
   ]);
 
   // allArticlesRaw → per-topic szétválasztás JS-ben (nincs extra DB-hívás)
@@ -311,7 +314,8 @@ export default async function HomePage() {
   }));
 
   // Fall back gracefully if a fresh DB is empty (avoids a 500 page).
-  const totalDamage = snapshot ? BigInt(snapshot.totalDamage) : 0n;
+  // A ScandalCatalog élő összege, nem a KpiSnapshot elavult (jún. 15.) értéke.
+  const totalDamage = BigInt(totalDamageRaw);
   const activeCases = snapshot?.activeCases ?? 0;
   const bySector = (snapshot?.bySector ?? []) as SectorEntry[];
 
@@ -378,7 +382,7 @@ export default async function HomePage() {
               <div className="stat-label">Becsült / lehetséges kár</div>
               <div className="stat-id">/ KPI–01</div>
             </div>
-            <div className="stat-value"><FtValue n={totalDamage} mode="short" /></div>
+            <div className="stat-value stat-value--money"><FtValue n={totalDamage} mode="short" /></div>
             <div className="stat-unit">
               <Link href="/adatbazis" className="stat-unit-link">K-Monitor adatbázis</Link> · valós dokumentált adatok · {moneySlices.length} kategória szerint
             </div>

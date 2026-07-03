@@ -26,7 +26,7 @@ export function FtValue({
   const { value, unitLong, unitShort } = fmtFtParts(n);
 
   // Nem milliárdos összeg: nincs hosszú/rövid eltérés.
-  if (unitLong === unitShort) return <>{`${value} ${unitLong}`}</>;
+  if (unitLong === unitShort) return <span className="ft-amount">{`${value} ${unitLong}`}</span>;
 
   const billions = Math.abs(typeof n === 'bigint' ? Number(n) : n) / 1_000_000_000;
   const effectiveMode = mode === 'auto' && billions >= WIDE_BILLIONS ? 'short' : mode;

@@ -395,6 +395,12 @@ button {
   line-height: 1;
   margin-bottom: 8px;
 }
+/* KPI-01 (kár összeg) — a szám 5-6 jegyű + "Milliárd Ft" hosszú string,
+   a sima .stat-value méret ezt tördelné; kisebb, egysoros clamp. */
+.stat-value--money {
+  font-size: clamp(28px, 3.6vw, 52px);
+  white-space: nowrap;
+}
 .stat-unit {
   font-size: 17px;
   color: var(--muted);
