@@ -23,8 +23,17 @@ import { UGYEK } from './_home/ugyek-config';
 import { autoDisplayTitle, getCaseDisplayTitle } from './_home/case-detail-config';
 import { NewsCardImage } from './hirek/news-card-image';
 
-export const dynamic = 'force-dynamic';
-export const maxDuration = 30;
+// Even with the batched Promise.all + unstable_cache below, `force-dynamic` re-ran
+// the non-cached queries on EVERY request against a cross-region pooler (fra1 fn ↔
+// eu-west-1 DB, connection_limit=1), which still exceeded the serverless limit under
+// load/cold-start → FUNCTION_INVOCATION_TIMEOUT (504). Serve the page via ISR instead:
+// it regenerates in the background at most every 120s so visitors always get an
+// instant cached render (this is fresher than the 300s/3600s unstable_cache TTLs
+// already in use, so it does not reduce data freshness). `maxDuration` only covers
+// the background regeneration invocation. Pair with `regions: ["dub1"]` in vercel.json
+// to co-locate the function with the DB.
+export const revalidate = 120;
+export const maxDuration = 60;
 
 // Date-mentes lekérdezések cache-elve — nincs serialization probléma, warm kérésnél 0ms
 type ScandalRow = { id: string; name: string; person: string | null; institution: string | null; article_count: number; investigation_count: number; damage_huf: string; is_open: boolean };
