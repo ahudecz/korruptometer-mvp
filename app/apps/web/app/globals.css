@@ -3417,10 +3417,6 @@ button {
 .person-more-card:hover {
   opacity: 0.75;
 }
-.person-more-card--gone .person-more-mug {
-  border-color: #e31937;
-  border-width: 4px;
-}
 .person-more-card--gone .person-more-img {
   filter: grayscale(100%);
 }
@@ -3456,6 +3452,14 @@ button {
 .person-more-mug.r-investig { border-color: var(--accent-soft); }
 .person-more-mug.r-pretrial,
 .person-more-mug.r-busted { border-color: var(--accent); }
+
+/* Must come after the .r-* status rules above — equal specificity, so
+   source order decides, and "gone" (removed/resigned) always needs to
+   win over whatever detention-status color the card would otherwise show. */
+.person-more-card--gone .person-more-mug {
+  border-color: #e31937;
+  border-width: 4px;
+}
 
 .person-more-img {
   width: 100%;
@@ -3980,13 +3984,6 @@ button {
   text-transform: uppercase;
   color: var(--muted);
   margin-bottom: 12px;
-}
-.closure-teaser-label-sub {
-  font-weight: 500;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--muted);
-  opacity: 0.75;
 }
 
 /* Closure cards — sized/structured to match the .rogue (Galéria) cards:

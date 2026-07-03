@@ -1,14 +1,12 @@
 import Link from 'next/link';
 import { unstable_cache } from 'next/cache';
-import { and, count, desc, eq, ilike, or, sql } from 'drizzle-orm';
+import { and, count, desc, eq, sql } from 'drizzle-orm';
 
-import { fmtFt, fmtNumber } from '@korr/shared/format';
+import { fmtNumber } from '@korr/shared/format';
 import { Pie3D, type PieSlice } from '@korr/ui/pie3d';
-import { Ticker } from '@korr/ui/ticker';
 import { Mugshot } from '@korr/ui/mugshot';
 
 import { getDb, schema } from '@/lib/db';
-import { getActiveBreaking } from '@/lib/breaking';
 import { CaseFilters } from './adatbazis/case-filters';
 import { ResignationsSection } from './_home/resignations-section';
 import { MediaClosuresSection } from './_home/media-closures-section';
@@ -139,33 +137,6 @@ const getCachedActiveBreaking = unstable_cache(
   ['active-breaking'],
   { revalidate: 60 },
 );
-const getCachedCourtStats = unstable_cache(
-  async () => {
-    const { getDb, schema } = await import('@/lib/db');
-    const { count: cnt, and: andF, eq: eqF, sql: s } = await import('drizzle-orm');
-    const db = getDb();
-    const [pretrialCount, convictedCount, pretrialByUgy, prisonYears] = await Promise.all([
-      db.select({ c: cnt() }).from(schema.courtVerdicts)
-        .where(andF(eqF(schema.courtVerdicts.reviewStatus, 'approved'), eqF(schema.courtVerdicts.verdictType, 'előzetesben')))
-        .then(r => r[0]?.c ?? 0),
-      db.select({ c: cnt() }).from(schema.courtVerdicts)
-        .where(s`${schema.courtVerdicts.reviewStatus} = 'approved' AND ${schema.courtVerdicts.verdictType} NOT IN ('előzetesben', 'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve')`)
-        .then(r => r[0]?.c ?? 0),
-      db.select({ ugyId: schema.courtVerdicts.personUgyId, n: s<number>`count(*)::int` })
-        .from(schema.courtVerdicts)
-        .where(andF(eqF(schema.courtVerdicts.reviewStatus, 'approved'), eqF(schema.courtVerdicts.verdictType, 'előzetesben')))
-        .groupBy(schema.courtVerdicts.personUgyId)
-        .orderBy(s`count(*) desc`),
-      db.select({ s: s<number>`coalesce(sum(${schema.courtVerdicts.sentenceYears}), 0)::int` })
-        .from(schema.courtVerdicts)
-        .where(s`${schema.courtVerdicts.verdictType} != 'előzetesben'`)
-        .then(r => r[0]?.s ?? 0),
-    ]);
-    return { pretrialCount, convictedCount, pretrialByUgy, prisonYears };
-  },
-  ['court-stats'],
-  { revalidate: 300 },
-);
 
 const PALETTE_MONEY = ['#e31937', '#171a20', '#5c5e62', '#9b9da1', '#cccccc', '#e6e6e6'];
 
@@ -190,6 +161,54 @@ const RESIGNATION_TYPE_COLOR: Record<string, string> = {
   'egyéb': '#888',
 };
 
+const CLOSURE_STATUS_CLASS: Record<string, string> = {
+  'megszűnés': 'closure-card--closed',
+  'leépítés': 'closure-card--fired',
+  'elmaradt esemény': 'closure-card--pending',
+};
+
+const CLOSURE_STAMP: Record<string, string> = {
+  'megszűnés': 'MEGSZŰNT',
+  'leépítés': 'LEÉPÍTÉS',
+  'elmaradt esemény': 'ELMARADT',
+};
+
+// Az esemény típusa dönti el, minek a dátumát mutatjuk a lábléc-blokkban —
+// leépítésnél nem "megszűnés dátuma", hanem "leépítés dátuma".
+const CLOSURE_DATE_LABEL: Record<string, string> = {
+  'megszűnés': 'Megszűnés dátuma',
+  'leépítés': 'Leépítés dátuma',
+  'elmaradt esemény': 'Esemény dátuma',
+};
+
+type ClosureCardData = { name: string; eventType: string; eventDate: Date; sourceUrl: string | null; sourceName: string | null };
+
+function MiniClosureCard({ name, eventType, eventDate, sourceUrl, sourceName }: ClosureCardData) {
+  const statusClass = CLOSURE_STATUS_CLASS[eventType] ?? 'closure-card--closed';
+  const inner = (
+    <>
+      <div className="closure-card-visual">
+        <span className="closure-card-mono">{name.slice(0, 2).toUpperCase()}</span>
+        <div className="closure-card-stamp">{CLOSURE_STAMP[eventType] ?? 'VÁLTOZÁS'}</div>
+      </div>
+      <div className="closure-card-name">{name}</div>
+      <div className="closure-card-type">{eventType}</div>
+      <div className="closure-card-foot">
+        <span className="lbl">{CLOSURE_DATE_LABEL[eventType] ?? 'Dátum'}</span>
+        <span className="val">{fmtShortDate(eventDate)}</span>
+      </div>
+      {sourceUrl && <span className="closure-card-link">{sourceName ?? 'Forrás'} →</span>}
+    </>
+  );
+  return sourceUrl ? (
+    <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className={`closure-card ${statusClass}`}>
+      {inner}
+    </a>
+  ) : (
+    <div className={`closure-card ${statusClass}`}>{inner}</div>
+  );
+}
+
 function fmtRelative(d: Date | string): string {
   const diff = Date.now() - new Date(d).getTime();
   const h = Math.floor(diff / 3_600_000);
@@ -200,31 +219,11 @@ function fmtRelative(d: Date | string): string {
   return `${days} napja`;
 }
 
-function fmtUpdatedAt(d: Date): string {
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  const hh = String(d.getHours()).padStart(2, '0');
-  const mi = String(d.getMinutes()).padStart(2, '0');
-  return `${yyyy}.${mm}.${dd}. ${hh}:${mi}`;
-}
 
 export default async function HomePage() {
   const db = getDb();
 
-  function articleSelect() {
-    return db.select({
-      id: schema.newsArticles.id,
-      headline: schema.newsArticles.headline,
-      sourceUrl: schema.newsArticles.sourceUrl,
-      publishedAt: schema.newsArticles.publishedAt,
-      sourceName: schema.sources.name,
-    })
-    .from(schema.newsArticles)
-    .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId));
-  }
-
-  // 22 egyedi query → 14: az összes ILIKE/cikk-query (8 db) egybevonva egyetlen
+  // ILIKE/cikk-query egybevonva egyetlen DB-scant jelent tag-szűrő kombinációval.
   // DB-scant jelent tag-szűrő + ILIKE ANY(ARRAY[...]) kombinációval.
   // Az eredményt JS-ben bontjuk szét témánként — 1 tábla-scan vs. 8.
   const [
@@ -232,7 +231,7 @@ export default async function HomePage() {
     topResignations,
     allArticlesRaw,
     resignationCountRaw,
-    resignationsByType,
+    _resignationsByType,
     closureCountRaw,
     pretrialCountDb,
     eliteltCountDb,
@@ -243,8 +242,9 @@ export default async function HomePage() {
     recentScandals,
     offRows,
     breakingArticles,
-    yearSpanRes,
-    totalPrisonYearsRaw,
+    _yearSpanRes,
+    latestClosuresRaw,
+    pinnedClosuresRaw,
   ] = await Promise.all([
     db.query.kpiSnapshots.findFirst({ where: eq(schema.kpiSnapshots.id, 'singleton') }),
     db.select().from(schema.politicalResignations)
@@ -276,10 +276,16 @@ export default async function HomePage() {
     getCachedOffenceTypes(),
     getCachedActiveBreaking(),
     getCachedYearSpan(),
-    db.select({ s: sql<number>`coalesce(sum(${schema.courtVerdicts.sentenceYears}), 0)::int` })
-      .from(schema.courtVerdicts)
-      .where(sql`${schema.courtVerdicts.verdictType} != 'előzetesben'`)
-      .then(r => r[0]?.s ?? 0),
+    db.select({ id: schema.mediaClosures.id, name: schema.mediaClosures.name, eventType: schema.mediaClosures.eventType, eventDate: schema.mediaClosures.eventDate, sourceUrl: schema.mediaClosures.sourceUrl, sourceName: schema.mediaClosures.sourceName })
+      .from(schema.mediaClosures)
+      .where(eq(schema.mediaClosures.reviewStatus, 'approved'))
+      .orderBy(desc(schema.mediaClosures.eventDate))
+      .limit(5),
+    db.select({ id: schema.mediaClosures.id, name: schema.mediaClosures.name, eventType: schema.mediaClosures.eventType, eventDate: schema.mediaClosures.eventDate, sourceUrl: schema.mediaClosures.sourceUrl, sourceName: schema.mediaClosures.sourceName })
+      .from(schema.mediaClosures)
+      .where(and(eq(schema.mediaClosures.reviewStatus, 'approved'), eq(schema.mediaClosures.pinned, true)))
+      .orderBy(desc(schema.mediaClosures.eventDate))
+      .limit(5),
   ]);
 
   // allArticlesRaw → per-topic szétválasztás JS-ben (nincs extra DB-hívás)
@@ -294,6 +300,8 @@ export default async function HomePage() {
 
   const resignationCount = resignationCountRaw;
   const closureCount = closureCountRaw;
+  const latestClosures = latestClosuresRaw;
+  const pinnedClosures = pinnedClosuresRaw;
   const latestRecoveries = latestRecoveriesDb;
   const totalRecoveredFt = BigInt(totalRecoveredRaw);
   const offences = offRows.map((o) => ({ code: o.code, label: o.label }));
@@ -304,48 +312,19 @@ export default async function HomePage() {
 
   // Fall back gracefully if a fresh DB is empty (avoids a 500 page).
   const totalDamage = snapshot ? BigInt(snapshot.totalDamage) : 0n;
-  const totalPrisonYears = totalPrisonYearsRaw;
   const activeCases = snapshot?.activeCases ?? 0;
-  const newIndictments = snapshot?.newIndictmentsThisWeek ?? 0;
-  const partnerCount = snapshot?.partnerCount ?? 0;
   const bySector = (snapshot?.bySector ?? []) as SectorEntry[];
 
   const moneySlices: PieSlice[] = bySector
     .map((e) => ({ name: e.name, value: e.value }))
     .sort((a, b) => b.value - a.value);
 
-  const RESIGNATION_TYPE_HU: Record<string, string> = {
-    'lemondás': 'Lemondás',
-    'kirúgás': 'Kirúgás',
-    'felmentés': 'Felmentés',
-    'egyéb': 'Egyéb',
-  };
-  const resignationSlices: PieSlice[] = resignationsByType.map(r => ({
-    name: RESIGNATION_TYPE_HU[r.type] ?? r.type,
-    value: r.cnt,
-  }));
 
-
-  const minYear = yearSpanRes[0]?.min_y ?? 2017;
-  const maxYear = yearSpanRes[0]?.max_y ?? new Date().getFullYear();
-
-
-  const updatedAt = snapshot?.computedAt ?? new Date();
   const featuredBreaking = recentArticles.filter(a => a.isBreaking).sort((a, b) => b.publishedAt > a.publishedAt ? 1 : -1)[0] ?? null;
   const featuredNormal = recentArticles.find(a => a.featured) ?? recentArticles[0];
   const featured = featuredBreaking ?? featuredNormal;
   const restArticles = recentArticles.filter((a) => a.id !== featured?.id).slice(0, 4);
 
-  const tickerItems = [
-    `${fmtNumber(activeCases)} aktív ügy`,
-    `${fmtNumber(newIndictments)} új vádemelés ezen a héten`,
-    totalPrisonYears > 0
-      ? `${fmtNumber(totalPrisonYears)} év halmozott börtönbüntetés`
-      : `${fmtNumber(pretrialCountDb)} fő előzetes letartóztatásban`,
-    `${fmtFt(totalDamage)} dokumentált kár`,
-    `${fmtNumber(partnerCount)} sajtótermék együttműködésével`,
-    `Utolsó frissítés: ${fmtUpdatedAt(updatedAt)}`,
-  ];
 
   return (
     <>
@@ -401,9 +380,9 @@ export default async function HomePage() {
             </div>
             <div className="stat-value"><FtValue n={totalDamage} mode="short" /></div>
             <div className="stat-unit">
-              K-Monitor adatbázis · valós dokumentált adatok · 8 ügy · 2017–2021
+              <Link href="/adatbazis" className="stat-unit-link">K-Monitor adatbázis</Link> · valós dokumentált adatok · {moneySlices.length} kategória szerint
             </div>
-            <Pie3D slices={moneySlices} palette={PALETTE_MONEY} className="donut" ariaLabel="Kár szektoronként" />
+            <Pie3D slices={moneySlices} palette={PALETTE_MONEY} className="donut" ariaLabel="Kár szektoronként" legend />
           </div>
 
           <div className="stat-card">
@@ -513,6 +492,35 @@ export default async function HomePage() {
             )}
             <Link href="/lemondasok" className="stat-card-list-link stat-card-corner-link">Teljes lista →</Link>
           </div>
+        </div>
+      </section>
+
+      {/* ───── MEGSZŰNT-E TEASER ───── */}
+      <section className="closure-teaser-section">
+        <div className="closure-teaser-head">
+          <h2 className="closure-teaser-title">Megszűnt-e már?</h2>
+          <span className="closure-teaser-count">{fmtNumber(closureCount)} médium/intézmény szűnt meg vagy épült le április 12. óta</span>
+        </div>
+        <div className="closure-teaser-groups">
+          <div className="closure-teaser-group">
+            <div className="closure-teaser-label">Legfrissebb megszűnések / leépítések</div>
+            <div className="closure-card-grid">
+              {latestClosures.map((c) => (
+                <MiniClosureCard key={c.id} name={c.name} eventType={c.eventType} eventDate={c.eventDate} sourceUrl={c.sourceUrl} sourceName={c.sourceName} />
+              ))}
+            </div>
+          </div>
+          <div className="closure-teaser-group">
+            <div className="closure-teaser-label">Kiemelt megszűnések / leépítések</div>
+            <div className="closure-card-grid">
+              {pinnedClosures.map((c) => (
+                <MiniClosureCard key={c.id} name={c.name} eventType={c.eventType} eventDate={c.eventDate} sourceUrl={c.sourceUrl} sourceName={c.sourceName} />
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="elszamoltatas-more">
+          <Link href="/megszunt" className="btn-red">Összes megszűnt médium →</Link>
         </div>
       </section>
 
@@ -641,6 +649,21 @@ export default async function HomePage() {
             articles: nkaArticles.map(a => ({ ...a })),
           },
           {
+            id: 'aranykonvoj',
+            eyebrow: 'Aktív · Feljelentés benyújtva',
+            title: 'Aranykonvoj-ügy',
+            responsible: 'Orbán Viktor',
+            videoId: 'cLBTdDVztR0',
+            summary: '2026 tavaszán a NAV és a titkosszolgálat megállított egy Ukrajna határán átkelő konvojt, amely aranyat és devizát szállított. Az ügyvéd feljelentése terrorcselekmény-gyanút is tartalmaz. Az ügy közvetlenül az Orbán-körhöz köthető személyekhez vezet.',
+            statusItems: [
+              { icon: '⚖️', label: 'Eljárás', value: 'Feljelentés benyújtva — terrorcselekmény gyanúja is' },
+              { icon: '🏦', label: 'Lefoglalt', value: 'Arany + deviza — pontos összeg nem nyilvános' },
+              { icon: '👤', label: 'Kapcsolat', value: 'Orbán-körhöz köthető személyek érintettségét veti fel az ügyvéd' },
+            ],
+            moreUrl: '/ugyek/aranykonvoj',
+            articles: aranyArticles.map(a => ({ ...a })),
+          },
+          {
             id: 'parkfenntartas',
             eyebrow: 'Aktív · 7 személy előzetesben',
             title: 'Parkfenntartási kenőpénzbotrány',
@@ -691,21 +714,6 @@ export default async function HomePage() {
             ],
             moreUrl: '/ugyek/hatvanpuszta',
             articles: hatvanArticles.map(a => ({ ...a })),
-          },
-          {
-            id: 'aranykonvoj',
-            eyebrow: 'Aktív · Feljelentés benyújtva',
-            title: 'Aranykonvoj-ügy',
-            responsible: 'Orbán Viktor',
-            videoId: 'cLBTdDVztR0',
-            summary: '2026 tavaszán a NAV és a titkosszolgálat megállított egy Ukrajna határán átkelő konvojt, amely aranyat és devizát szállított. Az ügyvéd feljelentése terrorcselekmény-gyanút is tartalmaz. Az ügy közvetlenül az Orbán-körhöz köthető személyekhez vezet.',
-            statusItems: [
-              { icon: '⚖️', label: 'Eljárás', value: 'Feljelentés benyújtva — terrorcselekmény gyanúja is' },
-              { icon: '🏦', label: 'Lefoglalt', value: 'Arany + deviza — pontos összeg nem nyilvános' },
-              { icon: '👤', label: 'Kapcsolat', value: 'Orbán-körhöz köthető személyek érintettségét veti fel az ügyvéd' },
-            ],
-            moreUrl: '/ugyek/aranykonvoj',
-            articles: aranyArticles.map(a => ({ ...a })),
           },
           {
             id: 'mnb-botrany',

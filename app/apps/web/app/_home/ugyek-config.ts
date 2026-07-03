@@ -61,7 +61,7 @@ export interface UgyekConfig {
 // A "zsolt-bacsi" ügy NEM kapcsolódik Semjén Zsolt személyéhez.
 // Semjén Zsolt neve TILOS bármilyen formában megjelenni ebben az ügyben.
 // A „Zsolti bácsi" egy különálló személy egy gyermekvédelmi botránnyal összefüggésben.
-const ZSOLT_BACSI_SEMJEN_GUARD = null; // intentionally unused — marker comment only
+const _ZSOLT_BACSI_SEMJEN_GUARD = null; // intentionally unused — marker comment only
 
 export const UGYEK: UgyekConfig[] = [
   {

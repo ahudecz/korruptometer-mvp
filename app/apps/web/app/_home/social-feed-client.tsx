@@ -12,7 +12,7 @@ function fmtDate(d: Date): string {
   return `${d.getFullYear()}. ${HU_MONTHS[d.getMonth()]} ${d.getDate()}.`;
 }
 
-function platformIcon(platform: string): string {
+function _platformIcon(platform: string): string {
   if (platform === 'twitter' || platform === 'x') return '𝕏';
   return platform[0]?.toUpperCase() ?? '?';
 }
