@@ -18,12 +18,17 @@ import { BreakingBanner } from './_home/breaking-banner';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './_home/galeria-config';
 import { NewsCardImage } from './hirek/news-card-image';
 
-export const dynamic = 'force-dynamic';
+// The homepage runs ~20 DB round-trips. Under `force-dynamic` they ran on
+// EVERY request against a cross-region pooler (fra1 fn ↔ eu-west-1 DB,
+// connection_limit=1), which could exceed the serverless execution limit →
+// `FUNCTION_INVOCATION_TIMEOUT` (504). KPI/news data does not need per-request
+// freshness, so we serve it via ISR: the page is regenerated in the background
+// at most every 120s and visitors always get an instant cached render. The
+// `maxDuration` bump only covers the background regeneration invocation.
+export const revalidate = 120;
+export const maxDuration = 60;
 
 const PALETTE_MONEY = ['#e31937', '#171a20', '#5c5e62', '#9b9da1', '#cccccc', '#e6e6e6'];
-
-
-type SectorEntry = { name: string; value: number };
 
 
 const HU_MONTHS_SHORT = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
@@ -88,54 +93,60 @@ export default async function HomePage() {
     .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId));
   }
 
-  const nkaArticles = await articleSelect()
-    .where(eq(schema.newsArticles.tag, 'NKA'))
-    .orderBy(desc(schema.newsArticles.publishedAt))
-    .limit(5);
-
-  const mnbArticles = await articleSelect()
-    .where(eq(schema.newsArticles.tag, 'MNB'))
-    .orderBy(desc(schema.newsArticles.publishedAt))
-    .limit(5);
-
-  const hatvanArticles = await articleSelect()
-    .where(ilike(schema.newsArticles.headline, '%hatvanpuszta%'))
-    .orderBy(desc(schema.newsArticles.publishedAt))
-    .limit(5);
-
-  const aranyArticles = await articleSelect()
-    .where(ilike(schema.newsArticles.headline, '%aranykonvoj%'))
-    .orderBy(desc(schema.newsArticles.publishedAt))
-    .limit(5);
-
-  const volvoArticles = await articleSelect()
-    .where(or(
-      ilike(schema.newsArticles.headline, '%volvo gate%'),
-      ilike(schema.newsArticles.headline, '%volvo-gate%'),
-      ilike(schema.newsArticles.headline, '%bánki erik%'),
-      ilike(schema.newsArticles.headline, '%tüke busz%'),
-      eq(schema.newsArticles.tag, 'volvo-gate'),
-    ))
-    .orderBy(desc(schema.newsArticles.publishedAt))
-    .limit(5);
-
-  const lelegArticles = await articleSelect()
-    .where(or(
-      ilike(schema.newsArticles.headline, '%lélegeztetőgép%'),
-      ilike(schema.newsArticles.headline, '%fourcardinal%'),
-    ))
-    .orderBy(desc(schema.newsArticles.publishedAt))
-    .limit(5);
-
-  const parkArticles = await articleSelect()
-    .where(or(
-      ilike(schema.newsArticles.headline, '%parkfenntartás%'),
-      ilike(schema.newsArticles.headline, '%parkfenntartá%'),
-      ilike(schema.newsArticles.headline, '%Őrsi Gergely%'),
-      ilike(schema.newsArticles.headline, '%Puskás Péter%'),
-    ))
-    .orderBy(desc(schema.newsArticles.publishedAt))
-    .limit(5);
+  // These per-topic article lists are all independent — fetch them concurrently
+  // instead of one sequential round-trip after another.
+  const [
+    nkaArticles,
+    mnbArticles,
+    hatvanArticles,
+    aranyArticles,
+    volvoArticles,
+    lelegArticles,
+    parkArticles,
+  ] = await Promise.all([
+    articleSelect()
+      .where(eq(schema.newsArticles.tag, 'NKA'))
+      .orderBy(desc(schema.newsArticles.publishedAt))
+      .limit(5),
+    articleSelect()
+      .where(eq(schema.newsArticles.tag, 'MNB'))
+      .orderBy(desc(schema.newsArticles.publishedAt))
+      .limit(5),
+    articleSelect()
+      .where(ilike(schema.newsArticles.headline, '%hatvanpuszta%'))
+      .orderBy(desc(schema.newsArticles.publishedAt))
+      .limit(5),
+    articleSelect()
+      .where(ilike(schema.newsArticles.headline, '%aranykonvoj%'))
+      .orderBy(desc(schema.newsArticles.publishedAt))
+      .limit(5),
+    articleSelect()
+      .where(or(
+        ilike(schema.newsArticles.headline, '%volvo gate%'),
+        ilike(schema.newsArticles.headline, '%volvo-gate%'),
+        ilike(schema.newsArticles.headline, '%bánki erik%'),
+        ilike(schema.newsArticles.headline, '%tüke busz%'),
+        eq(schema.newsArticles.tag, 'volvo-gate'),
+      ))
+      .orderBy(desc(schema.newsArticles.publishedAt))
+      .limit(5),
+    articleSelect()
+      .where(or(
+        ilike(schema.newsArticles.headline, '%lélegeztetőgép%'),
+        ilike(schema.newsArticles.headline, '%fourcardinal%'),
+      ))
+      .orderBy(desc(schema.newsArticles.publishedAt))
+      .limit(5),
+    articleSelect()
+      .where(or(
+        ilike(schema.newsArticles.headline, '%parkfenntartás%'),
+        ilike(schema.newsArticles.headline, '%parkfenntartá%'),
+        ilike(schema.newsArticles.headline, '%Őrsi Gergely%'),
+        ilike(schema.newsArticles.headline, '%Puskás Péter%'),
+      ))
+      .orderBy(desc(schema.newsArticles.publishedAt))
+      .limit(5),
+  ]);
 
   const resignationCount = (await db.select({ c: count() }).from(schema.politicalResignations))[0]?.c ?? 0;
 
@@ -246,18 +257,44 @@ export default async function HomePage() {
     FROM "NewsArticle"
   `)) as unknown as Array<{ min_y: number | null; max_y: number | null }>;
 
-  // Fall back gracefully if a fresh DB is empty (avoids a 500 page).
-  const totalDamage = snapshot ? BigInt(snapshot.totalDamage) : 0n;
+  // KPI-01 "Becsült / lehetséges kár" is computed LIVE from the real scandal
+  // catalog (same source as the ADATBÁZIS) so it never goes stale — no rollup
+  // dependency. ScandalCatalog.damage_huf is the MAX member estimate per
+  // scandal (already de-double-counted), so a plain SUM is the correct total.
+  const damageRows = (await db.execute(sql`
+    SELECT count(*)::int                       AS case_count,
+           COALESCE(SUM(damage_huf), 0)::text  AS total_damage
+      FROM "ScandalCatalog"
+     WHERE damage_huf > 0
+  `)) as unknown as Array<{ case_count: number; total_damage: string }>;
+  const catalogCount = damageRows[0]?.case_count ?? 0;
+  const liveTotalDamage = BigInt(damageRows[0]?.total_damage ?? '0');
+
+  // Donut: documented damage attributed by person, summed live.
+  const personRows = (await db.execute(sql`
+    SELECT COALESCE(NULLIF(person, ''), 'Ismeretlen') AS name,
+           SUM(damage_huf)::text                      AS value
+      FROM "ScandalCatalog"
+     WHERE damage_huf > 0
+     GROUP BY COALESCE(NULLIF(person, ''), 'Ismeretlen')
+     ORDER BY SUM(damage_huf) DESC
+  `)) as unknown as Array<{ name: string; value: string }>;
+
+  // Damage is live (above); the remaining KPIs still read the cached snapshot.
+  const totalDamage = liveTotalDamage;
   // No final convictions yet since the 2026-04-12 government change — hardcoded 0.
   const totalPrisonYears = 0;
   const activeCases = snapshot?.activeCases ?? 0;
   const newIndictments = snapshot?.newIndictmentsThisWeek ?? 0;
   const partnerCount = snapshot?.partnerCount ?? 0;
-  const bySector = (snapshot?.bySector ?? []) as SectorEntry[];
 
-  const moneySlices: PieSlice[] = bySector
-    .map((e) => ({ name: e.name, value: e.value }))
-    .sort((a, b) => b.value - a.value);
+  // Donut: top 5 people by damage + "Egyéb" remainder (rows already sorted desc).
+  const personSlices = personRows.map((r) => ({ name: r.name, value: Number(r.value) }));
+  const TOP_PERSONS = 5;
+  const topPersons = personSlices.slice(0, TOP_PERSONS);
+  const restSum = personSlices.slice(TOP_PERSONS).reduce((s, p) => s + p.value, 0);
+  const moneySlices: PieSlice[] =
+    restSum > 0 ? [...topPersons, { name: 'Egyéb', value: restSum }] : topPersons;
 
   const RESIGNATION_TYPE_HU: Record<string, string> = {
     'lemondás': 'Lemondás',
@@ -344,9 +381,9 @@ export default async function HomePage() {
             </div>
             <div className="stat-value">{fmtFt(totalDamage)}</div>
             <div className="stat-unit">
-              K-Monitor adatbázis · valós dokumentált adatok · 8 ügy · 2017–2021
+              Valós dokumentált adatok · {fmtNumber(catalogCount)} ügy · {minYear}–{maxYear}
             </div>
-            <Pie3D slices={moneySlices} palette={PALETTE_MONEY} className="donut" ariaLabel="Kár szektoronként" />
+            <Pie3D slices={moneySlices} palette={PALETTE_MONEY} className="donut" ariaLabel="Kár személyenként" />
           </div>
 
           <div className="stat-card">
