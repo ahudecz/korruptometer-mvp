@@ -67,6 +67,13 @@ function Row({ r, breakingArticle }: { r: Awaited<ReturnType<typeof fetchRows>>[
       <td style={cellStyle}>{r.position}</td>
       <td className="res-col-institution" style={cellStyle}>{r.institution}</td>
       <td className="res-col-desc" style={{ ...cellStyle, maxWidth: 320, fontSize: 13 }}>{r.description ?? '—'}</td>
+      <td style={cellStyle}>
+        {r.sourceUrls?.[0] ? (
+          <a href={r.sourceUrls[0]} target="_blank" rel="noopener noreferrer" className="res-source-link">
+            {r.sourceNames?.[0] ?? 'Forrás'} →
+          </a>
+        ) : '—'}
+      </td>
     </tr>
   );
 }
@@ -90,6 +97,7 @@ const tableHead = (
       <th style={{ textAlign: 'left', padding: '12px', fontWeight: 600 }}>Pozíció</th>
       <th className="res-col-institution" style={{ textAlign: 'left', padding: '12px', fontWeight: 600 }}>Intézmény</th>
       <th className="res-col-desc" style={{ textAlign: 'left', padding: '12px', fontWeight: 600 }}>Leírás</th>
+      <th style={{ textAlign: 'left', padding: '12px', fontWeight: 600 }}>Forrás</th>
     </tr>
   </thead>
 );

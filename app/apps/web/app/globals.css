@@ -348,6 +348,19 @@ button {
   color: var(--muted);
   letter-spacing: 0.08em;
 }
+.stat-card-corner-link {
+  position: absolute;
+  bottom: 48px;
+  right: 48px;
+}
+.stat-case-link {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+.stat-case-link:hover {
+  color: var(--accent);
+}
 .stat-card-list-link {
   font-size: 11px;
   font-weight: 700;
@@ -837,6 +850,17 @@ button {
 
 .res-row-breaking td {
   border-bottom-color: #ffd7da;
+}
+
+.res-source-link {
+  font-size: 12px;
+  color: var(--accent, #e31937);
+  text-decoration: none;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.res-source-link:hover {
+  text-decoration: underline;
 }
 
 .res-breaking-inline {
@@ -2462,6 +2486,22 @@ button {
   padding: 88px var(--pg) 64px;
 }
 
+.person-status-stripe {
+  width: 100%;
+  background: #e31937;
+  padding: 10px var(--pg);
+  text-align: center;
+  font-family: 'Archivo', sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #fff;
+}
+.person-status-stripe--resigned {
+  background: #c97c00;
+}
+
 .person-hero-inner {
   max-width: 1100px;
   margin: 0 auto;
@@ -2471,6 +2511,20 @@ button {
   align-items: start;
 }
 
+.person-hero-photo {
+  position: relative;
+}
+
+.person-bio-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.person-bio-section .ugy-block-article-card {
+  margin: 0;
+}
+
 .person-photo-img {
   width: 100%;
   aspect-ratio: 1;
@@ -2478,6 +2532,32 @@ button {
   object-position: top;
   border-radius: 2px;
   display: block;
+}
+
+.person-removed-stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-25deg);
+  font-family: 'Archivo', 'Arial Black', sans-serif;
+  font-size: 36px;
+  font-weight: 900;
+  color: #e31937;
+  border: 5px solid #e31937;
+  padding: 6px 14px;
+  border-radius: 3px;
+  opacity: 0.9;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  pointer-events: none;
+  white-space: nowrap;
+  text-shadow: none;
+  box-shadow: 0 0 0 2px rgba(227,25,55,0.15);
+}
+.person-removed-stamp--resigned {
+  color: #f59e0b;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245,158,11,0.15);
 }
 
 .person-photo-placeholder {
@@ -3929,6 +4009,7 @@ button {
 /* KPI–04 resignation mini-lista */
 .stat-resigned-list {
   margin-top: 20px;
+  padding-bottom: 32px;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -3939,6 +4020,17 @@ button {
   gap: 10px;
   padding: 10px 0;
   border-top: 1px solid #e5e5e5;
+}
+.stat-resigned-item--link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+.stat-resigned-item--link:hover {
+  background: #fafafa;
+  margin: 0 -8px;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 .stat-resigned-dot {
   flex-shrink: 0;
@@ -8958,7 +9050,6 @@ body:has(.admin-nav) > main {
 
 /* Description */
 .ugy-description {
-  margin-bottom: 40px;
 }
 .ugy-description-body {
   font-size: 15px;

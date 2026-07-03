@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { SiteFooter } from '@korr/ui/site-footer';
+import { SiteFooter } from './site-footer';
 import { NavMobile } from './nav-mobile';
-import { FooterScrollFix } from './footer-scroll-fix';
 import { CookieBanner } from './_home/cookie-banner';
 
 import './globals.css';
@@ -81,7 +80,6 @@ export default function RootLayout({
         </nav>
         <main id="fooldal">{children}</main>
         <SiteFooter />
-        <FooterScrollFix />
         <CookieBanner />
       </body>
     </html>

@@ -22,6 +22,14 @@ export interface WatchlistPinnedLink {
   source: string;
 }
 
+export interface WatchlistBreakingBlock {
+  source: string;
+  date: string;
+  headline: string;
+  lead?: string;
+  url?: string;
+}
+
 export interface WatchlistDetailEntry {
   id: string;
   fullTitle: string;
@@ -32,6 +40,7 @@ export interface WatchlistDetailEntry {
   videoId?: string;
   videoSummary?: WatchlistVideoSummary;
   pinnedLinks?: WatchlistPinnedLink[];
+  breakingBlock?: WatchlistBreakingBlock;
 }
 
 export const WATCHLIST_DETAIL: WatchlistDetailEntry[] = [
@@ -387,7 +396,14 @@ export const WATCHLIST_DETAIL: WatchlistDetailEntry[] = [
         source: 'Telex',
       },
     ],
-    bio: 'Koltay András 2021 óta vezeti a Nemzeti Média- és Hírközlési Hatóságot (NMHH). Médiajogi professzorként munkái a médiaszabadság szűkítését igazoló elméleti kereteket nyújtottak. Az NMHH alatt a Fidesz háborús riogatós videóját nem ítélte jogsértőnek, bíróság által betiltott NER-médiumot védelmébe vett, és 1,3 milliárdot költ reklámtábla-ellenőrzésre kormányközeli cégeken keresztül.',
+    bio: 'Koltay András 2021-től 2026 júliusáig vezette a Nemzeti Média- és Hírközlési Hatóságot (NMHH). Médiajogi professzorként munkái a médiaszabadság szűkítését igazoló elméleti kereteket nyújtottak. Az NMHH alatt a Fidesz háborús riogatós videóját nem ítélte jogsértőnek, bíróság által betiltott NER-médiumot védelmébe vett, és 1,3 milliárdot költ reklámtábla-ellenőrzésre kormányközeli cégeken keresztül.',
+    breakingBlock: {
+      source: 'hvg.hu',
+      date: '2026. júl. 1.',
+      headline: 'Magyar Péter javaslatára felmentette Sulyok Tamás az NMHH elnökét',
+      lead: 'Sulyok Tamás köztársasági elnök Magyar Péter miniszterelnök javaslatára felmentette Koltay Andrást a Nemzeti Média- és Hírközlési Hatóság (NMHH) elnöki pozíciójából. Koltay 2021 óta töltötte be a tisztséget.',
+      url: 'https://hvg.hu/itthon/20260701_magyar-peter-felmentes-sulyok-tamas-nmhh-elnoke-koltay-andras',
+    },
     nerRole: 'Koltay médiahatósága NER-barát szelektivitással működik: a Fidesz kampánymanipulációja ellen nem lép, a független médiumokat megbünteti, a bíróság döntéseit figyelmen kívül hagyja — majd a választások után hirtelen tud eljárásokat indítani a volt kormánymédia ellen.',
     keyCases: [
       {

@@ -104,7 +104,7 @@ export default function ModszertanPage() {
           <p>
             Az adatokat a csapat folyamatosan figyeli és bővíti. A személyi változások (lemondások,
             kirúgások) és a visszaszerzett vagyon rovata a napi sajtókövetés alapján, jellemzően
-            24–48 órán belül frissülnek. A K-Monitor-adatbázisból történő szinkronizáció hetente
+            1–2 órán belül frissülnek. A K-Monitor-adatbázisból történő szinkronizáció hetente
             történik.
           </p>
 

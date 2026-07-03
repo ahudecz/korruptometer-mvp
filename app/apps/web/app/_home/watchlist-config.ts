@@ -64,7 +64,7 @@ export const WATCH_LIST: WatchPerson[] = [
     id: 'koltay-andras',
     name: 'Koltay András',
     institution: 'Médiahatóság elnöke',
-    status: 'active',
+    status: 'removed',
     photoUrl: '/images/persons/koltay-andras-mediahatosag.png',
     photoCredit: 'Eredeti fotó: 444.hu',
   },

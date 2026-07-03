@@ -4,7 +4,7 @@ import { desc, ilike, or, eq } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 import { WATCH_LIST, type WatchPerson } from '../../_home/watchlist-config';
-import { WATCHLIST_DETAIL } from '../../_home/watchlist-detail-config';
+import { WATCHLIST_DETAIL, type WatchlistBreakingBlock } from '../../_home/watchlist-detail-config';
 import { CrossGaleria, CrossUgyek, CrossLemondosok } from '../../_home/cross-promo';
 
 export const dynamic = 'force-dynamic';
@@ -74,6 +74,13 @@ export default async function WatchlistPersonPage({ params }: { params: Promise<
 
   return (
     <div className="person-page">
+      {/* Status stripe — full-width bar above hero */}
+      {person.status !== 'active' && (
+        <div className={`person-status-stripe${person.status === 'resigned' ? ' person-status-stripe--resigned' : ''}`}>
+          {person.status === 'removed' ? 'ELTÁVOLÍTVA' : 'LEMONDOTT'}
+        </div>
+      )}
+
       {/* Hero */}
       <div className="person-hero">
         <div className="person-hero-inner">
@@ -113,10 +120,40 @@ export default async function WatchlistPersonPage({ params }: { params: Promise<
       </div>
 
       <div className="person-body">
-        {/* Bio */}
-        {detail?.bio && (
-          <div className="person-bio">
-            <p>{detail.bio}</p>
+        {/* Bio + breaking block grouped so they share one gap slot */}
+        {(detail?.bio || detail?.breakingBlock) && (
+          <div className="person-bio-section">
+            {detail?.bio && (
+              <div className="person-bio">
+                <p>{detail.bio}</p>
+              </div>
+            )}
+            {detail?.breakingBlock && (
+              <a
+                href={detail.breakingBlock.url || undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`ugy-block-article-card ugy-block-article-card--breaking${!detail.breakingBlock.url ? ' no-link' : ''}`}
+              >
+                <div className="ugy-block-article-breaking-badge">
+                  <span className="ugy-block-article-breaking-dot" />
+                  BREAKING
+                </div>
+                <div className="ugy-block-article-meta">
+                  <span className="ugy-block-article-source">{detail.breakingBlock.source}</span>
+                  {detail.breakingBlock.date && (
+                    <span className="ugy-block-article-date">{detail.breakingBlock.date}</span>
+                  )}
+                </div>
+                <div className="ugy-block-article-headline">{detail.breakingBlock.headline}</div>
+                {detail.breakingBlock.lead && (
+                  <p className="ugy-block-article-lead">{detail.breakingBlock.lead}</p>
+                )}
+                {detail.breakingBlock.url && (
+                  <span className="ugy-block-article-arrow">Cikk olvasása →</span>
+                )}
+              </a>
+            )}
           </div>
         )}
 

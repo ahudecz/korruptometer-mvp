@@ -51,6 +51,13 @@ function ResignationRow({ r, breakingArticle }: { r: PoliticalResignation; break
       <td style={{ color: '#666' }}>
         {new Date(r.resignationDate).toLocaleDateString('hu-HU')}
       </td>
+      <td>
+        {r.sourceUrls?.[0] ? (
+          <a href={r.sourceUrls[0]} target="_blank" rel="noopener noreferrer" className="res-source-link">
+            {r.sourceNames?.[0] ?? 'Forrás'} →
+          </a>
+        ) : '—'}
+      </td>
     </tr>
   );
 }
@@ -94,6 +101,7 @@ export function ResignationsSection({ resignations, breaking = [] }: Props) {
                   <th>Intézmény</th>
                   <th>Státusz</th>
                   <th>Dátum</th>
+                  <th>Forrás</th>
                 </tr>
               </thead>
               <tbody>

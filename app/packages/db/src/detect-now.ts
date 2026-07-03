@@ -9,6 +9,11 @@ import { config as loadEnv } from 'dotenv';
 loadEnv({ path: resolve(__dirname, '../../../.env.local') });
 loadEnv({ path: resolve(__dirname, '../../../.env') });
 
+// Local dev: bypass SSL certificate verification
+if (process.env.NODE_ENV !== 'production') {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { and, desc, eq, gte, sql } from 'drizzle-orm';
@@ -30,6 +35,23 @@ const KEYWORDS = [
   'elbocsát', 'elbocsátja', 'elbocsátják', 'elbocsátotta', 'elbocsátottak',
   'megszünteti', 'megszüntetik', 'bezárják', 'bezárja', 'leáll', 'megszűnik',
   'munkavállal', 'dolgozóit',
+  // Indirekt pozícióváltás — utódot bejelentő cikkek is detektálhatók
+  'átmeneti vezérigazgat', 'megbízott vezérigazgat',
+  'átmeneti elnök', 'megbízott elnök', 'megbízott igazgat',
+  'ideiglenes vezető', 'ideiglenes igazgat', 'ideiglenesen vezeti',
+  'utódja', 'utóda lett', 'helyébe lépett', 'helyébe lép',
+  'új vezérigazgat', 'új elnök', 'új igazgat',
+];
+
+// NER-közeli médiaemberek / intézményvezetők — róluk MINDEN cikket AI-ra küldünk,
+// kulcsszó nélkül is, mert a pozícióváltásuk ritkán kerül explicit szóval a headline-be.
+const ALWAYS_DETECT_NAMES = [
+  'koltay andrás', 'koltay',
+  'senyei györgy',
+  'karancsi tibor',
+  'nmhh', 'médiatanács',
+  'mtva', 'duna médiaszolgáltató',
+  'médiaszolgáltató nonprofit',
 ];
 
 async function main() {
@@ -42,14 +64,19 @@ async function main() {
       headline: schema.newsArticles.headline,
       excerpt: schema.newsArticles.excerpt,
       publishedAt: schema.newsArticles.publishedAt,
+      sourceUrl: schema.newsArticles.sourceUrl,
+      sourceName: schema.sources.name,
     })
     .from(schema.newsArticles)
+    .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId))
     .orderBy(desc(schema.newsArticles.publishedAt))
     .limit(1000);
 
   const candidates = articles.filter((a) => {
     const text = `${a.headline} ${a.excerpt}`.toLowerCase();
-    return KEYWORDS.some((kw) => text.includes(kw));
+    if (KEYWORDS.some((kw) => text.includes(kw))) return true;
+    if (ALWAYS_DETECT_NAMES.some((n) => text.includes(n))) return true;
+    return false;
   });
 
   console.log(`📚 Összesen: ${articles.length} cikk, ${candidates.length} lemondás-gyanús\n`);
@@ -107,13 +134,28 @@ async function main() {
       resignationDate = new Date(article.publishedAt);
     }
 
+    const VALID_TYPES = ['lemondás', 'kirúgás', 'felmentés', 'egyéb'] as const;
+    type ResignationType = typeof VALID_TYPES[number];
+    const typeMap: Record<string, ResignationType> = {
+      lemond: 'lemondás', lemondas: 'lemondás',
+      kirúg: 'kirúgás', kirugas: 'kirúgás',
+      felment: 'felmentés', felmentas: 'felmentés', felmentés: 'felmentés',
+    };
+    const rawType = result.resignationType as string;
+    const resignationType: ResignationType =
+      VALID_TYPES.includes(rawType as ResignationType)
+        ? (rawType as ResignationType)
+        : (typeMap[rawType.toLowerCase()] ?? 'egyéb');
+
     await db.insert(schema.politicalResignations).values({
       name: result.name.slice(0, 200),
       position: result.position.slice(0, 200),
       institution: result.institution.slice(0, 200),
-      resignationType: result.resignationType,
+      resignationType,
       resignationDate,
       description: result.description.slice(0, 1000) || null,
+      sourceUrls: [article.sourceUrl],
+      sourceNames: article.sourceName ? [article.sourceName] : [],
     });
 
     // Cikk megjelölése a /hirek Lemondás szűrőhöz, watchlist személyeknél breaking candidate

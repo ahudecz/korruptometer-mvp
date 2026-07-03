@@ -67,7 +67,7 @@ function WatchCard({ person, breakingArticle }: { person: WatchPerson; breakingA
       <div className="watchlist-info">
         <div className="watchlist-name">{person.name}</div>
         <div className="watchlist-institution">{person.institution}</div>
-        <div className="watchlist-cta">Miért kell mennie? →</div>
+        <div className="watchlist-cta">{isGone ? 'Miért kellett mennie? →' : 'Miért kell mennie? →'}</div>
       </div>
     </Link>
   );

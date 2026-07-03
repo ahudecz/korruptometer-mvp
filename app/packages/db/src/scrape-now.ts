@@ -8,6 +8,11 @@ import { config as loadEnv } from 'dotenv';
 loadEnv({ path: resolve(__dirname, '../../../.env.local') });
 loadEnv({ path: resolve(__dirname, '../../../.env') });
 
+// Local dev: bypass SSL certificate verification (nem fut productionben)
+if (process.env.NODE_ENV !== 'production') {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
 import { createHash } from 'node:crypto';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { eq } from 'drizzle-orm';

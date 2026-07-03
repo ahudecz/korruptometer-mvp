@@ -64,8 +64,9 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     description: 'Az ország egyik legnagyobb példányszámú bulvár napilapja. A Mediaworks 2025 végén leállította a nyomtatott kiadást.',
     status: 'closed',
     statusLabel: 'Megszűnt',
-    logoUrl: 'https://image.blikk.hu/1/L9hktkpTURBXy8wYTBiZTBiMDllYzZjOGJjN2RmZDRjZTJhZDAwNmE4Zi5qcGeSlQMAzN7ND4jNCL6TCaY1MzNmYzQG/a-mediaworks-holnaptol-nem-adja-ki-bors-napilapot-foto-knap-zoltan',
-    logoCredit: 'Blikk',
+    logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2104058borslogo.png',
+    logoCredit: 'Mediaworks',
+    logoBgWhite: true,
   },
   {
     id: '24-ora',
@@ -102,6 +103,19 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2105638heveshirlaplogo.png',
     logoCredit: 'Mediaworks',
     logoBgWhite: true,
+  },
+  {
+    id: 'gyor-plusz',
+    name: 'Győr Plusz',
+    group: 'print-kesma',
+    owner: 'Fidesz-közeli (Borkai Zsolt köre)',
+    description: 'Győri helyi hírportál, a Fidesz helyi holdudvarához köthető médium. 2026. május 16-án megszűnt — a rendszerváltás utáni sajtópiaci összeomlás egyik korai áldozata.',
+    status: 'closed',
+    statusLabel: 'Megszűnt (2026. máj. 16.)',
+    logoUrl: 'https://www.gyorplusz.hu/wp-content/uploads/2024/10/gyp-logo2024.png',
+    logoCredit: 'Győr Plusz',
+    sourceUrl: 'https://24.hu/kultura/2026/05/16/gyor-plusz-fidesz-megszunes/',
+    sourceName: '24.hu',
   },
 
   // Sor 2+: Aktív napilapok

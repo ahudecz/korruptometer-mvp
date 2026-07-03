@@ -324,28 +324,16 @@ export default async function HomePage() {
               <div className="hero-stat-label">Dokumentált kár összesen</div>
             </div>
             <div className="hero-stat">
-              <div className="hero-stat-value">{fmtNumber(activeCases)}</div>
-              <div className="hero-stat-label">Dokumentált korrupciós ügy</div>
+              <div className="hero-stat-value">{fmtNumber(pretrialCountDb)} fő</div>
+              <div className="hero-stat-label">Előzetes letartóztatásban</div>
             </div>
             <div className="hero-stat">
-              {totalPrisonYears > 0 ? (
-                <>
-                  <div className="hero-stat-value">{fmtNumber(totalPrisonYears)} év</div>
-                  <div className="hero-stat-label">
-                    Kiszabott börtönbüntetés
-                    {pretrialCountDb > 0 ? ` · ${fmtNumber(pretrialCountDb)} fő előzetesben` : ' összesen'}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="hero-stat-value">{fmtNumber(pretrialCountDb)} fő</div>
-                  <div className="hero-stat-label">Előzetes letartóztatásban</div>
-                </>
-              )}
+              <div className="hero-stat-value">{fmtNumber(resignationCount)}</div>
+              <div className="hero-stat-label">Lemondás és kirúgás április 12. óta</div>
             </div>
             <div className="hero-stat">
-              <div className="hero-stat-value">{resignationCount + closureCount}</div>
-              <div className="hero-stat-label">Lemondás, kirúgás és bezárás április 12. óta</div>
+              <div className="hero-stat-value">{fmtNumber(closureCount)}</div>
+              <div className="hero-stat-label">Megszűnt médium április 12. óta</div>
             </div>
           </div>
         </div>

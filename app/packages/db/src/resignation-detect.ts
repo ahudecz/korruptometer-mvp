@@ -91,10 +91,19 @@ Politikai személynek vagy szervezetnek minősül:
 
 Tömeges elbocsátásnál (pl. "kirúgják az összes Pesti Srácok-munkatársat") a "name" mezőbe a szerkesztőség/outlet neve kerüljön (pl. "Pesti Srácok szerkesztőség"), a "position" mezőbe "újságíró, szerkesztő", az "institution" mezőbe a médium neve.
 
-Csak akkor jelöld isResignation=true-val, ha egyértelmű, hogy valaki/valakik elhagyják a pozíciójukat, vagy médium szűnik meg/bocsát el tömegesen.
-Ne jelöld, ha csak spekuláció, bejelentett tervek (nem befejezett tény), vagy ha más ország politikusáról van szó.
+Csak akkor jelöld isResignation=true-val, ha az eltávolítás/lemondás már MEGTÖRTÉNT (befejezett tény, múlt idejű ige: lemondott, felmentette, kirúgták, leváltotta, visszahívták stb.).
 
-FONTOS: A "name" mezőbe mindig AZT a személyt/szervzetet írd, aki elhagyja a pozícióját — NEM azt, aki a döntést hozta.`;
+NE jelöld isResignation=true-val, ha:
+- Csak terv, szándék, spekuláció, követelés ("intézi el", "le kell váltani", "leváltják majd", "kérték a lemondását", "nem áll távol a lemondás", "belengette")
+- Más ország politikusáról van szó
+- Az ige jövő idejű vagy feltételes ("el fogja távolítani", "leválthatják")
+
+KRITIKUS — ki hagyja el a pozíciót vs. ki hozza a döntést:
+- A "felmentette X az Y-t" mondatban Y hagyja el a pozícióját (nem X)
+- A "Magyar Péter javaslatára Sulyok Tamás felmentette Koltay Andrást" → Koltay András hagyja el a pozíciót (name = Koltay András)
+- Az aláíró, a döntéshozó, a javaslatot tevő személy SOHA nem kerülhet a "name" mezőbe
+
+FONTOS: A "name" mezőbe mindig AZT a személyt/szervzetet írd, aki ténylegesen elhagyja a pozícióját — NEM azt, aki a döntést hozta, aláírta, vagy javasolta.`;
 
 export async function detectResignationFromArticle(
   headline: string,
