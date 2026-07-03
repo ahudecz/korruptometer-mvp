@@ -12,6 +12,13 @@ export { parseRss } from './rss';
 export { adapters, getAdapter, routeOutletByUrl } from './adapters';
 export { isRelevant, shouldFeature, isBreaking, scrapeRelevanceTier, isForeignOrJunk } from './relevance';
 export {
+  extractNameCandidates,
+  decideSameStoryTier,
+  SAME_STORY_LOW,
+  SAME_STORY_HIGH,
+} from './same-story';
+export type { SameStoryTier } from './same-story';
+export {
   parseKMonitorTagIndex,
   parseKMonitorTagPage,
   fetchKMonitorTagIndex,

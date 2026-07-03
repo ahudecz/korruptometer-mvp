@@ -7,8 +7,8 @@ import { WATCH_LIST, type WatchPerson } from './watchlist-config';
 
 const STATUS_LABEL: Record<string, string> = {
   active: '● Hivatalban van',
-  resigned: '↓ Lemondott',
-  removed: '✕ Eltávolítva',
+  resigned: 'LEMONDOTT',
+  removed: 'ELTÁVOLÍTVA',
 };
 
 function imgSrc(url: string) {

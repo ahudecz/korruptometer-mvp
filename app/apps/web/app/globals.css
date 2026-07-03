@@ -3448,17 +3448,23 @@ button {
 }
 .person-more-gone-badge {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  text-align: center;
-  font-size: 9px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-22deg);
+  font-family: 'Archivo', sans-serif;
+  font-size: 8px;
   font-weight: 900;
-  letter-spacing: 0.14em;
-  padding: 4px 6px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  background: rgba(227, 25, 55, 0.92);
-  color: #fff;
+  padding: 3px 6px;
+  background: transparent;
+  color: #e31937;
+  border: 2px solid #e31937;
+  border-radius: 2px;
+  white-space: nowrap;
+  opacity: 0.85;
+  line-height: 1;
+  pointer-events: none;
 }
 
 .person-more-mug {
@@ -3719,6 +3725,13 @@ button {
 }
 .watchlist-card--gone {
   border-color: #e31937;
+  border-width: 4px;
+}
+.watchlist-card--gone .watchlist-photo-img {
+  filter: grayscale(100%);
+}
+.watchlist-card--gone .watchlist-info {
+  opacity: 0.6;
 }
 .watchlist-photo {
   position: relative;
@@ -3761,13 +3774,50 @@ button {
   background: rgba(34, 197, 94, 0.85);
   color: #fff;
 }
-.watchlist-badge--resigned {
-  background: rgba(227, 25, 55, 0.9);
-  color: #fff;
-}
+.watchlist-badge--resigned,
 .watchlist-badge--removed {
-  background: rgba(227, 25, 55, 0.9);
-  color: #fff;
+  bottom: auto;
+  left: 50%;
+  right: auto;
+  width: 150%;
+  text-align: center;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(-22deg);
+  font-family: 'Archivo', sans-serif;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  padding: 6px 0;
+  background: rgba(10, 8, 14, 0.6);
+  color: #ff4d5e;
+  border-top: 3.5px solid #e31937;
+  border-bottom: 3.5px solid #e31937;
+  white-space: nowrap;
+  opacity: 0.96;
+  line-height: 1;
+  transition: opacity 0.18s;
+}
+.watchlist-card--gone:hover .watchlist-badge--resigned,
+.watchlist-card--gone:hover .watchlist-badge--removed {
+  opacity: 0;
+}
+.watchlist-card--gone .watchlist-photo::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  bottom: 5px;
+  left: 5px;
+  background:
+    linear-gradient(45deg, transparent calc(50% - 9px), #e31937 calc(50% - 9px), #e31937 calc(50% + 9px), transparent calc(50% + 9px)),
+    linear-gradient(-45deg, transparent calc(50% - 9px), #e31937 calc(50% - 9px), #e31937 calc(50% + 9px), transparent calc(50% + 9px));
+  opacity: 0;
+  transition: opacity 0.18s;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+}
+.watchlist-card--gone:hover .watchlist-photo::after {
+  opacity: 0.94;
 }
 .watchlist-photo-credit {
   position: absolute;
@@ -3878,7 +3928,7 @@ button {
   line-height: 1;
 }
 .media-card.mc-closed .mc-stamp { color: #e31937; }
-.media-card.mc-pending-closed .mc-stamp { color: #e86000; }
+.media-card.mc-pending-closed .mc-stamp { color: #e86000; font-size: 13px; letter-spacing: 0.16em; padding: 4px 10px; }
 .media-card.mc-fired-staff .mc-stamp { color: #c07800; }
 
 .media-card-logo {

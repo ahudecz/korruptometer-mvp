@@ -39,6 +39,13 @@ type Executable = { execute: (query: ReturnType<typeof sql>) => Promise<unknown>
  * within the dedup window, in ANY reviewStatus (approved/pending/rejected).
  * Institution is intentionally ignored, and rejected rows count, so a
  * previously rejected detection is not re-created (FR-009, FR-011).
+ *
+ * The SQL side re-derives the same normalisation as normalizeName() —
+ * lower + unaccent + punctuation-to-space + collapse/trim — so that e.g.
+ * "Promenad24" and "Promenad24.hu" or "Kovács Zoltán!" and "Kovács Zoltán"
+ * are recognised as the same name (research.md called this "írásjel-toleráns"
+ * matching, but the query previously only lower/unaccent/trimmed the raw
+ * strings, so punctuation differences slipped past the guard).
  */
 export async function isDuplicate(
   db: Executable,
@@ -52,7 +59,7 @@ export async function isDuplicate(
   const nameCol = sql.identifier(target.nameColumn);
   const rows = (await db.execute(sql`
     SELECT 1 FROM ${tableId}
-    WHERE lower(unaccent(trim(${nameCol}))) = lower(unaccent(trim(${name})))
+    WHERE trim(regexp_replace(lower(unaccent(trim(${nameCol}))), '[^a-z0-9]+', ' ', 'g')) = ${key}
       AND "createdAt" >= now() - make_interval(days => ${withinDays})
     LIMIT 1
   `)) as unknown as { length: number };

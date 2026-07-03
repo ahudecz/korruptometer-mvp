@@ -168,38 +168,42 @@ const BREAKING_TRIGGERS = [
   'nyomozást rendeltek el', 'körözik', 'európai elfogatóparancs',
 ];
 
-// Statikus figyelt lista — WATCH_LIST + GALERIA + extra ügyek
+// Statikus figyelt lista — csak a ténylegesen kiemelt entitások:
+// GALERIA (top 10 személy), WATCH_LIST (top 8 lemondásra felszólított) és a
+// UGYEK config-ban ténylegesen szereplő kiemelt ügyek kulcsszavai.
+// FONTOS: ez a lista korábban elszakadt a valós GALERIA/WATCH_LIST/UGYEK
+// tartalmától (régi, már nem szereplő nevek és ügyek maradtak benne:
+// Czeglédy Csaba, Kaleta, Mátrai Erőmű, Voldemort, atlétikai VB stadion
+// stb.) — emiatt teljesen ide nem tartozó cikkek (pl. iskolakezdési
+// támogatásról szóló hír) is "breaking"-nek jelölődtek, ha az excerptjük
+// véletlenül megemlített egy figyelt nevet egy más témájú mondatban.
+// Ha egy UGYEK / GALERIA / WATCH_LIST bővül, ezt a listát is frissíteni
+// kell — nincs élő import a scrapers csomagból a web-app configokra.
 const BREAKING_MONITORED = [
-  // Kiemelt személyek (WATCH_LIST)
+  // Kiemelt személyek (WATCH_LIST — top 8 lemondásra felszólított)
   'sulyok tamás', 'polt péter', 'nagy gábor bálint',
   'varga zs. andrás', 'windisch lászló', 'rigó csaba balázs',
   'koltay andrás', 'senyei györgy',
-  // Galéria személyek
+  // Galéria személyek (top 10)
   'orbán viktor', 'rogán antal', 'mészáros lőrinc', 'tiborcz istván',
   'szíjjártó péter', 'takács péter', 'matolcsy györgy', 'lázár jános',
   'balásy gyula', 'semjén zsolt',
-  // Extra személyek
-  'czeglédy csaba', 'simonka györgy', 'borkai zsolt', 'tasnádi andrás',
-  'zsigó róbert', 'tilky zoltán', 'pócs jános', 'schadl györgy',
-  // Extra ügyek / kulcsszavak
-  'budapest-belgrád vasútvonal', 'budapest–belgrád',
-  'kaleta', 'mátrai erőmű',
-  'voldemort',
-  'végrehajtói botrány',
-  'atlétikai vb stadion', 'atlétikai stadion',
-  'úszó vb', 'úszóvb',
-  'zuglói parkolás',
-  'parkfenntartási botrány',
-  // Már meglévő KEYWORDS-ből is breaking-képesek
-  'nka ', 'mnb ', 'volvo-gate', 'szőlő utca', 'aranykonvoj',
-  'lélegeztetőgép', 'kegyelmi botrány',
+  // Kiemelt ügyek (UGYEK config articleKeywords)
+  'nka', 'mnb', 'volvo-gate', 'volvo gate', 'bánki', 'tüke',
+  'szőlő utca', 'szőlő utcai', 'zsolti bácsi', 'zsolt bácsi',
+  'aranykonvoj', 'lélegeztetőgép', 'hatvanpuszta',
+  'parkfenntartás', 'parkfenntartá', 'őrsi gergely',
 ];
 
 export function isBreaking(headline: string, excerpt: string): boolean {
-  const text = `${headline} ${excerpt}`.toLowerCase();
-  const hasTrigger = BREAKING_TRIGGERS.some((t) => text.includes(t));
+  const headlineText = headline.toLowerCase();
+  const fullText = `${headlineText} ${excerpt}`.toLowerCase();
+  const hasTrigger = BREAKING_TRIGGERS.some((t) => fullText.includes(t));
   if (!hasTrigger) return false;
-  return BREAKING_MONITORED.some((m) => text.includes(m));
+  // A figyelt névnek/ügynek a CÍMBEN kell szerepelnie, nem elég, ha csak az
+  // excerpt egy mellékes, más témájú mondatában bukkan fel — az adta a fenti
+  // hamis pozitívokat.
+  return BREAKING_MONITORED.some((m) => headlineText.includes(m));
 }
 
 // ─── Scrape relevance tiering (003-detection-review-engine) ───────────────────

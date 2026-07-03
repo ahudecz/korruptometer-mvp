@@ -31,6 +31,10 @@ export default function AdomanyozasPage() {
               <span className="adom-cost-val">~59 400 Ft / hó</span>
             </div>
             <div className="adom-cost-row">
+              <span className="adom-cost-label">API-hívások (Anthropic, Apify)</span>
+              <span className="adom-cost-val">~38 000 Ft / hó</span>
+            </div>
+            <div className="adom-cost-row">
               <span className="adom-cost-label">Szerver és adatbázis</span>
               <span className="adom-cost-val">~16 500 Ft / hó</span>
             </div>
@@ -45,7 +49,7 @@ export default function AdomanyozasPage() {
           </div>
 
           <p>
-            A technikai fenntartás havi ~77&nbsp;000 forintba kerül. Ez az önkéntes
+            A technikai fenntartás havi ~116&nbsp;000 forintba kerül. Ez az önkéntes
             munkát nem tartalmazza — az a projekt iránti elkötelezettségből jön.
             Ha csak a számlák felét fedeznék az adományok, az már hatalmas segítség lenne.
           </p>

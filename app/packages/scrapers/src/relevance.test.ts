@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { scrapeRelevanceTier, isForeignOrJunk } from './relevance';
+import { scrapeRelevanceTier, isForeignOrJunk, isBreaking } from './relevance';
 
 describe('scrapeRelevanceTier', () => {
   it('"in" for a strong Hungarian-political keyword (free, no AI)', () => {
@@ -33,5 +33,38 @@ describe('isForeignOrJunk', () => {
   });
   it('does not flag normal Hungarian domestic content', () => {
     expect(isForeignOrJunk('Lemondott a polgármester', 'belföldi hír', 'https://telex.hu/belfold/x')).toBe(false);
+  });
+});
+
+describe('isBreaking', () => {
+  it('does not flag an unrelated headline just because a monitored name appears in the excerpt (iskolakezdési támogatás false-positive)', () => {
+    const headline = 'Elindult az iskolakezdési támogatás igénylése';
+    const excerpt =
+      'A kormányinfón Sulyok Tamás is jelen volt, amikor bejelentették, hogy házkutatás során derült fény egy másik ügyre.';
+    expect(isBreaking(headline, excerpt)).toBe(false);
+  });
+
+  it('flags when a monitored (WATCH_LIST) name is in the headline together with a trigger phrase', () => {
+    expect(isBreaking('Sulyok Tamást házkutatás közben érték', 'részletek a cikkben')).toBe(true);
+  });
+
+  it('flags when a monitored (GALERIA) name is in the headline together with a trigger phrase', () => {
+    expect(isBreaking('Orbán Viktort őrizetbe vették', 'részletek a cikkben')).toBe(true);
+  });
+
+  it('flags when a monitored ügy keyword is in the headline together with a trigger phrase', () => {
+    expect(isBreaking('Aranykonvoj-ügy: vádat emeltek', 'részletek a cikkben')).toBe(true);
+  });
+
+  it('does not flag a headline with a trigger phrase but no monitored name/keyword', () => {
+    expect(isBreaking('Egy helyi vállalkozót őrizetbe vettek', 'adócsalás gyanúja miatt')).toBe(false);
+  });
+
+  it('does not flag a headline with a monitored name but no trigger phrase', () => {
+    expect(isBreaking('Orbán Viktor új bejelentése', 'a kormányfő beszédet mondott')).toBe(false);
+  });
+
+  it('does not flag a stale name that was removed from the monitored list', () => {
+    expect(isBreaking('Czeglédy Csabát őrizetbe vették', 'részletek a cikkben')).toBe(false);
   });
 });

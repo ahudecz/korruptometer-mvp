@@ -861,6 +861,18 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     logoBgWhite: true,
   },
   {
+    id: 'promenad24',
+    name: 'Promenad24',
+    group: 'tv-youtube',
+    owner: 'Lázár János köre (korábban Bada János tulajdonában)',
+    description: 'Hódmezővásárhelyi online lap, évek óta Lázár János politikai érdekeihez közel álló médium. Korábbi tulajdonosa Bada János, Lázár gimnáziumi évfolyamtársa, akit 2026 júniusában menesztettek a MÁV Szolgáltató Központ Zrt. éléről. 2026. július 3-án határozatlan időre felfüggesztette működését.',
+    status: 'closed',
+    statusLabel: 'Felfüggesztve (2026. júl. 3.)',
+    sourceUrl: 'https://444.hu/2026/07/03/felfuggeszti-mukodeset-lazar-janos-revolverlapja-a-promenad24',
+    sourceName: '444.hu',
+    logoUrl: '/images/media/promenad24.jpg',
+  },
+  {
     id: 'hir-tv',
     name: 'Hír TV',
     group: 'tv-youtube',

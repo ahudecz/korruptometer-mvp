@@ -7,6 +7,7 @@ import { schema } from '@/lib/db';
 import { getDb } from '@/lib/db';
 import { postEditorAlert } from '@/lib/slack';
 import { classifyArticle } from '@/lib/ai-classify';
+import { findSameStoryDuplicate } from '@/lib/same-story';
 
 import { inngest } from '../client';
 
@@ -192,6 +193,15 @@ async function persistArticles(
       } catch {
         // API hiba esetén megtartjuk (megbízható forrás), eredeti adatokkal
       }
+    }
+
+    // 3. Kereszt-forrásos "ugyanaz a sztori" szűrő — más forrásból, más URL-lel
+    // beérkező, de ugyanarról a valós eseményről szóló cikket nem szúrjuk be
+    // duplikátumként (pl. Telex/HVG/Magyar Hang mind ugyanazt a hírt írja meg).
+    const sameStory = await findSameStoryDuplicate({ headline: a.headline, excerpt: finalExcerpt, sourceId });
+    if (sameStory.duplicate) {
+      logger?.info?.(`same-story: skipped "${a.headline}" (matches ${sameStory.matchId}, via ${sameStory.via})`);
+      continue;
     }
 
     const inserted = await db
