@@ -252,15 +252,29 @@ button {
   flex-direction: column;
 }
 .hero-stat {
-  padding: 28px 0;
+  display: block;
+  padding: 28px 12px;
+  margin: 0 -12px;
   border-bottom: 1px solid var(--line);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s;
+}
+.hero-stat:hover {
+  background: var(--surface);
+}
+.hero-stat:hover .hero-stat-value,
+.hero-stat:hover .hero-stat-label {
+  color: var(--accent);
 }
 .hero-stat:first-child {
-  padding-top: 0;
+  padding-top: 14px;
+  margin-top: -14px;
 }
 .hero-stat:last-child {
   border-bottom: none;
-  padding-bottom: 0;
+  padding-bottom: 14px;
+  margin-bottom: -14px;
 }
 .hero-stat-value {
   font-family: 'Archivo', sans-serif;
@@ -269,12 +283,14 @@ button {
   letter-spacing: -0.03em;
   line-height: 1;
   color: var(--ink);
+  transition: color 0.15s;
 }
 .hero-stat-label {
   font-size: 13px;
   color: var(--muted);
   margin-top: 6px;
   line-height: 1.4;
+  transition: color 0.15s;
 }
 .hero-eyebrow {
   font-size: 12px;
@@ -5297,6 +5313,7 @@ button {
     gap: 0;
   }
   .hero-stat {
+    margin: 0;
     padding: 20px 16px 20px 0;
     border-bottom: 1px solid var(--line);
     border-right: 1px solid var(--line);

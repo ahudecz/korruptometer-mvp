@@ -353,22 +353,22 @@ export default async function HomePage() {
           </div>
 
           <div className="hero-stats">
-            <div className="hero-stat">
+            <Link href="/adatbazis" className="hero-stat">
               <div className="hero-stat-value"><FtValue n={totalDamage} mode="long" /></div>
               <div className="hero-stat-label">Dokumentált kár összesen</div>
-            </div>
-            <div className="hero-stat">
+            </Link>
+            <Link href="/birosagi-iteletek" className="hero-stat">
               <div className="hero-stat-value">{fmtNumber(pretrialCountDb)} fő</div>
               <div className="hero-stat-label">Előzetes letartóztatásban</div>
-            </div>
-            <div className="hero-stat">
+            </Link>
+            <Link href="/lemondasok" className="hero-stat">
               <div className="hero-stat-value">{fmtNumber(resignationCount)}</div>
               <div className="hero-stat-label">Lemondás és kirúgás április 12. óta</div>
-            </div>
-            <div className="hero-stat">
+            </Link>
+            <Link href="/megszunt" className="hero-stat">
               <div className="hero-stat-value">{fmtNumber(closureCount)}</div>
               <div className="hero-stat-label">Megszűnt médium április 12. óta</div>
-            </div>
+            </Link>
           </div>
         </div>
 
