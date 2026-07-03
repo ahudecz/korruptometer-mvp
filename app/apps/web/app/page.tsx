@@ -24,9 +24,8 @@ import { autoDisplayTitle, getCaseDisplayTitle } from './_home/case-detail-confi
 import { NewsCardImage } from './hirek/news-card-image';
 
 // Runtime functions pinned to dub1 (Dublin/eu-west-1) via vercel.json to
-// co-locate with the Supabase pooler — eliminates ~80ms cross-region latency
-// per round-trip that caused FUNCTION_INVOCATION_TIMEOUT (504) under cold start.
-// force-dynamic keeps all DB queries at request time (no build-time static gen).
+// co-locate with the Supabase pooler — eliminates cross-region latency that
+// caused FUNCTION_INVOCATION_TIMEOUT (504) under cold start.
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
@@ -116,46 +115,6 @@ const RESIGNATION_TYPE_COLOR: Record<string, string> = {
   'egyéb': '#888',
 };
 
-const CLOSURE_STATUS_CLASS: Record<string, string> = {
-  'megszűnés': 'closure-card--closed',
-  'leépítés': 'closure-card--fired',
-  'elmaradt esemény': 'closure-card--pending',
-};
-
-const CLOSURE_STAMP: Record<string, string> = {
-  'megszűnés': 'MEGSZŰNT',
-  'leépítés': 'LEÉPÍTÉS',
-  'elmaradt esemény': 'ELMARADT',
-};
-
-type ClosureCardData = { name: string; eventType: string; eventDate: Date; sourceUrl: string | null; sourceName: string | null };
-
-function MiniClosureCard({ name, eventType, eventDate, sourceUrl, sourceName }: ClosureCardData) {
-  const statusClass = CLOSURE_STATUS_CLASS[eventType] ?? 'closure-card--closed';
-  const inner = (
-    <>
-      <div className="closure-card-visual">
-        <span className="closure-card-mono">{name.slice(0, 2).toUpperCase()}</span>
-        <div className="closure-card-stamp">{CLOSURE_STAMP[eventType] ?? 'VÁLTOZÁS'}</div>
-      </div>
-      <div className="closure-card-name">{name}</div>
-      <div className="closure-card-type">{eventType}</div>
-      <div className="closure-card-foot">
-        <span className="lbl">Megszűnés dátuma</span>
-        <span className="val">{fmtShortDate(eventDate)}</span>
-      </div>
-      {sourceUrl && <span className="closure-card-link">{sourceName ?? 'Forrás'} →</span>}
-    </>
-  );
-  return sourceUrl ? (
-    <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className={`closure-card ${statusClass}`}>
-      {inner}
-    </a>
-  ) : (
-    <div className={`closure-card ${statusClass}`}>{inner}</div>
-  );
-}
-
 function fmtRelative(d: Date): string {
   const diff = Date.now() - d.getTime();
   const h = Math.floor(diff / 3_600_000);
@@ -211,8 +170,6 @@ export default async function HomePage() {
     breakingArticles,
     yearSpanRes,
     totalPrisonYearsRaw,
-    latestClosuresRaw,
-    pinnedClosuresRaw,
   ] = await Promise.all([
     db.query.kpiSnapshots.findFirst({ where: eq(schema.kpiSnapshots.id, 'singleton') }),
     db.select().from(schema.politicalResignations)
@@ -271,16 +228,6 @@ export default async function HomePage() {
       .from(schema.courtVerdicts)
       .where(sql`${schema.courtVerdicts.verdictType} != 'előzetesben'`)
       .then(r => r[0]?.s ?? 0),
-    db.select({ id: schema.mediaClosures.id, name: schema.mediaClosures.name, eventType: schema.mediaClosures.eventType, eventDate: schema.mediaClosures.eventDate, sourceUrl: schema.mediaClosures.sourceUrl, sourceName: schema.mediaClosures.sourceName })
-      .from(schema.mediaClosures)
-      .where(eq(schema.mediaClosures.reviewStatus, 'approved'))
-      .orderBy(desc(schema.mediaClosures.eventDate))
-      .limit(5),
-    db.select({ id: schema.mediaClosures.id, name: schema.mediaClosures.name, eventType: schema.mediaClosures.eventType, eventDate: schema.mediaClosures.eventDate, sourceUrl: schema.mediaClosures.sourceUrl, sourceName: schema.mediaClosures.sourceName })
-      .from(schema.mediaClosures)
-      .where(and(eq(schema.mediaClosures.reviewStatus, 'approved'), eq(schema.mediaClosures.pinned, true)))
-      .orderBy(desc(schema.mediaClosures.eventDate))
-      .limit(5),
   ]);
 
   // allArticlesRaw → per-topic szétválasztás JS-ben (nincs extra DB-hívás)
@@ -295,8 +242,6 @@ export default async function HomePage() {
 
   const resignationCount = resignationCountRaw;
   const closureCount = closureCountRaw;
-  const latestClosures = latestClosuresRaw;
-  const pinnedClosures = pinnedClosuresRaw;
   const latestRecoveries = latestRecoveriesDb;
   const totalRecoveredFt = BigInt(totalRecoveredRaw);
   const offences = offRows.map((o) => ({ code: o.code, label: o.label }));
