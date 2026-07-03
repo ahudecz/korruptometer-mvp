@@ -235,31 +235,12 @@ function fmtRelative(d: Date | string): string {
 }
 
 
-// Ideiglenes diagnosztika a 504-hez: minden Promise.all-ágat egyenként
-// időzítünk, hogy a runtime logban lássuk, melyik lekérdezés akad el.
-// TODO: eltávolítani, ha megvan a gyökérok.
-function timed<T>(label: string, p: Promise<T>): Promise<T> {
-  const start = Date.now();
-  return p
-    .then((v) => {
-      console.log(`[perf] ${label}: ${Date.now() - start}ms`);
-      return v;
-    })
-    .catch((e) => {
-      console.log(`[perf] ${label}: FAILED after ${Date.now() - start}ms — ${e?.message ?? e}`);
-      throw e;
-    });
-}
-
 export default async function HomePage() {
-  const dbStart = Date.now();
   const db = getDb();
-  console.log(`[perf] getDb(): ${Date.now() - dbStart}ms`);
 
   // ILIKE/cikk-query egybevonva egyetlen DB-scant jelent tag-szűrő kombinációval.
   // DB-scant jelent tag-szűrő + ILIKE ANY(ARRAY[...]) kombinációval.
   // Az eredményt JS-ben bontjuk szét témánként — 1 tábla-scan vs. 8.
-  const allStart = Date.now();
   const [
     snapshot,
     topResignations,
@@ -281,49 +262,48 @@ export default async function HomePage() {
     pinnedClosuresRaw,
     totalDamageRaw,
   ] = await Promise.all([
-    timed('kpiSnapshot', db.query.kpiSnapshots.findFirst({ where: eq(schema.kpiSnapshots.id, 'singleton') })),
-    timed('topResignations', db.select().from(schema.politicalResignations)
+    db.query.kpiSnapshots.findFirst({ where: eq(schema.kpiSnapshots.id, 'singleton') }),
+    db.select().from(schema.politicalResignations)
       .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
       .orderBy(desc(schema.politicalResignations.pinned), desc(schema.politicalResignations.resignationDate))
-      .limit(20)),
-    timed('allArticles(cached)', getCachedAllArticles()),
-    timed('resignationCount(cached)', getCachedResignationCount()),
-    timed('resignationsByType(cached)', getCachedResignationsByType()),
-    timed('closureCount(cached)', getCachedClosureCount()),
-    timed('pretrialCount', db.select({ c: count() }).from(schema.courtVerdicts)
+      .limit(20),
+    getCachedAllArticles(),
+    getCachedResignationCount(),
+    getCachedResignationsByType(),
+    getCachedClosureCount(),
+    db.select({ c: count() }).from(schema.courtVerdicts)
       .where(and(eq(schema.courtVerdicts.reviewStatus, 'approved'), eq(schema.courtVerdicts.verdictType, 'előzetesben')))
-      .then(r => r[0]?.c ?? 0)),
-    timed('eliteltCount', db.select({ c: count() }).from(schema.courtVerdicts)
+      .then(r => r[0]?.c ?? 0),
+    db.select({ c: count() }).from(schema.courtVerdicts)
       .where(sql`${schema.courtVerdicts.reviewStatus} = 'approved' AND ${schema.courtVerdicts.verdictType} NOT IN ('előzetesben', 'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve')`)
-      .then(r => r[0]?.c ?? 0)),
-    timed('pretrialByUgy', db.select({ ugyId: schema.courtVerdicts.personUgyId, n: sql<number>`count(*)::int` })
+      .then(r => r[0]?.c ?? 0),
+    db.select({ ugyId: schema.courtVerdicts.personUgyId, n: sql<number>`count(*)::int` })
       .from(schema.courtVerdicts)
       .where(and(eq(schema.courtVerdicts.reviewStatus, 'approved'), eq(schema.courtVerdicts.verdictType, 'előzetesben')))
       .groupBy(schema.courtVerdicts.personUgyId)
-      .orderBy(sql`count(*) desc`)),
-    timed('latestRecoveries', db.select().from(schema.assetRecoveries).orderBy(desc(schema.assetRecoveries.recoveredAt)).limit(5)),
-    timed('totalRecovered', db.select({ total: sql<string>`coalesce(sum("amountFt"::bigint), 0)::text` }).from(schema.assetRecoveries).then(r => r[0]?.total ?? '0')),
-    timed('latestResignations5', db.select().from(schema.politicalResignations)
+      .orderBy(sql`count(*) desc`),
+    db.select().from(schema.assetRecoveries).orderBy(desc(schema.assetRecoveries.recoveredAt)).limit(5),
+    db.select({ total: sql<string>`coalesce(sum("amountFt"::bigint), 0)::text` }).from(schema.assetRecoveries).then(r => r[0]?.total ?? '0'),
+    db.select().from(schema.politicalResignations)
       .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
       .orderBy(desc(schema.politicalResignations.resignationDate))
-      .limit(5)),
-    timed('scandalCatalog(cached)', getCachedScandalCatalog()),
-    timed('offenceTypes(cached)', getCachedOffenceTypes()),
-    timed('activeBreaking(cached)', getCachedActiveBreaking()),
-    timed('yearSpan(cached)', getCachedYearSpan()),
-    timed('latestClosures', db.select({ id: schema.mediaClosures.id, name: schema.mediaClosures.name, eventType: schema.mediaClosures.eventType, eventDate: schema.mediaClosures.eventDate, sourceUrl: schema.mediaClosures.sourceUrl, sourceName: schema.mediaClosures.sourceName })
+      .limit(5),
+    getCachedScandalCatalog(),
+    getCachedOffenceTypes(),
+    getCachedActiveBreaking(),
+    getCachedYearSpan(),
+    db.select({ id: schema.mediaClosures.id, name: schema.mediaClosures.name, eventType: schema.mediaClosures.eventType, eventDate: schema.mediaClosures.eventDate, sourceUrl: schema.mediaClosures.sourceUrl, sourceName: schema.mediaClosures.sourceName })
       .from(schema.mediaClosures)
       .where(eq(schema.mediaClosures.reviewStatus, 'approved'))
       .orderBy(desc(schema.mediaClosures.eventDate))
-      .limit(5)),
-    timed('pinnedClosures', db.select({ id: schema.mediaClosures.id, name: schema.mediaClosures.name, eventType: schema.mediaClosures.eventType, eventDate: schema.mediaClosures.eventDate, sourceUrl: schema.mediaClosures.sourceUrl, sourceName: schema.mediaClosures.sourceName })
+      .limit(5),
+    db.select({ id: schema.mediaClosures.id, name: schema.mediaClosures.name, eventType: schema.mediaClosures.eventType, eventDate: schema.mediaClosures.eventDate, sourceUrl: schema.mediaClosures.sourceUrl, sourceName: schema.mediaClosures.sourceName })
       .from(schema.mediaClosures)
       .where(and(eq(schema.mediaClosures.reviewStatus, 'approved'), eq(schema.mediaClosures.pinned, true)))
       .orderBy(desc(schema.mediaClosures.eventDate))
-      .limit(5)),
-    timed('totalDamage(cached)', getCachedTotalDamage()),
+      .limit(5),
+    getCachedTotalDamage(),
   ]);
-  console.log(`[perf] Promise.all TOTAL: ${Date.now() - allStart}ms`);
 
   // allArticlesRaw → per-topic szétválasztás JS-ben (nincs extra DB-hívás)
   const hl = (a: { headline: string }) => a.headline.toLowerCase();
