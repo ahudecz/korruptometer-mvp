@@ -8,6 +8,7 @@ import { GALERIA } from '../../_home/galeria-config';
 import { WATCH_LIST } from '../../_home/watchlist-config';
 import { getCaseOverride, cleanTitle, autoDisplayTitle, PERSON_PHOTOS } from '../../_home/case-detail-config';
 import { getCaseVideo } from '../../_home/case-video-registry';
+import { fetchYouTubeMeta } from '@/lib/youtube-meta';
 import { DamageFigure } from '../_components/damage-figure';
 import { CaseTimeline } from '../_components/case-timeline';
 import { DescBlock } from '../_components/desc-block';
@@ -148,14 +149,14 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
       ORDER BY n."publishedAt" DESC LIMIT 24
     `) as unknown as Promise<Article[]>,
     // InvestigationArticleLink → KmdbArticle; több cikket kérünk, hogy cím alapján rangsorolhassuk
-    db.execute(sql`
+    (db.execute(sql`
       SELECT DISTINCT k.news_id, k.title, k.source_url, k.newspaper, k.pub_time
       FROM "InvestigationArticleLink" l
       JOIN "Investigation" i ON i.id = l."investigationId"
       JOIN "KmdbArticle" k ON k.news_id::text = l."articleId" AND l."articleSource" = 'kmonitor'
       WHERE i."scandalKey" = ${id}
       ORDER BY k.pub_time DESC LIMIT 20
-    `) as unknown as Promise<KmdbRow[]>,
+    `) as unknown as Promise<KmdbRow[]>).catch(() => [] as KmdbRow[]),
     // Phase 2: if a curated K-Monitor filesKey exists, query by case (precise);
     // otherwise fall back to person-wide articles (broader but less specific).
     (db.execute(gen?.filesKey
@@ -215,6 +216,12 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
 
   // Per-person YouTube video (registry); override.video wins.
   const caseVideo = override?.video ? null : getCaseVideo(scandal.person);
+
+  // Auto-fetch title + channel from YouTube oEmbed (cached 24h server-side).
+  const [caseVideoMeta, overrideVideoMeta] = await Promise.all([
+    caseVideo ? fetchYouTubeMeta(caseVideo.videoId) : Promise.resolve(null),
+    override?.video ? fetchYouTubeMeta(override.video.id) : Promise.resolve(null),
+  ]);
 
   // Related news: curated (generated) set if present, otherwise the responsible
   // person's real K-Monitor articles. Plus any daily-scrape linked articles.
@@ -377,18 +384,36 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* ── Case video (registry, by primary person) ── */}
-        {caseVideo && (
+        {caseVideo && (caseVideo.linkOnly ? (
+          <a
+            href={`https://www.youtube.com/watch?v=${caseVideo.videoId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ugy-block-article-card"
+            style={{ margin: 0 }}
+          >
+            <div className="ugy-block-article-meta">
+              <span className="ugy-block-article-source">{caseVideoMeta?.channel ?? 'YouTube'}</span>
+            </div>
+            <div className="ugy-block-article-headline">
+              {caseVideoMeta?.title ?? 'Videó megtekintése'}
+            </div>
+            {caseVideo.summary && <p className="ugy-block-article-lead">{caseVideo.summary}</p>}
+            <span className="ugy-block-article-arrow">Videó megtekintése →</span>
+          </a>
+        ) : (
           <div className="person-video-section">
-            {(caseVideo.channel || caseVideo.title) && (
+            {((caseVideoMeta?.channel ?? caseVideo.channel) || (caseVideoMeta?.title ?? caseVideo.title) || caseVideo.summary) && (
               <div className="person-video-teaser">
-                {caseVideo.channel && <div className="person-video-teaser-channel">{caseVideo.channel}</div>}
-                {caseVideo.title && <h3 className="person-video-teaser-title">{caseVideo.title}</h3>}
+                {(caseVideoMeta?.channel ?? caseVideo.channel) && <div className="person-video-teaser-channel">{caseVideoMeta?.channel ?? caseVideo.channel}</div>}
+                {(caseVideoMeta?.title ?? caseVideo.title) && <h3 className="person-video-teaser-title">{caseVideoMeta?.title ?? caseVideo.title}</h3>}
+                {caseVideo.summary && <p className="person-video-teaser-desc">{caseVideo.summary}</p>}
               </div>
             )}
             <div className="person-video-wrap">
               <iframe
                 src={`https://www.youtube.com/embed/${caseVideo.videoId}`}
-                title={caseVideo.title ?? title}
+                title={caseVideoMeta?.title ?? caseVideo.title ?? title}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
@@ -399,7 +424,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
               </Link>
             )}
           </div>
-        )}
+        ))}
 
         {/* ── Procedural timeline (only when corroborated, not a default stub) ── */}
         {/* Eljárási állapot elrejtve: a pipeline proceduralStage-e megbízhatatlan,
@@ -414,15 +439,17 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
         {/* ── Curated videos ── */}
         {override?.video && (
           <div className="person-video-section">
-            <div className="person-video-teaser">
-              {override.video.channel && <div className="person-video-teaser-channel">{override.video.channel}</div>}
-              {override.video.title && <h3 className="person-video-teaser-title">{override.video.title}</h3>}
-              {override.video.summary && <p className="person-video-teaser-desc">{override.video.summary}</p>}
-            </div>
+            {((overrideVideoMeta?.channel ?? override.video.channel) || (overrideVideoMeta?.title ?? override.video.title) || override.video.summary) && (
+              <div className="person-video-teaser">
+                {(overrideVideoMeta?.channel ?? override.video.channel) && <div className="person-video-teaser-channel">{overrideVideoMeta?.channel ?? override.video.channel}</div>}
+                {(overrideVideoMeta?.title ?? override.video.title) && <h3 className="person-video-teaser-title">{overrideVideoMeta?.title ?? override.video.title}</h3>}
+                {override.video.summary && <p className="person-video-teaser-desc">{override.video.summary}</p>}
+              </div>
+            )}
             <div className="person-video-wrap">
               <iframe
                 src={`https://www.youtube.com/embed/${override.video.id}`}
-                title={override.video.title ?? title}
+                title={overrideVideoMeta?.title ?? override.video.title ?? title}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
