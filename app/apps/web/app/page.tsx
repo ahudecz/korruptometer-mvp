@@ -23,8 +23,13 @@ import { UGYEK } from './_home/ugyek-config';
 import { autoDisplayTitle, getCaseDisplayTitle } from './_home/case-detail-config';
 import { NewsCardImage } from './hirek/news-card-image';
 
-export const dynamic = 'force-dynamic';
-export const maxDuration = 30;
+// force-dynamic → ISR: homepage DB queries ran on every request against a
+// cross-region pooler (fra1 fn ↔ eu-west-1 Supabase, connection_limit=1).
+// Under cold start this exceeded the serverless limit → 504 GATEWAY_TIMEOUT.
+// ISR regenerates in the background every 120s; visitors always get a cached
+// render instantly. maxDuration covers the background regeneration invocation.
+export const revalidate = 120;
+export const maxDuration = 60;
 
 // Date-mentes lekérdezések cache-elve — nincs serialization probléma, warm kérésnél 0ms
 type ScandalRow = { id: string; name: string; person: string | null; institution: string | null; article_count: number; investigation_count: number; damage_huf: string; is_open: boolean };
