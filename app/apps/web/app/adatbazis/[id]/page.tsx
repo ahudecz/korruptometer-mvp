@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { sql } from 'drizzle-orm';
 
 import { fmtNumber } from '@korr/shared/format';
@@ -110,7 +110,12 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
     FROM "ScandalCatalog" sc WHERE sc.id = ${id} LIMIT 1
   `)) as unknown as ScandalHeader[];
   const scandal = headRes[0];
-  if (!scandal) notFound();
+  if (!scandal) {
+    // Accent-stripped fallback: "gattyán-györgy" → "gattyan-gyorgy"
+    const asciiId = id.normalize('NFD').replace(/[̀-ͯ]/g, '');
+    if (asciiId !== id) redirect(`/adatbazis/${encodeURIComponent(asciiId)}`);
+    notFound();
+  }
 
   const [damageRows, procRows, members, crossRefs, articles, kmdbArticles, linkedKmdbArticles] = await Promise.all([
     db.execute(sql`
