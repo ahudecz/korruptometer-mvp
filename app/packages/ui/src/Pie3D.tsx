@@ -10,6 +10,8 @@ type Pie3DProps = {
   palette?: string[];
   ariaLabel?: string;
   className?: string;
+  /** Render a side legend (color dot + name + %) instead of on-chart text labels. */
+  legend?: boolean;
 };
 
 const DEFAULT_PALETTE = ['#e31937', '#171a20', '#5c5e62', '#9b9da1', '#cccccc', '#e6e6e6'];
@@ -19,6 +21,10 @@ const CY = 130;
 const RX = 150;
 const RY = 48;
 const H = 30;
+// Tight crop around the actual pie geometry (rim top 82, wall bottom 208,
+// shadow ellipse x:[124,436]) + 10px padding — no on-chart labels anymore,
+// so there's no need for the old wide margins that used to fit outside-labels.
+const VIEW_BOX = '114 72 332 146';
 
 function ept(angle: number, rx = RX, ry = RY, cx = CX, cy = CY) {
   const r = ((angle - 90) * Math.PI) / 180;
@@ -31,14 +37,6 @@ function darken(hex: string, amt: number): string {
   const g = Math.max(0, ((c >> 8) & 0xff) - amt);
   const b = Math.max(0, (c & 0xff) - amt);
   return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
-}
-
-function readableText(hex: string): string {
-  const c = parseInt(hex.slice(1), 16);
-  const r = c >> 16;
-  const g = (c >> 8) & 0xff;
-  const b = c & 0xff;
-  return 0.299 * r + 0.587 * g + 0.114 * b > 160 ? '#171a20' : '#ffffff';
 }
 
 function fmtPct(n: number): string {
@@ -63,12 +61,13 @@ export function Pie3D({
   palette = DEFAULT_PALETTE,
   ariaLabel = 'Szektorbontás',
   className,
+  legend = false,
 }: Pie3DProps) {
   const total = slices.reduce((s, d) => s + Math.max(0, d.value), 0);
   if (total === 0) {
     return (
       <svg
-        viewBox="0 52 560 208"
+        viewBox={VIEW_BOX}
         className={className}
         role="img"
         aria-label={ariaLabel}
@@ -93,55 +92,10 @@ export function Pie3D({
     return s;
   });
 
-  // Outside-label de-overlap (mirrors the mockup logic)
-  type Out = {
-    s: PreparedSlice;
-    sx: number;
-    sy: number;
-    x: number;
-    y: number;
-    isRight: boolean;
-  };
-  const outs: Out[] = prepared
-    .filter((s) => s.pct >= 2.5 && s.pct < 8)
-    .map((s) => {
-      const isFront = s.mid > 90 && s.mid < 270;
-      const yShift = isFront ? H : 0;
-      const sliceEdge = ept(s.mid);
-      const labelPos = ept(s.mid, RX + 22, RY + 14);
-      return {
-        s,
-        sx: sliceEdge.x,
-        sy: sliceEdge.y + yShift,
-        x: labelPos.x,
-        y: labelPos.y + yShift / 2,
-        isRight: labelPos.x >= CX,
-      };
-    });
-
-  const minGap = 18;
-  const YMIN = 58;
-  const YMAX = 244;
-  for (const side of [true, false]) {
-    const grp = outs.filter((l) => l.isRight === side);
-    const top = grp.filter((l) => l.y < CY).sort((a, b) => b.y - a.y);
-    const bot = grp.filter((l) => l.y >= CY).sort((a, b) => a.y - b.y);
-    for (let i = 1; i < top.length; i++) {
-      const prev = top[i - 1]!;
-      const cur = top[i]!;
-      if (prev.y - cur.y < minGap) cur.y = Math.max(YMIN, prev.y - minGap);
-    }
-    for (let i = 1; i < bot.length; i++) {
-      const prev = bot[i - 1]!;
-      const cur = bot[i]!;
-      if (cur.y - prev.y < minGap) cur.y = Math.min(YMAX, prev.y + minGap);
-    }
-  }
-
-  return (
+  const chart = (
     <svg
-      viewBox="0 52 560 208"
-      className={className}
+      viewBox={VIEW_BOX}
+      className={legend ? 'pie3d-svg' : className}
       role="img"
       aria-label={ariaLabel}
       preserveAspectRatio="xMidYMid meet"
@@ -189,81 +143,31 @@ export function Pie3D({
               fill={s.color}
               stroke="#ffffff"
               strokeWidth={1.5}
-            />
-          );
-        })}
-      </g>
-
-      {/* inside labels (slices ≥ 8%) */}
-      <g>
-        {prepared
-          .filter((s) => s.pct >= 8)
-          .map((s, i) => {
-            const lp = ept(s.mid, RX * 0.6, RY * 0.6);
-            const isFront = s.mid > 90 && s.mid < 270;
-            const yOff = isFront ? H * 0.15 : 0;
-            const fill = readableText(s.color);
-            return (
-              <g key={`inside-${i}`}>
-                <text
-                  x={lp.x}
-                  y={lp.y - 4 + yOff}
-                  textAnchor="middle"
-                  className="slice-name"
-                  fill={fill}
-                >
-                  {s.name}
-                </text>
-                <text
-                  x={lp.x}
-                  y={lp.y + 14 + yOff}
-                  textAnchor="middle"
-                  className="slice-pct"
-                  fill={fill}
-                >
-                  {fmtPct(s.pct)}
-                </text>
-              </g>
-            );
-          })}
-      </g>
-
-      {/* outside labels (2.5% ≤ slice < 8%) — elbow connector */}
-      <g>
-        {outs.map((l, i) => {
-          // Elbow: slice edge → short radial arm → horizontal to label
-          const ARM = 10;
-          const ex = l.isRight ? l.sx + ARM : l.sx - ARM;
-          const tx = l.isRight ? l.x + 6 : l.x - 6;
-          return (
-            <g key={`out-${i}`}>
-              <path
-                d={`M ${l.sx} ${l.sy} L ${ex} ${l.y} L ${l.x} ${l.y}`}
-                stroke={l.s.color}
-                strokeWidth={1}
-                fill="none"
-              />
-              <circle cx={l.x} cy={l.y} r={2.5} fill={l.s.color} />
-              <text
-                x={tx}
-                y={l.y - 1}
-                textAnchor={l.isRight ? 'start' : 'end'}
-                className="slice-outside"
-              >
-                {l.s.name}
-              </text>
-              <text
-                x={tx}
-                y={l.y + 11}
-                textAnchor={l.isRight ? 'start' : 'end'}
-                className="slice-outside-pct"
-              >
-                {fmtPct(l.s.pct)}
-              </text>
-            </g>
+            >
+              <title>{`${s.name}: ${fmtPct(s.pct)}`}</title>
+            </path>
           );
         })}
       </g>
     </svg>
+  );
+
+  if (!legend) {
+    return chart;
+  }
+
+  return (
+    <div className={className}>
+      {chart}
+      <ul className="pie3d-legend">
+        {prepared.map((s, i) => (
+          <li key={`legend-${i}`}>
+            <span className="pie3d-legend-dot" style={{ background: s.color }} />
+            <span className="pie3d-legend-name">{s.name}</span>
+            <span className="pie3d-legend-pct">{fmtPct(s.pct)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

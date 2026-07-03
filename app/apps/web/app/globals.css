@@ -384,46 +384,74 @@ button {
   color: var(--muted);
   margin-bottom: 32px;
 }
+.stat-unit-link {
+  color: inherit;
+  text-decoration: none;
+}
+.stat-unit-link:hover {
+  color: var(--accent);
+}
 .donut {
-  width: 100%;
-  max-width: 600px;
-  height: auto;
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 24px;
   margin: 28px auto 0;
+}
+.donut .pie3d-svg {
+  flex: 2 1 300px;
+  min-width: 0;
+  max-width: 480px;
+  height: auto;
   overflow: visible;
 }
-.donut path {
+.donut .pie3d-svg path {
   transition: opacity 0.2s;
   cursor: pointer;
 }
-.donut g.tops path:hover {
+.donut .pie3d-svg g.tops path:hover {
   opacity: 0.78;
 }
-.donut .slice-name {
+.pie3d-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1 0 170px;
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.pie3d-legend li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.pie3d-legend-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 4px;
+  border-radius: 50%;
+}
+.pie3d-legend-name {
   font-family: 'Archivo', sans-serif;
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0;
+  line-height: 1.35;
+  color: var(--ink);
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
-.donut .slice-pct {
+.pie3d-legend-pct {
   font-family: 'Archivo', sans-serif;
-  font-size: 17px;
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: -0.015em;
-}
-.donut .slice-outside {
-  font-family: 'Archivo', sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.005em;
-  fill: var(--ink);
-}
-.donut .slice-outside-pct {
-  font-family: 'Archivo', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0;
-  fill: var(--ink);
+  line-height: 1.35;
+  color: var(--muted);
+  flex: none;
+  white-space: nowrap;
 }
 
 /* ============ TICKER ============ */
@@ -1544,6 +1572,8 @@ button {
   line-height: 1;
   margin-bottom: 4px;
   color: #fff;
+  hyphens: auto;
+  overflow-wrap: break-word;
 }
 .rogue-pos {
   font-size: 11px;
@@ -3387,6 +3417,31 @@ button {
 .person-more-card:hover {
   opacity: 0.75;
 }
+.person-more-card--gone .person-more-mug {
+  border-color: #e31937;
+  border-width: 4px;
+}
+.person-more-card--gone .person-more-img {
+  filter: grayscale(100%);
+}
+.person-more-card--gone .person-more-name,
+.person-more-card--gone .person-more-sub {
+  opacity: 0.6;
+}
+.person-more-gone-badge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  padding: 4px 6px;
+  text-transform: uppercase;
+  background: rgba(227, 25, 55, 0.92);
+  color: #fff;
+}
 
 .person-more-mug {
   width: 100%;
@@ -3840,6 +3895,8 @@ button {
   font-size: 14px;
   color: var(--ink);
   line-height: 1.2;
+  hyphens: auto;
+  overflow-wrap: break-word;
 }
 .media-card.mc-closed .media-card-name { color: #888; }
 .media-card.mc-pending-closed .media-card-name { color: #7a3500; }
@@ -3881,6 +3938,165 @@ button {
   font-size: 11px;
   color: #999;
   line-height: 1.4;
+}
+
+/* ─── Megszűnt-e teaser (nyitóoldal, stat-grid alatt) ───────────────── */
+.closure-teaser-section {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 56px 40px 96px;
+}
+.closure-teaser-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-bottom: 28px;
+}
+.closure-teaser-title {
+  font-family: 'Archivo Narrow', 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.closure-teaser-count {
+  font-size: 15px;
+  color: var(--muted);
+}
+.closure-teaser-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+.closure-teaser-group {
+  min-width: 0;
+}
+.closure-teaser-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.closure-teaser-label-sub {
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+  opacity: 0.75;
+}
+
+/* Closure cards — sized/structured to match the .rogue (Galéria) cards:
+   same lbl/val foot block; visual block kept short (monogram, not a
+   photo) with the status stamp confined to it via overflow:hidden. */
+.closure-card-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+.closure-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 16px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.18s, transform 0.18s;
+}
+.closure-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+  transform: translateY(-2px);
+}
+.closure-card-visual {
+  position: relative;
+  height: 84px;
+  background: #f4f4f4;
+  border: 1px solid var(--line);
+  overflow: hidden;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.closure-card-mono {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  color: rgba(23,26,32,0.18);
+}
+/* Diagonal stamp, clipped to the (short) visual block only via its
+   overflow:hidden — not the whole card, so it never covers the name. */
+.closure-card-stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-14deg);
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  padding: 3px 9px;
+  border: 2px solid currentColor;
+  text-transform: uppercase;
+  pointer-events: none;
+  white-space: nowrap;
+  background: rgba(255,255,255,0.55);
+}
+.closure-card--closed .closure-card-stamp { color: #e31937; }
+.closure-card--fired .closure-card-stamp { color: #e8a000; }
+.closure-card--pending .closure-card-stamp { color: #e86000; }
+.closure-card-name {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  margin-bottom: 3px;
+  color: var(--ink);
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+.closure-card-type {
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 10px;
+  text-transform: capitalize;
+}
+.closure-card-foot {
+  margin-top: auto;
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.closure-card-foot .lbl {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.closure-card-foot .val {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.closure-card-link {
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.closure-card:hover .closure-card-link {
+  text-decoration: underline;
 }
 
 /* KPI–03 visszaszerzett vagyon ledger */
@@ -5113,7 +5329,17 @@ button {
     overflow: hidden;
   }
   .donut {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+  }
+  .donut .pie3d-svg {
     overflow: hidden;
+    max-width: 100%;
+  }
+  .pie3d-legend {
+    min-width: 0;
+    gap: 10px;
   }
   .news-grid {
     grid-template-columns: 1fr;

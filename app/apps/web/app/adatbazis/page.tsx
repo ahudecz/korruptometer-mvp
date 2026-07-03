@@ -5,6 +5,7 @@ import { fmtNumber } from '@korr/shared/format';
 import { FtValue } from '../_home/ft-value';
 import { CaseRow } from './_components/case-row';
 import { autoDisplayTitle, getCaseDisplayTitle } from '../_home/case-detail-config';
+import { CrossUgyek, CrossLemondosok, CrossGaleria, CrossMegszunt, CrossFelszolitottak } from '../_home/cross-promo';
 
 import { getDb } from '@/lib/db';
 
@@ -124,6 +125,7 @@ export default async function AdatbazisPage({
   const showRange = off > 0 || hasMore;
 
   return (
+    <>
     <section className="section" id="database">
       <div className="section-head">
         <div className="section-num">03 / Adatbázis</div>
@@ -256,5 +258,16 @@ export default async function AdatbazisPage({
         </div>
       )}
     </section>
+
+      <div className="cross-promo-section">
+        <div className="cross-promo-section-inner">
+          <CrossUgyek />
+          <CrossLemondosok />
+          <CrossGaleria />
+          <CrossMegszunt />
+          <CrossFelszolitottak />
+        </div>
+      </div>
+    </>
   );
 }

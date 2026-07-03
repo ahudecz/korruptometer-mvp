@@ -5,9 +5,9 @@ import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } fro
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Ügyek',
-  description: 'Dokumentált korrupciós ügyek kereshető adatbázisa — összeg, szektor, státusz és régió szerint szűrhető.',
-  openGraph: { title: 'Ügyek — Kegyencjárat', description: 'Dokumentált korrupciós ügyek kereshető adatbázisa.' },
+  title: 'Kiemelt ügyek',
+  description: 'A legdurvább, folyamatosan frissülő korrupciós ügyek szerkesztőségi válogatása — a teljes, kereshető archívumhoz lásd az Adatbázist.',
+  openGraph: { title: 'Kiemelt ügyek — Kegyencjárat', description: 'A legdurvább, folyamatosan frissülő korrupciós ügyek szerkesztőségi válogatása.' },
 };
 
 export default function UgyekPage() {

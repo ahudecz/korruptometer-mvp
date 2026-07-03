@@ -1343,6 +1343,7 @@ export const mediaClosures = pgTable(
     sourceUrl: text('sourceUrl'),
     sourceName: text('sourceName'),
     reviewStatus: reviewStatusEnum('reviewStatus').notNull().default('approved'),
+    pinned: boolean('pinned').notNull().default(false),
     createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
   },

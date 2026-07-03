@@ -144,6 +144,11 @@ function watchImgSrc(url: string) {
   return `/api/img-proxy?url=${encodeURIComponent(url)}`;
 }
 
+const GONE_LABEL: Record<string, string> = {
+  removed: 'ELTÁVOLÍTVA',
+  resigned: 'LEMONDOTT',
+};
+
 export function CrossFelszolitottak() {
   return (
     <div className="cross-promo">
@@ -152,26 +157,32 @@ export function CrossFelszolitottak() {
         Magyar Péter nyolc NER-intézményvezető lemondását követeli — kövesd nyomon, ki ment és ki maradt.
       </p>
       <div className="person-more-grid cross-watch-grid">
-        {WATCH_LIST.map(p => (
-          <Link key={p.id} href={`/lemondasok/${p.id}`} className="person-more-card">
-            <div className="person-more-mug r-loose">
-              {p.photoUrl ? (
-                <img
-                  src={watchImgSrc(p.photoUrl)}
-                  alt={p.name}
-                  className="person-more-img"
-                  style={p.objectPosition ? { objectPosition: p.objectPosition } : undefined}
-                />
-              ) : (
-                <div className="person-photo-placeholder">
-                  <span>{p.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</span>
-                </div>
-              )}
-            </div>
-            <div className="person-more-name">{p.name}</div>
-            <div className="person-more-sub">{p.institution}</div>
-          </Link>
-        ))}
+        {WATCH_LIST.map(p => {
+          const isGone = p.status !== 'active';
+          return (
+            <Link key={p.id} href={`/lemondasok/${p.id}`} className={`person-more-card${isGone ? ' person-more-card--gone' : ''}`}>
+              <div className="person-more-mug r-loose">
+                {p.photoUrl ? (
+                  <img
+                    src={watchImgSrc(p.photoUrl)}
+                    alt={p.name}
+                    className="person-more-img"
+                    style={p.objectPosition ? { objectPosition: p.objectPosition } : undefined}
+                  />
+                ) : (
+                  <div className="person-photo-placeholder">
+                    <span>{p.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</span>
+                  </div>
+                )}
+                {isGone && (
+                  <div className="person-more-gone-badge">{GONE_LABEL[p.status] ?? 'ELTÁVOLÍTVA'}</div>
+                )}
+              </div>
+              <div className="person-more-name">{p.name}</div>
+              <div className="person-more-sub">{p.institution}</div>
+            </Link>
+          );
+        })}
       </div>
       <Link href="/lemondasok" className="cross-promo-cta">Lemondásra felszólítottak →</Link>
     </div>

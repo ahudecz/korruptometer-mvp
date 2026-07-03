@@ -92,6 +92,81 @@ const getCachedYearSpan = unstable_cache(
   { revalidate: 3600 },
 );
 
+type CachedArticle = {
+  id: string; headline: string; excerpt: string | null; sourceUrl: string; publishedAt: string;
+  tag: string | null; featured: boolean | null; imageUrl: string | null;
+  isBreakingCandidate: boolean | null; breakingOverride: boolean | null; sourceName: string | null;
+};
+const getCachedAllArticles = unstable_cache(
+  async (): Promise<CachedArticle[]> => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { desc: d, eq: eqF, or: orF, sql: s } = await import('drizzle-orm');
+    const db = getDb();
+    const rows = await db.select({
+      id: schema.newsArticles.id,
+      headline: schema.newsArticles.headline,
+      excerpt: schema.newsArticles.excerpt,
+      sourceUrl: schema.newsArticles.sourceUrl,
+      publishedAt: schema.newsArticles.publishedAt,
+      tag: schema.newsArticles.tag,
+      featured: schema.newsArticles.featured,
+      imageUrl: schema.newsArticles.imageUrl,
+      isBreakingCandidate: schema.newsArticles.isBreakingCandidate,
+      breakingOverride: schema.newsArticles.breakingOverride,
+      sourceName: schema.sources.name,
+    })
+    .from(schema.newsArticles)
+    .leftJoin(schema.sources, eqF(schema.sources.id, schema.newsArticles.sourceId))
+    .where(orF(
+      eqF(schema.newsArticles.featured, true),
+      eqF(schema.newsArticles.breakingOverride, true),
+      eqF(schema.newsArticles.isBreakingCandidate, true),
+      s`${schema.newsArticles.tag} IN ('NKA', 'MNB', 'volvo-gate')`,
+      s`${schema.newsArticles.headline} ILIKE ANY(ARRAY['%hatvanpuszta%','%aranykonvoj%','%volvo gate%','%volvo-gate%','%bánki erik%','%tüke busz%','%lélegeztetőgép%','%fourcardinal%','%parkfenntartás%','%parkfenntartá%','%Őrsi Gergely%','%Puskás Péter%','%KESMA%','%Mediaworks%','%batida%','%Mészáros Lőrinc%','%Rogán%','%Matolcsy%','%Tiborcz%','%Balásy%','%Lázár János%','%volvo%gate%','%pesti srácok%','%világgazdaság%','%parkfenntart%','%Mandiner%','%NKA%','%MNB%'])`,
+    ))
+    .orderBy(d(schema.newsArticles.publishedAt))
+    .limit(100);
+    return rows.map(r => ({ ...r, publishedAt: r.publishedAt.toISOString() }));
+  },
+  ['all-articles-raw'],
+  { revalidate: 60 },
+);
+const getCachedActiveBreaking = unstable_cache(
+  async () => {
+    const { getActiveBreaking } = await import('@/lib/breaking');
+    return getActiveBreaking();
+  },
+  ['active-breaking'],
+  { revalidate: 60 },
+);
+const getCachedCourtStats = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { count: cnt, and: andF, eq: eqF, sql: s } = await import('drizzle-orm');
+    const db = getDb();
+    const [pretrialCount, convictedCount, pretrialByUgy, prisonYears] = await Promise.all([
+      db.select({ c: cnt() }).from(schema.courtVerdicts)
+        .where(andF(eqF(schema.courtVerdicts.reviewStatus, 'approved'), eqF(schema.courtVerdicts.verdictType, 'előzetesben')))
+        .then(r => r[0]?.c ?? 0),
+      db.select({ c: cnt() }).from(schema.courtVerdicts)
+        .where(s`${schema.courtVerdicts.reviewStatus} = 'approved' AND ${schema.courtVerdicts.verdictType} NOT IN ('előzetesben', 'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve')`)
+        .then(r => r[0]?.c ?? 0),
+      db.select({ ugyId: schema.courtVerdicts.personUgyId, n: s<number>`count(*)::int` })
+        .from(schema.courtVerdicts)
+        .where(andF(eqF(schema.courtVerdicts.reviewStatus, 'approved'), eqF(schema.courtVerdicts.verdictType, 'előzetesben')))
+        .groupBy(schema.courtVerdicts.personUgyId)
+        .orderBy(s`count(*) desc`),
+      db.select({ s: s<number>`coalesce(sum(${schema.courtVerdicts.sentenceYears}), 0)::int` })
+        .from(schema.courtVerdicts)
+        .where(s`${schema.courtVerdicts.verdictType} != 'előzetesben'`)
+        .then(r => r[0]?.s ?? 0),
+    ]);
+    return { pretrialCount, convictedCount, pretrialByUgy, prisonYears };
+  },
+  ['court-stats'],
+  { revalidate: 300 },
+);
+
 const PALETTE_MONEY = ['#e31937', '#171a20', '#5c5e62', '#9b9da1', '#cccccc', '#e6e6e6'];
 
 
@@ -115,8 +190,8 @@ const RESIGNATION_TYPE_COLOR: Record<string, string> = {
   'egyéb': '#888',
 };
 
-function fmtRelative(d: Date): string {
-  const diff = Date.now() - d.getTime();
+function fmtRelative(d: Date | string): string {
+  const diff = Date.now() - new Date(d).getTime();
   const h = Math.floor(diff / 3_600_000);
   if (h < 1) return 'most';
   if (h < 24) return `${h} órája`;
@@ -176,30 +251,7 @@ export default async function HomePage() {
       .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
       .orderBy(desc(schema.politicalResignations.pinned), desc(schema.politicalResignations.resignationDate))
       .limit(20),
-    db.select({
-        id: schema.newsArticles.id,
-        headline: schema.newsArticles.headline,
-        excerpt: schema.newsArticles.excerpt,
-        sourceUrl: schema.newsArticles.sourceUrl,
-        publishedAt: schema.newsArticles.publishedAt,
-        tag: schema.newsArticles.tag,
-        featured: schema.newsArticles.featured,
-        imageUrl: schema.newsArticles.imageUrl,
-        isBreakingCandidate: schema.newsArticles.isBreakingCandidate,
-        breakingOverride: schema.newsArticles.breakingOverride,
-        sourceName: schema.sources.name,
-      })
-      .from(schema.newsArticles)
-      .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId))
-      .where(or(
-        eq(schema.newsArticles.featured, true),
-        eq(schema.newsArticles.breakingOverride, true),
-        eq(schema.newsArticles.isBreakingCandidate, true),
-        sql`${schema.newsArticles.tag} IN ('NKA', 'MNB', 'volvo-gate')`,
-        sql`${schema.newsArticles.headline} ILIKE ANY(ARRAY['%hatvanpuszta%','%aranykonvoj%','%volvo gate%','%volvo-gate%','%bánki erik%','%tüke busz%','%lélegeztetőgép%','%fourcardinal%','%parkfenntartás%','%parkfenntartá%','%Őrsi Gergely%','%Puskás Péter%','%KESMA%','%Mediaworks%','%batida%','%Mészáros Lőrinc%','%Rogán%','%Matolcsy%','%Tiborcz%','%Balásy%','%Lázár János%','%volvo%gate%','%pesti srácok%','%világgazdaság%','%parkfenntart%','%Mandiner%','%NKA%','%MNB%'])`,
-      ))
-      .orderBy(desc(schema.newsArticles.publishedAt))
-      .limit(100),
+    getCachedAllArticles(),
     getCachedResignationCount(),
     getCachedResignationsByType(),
     getCachedClosureCount(),
@@ -222,7 +274,7 @@ export default async function HomePage() {
       .limit(5),
     getCachedScandalCatalog(),
     getCachedOffenceTypes(),
-    getActiveBreaking(),
+    getCachedActiveBreaking(),
     getCachedYearSpan(),
     db.select({ s: sql<number>`coalesce(sum(${schema.courtVerdicts.sentenceYears}), 0)::int` })
       .from(schema.courtVerdicts)
@@ -279,7 +331,7 @@ export default async function HomePage() {
 
 
   const updatedAt = snapshot?.computedAt ?? new Date();
-  const featuredBreaking = recentArticles.filter(a => a.isBreaking).sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime())[0] ?? null;
+  const featuredBreaking = recentArticles.filter(a => a.isBreaking).sort((a, b) => b.publishedAt > a.publishedAt ? 1 : -1)[0] ?? null;
   const featuredNormal = recentArticles.find(a => a.featured) ?? recentArticles[0];
   const featured = featuredBreaking ?? featuredNormal;
   const restArticles = recentArticles.filter((a) => a.id !== featured?.id).slice(0, 4);
@@ -586,7 +638,7 @@ export default async function HomePage() {
             ],
             articleTag: 'NKA',
             moreUrl: '/ugyek/nka-botrany',
-            articles: nkaArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
+            articles: nkaArticles.map(a => ({ ...a })),
           },
           {
             id: 'parkfenntartas',
@@ -608,7 +660,7 @@ export default async function HomePage() {
               { icon: '🏙️', label: 'Területek', value: 'II., III., VIII., XIII., XIV. ker. + vidéki önkormányzatok' },
             ],
             moreUrl: '/ugyek/parkfenntartas',
-            articles: parkArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
+            articles: parkArticles.map(a => ({ ...a })),
           },
           {
             id: 'lelegeztetogep',
@@ -623,7 +675,7 @@ export default async function HomePage() {
               { icon: '⚖️', label: 'Státusz', value: 'Nincs büntetőeljárás — KEHI és NAV "nem talált szabálytalanságot"' },
             ],
             moreUrl: '/ugyek/lelegeztetogep',
-            articles: lelegArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
+            articles: lelegArticles.map(a => ({ ...a })),
           },
           {
             id: 'hatvanpuszta',
@@ -638,7 +690,7 @@ export default async function HomePage() {
               { icon: '⚖️', label: 'Státusz', value: 'Nincs ismert büntetőeljárás' },
             ],
             moreUrl: '/ugyek/hatvanpuszta',
-            articles: hatvanArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
+            articles: hatvanArticles.map(a => ({ ...a })),
           },
           {
             id: 'aranykonvoj',
@@ -653,7 +705,7 @@ export default async function HomePage() {
               { icon: '👤', label: 'Kapcsolat', value: 'Orbán-körhöz köthető személyek érintettségét veti fel az ügyvéd' },
             ],
             moreUrl: '/ugyek/aranykonvoj',
-            articles: aranyArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
+            articles: aranyArticles.map(a => ({ ...a })),
           },
           {
             id: 'mnb-botrany',
@@ -668,7 +720,7 @@ export default async function HomePage() {
               { icon: '⚖️', label: 'Nyomozás', value: 'Ügyészség 2026-ban indított nyomozást — hűtlen kezelés gyanúja' },
             ],
             moreUrl: '/ugyek/mnb-botrany',
-            articles: mnbArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
+            articles: mnbArticles.map(a => ({ ...a })),
           },
           {
             id: 'zsolt-bacsi',
@@ -698,7 +750,7 @@ export default async function HomePage() {
               { icon: '👤', label: 'Érintett', value: 'Bánki Erik — fideszes képviselő · tanúként harmadszor hallgatták meg 2025-ben' },
             ],
             moreUrl: '/ugyek/pecsi-volvo-gate',
-            articles: volvoArticles.map(a => ({ ...a, publishedAt: a.publishedAt.toISOString() })),
+            articles: volvoArticles.map(a => ({ ...a })),
           },
         ];
         return <BigCasesSection cases={bigCases} />;

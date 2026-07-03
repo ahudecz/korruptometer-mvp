@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 
 const NAV_LINKS = [
   { href: '/galeria', label: 'Galéria' },
-  { href: '/ugyek', label: 'Ügyek' },
+  { href: '/ugyek', label: 'Kiemelt ügyek' },
   { href: '/adatbazis', label: 'Adatbázis' },
   { href: '/hirek', label: 'Hírek' },
   { href: '/lemondasok', label: 'Lemondott-e?' },

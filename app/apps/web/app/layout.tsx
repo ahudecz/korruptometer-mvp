@@ -54,7 +54,7 @@ export default function RootLayout({
                 <Link href="/galeria">Galéria</Link>
               </li>
               <li>
-                <Link href="/ugyek">Ügyek</Link>
+                <Link href="/ugyek">Kiemelt ügyek</Link>
               </li>
               <li>
                 <Link href="/adatbazis">Adatbázis</Link>
