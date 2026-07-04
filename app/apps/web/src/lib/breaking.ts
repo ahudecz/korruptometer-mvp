@@ -1,4 +1,5 @@
 import { and, desc, gte, or, eq } from 'drizzle-orm';
+import { isBreaking } from '@korr/scrapers';
 import { getDb, schema } from './db';
 
 export type BreakingArticle = {
@@ -15,7 +16,7 @@ export async function getActiveBreaking(): Promise<BreakingArticle[]> {
   try {
     const db = getDb();
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    return await db
+    const rows = await db
       .select({
         id: schema.newsArticles.id,
         headline: schema.newsArticles.headline,
@@ -24,6 +25,7 @@ export async function getActiveBreaking(): Promise<BreakingArticle[]> {
         publishedAt: schema.newsArticles.publishedAt,
         relatedCaseId: schema.newsArticles.relatedCaseId,
         tag: schema.newsArticles.tag,
+        breakingOverride: schema.newsArticles.breakingOverride,
       })
       .from(schema.newsArticles)
       .where(
@@ -36,7 +38,16 @@ export async function getActiveBreaking(): Promise<BreakingArticle[]> {
         ),
       )
       .orderBy(desc(schema.newsArticles.publishedAt))
-      .limit(10);
+      .limit(50);
+
+    // breakingOverride = szerkesztői döntés → mindig megjelenik.
+    // isBreakingCandidate = automatikus jelölés → újraellenőrizzük a jelenlegi
+    // logikával, hogy kiszűrjük a régi, hibás DB-bejegyzéseket (pl. Newscast
+    // körkép, ahol az excerpt más hírekből véletlenül tartalmaz trigger-szót
+    // + figyelt nevet, de a CÍMBEN nem szerepel a figyelt entitás).
+    return rows
+      .filter(r => r.breakingOverride === true || isBreaking(r.headline, r.excerpt ?? ''))
+      .map(({ breakingOverride: _, ...rest }) => rest);
   } catch {
     return [];
   }
