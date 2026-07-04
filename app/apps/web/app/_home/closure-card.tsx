@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { findOutletLogo, outletLogoSrc } from './media-config';
 
 const HU_MONTHS_SHORT = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
@@ -34,6 +35,9 @@ export function MiniClosureCard({ name, eventType, eventDate, sourceUrl, sourceN
   const statusClass = CLOSURE_STATUS_CLASS[eventType] ?? 'closure-card--closed';
   const outlet = findOutletLogo(name);
   const logo = outlet ? outletLogoSrc(outlet) : null;
+  const imgStyle: React.CSSProperties = outlet?.logoScale
+    ? { transform: `scale(${outlet.logoScale})`, objectFit: 'cover', padding: 0 }
+    : {};
   const inner = (
     <>
       <div className={`closure-card-visual${outlet?.logoBgWhite ? ' bg-white' : ''}`}>
@@ -42,6 +46,7 @@ export function MiniClosureCard({ name, eventType, eventDate, sourceUrl, sourceN
             src={logo}
             alt={name}
             loading="lazy"
+            style={imgStyle}
             onError={(e) => {
               const el = e.currentTarget;
               el.style.display = 'none';

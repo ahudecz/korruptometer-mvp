@@ -455,6 +455,7 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     logoUrl: 'https://mediaworks.hu/wp-content/uploads/2021/04/2107588origologo.png',
     logoCredit: 'Mediaworks',
     logoBgWhite: true,
+    logoScale: 1,
   },
   {
     id: 'magyarnemzet-online',
@@ -871,6 +872,7 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     sourceUrl: 'https://444.hu/2026/07/03/felfuggeszti-mukodeset-lazar-janos-revolverlapja-a-promenad24',
     sourceName: '444.hu',
     logoUrl: '/images/media/promenad24.jpg',
+    logoScale: 1,
   },
   {
     id: 'hir-tv',
