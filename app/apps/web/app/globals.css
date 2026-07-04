@@ -475,6 +475,17 @@ button {
   flex: none;
   white-space: nowrap;
 }
+.pie3d-legend-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  text-decoration: none;
+  width: 100%;
+}
+.pie3d-legend-link:hover .pie3d-legend-name {
+  color: var(--red);
+  text-decoration: underline;
+}
 
 /* ============ TICKER ============ */
 .ticker {

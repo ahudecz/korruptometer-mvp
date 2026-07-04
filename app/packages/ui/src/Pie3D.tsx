@@ -3,6 +3,7 @@ import * as React from 'react';
 export type PieSlice = {
   name: string;
   value: number;
+  href?: string;
 };
 
 type Pie3DProps = {
@@ -160,13 +161,22 @@ export function Pie3D({
     <div className={className}>
       {chart}
       <ul className="pie3d-legend">
-        {prepared.map((s, i) => (
-          <li key={`legend-${i}`}>
-            <span className="pie3d-legend-dot" style={{ background: s.color }} />
-            <span className="pie3d-legend-name">{s.name}</span>
-            <span className="pie3d-legend-pct">{fmtPct(s.pct)}</span>
-          </li>
-        ))}
+        {prepared.map((s, i) => {
+          const inner = (
+            <>
+              <span className="pie3d-legend-dot" style={{ background: s.color }} />
+              <span className="pie3d-legend-name">{s.name}</span>
+              <span className="pie3d-legend-pct">{fmtPct(s.pct)}</span>
+            </>
+          );
+          return (
+            <li key={`legend-${i}`}>
+              {s.href ? (
+                <a href={s.href} className="pie3d-legend-link">{inner}</a>
+              ) : inner}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

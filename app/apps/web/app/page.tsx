@@ -287,7 +287,11 @@ export default async function HomePage() {
   const bySector = (snapshot?.bySector ?? []) as SectorEntry[];
 
   const moneySlices: PieSlice[] = bySector
-    .map((e) => ({ name: e.name, value: e.value }))
+    .map((e) => ({
+      name: e.name,
+      value: e.value,
+      href: e.name && e.name !== 'Egyéb' ? `/adatbazis?q=${encodeURIComponent(e.name)}` : undefined,
+    }))
     .sort((a, b) => b.value - a.value);
 
 
