@@ -71,24 +71,20 @@ export const aggregateKpiRollup = inngest.createFunction(
           (damageRows as unknown as Array<{ total_damage: string }>)[0]?.total_damage ?? '0',
         );
 
-        // Donut: documented damage attributed by person (top 5 + "Egyéb"
-        // remainder), stored in the legacy `bySector` jsonb slot ({name,value}[]).
-        const personRows = await tx.execute<{ name: string; value: string }>(sql`
-          SELECT COALESCE(NULLIF(person, ''), 'Ismeretlen') AS name,
-                 SUM(damage_huf)::text                      AS value
-            FROM "ScandalCatalog"
-           WHERE damage_huf > 0
-           GROUP BY COALESCE(NULLIF(person, ''), 'Ismeretlen')
-           ORDER BY SUM(damage_huf) DESC
+        // Donut: damage breakdown by sector (Case.sector enum), stored in
+        // the `bySector` jsonb slot ({name,value}[]). All 6 enum values are
+        // natural labels so no "Egyéb" remainder bucket is needed.
+        const sectorRows = await tx.execute<{ name: string; value: string }>(sql`
+          SELECT sector                  AS name,
+                 SUM(amount)::text       AS value
+            FROM "Case"
+           WHERE amount > 0
+           GROUP BY sector
+           ORDER BY SUM(amount) DESC
         `);
-        const persons = (personRows as unknown as Array<{ name: string; value: string }>).map(
+        const bySector = (sectorRows as unknown as Array<{ name: string; value: string }>).map(
           (r) => ({ name: r.name, value: Number(r.value) }),
         );
-        const TOP_PERSONS = 5;
-        const topPersons = persons.slice(0, TOP_PERSONS);
-        const restSum = persons.slice(TOP_PERSONS).reduce((s, p) => s + p.value, 0);
-        const bySector =
-          restSum > 0 ? [...topPersons, { name: 'Egyéb', value: restSum }] : topPersons;
 
         const partnerRows = await tx.execute<{ partner_count: number }>(
           sql`SELECT COUNT(*)::int AS partner_count FROM "Source" WHERE enabled = true`,
