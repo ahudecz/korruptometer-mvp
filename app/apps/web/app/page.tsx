@@ -10,6 +10,7 @@ import { getDb, schema } from '@/lib/db';
 import { CaseFilters } from './adatbazis/case-filters';
 import { ResignationsSection } from './_home/resignations-section';
 import { MediaClosuresSection } from './_home/media-closures-section';
+import { MiniClosureCard } from './_home/closure-card';
 import { SubmissionCTA } from './_home/submission-cta';
 import { SocialFeed } from './_home/social-feed';
 import { FtValue } from './_home/ft-value';
@@ -175,54 +176,6 @@ const RESIGNATION_TYPE_COLOR: Record<string, string> = {
   'felmentés': '#FF9D00',
   'egyéb': '#888',
 };
-
-const CLOSURE_STATUS_CLASS: Record<string, string> = {
-  'megszűnés': 'closure-card--closed',
-  'leépítés': 'closure-card--fired',
-  'elmaradt esemény': 'closure-card--pending',
-};
-
-const CLOSURE_STAMP: Record<string, string> = {
-  'megszűnés': 'MEGSZŰNT',
-  'leépítés': 'LEÉPÍTÉS',
-  'elmaradt esemény': 'ELMARADT',
-};
-
-// Az esemény típusa dönti el, minek a dátumát mutatjuk a lábléc-blokkban —
-// leépítésnél nem "megszűnés dátuma", hanem "leépítés dátuma".
-const CLOSURE_DATE_LABEL: Record<string, string> = {
-  'megszűnés': 'Megszűnés dátuma',
-  'leépítés': 'Leépítés dátuma',
-  'elmaradt esemény': 'Esemény dátuma',
-};
-
-type ClosureCardData = { name: string; eventType: string; eventDate: Date; sourceUrl: string | null; sourceName: string | null };
-
-function MiniClosureCard({ name, eventType, eventDate, sourceUrl, sourceName }: ClosureCardData) {
-  const statusClass = CLOSURE_STATUS_CLASS[eventType] ?? 'closure-card--closed';
-  const inner = (
-    <>
-      <div className="closure-card-visual">
-        <span className="closure-card-mono">{name.slice(0, 2).toUpperCase()}</span>
-        <div className="closure-card-stamp">{CLOSURE_STAMP[eventType] ?? 'VÁLTOZÁS'}</div>
-      </div>
-      <div className="closure-card-name">{name}</div>
-      <div className="closure-card-type">{eventType}</div>
-      <div className="closure-card-foot">
-        <span className="lbl">{CLOSURE_DATE_LABEL[eventType] ?? 'Dátum'}</span>
-        <span className="val">{fmtShortDate(eventDate)}</span>
-      </div>
-      {sourceUrl && <span className="closure-card-link">{sourceName ?? 'Forrás'} →</span>}
-    </>
-  );
-  return sourceUrl ? (
-    <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className={`closure-card ${statusClass}`}>
-      {inner}
-    </a>
-  ) : (
-    <div className={`closure-card ${statusClass}`}>{inner}</div>
-  );
-}
 
 function fmtRelative(d: Date | string): string {
   const diff = Date.now() - new Date(d).getTime();

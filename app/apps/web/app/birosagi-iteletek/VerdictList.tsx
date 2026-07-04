@@ -58,6 +58,10 @@ function verdictTypeLabel(t: string) {
   if (t === 'felmentve') return 'Felmentve';
   return t;
 }
+function isUnknownCourt(court: string): boolean {
+  return court.trim().toLowerCase().startsWith('ismeretlen');
+}
+
 function verdictTypeColor(t: string) {
   if (t === 'jogerős') return '#E31937';
   if (t === 'elsőfokú') return '#FF9D00';
@@ -189,6 +193,7 @@ function VerdictRow({ r }: { r: SerializedVerdict }) {
         <div className="vrow-identity">
           <div className="vrow-name">{r.personName}</div>
           <div className="vrow-position">{r.position}</div>
+          {r.relatedUgy && <div className="vrow-ugy-tag">{r.relatedUgy.title}</div>}
         </div>
 
         <div className="vrow-crimes">
@@ -196,7 +201,7 @@ function VerdictRow({ r }: { r: SerializedVerdict }) {
         </div>
 
         <div className="vrow-court">
-          {r.court} · {r.verdictDateFormatted}
+          {isUnknownCourt(r.court) ? r.verdictDateFormatted : `${r.court} · ${r.verdictDateFormatted}`}
         </div>
 
         <StatusBadge r={r} />

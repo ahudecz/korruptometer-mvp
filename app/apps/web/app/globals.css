@@ -4091,6 +4091,16 @@ button {
   align-items: center;
   justify-content: center;
 }
+.closure-card-visual.bg-white {
+  background: #fff;
+}
+.closure-card-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  padding: 10px;
+}
 .closure-card-mono {
   font-family: 'Archivo', sans-serif;
   font-weight: 800;
@@ -11190,6 +11200,22 @@ body:has(.admin-nav) > main {
   overflow: hidden;
   text-overflow: ellipsis;
   margin-top: 2px;
+}
+.vrow-ugy-tag {
+  display: inline-block;
+  max-width: 100%;
+  margin-top: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--accent);
+  background: rgba(227, 25, 55, 0.08);
+  border: 1px solid rgba(227, 25, 55, 0.18);
+  border-radius: 4px;
+  padding: 2px 7px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .vrow-crimes { display: flex; flex-wrap: wrap; gap: 4px; flex-shrink: 0; max-width: 220px; }

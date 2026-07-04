@@ -915,3 +915,54 @@ export const MEDIA_GROUPS: { key: MediaGroup; label: string }[] = [
   { key: 'tv-youtube', label: 'Televízió · YouTube · Egyéb' },
   { key: 'radio', label: 'KESMA — Rádió' },
 ];
+
+function normalizeOutletName(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '');
+}
+
+/**
+ * Matches a MediaClosure DB row's free-text name (e.g. "24 Óra –
+ * Komárom-Esztergom (nyomtatott)") to a MEDIA_OUTLETS entry so the homepage
+ * closure teaser can reuse the same logo as the full "Megszűnt-e már?"
+ * section further down the page. The two data sources are maintained
+ * independently, so names rarely match exactly — substring containment in
+ * either direction (picking the longest/shortest candidate respectively)
+ * covers the "(nyomtatott)"/"(weboldal)"/descriptive-suffix cases without
+ * needing the two lists kept in lockstep.
+ */
+export function findOutletLogo(closureName: string): MediaOutletEntry | undefined {
+  const target = normalizeOutletName(closureName);
+
+  let best: MediaOutletEntry | undefined;
+  let bestLen = 0;
+  for (const o of MEDIA_OUTLETS) {
+    if (!o.logoUrl) continue;
+    const oName = normalizeOutletName(o.name);
+    if (target.includes(oName) && oName.length > bestLen) {
+      best = o;
+      bestLen = oName.length;
+    }
+  }
+  if (best) return best;
+
+  let fallback: MediaOutletEntry | undefined;
+  let fallbackLen = Infinity;
+  for (const o of MEDIA_OUTLETS) {
+    if (!o.logoUrl) continue;
+    const oName = normalizeOutletName(o.name);
+    if (oName.includes(target) && oName.length < fallbackLen) {
+      fallback = o;
+      fallbackLen = oName.length;
+    }
+  }
+  return fallback;
+}
+
+export function outletLogoSrc(entry: MediaOutletEntry): string | null {
+  if (!entry.logoUrl) return null;
+  if (entry.logoUrl.startsWith('/')) return entry.logoUrl;
+  return `/api/img-proxy?url=${encodeURIComponent(entry.logoUrl)}`;
+}

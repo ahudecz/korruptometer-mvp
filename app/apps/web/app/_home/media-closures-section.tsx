@@ -2,16 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { MEDIA_OUTLETS, MEDIA_GROUPS, type MediaOutletEntry } from './media-config';
-
-function logoSrc(entry: MediaOutletEntry): string | null {
-  if (!entry.logoUrl) return null;
-  if (entry.logoUrl.startsWith('/')) return entry.logoUrl;
-  return `/api/img-proxy?url=${encodeURIComponent(entry.logoUrl)}`;
-}
+import { MEDIA_OUTLETS, MEDIA_GROUPS, outletLogoSrc, type MediaOutletEntry } from './media-config';
 
 function MediaCard({ entry, subgrid = false }: { entry: MediaOutletEntry; subgrid?: boolean }) {
-  const src = logoSrc(entry);
+  const src = outletLogoSrc(entry);
   const isClosed = entry.status === 'closed';
   const isPendingClosed = entry.status === 'pending-closed';
   const isFired = entry.status === 'fired-staff';
