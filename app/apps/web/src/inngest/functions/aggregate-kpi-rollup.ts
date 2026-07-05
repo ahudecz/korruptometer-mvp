@@ -74,11 +74,12 @@ export const aggregateKpiRollup = inngest.createFunction(
         // Donut: damage breakdown by sector (Case.sector enum), stored in
         // the `bySector` jsonb slot ({name,value}[]). All 6 enum values are
         // natural labels so no "Egyéb" remainder bucket is needed.
+        // sector::text ensures postgres-js receives a text OID (not the custom
+        // enum OID) so the value is always returned as a plain JS string.
         const sectorRows = await tx.execute<{ name: string; value: string }>(sql`
-          SELECT sector                  AS name,
+          SELECT sector::text            AS name,
                  SUM(amount)::text       AS value
             FROM "Case"
-           WHERE amount > 0
            GROUP BY sector
            ORDER BY SUM(amount) DESC
         `);
