@@ -29,7 +29,10 @@ export function LoginForm({
     const supabase = createSupabaseBrowserClient();
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { shouldCreateUser: false },
+      options: {
+        shouldCreateUser: false,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
     if (error) {
       setState({ kind: 'err', message: error.message });
@@ -59,56 +62,81 @@ export function LoginForm({
   }
 
   if (state.kind === 'verified') {
-    return <p>Bejelentkezve. Átirányítás…</p>;
+    return <p className="admin-login-status">Bejelentkezve. Átirányítás…</p>;
   }
 
   if (state.kind === 'sent' || (state.kind === 'pending' && state.email)) {
     const email = state.email ?? '';
     return (
-      <form onSubmit={verifyCode} className="db-toolbar" style={{ display: 'grid', gap: 12 }}>
-        <p style={{ fontSize: 14 }}>
-          Kódot küldtünk a(z) <strong>{email}</strong> címre. A 6-jegyű kódot
-          a Mailpit-ben találod (helyi dev) vagy az e-mailedben.
+      <form onSubmit={verifyCode} className="admin-login-form">
+        <p className="admin-login-sent-note">
+          Kódot küldtünk a <strong>{email}</strong> címre.
         </p>
-        <input
-          type="text"
-          name="code"
-          inputMode="numeric"
-          pattern="\d{6}"
-          required
-          placeholder="123456"
-          aria-label="Egyszer használatos kód"
-          autoFocus
-        />
-        <button type="submit" className="btn btn-primary" disabled={state.kind === 'pending'}>
-          Bejelentkezés
+        <div className="admin-login-field">
+          <label className="admin-login-label" htmlFor="code">
+            6-jegyű kód
+          </label>
+          <input
+            id="code"
+            type="text"
+            name="code"
+            inputMode="numeric"
+            pattern="\d{6}"
+            required
+            placeholder="123456"
+            aria-label="Egyszer használatos kód"
+            autoFocus
+            className="admin-login-input admin-login-input--otp"
+          />
+        </div>
+        {state.kind === 'err' && (
+          <p className="admin-login-error">{state.message}</p>
+        )}
+        <button
+          type="submit"
+          className="admin-login-btn"
+          disabled={state.kind === 'pending'}
+        >
+          {state.kind === 'pending' ? 'Ellenőrzés…' : 'Bejelentkezés →'}
         </button>
         <button
           type="button"
-          className="btn btn-ghost"
+          className="admin-login-btn-ghost"
           onClick={() => setState({ kind: 'idle' })}
         >
-          Másik e-mail
+          Másik e-mail-cím
         </button>
       </form>
     );
   }
 
   return (
-    <form onSubmit={requestCode} className="db-toolbar" style={{ display: 'grid', gap: 12 }}>
-      <input
-        type="email"
-        name="email"
-        required
-        placeholder="szerkeszto@example.com"
-        aria-label="E-mail"
-      />
-      <button type="submit" className="btn btn-primary" disabled={state.kind === 'pending'}>
-        {state.kind === 'pending' ? 'Küldés…' : 'Kérj egy 6-jegyű kódot'}
-      </button>
+    <form onSubmit={requestCode} className="admin-login-form">
+      <div className="admin-login-field">
+        <label className="admin-login-label" htmlFor="email">
+          E-mail-cím
+        </label>
+        <input
+          id="email"
+          type="email"
+          name="email"
+          required
+          placeholder="szerkeszto@example.com"
+          aria-label="E-mail"
+          autoFocus
+          className="admin-login-input"
+        />
+      </div>
       {state.kind === 'err' && (
-        <p style={{ color: 'var(--accent)', fontSize: 13 }}>{state.message}</p>
+        <p className="admin-login-error">{state.message}</p>
       )}
+      <button
+        type="submit"
+        className="admin-login-btn"
+        disabled={state.kind === 'pending'}
+      >
+        {state.kind === 'pending' ? 'Küldés…' : 'Kód kérése →'}
+      </button>
     </form>
   );
 }
