@@ -1,14 +1,23 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { desc, ilike, or, eq } from 'drizzle-orm';
+import { desc, ilike, or, eq, sql } from 'drizzle-orm';
 
+import { fmtNumber } from '@korr/shared/format';
+import { FtValue } from '../../_home/ft-value';
 import { getDb, schema } from '@/lib/db';
 import { Mugshot } from '@korr/ui/mugshot';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from '../../_home/galeria-config';
 import { UGYEK } from '../../_home/ugyek-config';
+import { getPersonRollup } from '../../_home/person-rollup-config';
 import { CrossLemondosok, CrossMegszunt } from '../../_home/cross-promo';
 
 export const dynamic = 'force-dynamic';
+
+// The one rollup page still living at its own historic slug rather than
+// /adatbazis/szemely/[slug] — see meszaros-lorinc-osszes-ugye/page.tsx.
+const ROLLUP_HREF_OVERRIDES: Record<string, string> = {
+  'meszaros-lorinc': '/adatbazis/meszaros-lorinc-osszes-ugye',
+};
 
 const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
 
@@ -28,6 +37,27 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const relatedCases = UGYEK.filter(u => u.relatedPersonIds?.includes(id));
 
   const db = getDb();
+
+  // Cross-link to this person's /adatbazis rollup page, when one exists.
+  const rollupConfig = getPersonRollup(id);
+  let rollup: { href: string; caseCount: number; total: bigint } | null = null;
+  if (rollupConfig) {
+    const excluded = rollupConfig.excludeIds ?? [];
+    const rollupRows = (await db.execute(sql`
+      SELECT COUNT(*)::int AS n, COALESCE(SUM(damage_huf), 0)::text AS total
+      FROM "ScandalCatalog"
+      WHERE person = ${rollupConfig.personName}
+        ${excluded.length > 0 ? sql`AND id NOT IN (${sql.join(excluded.map((v) => sql`${v}`), sql`, `)})` : sql``}
+    `)) as unknown as Array<{ n: number; total: string }>;
+    const row = rollupRows[0];
+    if (row && row.n > 0) {
+      rollup = {
+        href: ROLLUP_HREF_OVERRIDES[rollupConfig.slug] ?? `/adatbazis/szemely/${rollupConfig.slug}`,
+        caseCount: row.n,
+        total: BigInt(row.total),
+      };
+    }
+  }
 
   // Build news query from tag + keywords
   const conditions = [];
@@ -115,6 +145,28 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       </div>
 
       <div className="person-body">
+        {rollup && (
+          <Link href={rollup.href} className="adatbazis-promo">
+            <div className="adatbazis-promo-eyebrow">Adatbázis · {fmtNumber(rollup.caseCount)} dokumentált ügy</div>
+            <div className="adatbazis-promo-body">
+              <div className="adatbazis-promo-text">
+                <div className="adatbazis-promo-title">
+                  {entry.name} {fmtNumber(rollup.caseCount)} üggyel szerepel a K-Monitor adatbázisában
+                </div>
+                <p className="adatbazis-promo-desc">
+                  Ha az összes hozzá köthető, tételesen dokumentált ügyre és az összesített
+                  becsült kárra vagy kíváncsi, nézd meg a teljes áttekintést.
+                </p>
+              </div>
+              <div className="adatbazis-promo-stat">
+                <div className="adatbazis-promo-stat-lbl">Összesített becsült kár</div>
+                <div className="adatbazis-promo-stat-val"><FtValue n={rollup.total} mode="long" /></div>
+                <span className="adatbazis-promo-cta">{entry.name} összes ügye →</span>
+              </div>
+            </div>
+          </Link>
+        )}
+
         {entry.videoId && (
           <div className="person-video-section">
             {(entry.videoTitle || entry.videoSummary) && (
@@ -166,7 +218,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         {/* Individual cases */}
         {entry.personCases && entry.personCases.length > 0 && (
           <div className="person-cases">
-            <h2 className="person-section-title">Feltárt ügyek és gyanúsítások</h2>
+            <h2 className="person-section-title">Feltárt ügyek</h2>
             <p className="person-section-note">
               Az alábbi esetek sajtócikkeken és nyilvánosan hozzáférhető dokumentumokon alapulnak.
               Jogerős ítélet hiányában bűnösséget nem állítanak.

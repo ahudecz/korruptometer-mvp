@@ -4,7 +4,9 @@ import { sql } from 'drizzle-orm';
 import { fmtNumber } from '@korr/shared/format';
 import { FtValue } from '../_home/ft-value';
 import { CaseRow } from './_components/case-row';
-import { autoDisplayTitle, getCaseDisplayTitle } from '../_home/case-detail-config';
+import { autoDisplayTitle, getCaseDisplayTitle, getCaseOverride, CASE_OVERRIDES } from '../_home/case-detail-config';
+import { GALERIA } from '../_home/galeria-config';
+import { PERSON_ROLLUPS } from '../_home/person-rollup-config';
 import { CrossUgyek, CrossLemondosok, CrossGaleria, CrossMegszunt, CrossFelszolitottak } from '../_home/cross-promo';
 
 import { getDb } from '@/lib/db';
@@ -12,6 +14,14 @@ import { getDb } from '@/lib/db';
 import { CaseFilters, type ScandalFilterState } from './case-filters';
 
 export const dynamic = 'force-dynamic';
+
+// Featured on the "Kiemelt személyek" strip — the biggest, best-documented
+// person rollups. Order here is a fallback; actual display order is by
+// live total (desc), computed below.
+const FEATURED_ROLLUP_SLUGS = [
+  'meszaros-lorinc', 'tiborcz-istvan', 'matolcsy-gyorgy',
+  'rogan-antal', 'orban-viktor', 'balasy-gyula',
+];
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -30,17 +40,26 @@ type ScandalRow = {
   is_open: boolean;
 };
 
+// Rows with a hideAutoDamage override show "Becslés alatt" instead of the
+// raw number (see the table below) — sorting by "Kár" must not rank those
+// artifact/suppressed figures above real ones just because damage_huf is
+// still a big raw number under the hood.
+const HIDDEN_DAMAGE_IDS = CASE_OVERRIDES.filter((o) => o.hideAutoDamage).map((o) => o.scandalKey);
+
 function orderBySql(sort: Sort) {
+  const suppressedLast = HIDDEN_DAMAGE_IDS.length > 0
+    ? sql`(id IN (${sql.join(HIDDEN_DAMAGE_IDS.map((v) => sql`${v}`), sql`, `)}))`
+    : sql`FALSE`;
   switch (sort) {
     case 'damage_asc':
-      return sql`damage_huf ASC, id ASC`;
+      return sql`${suppressedLast} ASC, damage_huf ASC, id ASC`;
     case 'recent':
       return sql`created_at DESC NULLS LAST, id ASC`;
     case 'name':
       return sql`name ASC, id ASC`;
     case 'damage_desc':
     default:
-      return sql`damage_huf DESC, id ASC`;
+      return sql`${suppressedLast} ASC, damage_huf DESC, id ASC`;
   }
 }
 
@@ -67,7 +86,41 @@ export default async function AdatbazisPage({
 
   const db = getDb();
 
-  const conds = [sql`TRUE`];
+  // ── "Kiemelt személyek" strip: live total per featured person, respecting
+  // each rollup's excludeIds (duplicates/artifacts) so the number shown here
+  // matches what the rollup page itself reports. ──
+  const featuredConfigs = FEATURED_ROLLUP_SLUGS
+    .map((s) => PERSON_ROLLUPS.find((p) => p.slug === s))
+    .filter((p): p is (typeof PERSON_ROLLUPS)[number] => p != null);
+  const featuredPeople = (
+    await Promise.all(
+      featuredConfigs.map(async (cfg) => {
+        const excluded = cfg.excludeIds ?? [];
+        const totalRows = (await db.execute(sql`
+          SELECT COALESCE(SUM(damage_huf), 0)::text AS total, count(*)::int AS n
+          FROM "ScandalCatalog"
+          WHERE person = ${cfg.personName}
+            ${excluded.length > 0 ? sql`AND id NOT IN (${sql.join(excluded.map((v) => sql`${v}`), sql`, `)})` : sql``}
+        `)) as unknown as Array<{ total: string; n: number }>;
+        const galeriaEntry = GALERIA.find((g) => g.name === cfg.personName);
+        return {
+          slug: cfg.slug,
+          name: cfg.personName,
+          total: BigInt(totalRows[0]?.total ?? '0'),
+          caseCount: totalRows[0]?.n ?? 0,
+          photoUrl: galeriaEntry?.photoUrl ?? null,
+        };
+      }),
+    )
+  ).sort((a, b) => (b.total > a.total ? 1 : b.total < a.total ? -1 : 0));
+
+  // Retired/merged duplicate ids (see RETIRED_REDIRECTS in [id]/page.tsx) are
+  // hidden from the general listing so they don't dangle as stale, double-
+  // counting rows. Found during the 2026-07-05 person-rollup data audit.
+  const conds = [sql`id NOT IN (
+    'ner-milliardok', 'meszaros-szvj-autopalya-koncesszio',
+    'gattyan-gyorgy-adougy', 'hanko-balazs-nka-tamogatas', 'barta-eke-nagyper-miniszterium'
+  )`];
   if (q) {
     const pat = `%${q}%`;
     conds.push(
@@ -141,6 +194,47 @@ export default async function AdatbazisPage({
         az itt látható elemzés alapjául. Az adatokat feldolgoztuk, szűrtük és rendszerezve jelenítjük meg.
       </p>
 
+      {featuredPeople.length > 0 && (
+        <div className="featured-persons" style={{ marginBottom: 32 }}>
+          <h2 className="person-section-title">Kiemelt személyek</h2>
+          <p className="person-section-note">
+            A K-Monitor adatbázisa alapján összefűztük a kiemelt személyekhez tartozó ügyeket,
+            hogy megspóroljuk az időd a szűrésre és a felesleges kattintgatásra — egy kattintással
+            az adott személy összes, tételes ügye és a legnagyobbak áttekintése (K-Monitor-adatok
+            alapján).
+          </p>
+          <div className="featured-persons-grid">
+            {featuredPeople.map((p) => (
+              <Link key={p.slug} href={`/adatbazis/szemely/${p.slug}`} className="featured-person-card">
+                <div className="featured-person-photo">
+                  {p.photoUrl ? (
+                    <img src={p.photoUrl} alt={p.name} className="featured-person-img" />
+                  ) : (
+                    <div className="featured-person-placeholder">
+                      <span>{p.name.split(' ').slice(0, 2).map((w) => w[0]).join('')}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="featured-person-text">
+                  <div className="featured-person-name">{p.name}</div>
+                  <div className="featured-person-dmg-lbl">Becsült kár</div>
+                  <div className="featured-person-stat"><FtValue n={p.total} /></div>
+                  <div className="featured-person-cases">{fmtNumber(p.caseCount)} ügy</div>
+                  <div className="featured-person-cta">Összes ügy →</div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div style={{ marginTop: 8, marginBottom: 32 }}>
+        <h3 className="person-section-title">Teljes adatbázis</h3>
+        <p className="person-section-note">
+          Az összes dokumentált ügy, szűrhetően — a K-Monitor adatbázisa alapján.
+        </p>
+      </div>
+
       <CaseFilters offences={offences} initial={initial} />
 
       <div className="db-meta">
@@ -205,7 +299,13 @@ export default async function AdatbazisPage({
                   {fmtNumber(c.article_count)}
                 </td>
                 <td className="num db-damage-cell" data-label="Becsült kár">
-                  {BigInt(c.damage_huf) > 0n ? <FtValue n={BigInt(c.damage_huf)} /> : '—'}
+                  {getCaseOverride(c.id)?.hideAutoDamage ? (
+                    <span style={{ color: 'var(--muted)', fontStyle: 'italic', fontSize: 13 }}>Becslés alatt</span>
+                  ) : BigInt(c.damage_huf) > 0n ? (
+                    <FtValue n={BigInt(c.damage_huf)} />
+                  ) : (
+                    '—'
+                  )}
                 </td>
               </CaseRow>
             ))}

@@ -91,9 +91,27 @@ type CrossRef = { id: string; name: string; person: string | null; institution: 
 type Article = { id: string; headline: string; excerpt: string | null; sourceUrl: string; publishedAt: Date; source_name: string | null };
 type KmdbRow = { news_id: number; title: string; source_url: string; kmdb_url: string; newspaper: string | null; pub_time: string | null; total: number };
 
+// Retired case ids — each is a confirmed duplicate of another scandalKey
+// (same underlying story/claim, split by a slug or classification quirk) and
+// redirects to the surviving canonical id rather than rendering its own
+// (now-misleading, double-counting) page. Found during the 2026-07-05
+// person-rollup data audit.
+const RETIRED_REDIRECTS: Record<string, string> = {
+  'ner-milliardok': '/adatbazis/meszaros-lorinc-osszes-ugye',
+  'meszaros-szvj-autopalya-koncesszio': '/adatbazis/meszaros-szijj-autopalya-koncesszio',
+  // Gattyán NAV/Docler adóügy — same case, same 19,4 Mrd figure, two scandalKeys.
+  'gattyan-gyorgy-adougy': '/adatbazis/gattyan-docler-adougy',
+  // Hankó NKA-támogatás eltérítés — same 17 Mrd claim as nka-botrany's top fragment.
+  'hanko-balazs-nka-tamogatas': '/adatbazis/nka-botrany',
+  // Barta-Eke 25 Mrd-os per — already title-aliased in case-detail-config;
+  // this makes the merge real so the damage isn't counted twice.
+  'barta-eke-nagyper-miniszterium': '/adatbazis/barta-eke-ngm-25-milliardos-per',
+};
+
 export default async function ScandalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: rawId } = await params;
   const id = (() => { try { return decodeURIComponent(rawId).normalize('NFC'); } catch { return rawId; } })();
+  if (RETIRED_REDIRECTS[id]) redirect(RETIRED_REDIRECTS[id]);
   const db = getDb();
   const override = getCaseOverride(id);
   type GenEntry = { title?: string; filesKey?: string; blocks: DescriptionBlock[]; relatedNews?: { source: string; headline: string; date: string; url: string }[]; attribution?: string };
@@ -220,7 +238,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
   const summaryText = override?.summary ?? null;
 
   // Per-person YouTube video (registry); override.video wins.
-  const caseVideo = override?.video ? null : getCaseVideo(scandal.person);
+  const caseVideo = override?.video || override?.hideVideo ? null : getCaseVideo(scandal.person);
 
   // Auto-fetch title + channel from YouTube oEmbed (cached 24h server-side).
   const [caseVideoMeta, overrideVideoMeta] = await Promise.all([

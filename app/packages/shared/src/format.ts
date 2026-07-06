@@ -43,10 +43,10 @@ export function fmtFtParts(n: number | bigint): {
       billionsRaw >= 100
         ? HU_NUMBER.format(Math.floor(billionsRaw))
         : (Math.floor(billionsRaw * 10) / 10).toLocaleString('hu-HU', { maximumFractionDigits: 1 });
-    return { value, unitLong: 'Milliárd Ft', unitShort: 'Milliárd Ft' };
+    return { value, unitLong: 'Milliárd Ft', unitShort: 'Mrd Ft' };
   }
   if (abs >= 1_000_000) {
-    return { value: String(Math.floor(abs / 1_000_000)), unitLong: 'millió Ft', unitShort: 'millió Ft' };
+    return { value: String(Math.floor(abs / 1_000_000)), unitLong: 'M Ft', unitShort: 'M Ft' };
   }
   if (abs >= 1_000) {
     return { value: String(Math.floor(abs / 1_000)), unitLong: 'e Ft', unitShort: 'e Ft' };
