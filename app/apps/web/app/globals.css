@@ -3967,6 +3967,7 @@ button {
   aspect-ratio: 1 / 1;
   background: #1a1a2e;
   overflow: hidden;
+  container-type: inline-size;
 }
 .watchlist-photo-img {
   width: 100%;
@@ -4013,7 +4014,7 @@ button {
   top: 50%;
   transform: translate(-50%, -50%) rotate(-22deg);
   font-family: 'Archivo', sans-serif;
-  font-size: 20px;
+  font-size: clamp(10px, 7.5cqw, 20px);
   font-weight: 900;
   letter-spacing: 0.14em;
   padding: 6px 0;
