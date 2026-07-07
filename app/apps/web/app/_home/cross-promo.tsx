@@ -25,13 +25,28 @@ function closureTypeColor(t: string) {
   return '#4B7AFF';
 }
 
+// Kézzel kiemelt, legjelentősebb megszűnések — mindig ebben a sorrendben a
+// lista tetején, a többi utánuk dátum szerint. Case-insensitive substring
+// match a `name` mezőn.
+const FEATURED_CLOSURES = ['szuverenitásvédelmi', 'mtva propaganda', 'mandiner', 'origo', 'megafon'];
+
+function featuredRank(name: string): number {
+  const n = name.toLowerCase();
+  const i = FEATURED_CLOSURES.findIndex((f) => n.includes(f));
+  return i === -1 ? FEATURED_CLOSURES.length : i;
+}
+
 export async function CrossMegszunt() {
   const db = getDb();
-  const rows = await db
-    .select()
-    .from(schema.mediaClosures)
-    .orderBy(desc(schema.mediaClosures.eventDate))
-    .limit(10);
+  const rows = (
+    await db
+      .select()
+      .from(schema.mediaClosures)
+      .orderBy(desc(schema.mediaClosures.eventDate))
+      .limit(30)
+  )
+    .sort((a, b) => featuredRank(a.name) - featuredRank(b.name) || +b.eventDate - +a.eventDate)
+    .slice(0, 10);
 
   if (rows.length === 0) return null;
 

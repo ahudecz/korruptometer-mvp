@@ -790,6 +790,20 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
 
   // ─── TELEVÍZIÓ / YOUTUBE ────────────────────────────────────────────
   {
+    id: 'mtva',
+    name: 'MTVA propaganda',
+    group: 'tv-youtube',
+    owner: 'MTVA (állami közmédia)',
+    description: 'Leállt a hírszolgáltatás, elismerték a hazugságot.',
+    status: 'closed',
+    statusLabel: 'Megszűnt (2026. júl. 7.)',
+    sourceUrl: 'https://telex.hu/belfold/2026/07/07/leallt-az-m1-adasa',
+    sourceName: 'Telex',
+    logoUrl: 'https://commons.wikimedia.org/wiki/Special:FilePath/MTVA%20(Hungary)%20logo%20since%202012.svg',
+    logoCredit: 'Wikimedia Commons',
+    logoBgWhite: true,
+  },
+  {
     id: 'megafon',
     name: 'Megafon',
     group: 'tv-youtube',
