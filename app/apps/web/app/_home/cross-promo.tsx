@@ -104,7 +104,7 @@ export async function CrossLemondosok() {
 
   return (
     <div className="cross-promo">
-      <h2 className="cross-promo-title">Érdekelnek a lemondások is?</h2>
+      <h2 className="cross-promo-title">Érdekelnek a kirúgások és felmentések is?</h2>
       <p className="cross-promo-deck">
         Politikusok, intézményvezetők és közszereplők, akik 2026. április 12. óta lemondtak, kirúgták vagy felmentették őket.
       </p>

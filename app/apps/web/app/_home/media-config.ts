@@ -803,7 +803,7 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     sourceName: 'Telex',
     logoUrl: '/images/media/mtva.png',
     logoCredit: 'Wikimedia Commons',
-    logoBgWhite: true,
+    logoBgColor: '#f0f0f0',
   },
   {
     id: 'szuverenitasvedelmi-hivatal',
