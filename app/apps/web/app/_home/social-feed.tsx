@@ -1,7 +1,9 @@
+import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
-import { SocialFeedClient } from './social-feed-client';
+import { SocialPostCard, type SocialPost } from './social-post-card';
 
-const PAGE_SIZE = 20;
+const TEASER_SIZE = 18;
+const FETCH_POOL = 200; // elég nagy merítés, hogy minden aktív oldalhoz jusson legalább 1 poszt
 
 export async function SocialFeed() {
   try {
@@ -10,18 +12,29 @@ export async function SocialFeed() {
     if (!supabaseUrl || !supabaseKey) return null;
 
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const { data: posts, error } = await supabase
+    const { data: pool, error } = await supabase
       .from('SocialPost')
       .select('*')
       .eq('hidden', false)
       .order('createdAt', { ascending: false })
-      .range(0, PAGE_SIZE - 1);
+      .range(0, FETCH_POOL - 1);
 
     if (error) {
       console.error('[SocialFeed] Supabase hiba:', error);
       return null;
     }
-    if (!posts || posts.length === 0) return null;
+    if (!pool || pool.length === 0) return null;
+
+    // Oldalanként csak 1 (a legfrissebb) poszt, hogy a teaser változatosnak tűnjön.
+    const seenAuthors = new Set<string>();
+    const posts: SocialPost[] = [];
+    for (const post of pool) {
+      const authorKey = post.authorHandle ?? post.authorName;
+      if (seenAuthors.has(authorKey)) continue;
+      seenAuthors.add(authorKey);
+      posts.push(post);
+      if (posts.length >= TEASER_SIZE) break;
+    }
 
     return (
       <section className="section social-feed-section" id="social">
@@ -29,11 +42,18 @@ export async function SocialFeed() {
           <div className="section-num">/ Oknyomozók, Bloggerek, Események, Abszolút Parlament</div>
           <h2 className="section-title">A legfontosabb hangok.</h2>
         </div>
-        <p className="rogues-deck" style={{ marginBottom: 32 }}>
+        <p className="section-lead">
           Független oknyomozók, események, az Abszolút Parlament és közéleti aktivista újságírók válogatott posztjai —
           amelyek közvetlenül kapcsolódnak az adatbázisban szereplő ügyekhez.
         </p>
-        <SocialFeedClient initialPosts={posts} initialHasMore={posts.length === PAGE_SIZE} />
+        <div className="social-feed-masonry">
+          {posts.map((post) => (
+            <SocialPostCard key={post.id} post={post} />
+          ))}
+        </div>
+        <div className="elszamoltatas-more">
+          <Link href="/legfontosabb-hangok" className="btn-red">Az összes hang megtekintése →</Link>
+        </div>
       </section>
     );
   } catch (e) {

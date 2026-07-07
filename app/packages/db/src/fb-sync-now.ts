@@ -21,12 +21,74 @@ const APIFY_API = 'https://api.apify.com/v2';
 const ACTOR_ID = 'apify~facebook-posts-scraper';
 const RESULTS_PER_PAGE = 3;
 const MIN_TEXT_LENGTH = 20;
+const STORAGE_BUCKET = 'social-images';
 
 const DB_URL = process.env.PROD_DATABASE_URL ?? process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 
 const APIFY_TOKEN = process.env.APIFY_TOKEN;
 if (!APIFY_TOKEN) throw new Error('APIFY_TOKEN not set');
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!SUPABASE_URL) throw new Error('NEXT_PUBLIC_SUPABASE_URL not set');
+if (!SUPABASE_KEY) throw new Error('SUPABASE_SERVICE_ROLE_KEY not set');
+
+/**
+ * CSP img-src csak *.supabase.co-t enged (next.config.js) — a nyers fbcdn.net
+ * thumbnail URL-eket le kell tölteni és Supabase Storage-ba kell tölteni,
+ * különben a kép a böngészőben CSP-hiba miatt nem töltődik be.
+ */
+async function resolveAndStoreImage(rawUrl: string, storageKey: string): Promise<string | null> {
+  if (!rawUrl) return null;
+
+  try {
+    const u = new URL(rawUrl);
+
+    if (u.hostname.startsWith('external-') && u.hostname.includes('fbcdn.net')) {
+      const originalUrl = u.searchParams.get('url');
+      if (originalUrl) return decodeURIComponent(originalUrl);
+    }
+
+    if (u.hostname.includes('fbcdn.net')) {
+      const imgRes = await fetch(rawUrl, {
+        headers: { 'Referer': 'https://www.facebook.com/', 'User-Agent': 'Mozilla/5.0' },
+      });
+      if (!imgRes.ok) return null;
+
+      const contentType = imgRes.headers.get('content-type') ?? 'image/jpeg';
+      const ext = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg';
+      const filename = `${storageKey}.${ext}`;
+      const buffer = await imgRes.arrayBuffer();
+
+      const uploadRes = await fetch(
+        `${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}/${filename}`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY!,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': contentType,
+            'x-upsert': 'true',
+          },
+          body: buffer,
+        },
+      );
+
+      if (!uploadRes.ok) return null;
+      return `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${filename}`;
+    }
+
+    return rawUrl;
+  } catch {
+    return null;
+  }
+}
+
+function storageKeyFromPostUrl(postUrl: string): string {
+  const m = postUrl.match(/\/(\d+)\/?$/);
+  return m ? `fb-${m[1]}` : `fb-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
 
 const conn = postgres(DB_URL, { prepare: false, max: 1 });
 const db = drizzle(conn, { schema });
@@ -115,7 +177,14 @@ async function main() {
 
     const authorName = pageUrlMap.get(post.facebookUrl) ?? post.pageName;
     const handle = post.facebookUrl.replace('https://www.facebook.com/', '');
-    const imageUrl = post.media?.[0]?.thumbnail ?? null;
+    const rawImageUrl = post.media?.[0]?.thumbnail ?? null;
+    const storageKey = storageKeyFromPostUrl(post.url);
+
+    let imageUrl: string | null = null;
+    if (rawImageUrl) {
+      imageUrl = await resolveAndStoreImage(rawImageUrl, storageKey);
+      console.log(`    kép: ${imageUrl ? '✓' : '✗'}`);
+    }
 
     const result = await db
       .insert(schema.socialPosts)

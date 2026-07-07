@@ -4855,6 +4855,14 @@ button {
 }
 
 /* ============ SOCIAL FEED ============ */
+.section-lead {
+  color: var(--ink);
+  font-size: 17px;
+  max-width: 620px;
+  line-height: 1.55;
+  margin-bottom: 40px;
+}
+
 .social-feed-section {
   background: var(--bg);
   border-top: 2px solid var(--line-strong);

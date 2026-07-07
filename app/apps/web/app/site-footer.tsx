@@ -33,6 +33,7 @@ export function SiteFooter() {
         <ul>
           <li><Link href="/csapat">Csapat</Link></li>
           <li><Link href="/partnerek">Partnerek</Link></li>
+          <li><Link href="/legfontosabb-hangok">Legfontosabb hangok</Link></li>
           <li><Link href="/sajto">Sajtó</Link></li>
           <li><Link href="/adomanyozas">Adományozás</Link></li>
         </ul>
