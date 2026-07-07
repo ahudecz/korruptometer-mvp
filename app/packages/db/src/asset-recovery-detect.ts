@@ -2,7 +2,7 @@
  * LLM-based asset recovery detector.
  * Called from the Inngest detect-asset-recoveries function.
  */
-import { llmExtract, type LlmToolSpec } from './llm';
+import { llmExtract, type LlmResult, type LlmToolSpec } from './llm';
 
 export type AssetRecoveryExtraction = {
   isRecovery: boolean;
@@ -64,22 +64,22 @@ Csak akkor jelöld isRecovery=true-val, ha:
 
 Ne jelöld, ha csak ígéret, nyomozás, vagy civil per folyik visszatérítés nélkül.`;
 
+/** See resignation-detect.ts for why this returns the full LlmResult. */
 export async function detectAssetRecoveryFromArticle(
   headline: string,
   excerpt: string,
   todayIso: string,
-): Promise<AssetRecoveryExtraction | null> {
+): Promise<LlmResult<AssetRecoveryExtraction>> {
   const userMsg = `Cikk:
 Cím: ${headline}
 Szöveg: ${excerpt}
 
 Mai dátum: ${todayIso}`;
 
-  const { data } = await llmExtract<AssetRecoveryExtraction>({
+  return llmExtract<AssetRecoveryExtraction>({
     system: SYSTEM_PROMPT,
     user: userMsg,
     tool: TOOL,
     maxTokens: 512,
   });
-  return data;
 }

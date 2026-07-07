@@ -2,7 +2,7 @@
  * LLM-based media closure / mass layoff detector.
  * Called from the Inngest detect-media-closures function.
  */
-import { llmExtract, type LlmToolSpec } from './llm';
+import { llmExtract, type LlmResult, type LlmToolSpec } from './llm';
 
 export type MediaClosureExtraction = {
   isClosure: boolean;
@@ -65,22 +65,22 @@ Csak akkor jelöld isClosure=true-val, ha:
 
 Ne jelöld, ha csak személycsere/főszerkesztő-váltás, vagy ha nem NER-közeli médiumról van szó.`;
 
+/** See resignation-detect.ts for why this returns the full LlmResult. */
 export async function detectMediaClosureFromArticle(
   headline: string,
   excerpt: string,
   todayIso: string,
-): Promise<MediaClosureExtraction | null> {
+): Promise<LlmResult<MediaClosureExtraction>> {
   const userMsg = `Cikk:
 Cím: ${headline}
 Szöveg: ${excerpt}
 
 Mai dátum: ${todayIso}`;
 
-  const { data } = await llmExtract<MediaClosureExtraction>({
+  return llmExtract<MediaClosureExtraction>({
     system: SYSTEM_PROMPT,
     user: userMsg,
     tool: TOOL,
     maxTokens: 512,
   });
-  return data;
 }

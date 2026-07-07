@@ -11,6 +11,7 @@ import {
   pgEnum,
   pgTable,
   primaryKey,
+  real,
   text,
   timestamp,
   uniqueIndex,
@@ -1421,6 +1422,46 @@ export const courtVerdicts = pgTable(
 
 export type CourtVerdict = typeof courtVerdicts.$inferSelect;
 export type NewCourtVerdict = typeof courtVerdicts.$inferInsert;
+
+// ─── Detection Pipeline Reliability (006) ────────────────────────────────
+//
+// One row per (article, detector) pair, written ONLY after a real
+// (non-transient) decision — never on an LLM/API error. This is both the
+// "already checked" backlog marker (a detector re-scans an article until a
+// row exists) and the audit trail for why a candidate did or didn't become
+// a public row. See specs/006-detection-pipeline-reliability/.
+
+export const detectionOutcomeEnum = pgEnum('detection_outcome', [
+  'inserted',
+  'discarded',
+]);
+
+export const detectionChecks = pgTable(
+  'DetectionCheck',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    articleId: uuid('articleId')
+      .notNull()
+      .references(() => newsArticles.id, { onDelete: 'cascade' }),
+    detectorType: text('detectorType').notNull(),
+    outcome: detectionOutcomeEnum('outcome').notNull(),
+    reason: text('reason'),
+    extractedName: text('extractedName'),
+    confidence: real('confidence'),
+    checkedAt: timestamp('checkedAt', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    articleDetectorUq: uniqueIndex('DetectionCheck_articleId_detectorType_uq').on(
+      t.articleId,
+      t.detectorType,
+    ),
+    detectorTypeIdx: index('DetectionCheck_detectorType_idx').on(t.detectorType),
+    checkedAtIdx: index('DetectionCheck_checkedAt_idx').on(t.checkedAt),
+  }),
+);
+
+export type DetectionCheck = typeof detectionChecks.$inferSelect;
+export type NewDetectionCheck = typeof detectionChecks.$inferInsert;
 
 // ─── Breaking Monitor ────────────────────────────────────────────────────────
 

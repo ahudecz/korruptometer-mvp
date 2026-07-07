@@ -1,12 +1,15 @@
 import 'server-only';
-import { and, desc, gte, sql } from 'drizzle-orm';
+import { and, gte, sql } from 'drizzle-orm';
 
 import { detectAssetRecoveryFromArticle } from '@korr/db/ai-assets';
+import { isTransientLlmFailure, loadUncheckedArticles, markChecked, NEAR_MISS_MIN } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
+import { notifyReviewNeeded } from '@/lib/notify';
 import { inngest } from '../client';
 
 const BATCH_SIZE = 20;
-const LOOKBACK_MS = 2 * 60 * 60 * 1000;
+const DETECTOR_TYPE = 'asset_recovery' as const;
+const CONFIDENCE_FLOOR = 0.7;
 
 const ASSET_KEYWORDS = [
   'visszafizet', 'visszaszerz', 'vagyonelkobzás', 'elkobzás', 'lefoglalt',
@@ -17,31 +20,23 @@ const ASSET_KEYWORDS = [
 
 /**
  * asset.detect — cron every hour (offset 45 min).
- * Scans recent articles for public asset recoveries and auto-inserts
- * confirmed rows into AssetRecovery.
+ * Backlog scan (006) over NOT-YET-CHECKED articles from the last 7 days —
+ * see specs/006-detection-pipeline-reliability. Auto-inserts confirmed rows
+ * into AssetRecovery (this detector has no reviewStatus/pending concept —
+ * unlike the other three, it always auto-inserts once confidence clears the
+ * floor). Every non-inserted candidate is recorded in DetectionCheck with a
+ * reason, except a transient LLM failure, which is left unrecorded so the
+ * article is retried next run.
  */
 export const detectAssetRecoveries = inngest.createFunction(
   { id: 'detect-asset-recoveries', name: 'Detect public asset recoveries', concurrency: 1 },
   { cron: '50 * * * *' },
   async ({ step, logger }) => {
     const db = getDb();
-
-    const since = new Date(Date.now() - LOOKBACK_MS);
     const todayIso = new Date().toISOString().slice(0, 10);
 
-    const articles = await step.run('load-recent-articles', async () =>
-      db
-        .select({
-          id: schema.newsArticles.id,
-          headline: schema.newsArticles.headline,
-          excerpt: schema.newsArticles.excerpt,
-          publishedAt: schema.newsArticles.publishedAt,
-          sourceUrl: schema.newsArticles.sourceUrl,
-        })
-        .from(schema.newsArticles)
-        .where(gte(schema.newsArticles.publishedAt, since))
-        .orderBy(desc(schema.newsArticles.publishedAt))
-        .limit(200),
+    const articles = await step.run('load-unchecked-articles', () =>
+      loadUncheckedArticles(db, DETECTOR_TYPE),
     );
 
     if (articles.length === 0) return { scanned: 0, inserted: 0 };
@@ -62,14 +57,53 @@ export const detectAssetRecoveries = inngest.createFunction(
       const batchInserted = await step.run(`process-batch-${batchNum}`, async () => {
         let count = 0;
         for (const article of batch) {
-          const result = await detectAssetRecoveryFromArticle(
-            article.headline,
-            article.excerpt,
-            todayIso,
-          );
+          const llmResult = await detectAssetRecoveryFromArticle(article.headline, article.excerpt, todayIso);
 
-          if (!result || !result.isRecovery || result.confidence < 0.7) continue;
-          if (!result.caseLabel || !result.description) continue;
+          if (isTransientLlmFailure(llmResult)) continue;
+
+          const result = llmResult.data;
+
+          if (!result || !result.isRecovery) {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'not_applicable',
+            });
+            continue;
+          }
+
+          if (result.confidence < CONFIDENCE_FLOOR) {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'low_confidence',
+              extractedName: result.caseLabel || undefined,
+              confidence: result.confidence,
+            });
+            if (result.confidence >= NEAR_MISS_MIN && result.caseLabel) {
+              await notifyReviewNeeded({
+                type: 'near_miss',
+                detectorType: DETECTOR_TYPE,
+                name: result.caseLabel,
+                confidence: result.confidence,
+                articleUrl: article.sourceUrl ?? '',
+              });
+            }
+            continue;
+          }
+
+          if (!result.caseLabel || !result.description) {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'missing_fields',
+              confidence: result.confidence,
+            });
+            continue;
+          }
 
           // Dedup: skip if same caseLabel already recorded in last 14 days.
           const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
@@ -84,7 +118,17 @@ export const detectAssetRecoveries = inngest.createFunction(
             )
             .limit(1);
 
-          if (existing.length > 0) continue;
+          if (existing.length > 0) {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'duplicate',
+              extractedName: result.caseLabel,
+              confidence: result.confidence,
+            });
+            continue;
+          }
 
           const fallbackDate = new Date(article.publishedAt as unknown as string);
           let recoveredAt: Date;
@@ -110,6 +154,14 @@ export const detectAssetRecoveries = inngest.createFunction(
             recoveredAt,
             sourceUrl: article.sourceUrl ?? null,
             sourceName: null,
+          });
+
+          await markChecked(db, {
+            articleId: article.id,
+            detectorType: DETECTOR_TYPE,
+            outcome: 'inserted',
+            extractedName: result.caseLabel,
+            confidence: result.confidence,
           });
 
           count++;

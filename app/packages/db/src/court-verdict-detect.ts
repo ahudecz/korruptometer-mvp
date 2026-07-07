@@ -2,7 +2,7 @@
  * LLM-based court verdict / pretrial detention detector.
  * Called from the Inngest detect-verdicts function.
  */
-import { llmExtract, type LlmToolSpec } from './llm';
+import { llmExtract, type LlmResult, type LlmToolSpec } from './llm';
 
 export type VerdictExtraction = {
   isVerdict: boolean;
@@ -114,22 +114,22 @@ Ne jelöld, ha:
 - Más ország ügyéről van szó
 - Csak spekuláció vagy vélemény`;
 
+/** See resignation-detect.ts for why this returns the full LlmResult. */
 export async function detectVerdictFromArticle(
   headline: string,
   excerpt: string,
   todayIso: string,
-): Promise<VerdictExtraction | null> {
+): Promise<LlmResult<VerdictExtraction>> {
   const userMsg = `Cikk:
 Cím: ${headline}
 Szöveg: ${excerpt}
 
 Mai dátum: ${todayIso}`;
 
-  const { data } = await llmExtract<VerdictExtraction>({
+  return llmExtract<VerdictExtraction>({
     system: SYSTEM_PROMPT,
     user: userMsg,
     tool: TOOL,
     maxTokens: 512,
   });
-  return data;
 }

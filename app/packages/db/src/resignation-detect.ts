@@ -3,7 +3,7 @@
  * Called from the Inngest detect-resignations function.
  * Uses the switchable LLM layer (LangDock/Gemini/Claude — see ./llm).
  */
-import { llmExtract, type LlmToolSpec } from './llm';
+import { llmExtract, type LlmResult, type LlmToolSpec } from './llm';
 
 export type ResignationExtraction = {
   isResignation: boolean;
@@ -105,22 +105,29 @@ KRITIKUS — ki hagyja el a pozíciót vs. ki hozza a döntést:
 
 FONTOS: A "name" mezőbe mindig AZT a személyt/szervzetet írd, aki ténylegesen elhagyja a pozícióját — NEM azt, aki a döntést hozta, aláírta, vagy javasolta.`;
 
+/**
+ * Returns the full LlmResult (not just `data`) so callers can distinguish a
+ * TRANSIENT failure (API/network/credit error — data is null AND zero
+ * tokens were counted, because the request never completed) from a genuine
+ * "no resignation here" result — see isTransientLlmFailure() in
+ * detection-check.ts. This distinction is what lets 006's backlog scan
+ * retry an article instead of silently discarding it after an outage.
+ */
 export async function detectResignationFromArticle(
   headline: string,
   excerpt: string,
   todayIso: string,
-): Promise<ResignationExtraction | null> {
+): Promise<LlmResult<ResignationExtraction>> {
   const userMsg = `Cikk:
 Cím: ${headline}
 Szöveg: ${excerpt}
 
 Mai dátum: ${todayIso}`;
 
-  const { data } = await llmExtract<ResignationExtraction>({
+  return llmExtract<ResignationExtraction>({
     system: SYSTEM_PROMPT,
     user: userMsg,
     tool: TOOL,
     maxTokens: 512,
   });
-  return data;
 }

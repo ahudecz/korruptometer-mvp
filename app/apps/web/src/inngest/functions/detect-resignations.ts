@@ -1,14 +1,22 @@
 import 'server-only';
-import { desc, eq, gte } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 import { detectResignationFromArticle } from '@korr/db/ai';
-import { decideStatus, isDuplicate, isWatchlistPerson } from '@korr/db';
+import {
+  decideStatus,
+  isDuplicate,
+  isTransientLlmFailure,
+  isWatchlistPerson,
+  loadUncheckedArticles,
+  markChecked,
+  NEAR_MISS_MIN,
+} from '@korr/db';
 import { getDb, schema } from '@/lib/db';
+import { notifyReviewNeeded } from '@/lib/notify';
 import { inngest } from '../client';
 
 const BATCH_SIZE = 20;
-// Scan articles published in the last 2 hours.
-const LOOKBACK_MS = 2 * 60 * 60 * 1000;
+const DETECTOR_TYPE = 'resignation' as const;
 
 // Quick keyword pre-filter — avoids burning LLM tokens on irrelevant articles.
 const RESIGNATION_KEYWORDS = [
@@ -19,31 +27,24 @@ const RESIGNATION_KEYWORDS = [
 
 /**
  * resignation.detect — cron every hour.
- * Scans articles published in the last 2 hours, runs them through Claude Haiku
- * to detect political resignations/firings/dismissals, and auto-inserts
- * confirmed rows into PoliticalResignation.
+ * Scans NOT-YET-CHECKED articles from the last 7 days (006 backlog scan —
+ * replaces the old fixed 2h lookback so a transient LLM outage can never
+ * silently drop a candidate forever, see specs/006-detection-pipeline-reliability),
+ * runs them through the switchable LLM layer to detect political
+ * resignations/firings/dismissals, and auto-inserts confirmed rows into
+ * PoliticalResignation. Every non-inserted candidate is recorded in
+ * DetectionCheck with a specific reason — except a transient API failure,
+ * which is left unrecorded so the article is retried next run.
  */
 export const detectResignations = inngest.createFunction(
   { id: 'detect-resignations', name: 'Detect political resignations', concurrency: 1 },
   { cron: '20 * * * *' },
   async ({ step, logger }) => {
     const db = getDb();
-
-    const since = new Date(Date.now() - LOOKBACK_MS);
     const todayIso = new Date().toISOString().slice(0, 10);
 
-    const articles = await step.run('load-recent-articles', async () =>
-      db
-        .select({
-          id: schema.newsArticles.id,
-          headline: schema.newsArticles.headline,
-          excerpt: schema.newsArticles.excerpt,
-          publishedAt: schema.newsArticles.publishedAt,
-        })
-        .from(schema.newsArticles)
-        .where(gte(schema.newsArticles.publishedAt, since))
-        .orderBy(desc(schema.newsArticles.publishedAt))
-        .limit(200),
+    const articles = await step.run('load-unchecked-articles', () =>
+      loadUncheckedArticles(db, DETECTOR_TYPE),
     );
 
     if (articles.length === 0) return { scanned: 0, inserted: 0 };
@@ -64,21 +65,72 @@ export const detectResignations = inngest.createFunction(
       const batchInserted = await step.run(`process-batch-${batchNum}`, async () => {
         let count = 0;
         for (const article of batch) {
-          const result = await detectResignationFromArticle(
-            article.headline,
-            article.excerpt,
-            todayIso,
-          );
+          const llmResult = await detectResignationFromArticle(article.headline, article.excerpt, todayIso);
 
-          if (!result || !result.isResignation || !result.name || !result.institution) continue;
+          // Transient (API/network/credit) failure — leave unrecorded so the
+          // article stays eligible and is retried on the next hourly run.
+          if (isTransientLlmFailure(llmResult)) continue;
+
+          const result = llmResult.data;
+
+          if (!result || !result.isResignation) {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'not_applicable',
+            });
+            continue;
+          }
+
+          if (!result.name || !result.institution) {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'missing_fields',
+              extractedName: result.name || undefined,
+              confidence: result.confidence,
+            });
+            continue;
+          }
 
           // 003-review: route by confidence + watchlist; discard below the floor.
           const reviewStatus = decideStatus(result.confidence, isWatchlistPerson(result.name));
-          if (reviewStatus === 'discard') continue;
+          if (reviewStatus === 'discard') {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'low_confidence',
+              extractedName: result.name,
+              confidence: result.confidence,
+            });
+            if (result.confidence >= NEAR_MISS_MIN) {
+              await notifyReviewNeeded({
+                type: 'near_miss',
+                detectorType: DETECTOR_TYPE,
+                name: result.name,
+                confidence: result.confidence,
+                articleUrl: article.sourceUrl ?? '',
+              });
+            }
+            continue;
+          }
 
           // Dedup by normalized name across ALL statuses within the window, so a
           // rejected detection is not re-created (FR-009, FR-011).
-          if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, result.name)) continue;
+          if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, result.name)) {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'duplicate',
+              extractedName: result.name,
+              confidence: result.confidence,
+            });
+            continue;
+          }
 
           // article.publishedAt is serialized as string by Inngest JSON
           const fallbackDate = new Date(article.publishedAt as unknown as string);
@@ -113,6 +165,24 @@ export const detectResignations = inngest.createFunction(
               isBreakingCandidate: pinned || reviewStatus === 'approved',
             })
             .where(eq(schema.newsArticles.id, article.id));
+
+          await markChecked(db, {
+            articleId: article.id,
+            detectorType: DETECTOR_TYPE,
+            outcome: 'inserted',
+            extractedName: result.name,
+            confidence: result.confidence,
+          });
+
+          if (reviewStatus === 'pending') {
+            await notifyReviewNeeded({
+              type: 'pending',
+              detectorType: DETECTOR_TYPE,
+              name: result.name,
+              confidence: result.confidence,
+              articleUrl: article.sourceUrl ?? '',
+            });
+          }
 
           count++;
         }

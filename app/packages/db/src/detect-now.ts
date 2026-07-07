@@ -88,7 +88,7 @@ async function main() {
   for (const article of candidates) {
     process.stdout.write(`🤖 „${article.headline.slice(0, 60)}…" → `);
 
-    const result = await detectResignationFromArticle(
+    const { data: result } = await detectResignationFromArticle(
       article.headline,
       article.excerpt,
       todayIso,

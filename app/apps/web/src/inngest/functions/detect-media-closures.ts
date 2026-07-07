@@ -1,13 +1,21 @@
 import 'server-only';
-import { desc, eq, gte } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 import { detectMediaClosureFromArticle } from '@korr/db/ai-closures';
-import { decideStatus, isDuplicate } from '@korr/db';
+import {
+  decideStatus,
+  isDuplicate,
+  isTransientLlmFailure,
+  loadUncheckedArticles,
+  markChecked,
+  NEAR_MISS_MIN,
+} from '@korr/db';
 import { getDb, schema } from '@/lib/db';
+import { notifyReviewNeeded } from '@/lib/notify';
 import { inngest } from '../client';
 
 const BATCH_SIZE = 20;
-const LOOKBACK_MS = 2 * 60 * 60 * 1000;
+const DETECTOR_TYPE = 'media_closure' as const;
 
 const CLOSURE_KEYWORDS = [
   'megszűnt', 'megszűnik', 'bezár', 'bezárnak', 'leállítják', 'leáll', 'felszámol',
@@ -18,31 +26,21 @@ const CLOSURE_KEYWORDS = [
 
 /**
  * closure.detect — cron every hour.
- * Scans recent articles for NER media closures/mass layoffs/cancelled events
- * and auto-inserts confirmed rows into MediaClosure.
+ * Backlog scan (006) over NOT-YET-CHECKED articles from the last 7 days —
+ * see specs/006-detection-pipeline-reliability. Auto-inserts confirmed rows
+ * into MediaClosure; every non-inserted candidate is recorded in
+ * DetectionCheck with a reason, except a transient LLM failure, which is
+ * left unrecorded so the article is retried next run.
  */
 export const detectMediaClosures = inngest.createFunction(
   { id: 'detect-media-closures', name: 'Detect media closures', concurrency: 1 },
   { cron: '40 * * * *' },
   async ({ step, logger }) => {
     const db = getDb();
-
-    const since = new Date(Date.now() - LOOKBACK_MS);
     const todayIso = new Date().toISOString().slice(0, 10);
 
-    const articles = await step.run('load-recent-articles', async () =>
-      db
-        .select({
-          id: schema.newsArticles.id,
-          headline: schema.newsArticles.headline,
-          excerpt: schema.newsArticles.excerpt,
-          publishedAt: schema.newsArticles.publishedAt,
-          sourceUrl: schema.newsArticles.sourceUrl,
-        })
-        .from(schema.newsArticles)
-        .where(gte(schema.newsArticles.publishedAt, since))
-        .orderBy(desc(schema.newsArticles.publishedAt))
-        .limit(200),
+    const articles = await step.run('load-unchecked-articles', () =>
+      loadUncheckedArticles(db, DETECTOR_TYPE),
     );
 
     if (articles.length === 0) return { scanned: 0, inserted: 0 };
@@ -63,18 +61,67 @@ export const detectMediaClosures = inngest.createFunction(
       const batchInserted = await step.run(`process-batch-${batchNum}`, async () => {
         let count = 0;
         for (const article of batch) {
-          const result = await detectMediaClosureFromArticle(
-            article.headline,
-            article.excerpt,
-            todayIso,
-          );
+          const llmResult = await detectMediaClosureFromArticle(article.headline, article.excerpt, todayIso);
 
-          if (!result || !result.isClosure || !result.name) continue;
+          if (isTransientLlmFailure(llmResult)) continue;
+
+          const result = llmResult.data;
+
+          if (!result || !result.isClosure) {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'not_applicable',
+            });
+            continue;
+          }
+
+          if (!result.name) {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'missing_fields',
+              confidence: result.confidence,
+            });
+            continue;
+          }
 
           // 003-review: media outlets aren't watchlist persons → confidence only.
           const reviewStatus = decideStatus(result.confidence, false);
-          if (reviewStatus === 'discard') continue;
-          if (await isDuplicate(db, { table: 'MediaClosure', nameColumn: 'name' }, result.name)) continue;
+          if (reviewStatus === 'discard') {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'low_confidence',
+              extractedName: result.name,
+              confidence: result.confidence,
+            });
+            if (result.confidence >= NEAR_MISS_MIN) {
+              await notifyReviewNeeded({
+                type: 'near_miss',
+                detectorType: DETECTOR_TYPE,
+                name: result.name,
+                confidence: result.confidence,
+                articleUrl: article.sourceUrl ?? '',
+              });
+            }
+            continue;
+          }
+
+          if (await isDuplicate(db, { table: 'MediaClosure', nameColumn: 'name' }, result.name)) {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'duplicate',
+              extractedName: result.name,
+              confidence: result.confidence,
+            });
+            continue;
+          }
 
           const fallbackDate = new Date(article.publishedAt as unknown as string);
           let eventDate: Date;
@@ -99,6 +146,24 @@ export const detectMediaClosures = inngest.createFunction(
             .update(schema.newsArticles)
             .set({ tag: 'Megszűnés' })
             .where(eq(schema.newsArticles.id, article.id));
+
+          await markChecked(db, {
+            articleId: article.id,
+            detectorType: DETECTOR_TYPE,
+            outcome: 'inserted',
+            extractedName: result.name,
+            confidence: result.confidence,
+          });
+
+          if (reviewStatus === 'pending') {
+            await notifyReviewNeeded({
+              type: 'pending',
+              detectorType: DETECTOR_TYPE,
+              name: result.name,
+              confidence: result.confidence,
+              articleUrl: article.sourceUrl ?? '',
+            });
+          }
 
           count++;
         }

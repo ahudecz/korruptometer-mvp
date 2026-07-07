@@ -6,6 +6,7 @@ import * as schema from './schema';
 export * from './schema';
 export * from './review';
 export * from './watchlist';
+export * from './detection-check';
 
 let cachedClient: ReturnType<typeof drizzle<typeof schema>> | null = null;
 

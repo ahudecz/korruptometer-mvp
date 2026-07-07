@@ -1,13 +1,22 @@
 import 'server-only';
-import { desc, eq, gte } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 import { detectVerdictFromArticle } from '@korr/db/ai-verdicts';
-import { decideStatus, isDuplicate, isWatchlistPerson } from '@korr/db';
+import {
+  decideStatus,
+  isDuplicate,
+  isTransientLlmFailure,
+  isWatchlistPerson,
+  loadUncheckedArticles,
+  markChecked,
+  NEAR_MISS_MIN,
+} from '@korr/db';
 import { getDb, schema } from '@/lib/db';
+import { notifyReviewNeeded } from '@/lib/notify';
 import { inngest } from '../client';
 
 const BATCH_SIZE = 20;
-const LOOKBACK_MS = 2 * 60 * 60 * 1000;
+const DETECTOR_TYPE = 'court_verdict' as const;
 
 const VERDICT_KEYWORDS = [
   'előzetes letartóztatás', 'letartóztatt', 'előzetesbe', 'előzetesben',
@@ -19,31 +28,21 @@ const VERDICT_KEYWORDS = [
 
 /**
  * verdict.detect — cron every hour (offset 15 min).
- * Scans recent articles for court verdicts / pretrial detentions
- * and auto-inserts confirmed rows into CourtVerdict.
+ * Backlog scan (006) over NOT-YET-CHECKED articles from the last 7 days —
+ * see specs/006-detection-pipeline-reliability. Auto-inserts confirmed rows
+ * into CourtVerdict; every non-inserted candidate is recorded in
+ * DetectionCheck with a reason, except a transient LLM failure, which is
+ * left unrecorded so the article is retried next run.
  */
 export const detectVerdicts = inngest.createFunction(
   { id: 'detect-verdicts', name: 'Detect court verdicts and pretrial detentions', concurrency: 1 },
   { cron: '30 * * * *' },
   async ({ step, logger }) => {
     const db = getDb();
-
-    const since = new Date(Date.now() - LOOKBACK_MS);
     const todayIso = new Date().toISOString().slice(0, 10);
 
-    const articles = await step.run('load-recent-articles', async () =>
-      db
-        .select({
-          id: schema.newsArticles.id,
-          headline: schema.newsArticles.headline,
-          excerpt: schema.newsArticles.excerpt,
-          publishedAt: schema.newsArticles.publishedAt,
-          sourceUrl: schema.newsArticles.sourceUrl,
-        })
-        .from(schema.newsArticles)
-        .where(gte(schema.newsArticles.publishedAt, since))
-        .orderBy(desc(schema.newsArticles.publishedAt))
-        .limit(200),
+    const articles = await step.run('load-unchecked-articles', () =>
+      loadUncheckedArticles(db, DETECTOR_TYPE),
     );
 
     if (articles.length === 0) return { scanned: 0, inserted: 0 };
@@ -64,18 +63,68 @@ export const detectVerdicts = inngest.createFunction(
       const batchInserted = await step.run(`process-batch-${batchNum}`, async () => {
         let count = 0;
         for (const article of batch) {
-          const result = await detectVerdictFromArticle(
-            article.headline,
-            article.excerpt,
-            todayIso,
-          );
+          const llmResult = await detectVerdictFromArticle(article.headline, article.excerpt, todayIso);
 
-          if (!result || !result.isVerdict || !result.personName || !result.verdictType) continue;
+          if (isTransientLlmFailure(llmResult)) continue;
+
+          const result = llmResult.data;
+
+          if (!result || !result.isVerdict) {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'not_applicable',
+            });
+            continue;
+          }
+
+          if (!result.personName || !result.verdictType) {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'missing_fields',
+              extractedName: result.personName || undefined,
+              confidence: result.confidence,
+            });
+            continue;
+          }
 
           // 003-review: route by confidence + watchlist; discard below the floor.
           const reviewStatus = decideStatus(result.confidence, isWatchlistPerson(result.personName));
-          if (reviewStatus === 'discard') continue;
-          if (await isDuplicate(db, { table: 'CourtVerdict', nameColumn: 'personName' }, result.personName)) continue;
+          if (reviewStatus === 'discard') {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'low_confidence',
+              extractedName: result.personName,
+              confidence: result.confidence,
+            });
+            if (result.confidence >= NEAR_MISS_MIN) {
+              await notifyReviewNeeded({
+                type: 'near_miss',
+                detectorType: DETECTOR_TYPE,
+                name: result.personName,
+                confidence: result.confidence,
+                articleUrl: article.sourceUrl ?? '',
+              });
+            }
+            continue;
+          }
+
+          if (await isDuplicate(db, { table: 'CourtVerdict', nameColumn: 'personName' }, result.personName)) {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'duplicate',
+              extractedName: result.personName,
+              confidence: result.confidence,
+            });
+            continue;
+          }
 
           const fallbackDate = new Date(article.publishedAt as unknown as string);
           let verdictDate: Date;
@@ -112,6 +161,24 @@ export const detectVerdicts = inngest.createFunction(
             .update(schema.newsArticles)
             .set({ tag: 'Ítélet', isBreakingCandidate: true })
             .where(eq(schema.newsArticles.id, article.id));
+
+          await markChecked(db, {
+            articleId: article.id,
+            detectorType: DETECTOR_TYPE,
+            outcome: 'inserted',
+            extractedName: result.personName,
+            confidence: result.confidence,
+          });
+
+          if (reviewStatus === 'pending') {
+            await notifyReviewNeeded({
+              type: 'pending',
+              detectorType: DETECTOR_TYPE,
+              name: result.personName,
+              confidence: result.confidence,
+              articleUrl: article.sourceUrl ?? '',
+            });
+          }
 
           count++;
         }
