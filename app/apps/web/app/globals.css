@@ -106,23 +106,13 @@ button {
   gap: 40px;
 }
 .brand {
-  font-weight: 700;
-  font-size: 18px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ink);
-  text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 10px;
+  line-height: 0;
 }
-.brand::before {
-  content: '';
-  width: 10px;
-  height: 10px;
-  background: var(--accent);
-  border-radius: 50%;
-  box-shadow: 0 0 0 4px var(--accent-soft);
+.brand-logo {
+  height: 28px;
+  width: auto;
 }
 .nav-links {
   display: flex;
@@ -1266,6 +1256,11 @@ button {
   text-transform: uppercase;
   margin-bottom: 18px;
   color: var(--ink);
+}
+.footer-logo {
+  display: block;
+  height: auto;
+  margin-bottom: 16px;
 }
 .site-footer ul {
   list-style: none;

@@ -2,17 +2,44 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { sql } from 'drizzle-orm';
 
-import { fmtNumber } from '@korr/shared/format';
+import { fmtNumber, fmtFt } from '@korr/shared/format';
 import { FtValue } from '../../../_home/ft-value';
 import { GALERIA } from '../../../_home/galeria-config';
 import { WATCH_LIST } from '../../../_home/watchlist-config';
 import { PERSON_PHOTOS, cleanTitle } from '../../../_home/case-detail-config';
 import { getPersonRollup } from '../../../_home/person-rollup-config';
 import { DescBlock } from '../../_components/desc-block';
+import { truncate } from '../../../_home/seo';
 
 import { getDb } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const config = getPersonRollup(slug);
+  if (!config) return {};
+
+  const db = getDb();
+  const excluded = config.excludeIds ?? [];
+  const rows = (await db.execute(sql`
+    SELECT damage_huf FROM "ScandalCatalog"
+    WHERE person = ${config.personName}
+      ${excluded.length > 0 ? sql`AND id NOT IN (${sql.join(excluded.map((v) => sql`${v}`), sql`, `)})` : sql``}
+  `)) as unknown as Array<{ damage_huf: string }>;
+  if (rows.length === 0) return {};
+
+  let total = 0n;
+  for (const r of rows) total += BigInt(r.damage_huf ?? 0);
+
+  return {
+    title: truncate(`${config.personName} összes ügye`, 40),
+    description: truncate(
+      `${config.personName} ${fmtNumber(rows.length)} dokumentált ügye, összesen ${fmtFt(total)} becsült kárral — a Kegyencjárat adatbázisában.`,
+      150,
+    ),
+  };
+}
 
 const TOP_N = 10;
 

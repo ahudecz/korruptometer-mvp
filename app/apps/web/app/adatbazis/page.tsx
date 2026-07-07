@@ -15,6 +15,11 @@ import { CaseFilters, type ScandalFilterState } from './case-filters';
 
 export const dynamic = 'force-dynamic';
 
+export const metadata = {
+  title: 'Adatbázis',
+  description: 'Kereshető, szűrhető adatbázis a dokumentált magyar korrupciós ügyekről — érintettek, összegek és intézmények szerint.',
+};
+
 // Featured on the "Kiemelt személyek" strip — the biggest, best-documented
 // person rollups. Order here is a fallback; actual display order is by
 // live total (desc), computed below.

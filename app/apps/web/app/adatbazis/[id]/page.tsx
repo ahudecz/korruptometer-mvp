@@ -15,8 +15,30 @@ import { DescBlock } from '../_components/desc-block';
 import type { DescriptionBlock } from '../../_home/ugyek-config';
 import generatedContent from '../../_home/case-content.generated.json';
 import { getDb } from '@/lib/db';
+import { truncate } from '../../_home/seo';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id: rawId } = await params;
+  const id = (() => { try { return decodeURIComponent(rawId).normalize('NFC'); } catch { return rawId; } })();
+  const db = getDb();
+  const override = getCaseOverride(id);
+  const gen = (generatedContent as Record<string, { title?: string }>)[id];
+  const rows = (await db.execute(sql`
+    SELECT sc.name, sc.person, sc.institution FROM "ScandalCatalog" sc WHERE sc.id = ${id} LIMIT 1
+  `)) as unknown as Array<{ name: string; person: string | null; institution: string | null }>;
+  const scandal = rows[0];
+  if (!scandal) return {};
+  const title = autoDisplayTitle(scandal.name, scandal.person, override?.title ?? gen?.title);
+  const description =
+    override?.summary ??
+    `${scandal.person ?? scandal.institution ?? 'Korrupciós ügy'} — dokumentált eset a Kegyencjárat adatbázisában, sajtóforrások alapján.`;
+  return {
+    title: truncate(title, 40),
+    description: truncate(description, 150),
+  };
+}
 
 const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
 function fmtDate(d: Date): string {

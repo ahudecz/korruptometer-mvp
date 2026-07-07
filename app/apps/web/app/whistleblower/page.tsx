@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Whistleblower védelem – Kegyencjárat',
+  title: 'Whistleblower védelem',
   description: 'Jogi tájékoztató a visszaélés-bejelentők védelméről Magyarországon.',
 };
 

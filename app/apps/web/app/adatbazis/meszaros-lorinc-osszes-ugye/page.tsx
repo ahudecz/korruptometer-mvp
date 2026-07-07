@@ -13,6 +13,11 @@ import { getDb } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+export const metadata = {
+  title: 'Mészáros Lőrinc összes ügye',
+  description: 'Mészáros Lőrinc összes, az adatbázisban külön-külön dokumentált ügye egy helyen, becsült kárral és forrásokkal.',
+};
+
 // Single source of truth for excluded ids lives in person-rollup-config.ts
 // (shared with the generic /adatbazis/szemely/[slug] page) — see that file's
 // comments for why each id is excluded.

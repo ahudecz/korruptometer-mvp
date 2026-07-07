@@ -5,6 +5,11 @@ import { getDb, schema } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+export const metadata = {
+  title: 'Pécsi Volvo-gate',
+  description: 'Bánki Erik pécsi Volvo-ügye: közpénzből vásárolt luxusautó és a hozzá köthető korrupciógyanús körülmények.',
+};
+
 const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
 
 function fmtDate(d: Date): string {

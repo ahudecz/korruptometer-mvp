@@ -6,8 +6,22 @@ import { getDb, schema } from '@/lib/db';
 import { WATCH_LIST, type WatchPerson } from '../../_home/watchlist-config';
 import { WATCHLIST_DETAIL, type WatchlistBreakingBlock } from '../../_home/watchlist-detail-config';
 import { CrossGaleria, CrossUgyek, CrossLemondosok } from '../../_home/cross-promo';
+import { truncate } from '../../_home/seo';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const person = WATCH_LIST.find((p) => p.id === id);
+  if (!person) return {};
+  const detail = WATCHLIST_DETAIL.find((d) => d.id === id);
+  const description =
+    detail?.bio ?? detail?.nerRole ?? `${person.name} — ${person.institution}. Lemondásra felszólítva.`;
+  return {
+    title: truncate(person.name, 40),
+    description: truncate(description, 150),
+  };
+}
 
 const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
 

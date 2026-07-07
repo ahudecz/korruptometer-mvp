@@ -355,7 +355,9 @@ export default async function HomePage() {
             </div>
             <div className="stat-value stat-value--money"><FtValue n={totalDamage} mode="short" /></div>
             <div className="stat-unit">
-              <Link href="/adatbazis" className="stat-unit-link">K-Monitor adatbázis</Link> · valós dokumentált adatok · {moneySlices.length} kategória szerint
+              <span className="stat-unit-part"><Link href="/adatbazis" className="stat-unit-link">K-Monitor adatbázis</Link></span>
+              <span className="stat-unit-part">· valós dokumentált adatok</span>
+              <span className="stat-unit-part">· {moneySlices.length} kategória szerint</span>
             </div>
             <Pie3D slices={moneySlices} palette={PALETTE_MONEY} className="donut" ariaLabel="Kár szektoronként" legend />
           </div>
@@ -378,7 +380,9 @@ export default async function HomePage() {
             <div className="stat-unit stat-unit-notice" style={{ marginTop: 16 }}>
               {pretrialByUgy.map(({ ugyId, n }) => {
                 const ugy = ugyId ? UGYEK.find(u => u.id === ugyId) : null;
-                const label = ugy?.title ?? ugyId ?? 'Egyéb';
+                // Rövidített megjelenítés ebben a szűk KPI-listában — a teljes
+                // "Parkfenntartási kenőpénzbotrány" cím nem fér ki egy sorba mobilon.
+                const label = ugyId === 'parkfenntartas' ? 'Parkfenntartási ügy' : (ugy?.title ?? ugyId ?? 'Egyéb');
                 const href = ugy ? `/ugyek/${ugyId}` : '/birosagi-iteletek';
                 return (
                   <div key={ugyId ?? '__other'} style={{ marginBottom: 2 }}>
@@ -483,6 +487,7 @@ export default async function HomePage() {
               {latestClosures.map((c) => (
                 <MiniClosureCard key={c.id} name={c.name} eventType={c.eventType} eventDate={c.eventDate} sourceUrl={c.sourceUrl} sourceName={c.sourceName} />
               ))}
+              <Link href="/megszunt" className="closure-card-viewall">Összes megszűnt médium →</Link>
             </div>
           </div>
           <div className="closure-teaser-group">
@@ -491,6 +496,7 @@ export default async function HomePage() {
               {pinnedClosures.map((c) => (
                 <MiniClosureCard key={c.id} name={c.name} eventType={c.eventType} eventDate={c.eventDate} sourceUrl={c.sourceUrl} sourceName={c.sourceName} />
               ))}
+              <Link href="/megszunt" className="closure-card-viewall">Összes megszűnt médium →</Link>
             </div>
           </div>
         </div>

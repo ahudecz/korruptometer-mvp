@@ -7,8 +7,19 @@ import { UGYEK, type DescriptionBlock, type BreakingGroupArticle } from '../../_
 import { GALERIA } from '../../_home/galeria-config';
 import { WATCH_LIST } from '../../_home/watchlist-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../_home/cross-promo';
+import { truncate } from '../../_home/seo';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const entry = UGYEK.find((u) => u.id === id);
+  if (!entry) return {};
+  return {
+    title: truncate(entry.title, 40),
+    description: truncate(entry.summary, 150),
+  };
+}
 
 const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
 

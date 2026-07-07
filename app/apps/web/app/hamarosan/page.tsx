@@ -1,5 +1,11 @@
 import Link from 'next/link';
 
+export const metadata = {
+  title: 'Hamarosan',
+  description: 'Ez a rész még fejlesztés alatt áll — hamarosan elérhető lesz a Kegyencjáraton.',
+  robots: { index: false, follow: true },
+};
+
 const upcoming = [
   'Adatvédelmi tájékoztató',
   'Módszertani leírás',

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Módszertan – Kegyencjárat',
+  title: 'Módszertan',
   description: 'Hogyan gyűjtjük, ellenőrizzük és jelenítjük meg az adatokat a Kegyencjáraton.',
 };
 

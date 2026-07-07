@@ -2,6 +2,11 @@ import { MockupSubmissionForm } from '../_home/submission-form';
 
 export const dynamic = 'force-dynamic';
 
+export const metadata = {
+  title: 'Bejelentés tétele',
+  description: 'Küldj bizonyítékkal alátámasztott korrupciós ügyet — forrásvédelemmel, végpont-titkosítva, IP-cím rögzítése nélkül.',
+};
+
 interface Props {
   searchParams: Promise<{ name?: string; crimes?: string }>;
 }

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Csapat – Kegyencjárat',
+  title: 'Csapat',
   description: 'A Kegyencjárat mögötti emberek és szerkesztési elvek.',
 };
 
@@ -58,27 +58,12 @@ export default function CsapatPage() {
             az adatokról folyamatosan frissülő képet közlünk az oldalon.
           </p>
 
-          <h3 className="modszertan-h3">Miért névtelen?</h3>
-
-          <p>
-            Két átlagembernek, akik Magyarországon hatalmukkal visszaélő politikusokról
-            gyűjtenek adatokat, kockázatot jelent a nyilvános szerepvállalás. Ez nem
-            paranoia — láttuk, mi történt más tényfeltáró kezdeményezésekkel.
-            A projekt neve addig marad fenn, amíg az adatok pontosak és az oldalra
-            nem kerül rá jogtalan nyomás.
-          </p>
-
-          <p>
-            Ha a projekt nő, és a jogi és személyes kockázat kezelhetővé válik,
-            szívesen tesszük transzparenssé, ki áll mögötte.
-          </p>
-
           <h3 className="modszertan-h3">Mi van mögötte?</h3>
 
           <div className="adom-costs">
             <div className="adom-cost-row">
               <span className="adom-cost-label">Tartalom, adatgyűjtés, döntések</span>
-              <span className="adom-cost-val">2 átlagember</span>
+              <span className="adom-cost-val">Hudecz Attila és Marosi Balázs</span>
             </div>
             <div className="adom-cost-row">
               <span className="adom-cost-label">Technikai megvalósítás</span>
@@ -123,8 +108,7 @@ export default function CsapatPage() {
           <p>
             Ha az ellenőrzésben, adatgyűjtésben vagy jogi háttérrel szeretnél segíteni,
             írj a <a href="mailto:hello@kegyencjarat.hu">hello@kegyencjarat.hu</a> címre.
-            Nem fizetünk, de a munkádat jóváírjuk, ha nyilvánossá válik az oldal mögötti
-            csapat.
+            Nem fizetünk, de a munkádat feltüntetjük az oldalon.
           </p>
 
           <div className="modszertan-back">

@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { GALERIA } from '../../_home/galeria-config';
+import { LOGO_BADGE_DATA_URI } from '../../_og/logo-badge';
 
 export const runtime = 'edge';
 export const size = { width: 1200, height: 630 };
@@ -34,6 +35,25 @@ export default function OGImage({ params }: { params: { id: string } }) {
     >
       {/* Piros oldalsáv */}
       <div style={{ width: 12, background: '#e31937', flexShrink: 0 }} />
+
+      {/* Logó jelvény */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 56,
+          right: 64,
+          width: 76,
+          height: 76,
+          borderRadius: 16,
+          background: '#ffffff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={LOGO_BADGE_DATA_URI} width={52} height={52} alt="" />
+      </div>
 
       <div
         style={{

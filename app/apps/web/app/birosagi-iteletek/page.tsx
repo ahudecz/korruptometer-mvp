@@ -1,5 +1,10 @@
 import { desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
+
+export const metadata = {
+  title: 'Börtönben van-e?',
+  description: 'Nyomon követjük a NER-hez köthető korrupciós ügyek bírósági szakaszát — vádemelés, előzetes letartóztatás és jogerős ítélet.',
+};
 import { UGYEK } from '../_home/ugyek-config';
 import { GALERIA } from '../_home/galeria-config';
 import { VerdictList, type SerializedVerdict } from './VerdictList';

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Partnerek – Kegyencjárat',
+  title: 'Partnerek',
   description: 'A Kegyencjárat partneri szervezetei és együttműködései.',
 };
 

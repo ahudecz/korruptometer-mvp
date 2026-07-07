@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Adatok letöltése – Kegyencjárat',
+  title: 'Adatok letöltése',
   description: 'Az adatbázis CSV formátumban letölthető, és API hozzáférés is tervezett.',
 };
 

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Forráshivatkozások – Kegyencjárat',
+  title: 'Forráshivatkozások',
   description: 'Az adatbázisban felhasznált partneri adatbázisok, sajtóforrások és hatósági dokumentumok teljes listája.',
 };
 

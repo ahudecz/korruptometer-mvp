@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Adományozás – Kegyencjárat',
+  title: 'Adományozás',
   description: 'Támogasd a Kegyencjárat független tényfeltáró munkáját.',
 };
 
@@ -87,6 +87,9 @@ export default function AdomanyozasPage() {
           <p>
             Az adományok segítenek fenntartani a szervereket, javítani az adatminőséget,
             és folytatni azt a fejlesztői munkát, ami ezeket az oldalakat élővé teszi.
+            A fejlesztéshez használt AI-modellek minősége közvetlenül befolyásolja a munka
+            gyorsaságát és pontosságát is — a jobb, megbízhatóbb modellek jellemzően
+            drágábbak, így minél nagyobb a támogatás, annál inkább tudunk ezekbe invesztálni.
             Nincs cserébe semmi különleges előny — csak az a tudat, hogy hozzájárultál
             egy fontosnak tartott projekthez.
           </p>

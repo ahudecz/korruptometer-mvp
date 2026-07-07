@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { RevokeConsentButton } from './revoke-button';
 
 export const metadata = {
-  title: 'Adatvédelmi tájékoztató – Kegyencjárat',
+  title: 'Adatvédelmi tájékoztató',
   description: 'A Kegyencjárat adatkezelési és cookie-tájékoztatója.',
 };
 
@@ -26,7 +26,10 @@ export default function AdatvedelemPage() {
           <h3 className="modszertan-h3">Az adatkezelő</h3>
 
           <p>
-            Az oldalt magánszemélyek működtetik, kereskedelmi szervezet nélkül.
+            Hudecz Attila és Marosi Balázs, magánszemélyek, kereskedelmi
+            szervezet nélkül üzemeltetik a Kegyencjárat weboldalt. Nincs
+            kijelölt adatvédelmi tisztviselő (DPO) — a GDPR 37. cikke szerint
+            erre jelen tevékenység terjedelme mellett nem vagyunk kötelezettek.
             Kapcsolat: <a href="mailto:hello@kegyencjarat.hu">hello@kegyencjarat.hu</a>
           </p>
 

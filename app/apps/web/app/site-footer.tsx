@@ -1,10 +1,17 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 export function SiteFooter() {
   return (
     <footer className="site-footer" id="methodology" role="contentinfo">
       <div>
-        <h4>Kegyencjárat</h4>
+        <Image
+          src="/images/brand/logo-wordmark.png"
+          alt="Kegyencjárat"
+          width={160}
+          height={40}
+          className="footer-logo"
+        />
         <p>
           Független híraggregátor. Adataink nyilvános sajtóforrásokon és bírósági iratokon alapulnak.
         </p>
@@ -17,6 +24,8 @@ export function SiteFooter() {
           <li><Link href="/adatok">CSV letöltés</Link></li>
           <li><Link href="/adatok">API hozzáférés</Link></li>
           <li><Link href="/adatvedelem">Adatvédelem</Link></li>
+          <li><Link href="/impresszum">Impresszum</Link></li>
+          <li><Link href="/aszf">ÁSZF</Link></li>
         </ul>
       </div>
       <div>

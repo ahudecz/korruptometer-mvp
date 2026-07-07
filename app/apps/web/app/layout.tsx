@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { SiteFooter } from './site-footer';
@@ -11,27 +12,28 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL?.startsWith('http')
   ? process.env.NEXT_PUBLIC_APP_URL
   : 'https://korruptometer.vercel.app';
 
+const HOME_TITLE = 'Kegyencjárat — Magyar korrupciós ügyek adatbázisa';
+const HOME_DESCRIPTION =
+  'Független, közforrású adatbázis a magyarországi korrupciós ügyekről és a NER összeomlásáról — adatokra, nem szólamokra alapozva.';
+
 export const metadata: Metadata = {
   title: {
-    default: 'KEGYENCJÁRAT — Magyarországi korrupció nyomon követése',
+    default: HOME_TITLE,
     template: '%s — Kegyencjárat',
   },
-  description:
-    'Független, közforrású adatbázis a Magyarországon dokumentált korrupciós ügyekről, a 2026. április 12-i rendszerváltás óta történt személyi változásokról és a propaganda megszűnéséről. Minden korrupciós eset nyomon követhető a vádemeléstől az ítéletig — adatokra, nem szólamokra alapozva.',
+  description: HOME_DESCRIPTION,
   metadataBase: new URL(appUrl),
   openGraph: {
     siteName: 'Kegyencjárat',
     type: 'website',
     locale: 'hu_HU',
-    title: 'KEGYENCJÁRAT — Magyarországi korrupció nyomon követése',
-    description:
-      'Független, közforrású adatbázis a Magyarországon dokumentált korrupciós ügyekről — adatokra, nem szólamokra alapozva.',
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'KEGYENCJÁRAT — Magyarországi korrupció nyomon követése',
-    description:
-      'Független, közforrású adatbázis a Magyarországon dokumentált korrupciós ügyekről — adatokra, nem szólamokra alapozva.',
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
   },
 };
 
@@ -47,7 +49,14 @@ export default function RootLayout({
         <nav className="nav" role="banner">
           <div className="nav-inner">
             <Link href="/" className="brand">
-              Kegyencjárat
+              <Image
+                src="/images/brand/logo-wordmark.png"
+                alt="Kegyencjárat"
+                width={180}
+                height={45}
+                priority
+                className="brand-logo"
+              />
             </Link>
             <ul className="nav-links" aria-label="Fő navigáció">
               <li>

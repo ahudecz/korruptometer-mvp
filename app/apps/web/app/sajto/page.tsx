@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Sajtó – Kegyencjárat',
+  title: 'Sajtó',
   description: 'Sajtókapcsolat, médiamegjelenések és sajtóanyagok a Kegyencjárathoz.',
 };
 

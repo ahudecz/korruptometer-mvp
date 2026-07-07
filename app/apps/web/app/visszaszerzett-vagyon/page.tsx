@@ -6,6 +6,11 @@ import { FtValue } from '../_home/ft-value';
 
 export const dynamic = 'force-dynamic';
 
+export const metadata = {
+  title: 'Visszaszerzett vagyon',
+  description: 'Nyomon követjük a NER-korszakban eltűnt, majd visszaszerzett közpénzt és vagyont — esetenként, összeggel.',
+};
+
 const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
 
 function fmtDate(d: Date): string {

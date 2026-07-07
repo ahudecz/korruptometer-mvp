@@ -1,7 +1,8 @@
 import { LoginForm } from './login-form';
 
 export const metadata = {
-  title: 'Bejelentkezés – Kegyencjárat Admin',
+  title: 'Admin bejelentkezés',
+  robots: { index: false, follow: false },
 };
 
 export default function AdminLoginPage({
