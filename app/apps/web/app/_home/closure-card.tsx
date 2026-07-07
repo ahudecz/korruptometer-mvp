@@ -38,9 +38,15 @@ export function MiniClosureCard({ name, eventType, eventDate, sourceUrl, sourceN
   const imgStyle: React.CSSProperties = outlet?.logoScale
     ? { transform: `scale(${outlet.logoScale})`, objectFit: 'cover', padding: 0 }
     : {};
+  const visualStyle: React.CSSProperties | undefined = outlet?.logoBgColor
+    ? { backgroundColor: outlet.logoBgColor }
+    : undefined;
   const inner = (
     <>
-      <div className={`closure-card-visual${outlet?.logoBgWhite ? ' bg-white' : ''}`}>
+      <div
+        className={`closure-card-visual${outlet?.logoBgWhite ? ' bg-white' : ''}`}
+        style={visualStyle}
+      >
         {logo ? (
           <img
             src={logo}

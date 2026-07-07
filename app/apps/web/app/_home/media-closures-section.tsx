@@ -15,10 +15,13 @@ function MediaCard({ entry, subgrid = false }: { entry: MediaOutletEntry; subgri
   const imgStyle: React.CSSProperties = entry.logoScale
     ? { transform: `scale(${entry.logoScale})`, objectFit: 'cover' }
     : {};
+  const logoStyle: React.CSSProperties | undefined = entry.logoBgColor
+    ? { backgroundColor: entry.logoBgColor }
+    : undefined;
 
   return (
     <div className={`media-card mc-${entry.status}${subgrid ? ' mc-subgrid' : ''}`}>
-      <div className={`media-card-logo${entry.logoBgWhite ? ' bg-white' : ''}`}>
+      <div className={`media-card-logo${entry.logoBgWhite ? ' bg-white' : ''}`} style={logoStyle}>
         {src ? (
           <img
             src={src}

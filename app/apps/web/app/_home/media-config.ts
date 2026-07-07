@@ -13,6 +13,8 @@ export interface MediaOutletEntry {
   logoUrl?: string;
   logoCredit?: string;
   logoBgWhite?: boolean;
+  /** Custom logo-plate background color (hex/rgb) — for white-on-color logos, e.g. the source site's own header color. Overrides logoBgWhite. */
+  logoBgColor?: string;
   logoScale?: number;
   sourceUrl?: string;
   sourceName?: string;
@@ -802,6 +804,20 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     logoUrl: 'https://commons.wikimedia.org/wiki/Special:FilePath/MTVA%20(Hungary)%20logo%20since%202012.svg',
     logoCredit: 'Wikimedia Commons',
     logoBgWhite: true,
+  },
+  {
+    id: 'szuverenitasvedelmi-hivatal',
+    name: 'Szuverenitásvédelmi Hivatal',
+    group: 'tv-youtube',
+    owner: 'Állami hivatal (Lánczi Tamás vezette)',
+    description: 'Az Országgyűlés megszüntette a hivatalt.',
+    status: 'closed',
+    statusLabel: 'Megszűnt (2026. jún. 30.)',
+    sourceUrl: 'https://telex.hu/velemeny/2026/06/30/szuverenitasvedelmi-hivatal-lanczi-tamas-nemzeti-erdek-borton',
+    sourceName: 'Telex',
+    logoUrl: 'https://szuverenitasvedelmihivatal.hu/img/logo_white_v2.png',
+    logoCredit: 'Szuverenitásvédelmi Hivatal',
+    logoBgColor: '#1D1559',
   },
   {
     id: 'megafon',
