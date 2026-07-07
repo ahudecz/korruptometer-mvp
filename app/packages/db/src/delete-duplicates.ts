@@ -3,6 +3,7 @@ import { config as loadEnv } from 'dotenv';
 loadEnv({ path: resolve(__dirname, '../../../.env.local') });
 loadEnv({ path: resolve(__dirname, '../../../.env') });
 import postgres from 'postgres';
+import { assertWriteTarget } from './guard';
 
 // Megtartjuk: 444 és HVG (legjobb minőség + legtöbb infó)
 // Töröljük: hang.hu, media1.hu, nepszava.hu verziókat
@@ -13,6 +14,7 @@ const DELETE_URLS = [
 ];
 
 async function main() {
+  assertWriteTarget('delete-duplicates');
   const conn = postgres(process.env.DATABASE_URL!, { prepare: false, max: 1 });
 
   for (const url of DELETE_URLS) {

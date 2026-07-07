@@ -1,7 +1,9 @@
 import { sql } from 'drizzle-orm';
 import { db as getDb } from './index';
+import { assertWriteTarget } from './guard';
 
 async function main() {
+  assertWriteTarget('delete-foci');
   const db = getDb();
   const result = await db.execute(
     sql`DELETE FROM "NewsArticle" WHERE tag ILIKE '%foci%vb%'`

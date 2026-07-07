@@ -3,6 +3,7 @@ import { config as loadEnv } from 'dotenv';
 loadEnv({ path: resolve(__dirname, '../../../.env.local') });
 loadEnv({ path: resolve(__dirname, '../../../.env') });
 import postgres from 'postgres';
+import { assertWriteTarget } from './guard';
 
 // Ezek konkrétan nem ide valók — headline alapján töröljük
 const JUNK_HEADLINES = [
@@ -16,6 +17,7 @@ const JUNK_HEADLINES = [
 ];
 
 async function main() {
+  assertWriteTarget('delete-junk');
   const conn = postgres(process.env.DATABASE_URL!, { prepare: false, max: 1 });
 
   for (const pattern of JUNK_HEADLINES) {
