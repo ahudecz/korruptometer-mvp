@@ -15,7 +15,7 @@ import type { LlmResult } from './llm';
 
 export type DetectorType = 'resignation' | 'media_closure' | 'court_verdict' | 'asset_recovery';
 export type CheckOutcome = 'inserted' | 'discarded';
-export type CheckReason = 'low_confidence' | 'not_applicable' | 'duplicate' | 'missing_fields';
+export type CheckReason = 'low_confidence' | 'not_applicable' | 'duplicate' | 'missing_fields' | 'missing_source';
 
 /** How many days back an unchecked article stays eligible for processing. */
 export const BACKLOG_DAYS = 7;
@@ -48,6 +48,7 @@ export type CandidateArticle = {
   excerpt: string;
   publishedAt: string;
   sourceUrl: string | null;
+  sourceName: string | null;
 };
 
 /**
@@ -56,6 +57,10 @@ export type CandidateArticle = {
  * article+detectorType pair). Callers still apply their own keyword
  * pre-filter on top of this — this only replaces the time-window/backlog
  * layer, not the relevance filter.
+ *
+ * Joins Source for sourceName so every detector can attach a real citation —
+ * a resignation/closure/verdict/recovery entry MUST NOT be published without
+ * a source link (see FR in the callers' "missing source" discard gate).
  */
 export async function loadUncheckedArticles(
   db: Executable,
@@ -63,8 +68,9 @@ export async function loadUncheckedArticles(
   backlogDays: number = BACKLOG_DAYS,
 ): Promise<CandidateArticle[]> {
   return (await db.execute(sql`
-    SELECT a.id, a.headline, a.excerpt, a."publishedAt", a."sourceUrl"
+    SELECT a.id, a.headline, a.excerpt, a."publishedAt", a."sourceUrl", s.name AS "sourceName"
     FROM "NewsArticle" a
+    LEFT JOIN "Source" s ON s.id = a."sourceId"
     WHERE a."publishedAt" >= now() - make_interval(days => ${backlogDays})
       AND NOT EXISTS (
         SELECT 1 FROM "DetectionCheck" dc

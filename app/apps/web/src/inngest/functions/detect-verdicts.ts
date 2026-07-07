@@ -126,6 +126,20 @@ export const detectVerdicts = inngest.createFunction(
             continue;
           }
 
+          // A public entry MUST always be traceable to a source article —
+          // never publish an unsourced claim.
+          if (!article.sourceUrl) {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'missing_source',
+              extractedName: result.personName,
+              confidence: result.confidence,
+            });
+            continue;
+          }
+
           const fallbackDate = new Date(article.publishedAt as unknown as string);
           let verdictDate: Date;
           try {
@@ -134,8 +148,6 @@ export const detectVerdicts = inngest.createFunction(
           } catch {
             verdictDate = fallbackDate;
           }
-
-          const sourceUrl = article.sourceUrl ?? null;
 
           await db.insert(schema.courtVerdicts).values({
             personName: result.personName.slice(0, 200),
@@ -148,8 +160,8 @@ export const detectVerdicts = inngest.createFunction(
             verdictDate,
             court: (result.court || 'Ismeretlen bíróság').slice(0, 200),
             summary: result.summary.slice(0, 1000),
-            sourceUrls: sourceUrl ? [sourceUrl] : [],
-            sourceNames: [],
+            sourceUrls: [article.sourceUrl],
+            sourceNames: article.sourceName ? [article.sourceName] : [],
             sourceHeadlines: article.headline ? [article.headline.slice(0, 500)] : [],
             sourceDates: [todayIso],
             reviewStatus,

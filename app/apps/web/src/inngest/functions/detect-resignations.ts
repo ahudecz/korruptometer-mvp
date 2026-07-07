@@ -132,6 +132,20 @@ export const detectResignations = inngest.createFunction(
             continue;
           }
 
+          // A public entry MUST always be traceable to a source article —
+          // never publish an unsourced claim.
+          if (!article.sourceUrl) {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'missing_source',
+              extractedName: result.name,
+              confidence: result.confidence,
+            });
+            continue;
+          }
+
           // article.publishedAt is serialized as string by Inngest JSON
           const fallbackDate = new Date(article.publishedAt as unknown as string);
           let resignationDate: Date;
@@ -153,6 +167,8 @@ export const detectResignations = inngest.createFunction(
             description: result.description.slice(0, 1000) || null,
             pinned,
             reviewStatus,
+            sourceUrls: [article.sourceUrl],
+            sourceNames: article.sourceName ? [article.sourceName] : [],
           });
 
           // Tag the source article so it appears in /hirek under the 'Lemondás' filter.

@@ -130,6 +130,20 @@ export const detectAssetRecoveries = inngest.createFunction(
             continue;
           }
 
+          // A public entry MUST always be traceable to a source article —
+          // never publish an unsourced claim.
+          if (!article.sourceUrl) {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'missing_source',
+              extractedName: result.caseLabel,
+              confidence: result.confidence,
+            });
+            continue;
+          }
+
           const fallbackDate = new Date(article.publishedAt as unknown as string);
           let recoveredAt: Date;
           try {
@@ -152,8 +166,8 @@ export const detectAssetRecoveries = inngest.createFunction(
             description: result.description.slice(0, 1000),
             amountFt: BigInt(Math.round(result.amountFt)),
             recoveredAt,
-            sourceUrl: article.sourceUrl ?? null,
-            sourceName: null,
+            sourceUrl: article.sourceUrl,
+            sourceName: article.sourceName,
           });
 
           await markChecked(db, {
