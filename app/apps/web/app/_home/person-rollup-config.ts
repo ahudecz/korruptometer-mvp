@@ -31,7 +31,19 @@ export const PERSON_ROLLUPS: PersonRollupConfig[] = [
     // "Mészáros Lőrinc" only won the ScandalCatalog "person" slot via a tied
     // article-count fluke on two clearly mistagged sub-investigations. Zero
     // legitimate connection to Mészáros.
-    excludeIds: ['ner-milliardok', 'meszaros-szvj-autopalya-koncesszio', 'mnb-botrany'],
+    // meszaros-kormany-3750-mrd-pluszkoltseg: fact-checked 2026-07-08 — the
+    // source article ("Égeti a pénzt az Orbán-kormány, saját hatáskörben még
+    // 3750 milliárd forint pluszkiadásról döntött") is about the government's
+    // overall extra budget spending, zero mention of Mészáros specifically.
+    // meszaros-magantokealap-1311mrd: same audit — source article
+    // ("Transparency International: 1311 milliárd forintot fektetett az állam
+    // magántőkealapokba") is a state-wide private-equity investment figure,
+    // not a Mészáros-attributed sum. Both were single-article, never-reviewed
+    // "besorolatlan" stubs that alone accounted for 56% of his nominal total.
+    excludeIds: [
+      'ner-milliardok', 'meszaros-szvj-autopalya-koncesszio', 'mnb-botrany',
+      'meszaros-kormany-3750-mrd-pluszkoltseg', 'meszaros-magantokealap-1311mrd',
+    ],
     writeups: MESZAROS_TOP_CASES,
   },
   {
@@ -46,7 +58,14 @@ export const PERSON_ROLLUPS: PersonRollupConfig[] = [
     // dolomit-meszaros: headline figure actually belongs to a Mészáros-attributed
     // sub-investigation, not the Orbán-family dividend claims.
     // fidesz-kampanyarc-tamogatas: headline is about Orbán Ráhel, not Orbán Viktor.
-    excludeIds: ['orban-eszak-macedonia-500meuro', 'dolomit-meszaros', 'fidesz-kampanyarc-tamogatas'],
+    // tiborcz-garancsi-durer-120mrd: fact-checked 2026-07-08 — the source
+    // article ("Tiborcz István és Garancsi István cégeinek 120 milliárd
+    // juthat") is explicitly about Tiborcz's and Garancsi's companies, not
+    // Orbán Viktor; the scandalKey name itself says so.
+    excludeIds: [
+      'orban-eszak-macedonia-500meuro', 'dolomit-meszaros', 'fidesz-kampanyarc-tamogatas',
+      'tiborcz-garancsi-durer-120mrd',
+    ],
   },
   {
     slug: 'matolcsy-gyorgy',
@@ -61,10 +80,16 @@ export const PERSON_ROLLUPS: PersonRollupConfig[] = [
     // avoid re-counting the same money 2-3x. matolcsy-dla-piper-127mrd: same
     // 127,5 Mrd Kecskemét/Optima bond deal already counted under Lezsák
     // Sándor's leszak-neumann-egyetem. Fact-checked 2026-07-05 MNB deep-dive.
+    // matolcsy-mnb-szazmilyardok: fact-checked 2026-07-08 — the source
+    // article ("Súlyos százmilliárdokba fog még kerülni nekünk Matolcsy
+    // MNB-elnöksége") is a speculative future-cost prediction, not a
+    // documented sum, and a single-article "besorolatlan" stub like the
+    // other excluded entries above.
     excludeIds: [
       'mnb-alapitvany-botrany', 'matolcsy-szalloda-spekulacio',
       'matolcsy-global-trade-centre-mnb-vagyonkezeles',
       'matolcsy-mnb-gtc-ingatlan-adossag', 'matolcsy-dla-piper-127mrd',
+      'matolcsy-mnb-szazmilyardok',
     ],
   },
   {
@@ -72,7 +97,12 @@ export const PERSON_ROLLUPS: PersonRollupConfig[] = [
     personName: 'Rogán Antal',
     // familiabar-rogan-balasy-propagandapenz: headline tagged to Orbán Viktor.
     // garancsi-kazino: headline investigation actually belongs to Garancsi István.
-    excludeIds: ['familiabar-rogan-balasy-propagandapenz', 'garancsi-kazino'],
+    // gulyasministrium-kommunikacio: fact-checked 2026-07-08 — the source
+    // article ("1360 milliárdot költött az állam a Rogán-féle kommunikációra")
+    // is the state's overall communication-budget total (ScandalCatalog's
+    // own scandalName even attributes it to "Gulyás Gergely minisztériuma"),
+    // not a documented sum tied to Rogán personally.
+    excludeIds: ['familiabar-rogan-balasy-propagandapenz', 'garancsi-kazino', 'gulyasministrium-kommunikacio'],
   },
   {
     slug: 'balasy-gyula',

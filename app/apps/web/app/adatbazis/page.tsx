@@ -20,12 +20,16 @@ export const metadata = {
   description: 'Kereshető, szűrhető adatbázis a dokumentált magyar korrupciós ügyekről — érintettek, összegek és intézmények szerint.',
 };
 
-// Featured on the "Kiemelt személyek" strip — the biggest, best-documented
-// person rollups. Order here is a fallback; actual display order is by
-// live total (desc), computed below.
+// Featured on the "Kiemelt személyek" strip — the 12 biggest, best-documented
+// person rollups by corrected (excludeIds-adjusted) total damage, per the
+// 2026-07-08 ranking audit (which also caught and excluded several
+// misattributed/macro-figure scandalKeys — see person-rollup-config.ts).
+// Order here is a fallback; actual display order is by live total (desc),
+// computed below.
 const FEATURED_ROLLUP_SLUGS = [
-  'meszaros-lorinc', 'tiborcz-istvan', 'matolcsy-gyorgy',
-  'rogan-antal', 'orban-viktor', 'balasy-gyula',
+  'meszaros-lorinc', 'balasy-gyula', 'tiborcz-istvan', 'orban-viktor',
+  'rogan-antal', 'lazar-janos', 'szijj-laszlo', 'lezsak-sandor',
+  'hernadi-zsolt', 'szijjarto-peter', 'palkovics-laszlo', 'matolcsy-gyorgy',
 ];
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
