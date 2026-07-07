@@ -12,7 +12,7 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL?.startsWith('http')
   ? process.env.NEXT_PUBLIC_APP_URL
   : 'https://korruptometer.vercel.app';
 
-const HOME_TITLE = 'Kegyencjárat — Magyar korrupciós ügyek adatbázisa';
+const HOME_TITLE = 'Kegyencjárat — NER összeomlás tracker';
 const HOME_DESCRIPTION =
   'Független, közforrású adatbázis a magyarországi korrupciós ügyekről és a NER összeomlásáról — adatokra, nem szólamokra alapozva.';
 
