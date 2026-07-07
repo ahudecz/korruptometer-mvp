@@ -150,11 +150,41 @@ export const PERSON_ROLLUPS: PersonRollupConfig[] = [
   },
   { slug: 'emori-gabor', personName: 'Emőri Gábor' },
   { slug: 'palkovics-laszlo', personName: 'Palkovics László' },
-  { slug: 'barta-eke-gyula', personName: 'Barta-Eke Gyula', excludeIds: ['barta-eke-nagyper-miniszterium'] },
-  { slug: 'garancsi-istvan', personName: 'Garancsi István' },
-  { slug: 'gattyan-gyorgy', personName: 'Gattyán György', excludeIds: ['gattyan-gyorgy-adougy'] },
+  {
+    slug: 'barta-eke-gyula',
+    personName: 'Barta-Eke Gyula',
+    // portik-pert: fact-checked 2026-07-08 — the source article is about
+    // Portik Tamás, not Barta-Eke Gyula.
+    excludeIds: ['barta-eke-nagyper-miniszterium', 'portik-pert'],
+  },
+  {
+    slug: 'garancsi-istvan',
+    personName: 'Garancsi István',
+    // schmidt-marias-alapitvany-milliardos-szerz: fact-checked 2026-07-08 —
+    // the source article is about Schmidt Mária's foundation, not Garancsi.
+    excludeIds: ['schmidt-marias-alapitvany-milliardos-szerz'],
+  },
+  {
+    slug: 'gattyan-gyorgy',
+    personName: 'Gattyán György',
+    // The old 'gattyan-gyorgy-adougy' id never matched (the real id is
+    // accented: 'gattyán-györgy-adougy') so this exclusion silently did
+    // nothing. Fixed 2026-07-08: also this and 'gattyan-docler-adougy' are
+    // the same Docler/NAV tax matter reported under two scandalKeys with
+    // the identical 19,4 Mrd figure — kept the better-sourced one (5 cikk)
+    // and excluded the duplicate.
+    excludeIds: ['gattyán-györgy-adougy'],
+  },
   { slug: 'kocsis-mate', personName: 'Kocsis Máté' },
-  { slug: 'homlok-zsolt', personName: 'Homlok Zsolt' },
+  {
+    slug: 'homlok-zsolt',
+    personName: 'Homlok Zsolt',
+    // szombathelyi-haladas-stadion / meszaros-haladas-labdarugo: fact-checked
+    // 2026-07-08 — both are about the Szombathelyi Haladás football club;
+    // Homlok Zsolt heads the handball federation (Magyar Kézilabda
+    // Szövetség), not football — mistagged to him.
+    excludeIds: ['szombathelyi-haladas-stadion', 'meszaros-haladas-labdarugo'],
+  },
   {
     slug: 'kosa-lajos',
     personName: 'Kósa Lajos',
