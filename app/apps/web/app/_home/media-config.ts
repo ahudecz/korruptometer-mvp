@@ -801,7 +801,7 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     statusLabel: 'Megszűnt (2026. júl. 7.)',
     sourceUrl: 'https://telex.hu/belfold/2026/07/07/leallt-az-m1-adasa',
     sourceName: 'Telex',
-    logoUrl: 'https://commons.wikimedia.org/wiki/Special:FilePath/MTVA%20(Hungary)%20logo%20since%202012.svg',
+    logoUrl: '/images/media/mtva.svg',
     logoCredit: 'Wikimedia Commons',
     logoBgWhite: true,
   },
