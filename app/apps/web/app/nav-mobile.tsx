@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { href: '/lemondasok', label: 'Lemondott-e?' },
   { href: '/birosagi-iteletek', label: 'Börtönben van-e?' },
   { href: '/megszunt', label: 'Megszűnt-e?' },
+  { href: '/legfontosabb-hangok', label: 'Legfontosabb hangok' },
 ];
 
 export function NavMobile() {
