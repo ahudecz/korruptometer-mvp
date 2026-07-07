@@ -20,116 +20,74 @@ export default function OGImage() {
       {/* Piros oldalsáv */}
       <div style={{ width: 12, background: '#e31937', flexShrink: 0 }} />
 
-      {/* Logó jelvény */}
+      {/* Tartalom — nagy logó + egyetlen jól olvasható sor */}
       <div
         style={{
-          position: 'absolute',
-          top: 56,
-          right: 64,
-          width: 76,
-          height: 76,
-          borderRadius: 16,
-          background: '#ffffff',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={LOGO_BADGE_DATA_URI} width={52} height={52} alt="" />
-      </div>
-
-      {/* Tartalom */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          padding: '64px 72px',
+          gap: 56,
+          padding: '0 80px',
           flex: 1,
         }}
       >
-        {/* Label */}
         <div
           style={{
-            color: '#e31937',
-            fontSize: 16,
-            fontWeight: 700,
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            marginBottom: 28,
-            fontFamily: 'system-ui',
+            width: 240,
+            height: 240,
+            borderRadius: 32,
+            background: '#ffffff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
           }}
         >
-          Független adatbázis · 2026
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={LOGO_BADGE_DATA_URI} width={176} height={176} alt="" />
         </div>
 
-        {/* Főcím */}
-        <div
-          style={{
-            color: '#ffffff',
-            fontSize: 100,
-            fontWeight: 900,
-            lineHeight: 0.95,
-            fontFamily: 'system-ui',
-            letterSpacing: '-0.03em',
-          }}
-        >
-          KEGYENC
-        </div>
-        <div
-          style={{
-            color: '#ffffff',
-            fontSize: 100,
-            fontWeight: 900,
-            lineHeight: 0.95,
-            fontFamily: 'system-ui',
-            letterSpacing: '-0.03em',
-            marginBottom: 36,
-          }}
-        >
-          JÁRAT
-        </div>
-
-        {/* Alcím */}
-        <div
-          style={{
-            color: '#8b9099',
-            fontSize: 26,
-            fontFamily: 'system-ui',
-            lineHeight: 1.45,
-            maxWidth: 700,
-          }}
-        >
-          Magyar korrupciós ügyek nyilvános adatbázisa — adatokra, nem szólamokra alapozva.
-        </div>
-
-        {/* URL */}
-        <div
-          style={{
-            color: '#4b5563',
-            fontSize: 18,
-            marginTop: 44,
-            fontFamily: 'system-ui',
-            letterSpacing: '0.04em',
-          }}
-        >
-          korruptometer.vercel.app
+        <div style={{ display: 'flex', flexDirection: 'column', maxWidth: 740 }}>
+          <div
+            style={{
+              color: '#e31937',
+              fontSize: 28,
+              fontWeight: 700,
+              letterSpacing: '0.02em',
+              marginBottom: 20,
+              fontFamily: 'system-ui',
+            }}
+          >
+            Kegyencjárat
+          </div>
+          <div
+            style={{
+              color: '#ffffff',
+              fontSize: 58,
+              fontWeight: 900,
+              lineHeight: 1.08,
+              fontFamily: 'system-ui',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Megszűnt már a propaganda?
+          </div>
         </div>
       </div>
 
-      {/* Jobb oldali dekor — piros négyzet sarokba */}
+      {/* URL */}
       <div
         style={{
           position: 'absolute',
-          right: 60,
-          bottom: 60,
-          width: 64,
-          height: 64,
-          background: '#e31937',
-          opacity: 0.15,
+          right: 64,
+          bottom: 48,
+          color: '#4b5563',
+          fontSize: 18,
+          fontFamily: 'system-ui',
+          letterSpacing: '0.04em',
         }}
-      />
+      >
+        korruptometer.vercel.app
+      </div>
     </div>,
     size,
   );
