@@ -10,7 +10,7 @@ type State =
   | { kind: 'pending'; email?: string }
   | { kind: 'sent'; email: string }
   | { kind: 'verified' }
-  | { kind: 'err'; message: string };
+  | { kind: 'err'; message: string; email?: string };
 
 export function LoginForm({
   next,
@@ -54,7 +54,7 @@ export function LoginForm({
       type: 'email',
     });
     if (error) {
-      setState({ kind: 'err', message: error.message });
+      setState({ kind: 'err', message: error.message, email: state.email });
     } else {
       setState({ kind: 'verified' });
       router.push(params?.next ?? '/admin');
@@ -65,7 +65,11 @@ export function LoginForm({
     return <p className="admin-login-status">Bejelentkezve. Átirányítás…</p>;
   }
 
-  if (state.kind === 'sent' || (state.kind === 'pending' && state.email)) {
+  if (
+    state.kind === 'sent' ||
+    (state.kind === 'pending' && state.email) ||
+    (state.kind === 'err' && state.email)
+  ) {
     const email = state.email ?? '';
     return (
       <form onSubmit={verifyCode} className="admin-login-form">
