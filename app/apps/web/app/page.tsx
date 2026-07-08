@@ -22,10 +22,16 @@ import { UGYEK } from './_home/ugyek-config';
 import { autoDisplayTitle, getCaseDisplayTitle, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS } from './_home/case-detail-config';
 import { NewsCardImage } from './hirek/news-card-image';
 
-// Runtime functions pinned to dub1 (Dublin/eu-west-1) via vercel.json to
-// co-locate with the Supabase pooler — eliminates cross-region latency that
-// caused FUNCTION_INVOCATION_TIMEOUT (504) under cold start.
-export const dynamic = 'force-dynamic';
+// ISR, matching /lemondasok, /megszunt, /birosagi-iteletek — regenerates at
+// most once per 120s regardless of visitor count. force-dynamic was tried
+// briefly to chase a 504 (FUNCTION_INVOCATION_TIMEOUT) caused by an uncached
+// db.execute() that could hang indefinitely, but it made every single
+// pageview run all ~17 queries live against Postgres, which is what blew
+// through the Supabase quota. The actual timeout fix is that every
+// db.execute() in this file now runs inside unstable_cache (see below); ISR's
+// stale-while-revalidate means even a slow regeneration only affects the one
+// background request, never a visitor (they keep seeing the last-good page).
+export const revalidate = 120;
 export const maxDuration = 60;
 
 // Date-mentes lekérdezések cache-elve — nincs serialization probléma, warm kérésnél 0ms
