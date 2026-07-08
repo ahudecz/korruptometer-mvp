@@ -4,7 +4,7 @@ import { sql } from 'drizzle-orm';
 import { fmtNumber } from '@korr/shared/format';
 import { FtValue } from '../_home/ft-value';
 import { CaseRow } from './_components/case-row';
-import { autoDisplayTitle, getCaseDisplayTitle, getCaseOverride, CASE_OVERRIDES } from '../_home/case-detail-config';
+import { autoDisplayTitle, getCaseDisplayTitle, getCaseOverride, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS } from '../_home/case-detail-config';
 import { getFeaturedPeople } from '../_home/featured-persons';
 import { CrossUgyek, CrossLemondosok, CrossGaleria, CrossMegszunt, CrossFelszolitottak } from '../_home/cross-promo';
 
@@ -40,8 +40,6 @@ type ScandalRow = {
 // raw number (see the table below) — sorting by "Kár" must not rank those
 // artifact/suppressed figures above real ones just because damage_huf is
 // still a big raw number under the hood.
-const HIDDEN_DAMAGE_IDS = CASE_OVERRIDES.filter((o) => o.hideAutoDamage).map((o) => o.scandalKey);
-
 function orderBySql(sort: Sort) {
   const suppressedLast = HIDDEN_DAMAGE_IDS.length > 0
     ? sql`(id IN (${sql.join(HIDDEN_DAMAGE_IDS.map((v) => sql`${v}`), sql`, `)}))`
@@ -90,10 +88,7 @@ export default async function AdatbazisPage({
   // Retired/merged duplicate ids (see RETIRED_REDIRECTS in [id]/page.tsx) are
   // hidden from the general listing so they don't dangle as stale, double-
   // counting rows. Found during the 2026-07-05 person-rollup data audit.
-  const conds = [sql`id NOT IN (
-    'ner-milliardok', 'meszaros-szvj-autopalya-koncesszio',
-    'gattyan-gyorgy-adougy', 'hanko-balazs-nka-tamogatas', 'barta-eke-nagyper-miniszterium'
-  )`];
+  const conds = [sql`id NOT IN (${sql.join(RETIRED_SCANDAL_IDS.map((v) => sql`${v}`), sql`, `)})`];
   if (q) {
     const pat = `%${q}%`;
     conds.push(

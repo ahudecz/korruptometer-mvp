@@ -6,7 +6,7 @@ import { fmtNumber } from '@korr/shared/format';
 import { FtValue } from '../../_home/ft-value';
 import { GALERIA } from '../../_home/galeria-config';
 import { WATCH_LIST } from '../../_home/watchlist-config';
-import { getCaseOverride, cleanTitle, autoDisplayTitle, PERSON_PHOTOS } from '../../_home/case-detail-config';
+import { getCaseOverride, cleanTitle, autoDisplayTitle, PERSON_PHOTOS, RETIRED_REDIRECTS } from '../../_home/case-detail-config';
 import { getCaseVideo } from '../../_home/case-video-registry';
 import { fetchYouTubeMeta } from '@/lib/youtube-meta';
 import { DamageFigure } from '../_components/damage-figure';
@@ -112,23 +112,6 @@ type Member = { id: string; caseName: string | null; primaryPersonName: string |
 type CrossRef = { id: string; name: string; person: string | null; institution: string | null; article_count: number; damage_huf: string; offence_labels: string | null };
 type Article = { id: string; headline: string; excerpt: string | null; sourceUrl: string; publishedAt: Date; source_name: string | null };
 type KmdbRow = { news_id: number; title: string; source_url: string; kmdb_url: string; newspaper: string | null; pub_time: string | null; total: number };
-
-// Retired case ids — each is a confirmed duplicate of another scandalKey
-// (same underlying story/claim, split by a slug or classification quirk) and
-// redirects to the surviving canonical id rather than rendering its own
-// (now-misleading, double-counting) page. Found during the 2026-07-05
-// person-rollup data audit.
-const RETIRED_REDIRECTS: Record<string, string> = {
-  'ner-milliardok': '/adatbazis/meszaros-lorinc-osszes-ugye',
-  'meszaros-szvj-autopalya-koncesszio': '/adatbazis/meszaros-szijj-autopalya-koncesszio',
-  // Gattyán NAV/Docler adóügy — same case, same 19,4 Mrd figure, two scandalKeys.
-  'gattyan-gyorgy-adougy': '/adatbazis/gattyan-docler-adougy',
-  // Hankó NKA-támogatás eltérítés — same 17 Mrd claim as nka-botrany's top fragment.
-  'hanko-balazs-nka-tamogatas': '/adatbazis/nka-botrany',
-  // Barta-Eke 25 Mrd-os per — already title-aliased in case-detail-config;
-  // this makes the merge real so the damage isn't counted twice.
-  'barta-eke-nagyper-miniszterium': '/adatbazis/barta-eke-ngm-25-milliardos-per',
-};
 
 export default async function ScandalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: rawId } = await params;

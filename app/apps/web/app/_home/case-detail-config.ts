@@ -536,6 +536,34 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
   },
 ];
 
+// scandalKeys, amiknek a damage_huf értéke egy kártya-szám alatt torz/nem
+// személyhez köthető nyers összeg (lásd hideAutoDamage fent) — bármelyik
+// "legnagyobb ügyek" jellegű, damage_huf szerint rendezett/válogatott
+// felszín (pl. az /adatbazis tábla alap-rendezése, a nyitóoldal top-8-as
+// blokkja) ezt kell figyelembe vegye, különben ezek a torz számok
+// visszakerülnek a lista tetejére.
+export const HIDDEN_DAMAGE_IDS = CASE_OVERRIDES.filter((o) => o.hideAutoDamage).map((o) => o.scandalKey);
+
+// Retired case ids — each is a confirmed duplicate of another scandalKey
+// (same underlying story/claim, split by a slug or classification quirk) and
+// redirects to the surviving canonical id rather than rendering its own
+// (now-misleading, double-counting) page. Found during the 2026-07-05
+// person-rollup data audit. Single source of truth: [id]/page.tsx redirects
+// on these, and any other damage_huf-sorted surface (the /adatbazis table's
+// default listing, the homepage top-8) must exclude them the same way.
+export const RETIRED_REDIRECTS: Record<string, string> = {
+  'ner-milliardok': '/adatbazis/meszaros-lorinc-osszes-ugye',
+  'meszaros-szvj-autopalya-koncesszio': '/adatbazis/meszaros-szijj-autopalya-koncesszio',
+  // Gattyán NAV/Docler adóügy — same case, same 19,4 Mrd figure, two scandalKeys.
+  'gattyan-gyorgy-adougy': '/adatbazis/gattyan-docler-adougy',
+  // Hankó NKA-támogatás eltérítés — same 17 Mrd claim as nka-botrany's top fragment.
+  'hanko-balazs-nka-tamogatas': '/adatbazis/nka-botrany',
+  // Barta-Eke 25 Mrd-os per — already title-aliased in case-detail-config;
+  // this makes the merge real so the damage isn't counted twice.
+  'barta-eke-nagyper-miniszterium': '/adatbazis/barta-eke-ngm-25-milliardos-per',
+};
+export const RETIRED_SCANDAL_IDS = Object.keys(RETIRED_REDIRECTS);
+
 /** Fotóregiszter azokhoz a személyekhez, akik nem szerepelnek a GALERIA-ban.
  * Kulcs: a ScandalCatalog.person mező értéke (pontos egyezés). */
 export const PERSON_PHOTOS: Record<string, { photoUrl: string; photoCredit?: string; photoObjectPosition?: string }> = {

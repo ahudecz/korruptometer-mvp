@@ -19,7 +19,7 @@ import { BigCasesSection, type BigCaseConfig } from './_home/big-cases-section';
 import { BreakingBanner } from './_home/breaking-banner';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './_home/galeria-config';
 import { UGYEK } from './_home/ugyek-config';
-import { autoDisplayTitle, getCaseDisplayTitle } from './_home/case-detail-config';
+import { autoDisplayTitle, getCaseDisplayTitle, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS } from './_home/case-detail-config';
 import { NewsCardImage } from './hirek/news-card-image';
 
 // Runtime functions pinned to dub1 (Dublin/eu-west-1) via vercel.json to
@@ -35,7 +35,17 @@ const getCachedScandalCatalog = unstable_cache(
     const { getDb } = await import('@/lib/db');
     const { sql: s } = await import('drizzle-orm');
     const db = getDb();
-    return (await db.execute(s`SELECT id, name, person, institution, article_count, investigation_count, damage_huf, is_open FROM "ScandalCatalog" ORDER BY damage_huf DESC, id ASC LIMIT 8`)) as unknown as ScandalRow[];
+    // HIDDEN_DAMAGE_IDS: scandalKeys whose damage_huf is a torz/artifact
+    // macro-figure (single-article government-wide budget stubs etc.), not
+    // a real person-attributed number. RETIRED_SCANDAL_IDS: confirmed
+    // duplicates of another scandalKey. Both excluded the same way
+    // /adatbazis's own default listing already excludes them, otherwise
+    // this "top 8" strip surfaces exactly those bogus/duplicate figures.
+    const excludeIds = [...HIDDEN_DAMAGE_IDS, ...RETIRED_SCANDAL_IDS];
+    const excludeClause = excludeIds.length > 0
+      ? s`WHERE id NOT IN (${s.join(excludeIds.map((v) => s`${v}`), s`, `)})`
+      : s``;
+    return (await db.execute(s`SELECT id, name, person, institution, article_count, investigation_count, damage_huf, is_open FROM "ScandalCatalog" ${excludeClause} ORDER BY damage_huf DESC, id ASC LIMIT 8`)) as unknown as ScandalRow[];
   },
   ['scandal-catalog'],
   { revalidate: 300 },
@@ -60,16 +70,6 @@ const getCachedResignationCount = unstable_cache(
   ['resignation-count'],
   { revalidate: 300 },
 );
-const getCachedResignationsByType = unstable_cache(
-  async () => {
-    const { getDb, schema } = await import('@/lib/db');
-    const { sql: s } = await import('drizzle-orm');
-    const db = getDb();
-    return db.select({ type: schema.politicalResignations.resignationType, cnt: s<number>`count(*)::int` }).from(schema.politicalResignations).where(s`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} != 'Hivatalban van'`).groupBy(schema.politicalResignations.resignationType).orderBy(s`count(*) desc`);
-  },
-  ['resignations-by-type'],
-  { revalidate: 300 },
-);
 const getCachedClosureCount = unstable_cache(
   async () => {
     const { getDb, schema } = await import('@/lib/db');
@@ -79,16 +79,6 @@ const getCachedClosureCount = unstable_cache(
   },
   ['closure-count'],
   { revalidate: 300 },
-);
-const getCachedYearSpan = unstable_cache(
-  async () => {
-    const { getDb } = await import('@/lib/db');
-    const { sql: s } = await import('drizzle-orm');
-    const db = getDb();
-    return (await db.execute(s`SELECT min(extract(year from "publishedAt"))::int AS min_y, max(extract(year from "publishedAt"))::int AS max_y FROM "NewsArticle"`)) as unknown as Array<{ min_y: number | null; max_y: number | null }>;
-  },
-  ['year-span'],
-  { revalidate: 3600 },
 );
 // [perf] diagnosztika mutatta: az uncached db.execute(sql`...`) a Promise.all-ban
 // időnként sose fejeződik be (nincs siker, nincs hiba log — csak lefagy a
@@ -199,10 +189,8 @@ export default async function HomePage() {
     topResignations,
     allArticlesRaw,
     resignationCountRaw,
-    _resignationsByType,
     closureCountRaw,
-    pretrialCountDb,
-    eliteltCountDb,
+    verdictCounts,
     pretrialByUgy,
     latestVerdictDb,
     latestRecoveriesDb,
@@ -211,7 +199,6 @@ export default async function HomePage() {
     recentScandals,
     offRows,
     breakingArticles,
-    _yearSpanRes,
     latestClosuresRaw,
     pinnedClosuresRaw,
     totalDamageRaw,
@@ -223,14 +210,15 @@ export default async function HomePage() {
       .limit(20),
     getCachedAllArticles(),
     getCachedResignationCount(),
-    getCachedResignationsByType(),
     getCachedClosureCount(),
-    db.select({ c: count() }).from(schema.courtVerdicts)
-      .where(and(eq(schema.courtVerdicts.reviewStatus, 'approved'), eq(schema.courtVerdicts.verdictType, 'előzetesben')))
-      .then(r => r[0]?.c ?? 0),
-    db.select({ c: count() }).from(schema.courtVerdicts)
-      .where(sql`${schema.courtVerdicts.reviewStatus} = 'approved' AND ${schema.courtVerdicts.verdictType} NOT IN ('előzetesben', 'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve')`)
-      .then(r => r[0]?.c ?? 0),
+    // Két külön COUNT(*) helyett egy scan FILTER-ekkel — ugyanaz a
+    // "reviewStatus='approved'" predikátum futott le kétszer feleslegesen.
+    db.select({
+      pretrial: sql<number>`count(*) FILTER (WHERE ${schema.courtVerdicts.verdictType} = 'előzetesben')::int`,
+      elitelt: sql<number>`count(*) FILTER (WHERE ${schema.courtVerdicts.verdictType} NOT IN ('előzetesben', 'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve'))::int`,
+    }).from(schema.courtVerdicts)
+      .where(eq(schema.courtVerdicts.reviewStatus, 'approved'))
+      .then(r => r[0] ?? { pretrial: 0, elitelt: 0 }),
     db.select({ ugyId: schema.courtVerdicts.personUgyId, n: sql<number>`count(*)::int` })
       .from(schema.courtVerdicts)
       .where(and(eq(schema.courtVerdicts.reviewStatus, 'approved'), eq(schema.courtVerdicts.verdictType, 'előzetesben')))
@@ -251,7 +239,6 @@ export default async function HomePage() {
     getCachedScandalCatalog(),
     getCachedOffenceTypes(),
     getCachedActiveBreaking(),
-    getCachedYearSpan(),
     db.select({ id: schema.mediaClosures.id, name: schema.mediaClosures.name, eventType: schema.mediaClosures.eventType, eventDate: schema.mediaClosures.eventDate, sourceUrl: schema.mediaClosures.sourceUrl, sourceName: schema.mediaClosures.sourceName })
       .from(schema.mediaClosures)
       .where(eq(schema.mediaClosures.reviewStatus, 'approved'))
@@ -264,6 +251,7 @@ export default async function HomePage() {
       .limit(5),
     getCachedTotalDamage(),
   ]);
+  const { pretrial: pretrialCountDb, elitelt: eliteltCountDb } = verdictCounts;
 
   // allArticlesRaw → per-topic szétválasztás JS-ben (nincs extra DB-hívás)
   const hl = (a: { headline: string }) => a.headline.toLowerCase();
