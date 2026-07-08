@@ -208,7 +208,12 @@ export default async function PersonRollupPage({ params }: { params: Promise<{ s
       <div className="cross-promo-section">
         <div className="cross-promo-section-inner">
           {GALERIA.some((g) => g.name === config.personName) && (
-            <PersonGaleriaPromo personName={config.personName} />
+            <PersonGaleriaPromo
+              personName={config.personName}
+              caseCount={rows.length}
+              total={total}
+              photoUrl={photoUrl}
+            />
           )}
           <CrossAdatbazisSzemelyek />
           <CrossUgyek />

@@ -3564,12 +3564,76 @@ button {
   grid-template-columns: repeat(4, 1fr);
 }
 
+/* 12-person featured-adatbazis grid: force 2 rows of 6, smaller photos than
+   the default 5-col cross-promo grids so it reads as a compact index, not
+   another face-wall. */
+.cross-promo .cross-featured-grid {
+  grid-template-columns: repeat(6, 1fr);
+}
+.cross-promo .cross-featured-grid .person-more-mug {
+  max-width: 64px;
+  margin: 0 auto;
+}
+
 @media (max-width: 700px) {
   .cross-promo .person-more-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   .cross-promo .cross-watch-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .cross-promo .cross-featured-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .cross-promo .cross-featured-grid .person-more-mug {
+    max-width: 56px;
+  }
+}
+
+/* PersonGaleriaPromo: photo + stat line layout */
+.cross-promo-person-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+.cross-promo-person-photo {
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.3);
+}
+.cross-promo-person-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+.cross-promo-person-body {
+  flex: 1;
+  min-width: 0;
+}
+.cross-promo-person-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 12px;
+}
+.cross-promo-person-stats .sep {
+  color: rgba(255,255,255,0.3);
+}
+@media (max-width: 560px) {
+  .cross-promo-person-layout {
+    flex-direction: column;
+  }
+  .cross-promo-person-photo {
+    width: 88px;
+    height: 88px;
   }
 }
 

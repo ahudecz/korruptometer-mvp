@@ -254,7 +254,7 @@ export async function CrossBirosag() {
 
   return (
     <div className="cross-promo">
-      <h2 className="cross-promo-title">Börtönben van-e már?</h2>
+      <h2 className="cross-promo-title">Kiket ért már utol az igazságszolgáltatás?</h2>
       <p className="cross-promo-deck">
         {sentenceParts.join(', ')} — a NER-hez köthető ügyekben.
       </p>
@@ -291,24 +291,49 @@ const PERSON_TITLE: Record<string, string> = {
   'Semjén Zsolt': 'Minden Semjénről',
 };
 
-export function PersonGaleriaPromo({ personName }: { personName: string }) {
+export function PersonGaleriaPromo({
+  personName,
+  caseCount,
+  total,
+  photoUrl,
+}: {
+  personName: string;
+  caseCount: number;
+  total: bigint;
+  photoUrl: string | null;
+}) {
   const entry = GALERIA.find(g => g.name === personName);
   if (!entry) return null;
   const title = PERSON_TITLE[personName] ?? `Minden ${personName}ról`;
+  const src = photoUrl ? (photoUrl.startsWith('/') || photoUrl.includes('wikimedia.org') ? photoUrl : `/api/img-proxy?url=${encodeURIComponent(photoUrl)}`) : null;
+  const initials = personName.split(' ').slice(0, 2).map(w => w[0]).join('');
 
   return (
     <div className="cross-promo">
-      <h2 className="cross-promo-title">{title}</h2>
-      <p className="cross-promo-deck">
-        Érdekel, kicsoda {personName}? Videókat néznél a legdurvább ügyeiről, és megnéznéd azokat
-        részletesen? Foglalkoztatnak a vele kapcsolatos hírek? {personName} kiemelt személy az
-        oldalon, mint a közérdeklődésre leginkább számot tartó személyek egyike, ezért
-        sajtójelentések és nyilvánosan hozzáférhető dokumentumok alapján összegyűjtöttük róla a
-        legfontosabb tudnivalókat.
-      </p>
-      <Link href={`/galeria/${entry.id}`} className="cross-promo-cta">
-        Teljes profil megnézése →
-      </Link>
+      <div className="cross-promo-person-layout">
+        <div className="cross-promo-person-photo">
+          {src ? (
+            <img src={src} alt={personName} />
+          ) : (
+            <div className="person-photo-placeholder"><span>{initials}</span></div>
+          )}
+        </div>
+        <div className="cross-promo-person-body">
+          <h2 className="cross-promo-title">{title}</h2>
+          <div className="cross-promo-person-stats">
+            <span>{caseCount} dokumentált ügy</span>
+            <span className="sep">·</span>
+            <span><FtValue n={total} /> érintett közpénz</span>
+          </div>
+          <p className="cross-promo-deck">
+            Videók a legdurvább ügyeiről, és minden vele kapcsolatos hír egy helyen — nézd meg a
+            teljes profilt.
+          </p>
+          <Link href={`/galeria/${entry.id}`} className="cross-promo-cta">
+            Teljes profil megnézése →
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
@@ -327,7 +352,7 @@ export async function CrossAdatbazisSzemelyek() {
         12 kiemelt személy, akikhez a legtöbb, dokumentáltan érintett közpénz köthető —
         sajtójelentések és nyilvános dokumentumok alapján.
       </p>
-      <div className="person-more-grid">
+      <div className="person-more-grid cross-featured-grid">
         {people.map(p => (
           <Link key={p.slug} href={`/adatbazis/szemely/${p.slug}`} className="person-more-card">
             <div className="person-more-mug r-loose">
