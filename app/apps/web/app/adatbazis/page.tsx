@@ -87,6 +87,10 @@ export default async function AdatbazisPage({
   const featuredSum = featuredPeople.reduce((s, p) => s + p.total, 0n);
   const totalDamageAll = await getTotalDamage(db);
   const featuredPct = totalDamageAll > 0n ? Math.round((Number(featuredSum) / Number(totalDamageAll)) * 1000) / 10 : 0;
+  // Kerekítve 100 Mrd-ra a headline-hoz — sosem túloz (floor), és egy kerek,
+  // megjegyezhető szám ("TOP 7000 milliárd") jobb egy címben, mint a pontos
+  // (folyamatosan változó) összeg.
+  const featuredSumRoundedMrd = Math.floor(Number(featuredSum) / 1e9 / 100) * 100;
 
   // Retired/merged duplicate ids (see RETIRED_REDIRECTS in [id]/page.tsx) are
   // hidden from the general listing so they don't dangle as stale, double-
@@ -167,7 +171,9 @@ export default async function AdatbazisPage({
 
       {featuredPeople.length > 0 && (
         <div className="featured-persons" style={{ marginBottom: 32 }}>
-          <h2 className="person-section-title">Kiemelt személyek</h2>
+          <h2 className="person-section-title">
+            Kiemelt személyek — a TOP {featuredSumRoundedMrd.toLocaleString('hu-HU')} milliárd Ft közpénz útja
+          </h2>
           <p className="person-section-note">
             A K-Monitor adatbázisa alapján összefűztük a kiemelt személyekhez tartozó ügyeket,
             hogy megspóroljuk az időd a szűrésre és a felesleges kattintgatásra — egy kattintással
