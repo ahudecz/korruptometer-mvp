@@ -16,6 +16,9 @@ import type { DescriptionBlock } from '../../_home/ugyek-config';
 import generatedContent from '../../_home/case-content.generated.json';
 import { getDb } from '@/lib/db';
 import { truncate } from '../../_home/seo';
+import { PERSON_ROLLUPS } from '../../_home/person-rollup-config';
+import { getPersonStats } from '../../_home/featured-persons';
+import { PersonGaleriaPromo, CrossAdatbazisSzemelyek, CrossUgyek, CrossBirosag } from '../../_home/cross-promo';
 
 export const dynamic = 'force-dynamic';
 
@@ -234,6 +237,16 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
   const photoObjectPosition = galeriaEntry?.photoObjectPosition ?? watchEntry?.objectPosition ?? personPhotoEntry?.photoObjectPosition ?? null;
   const initials = (scandal.person ?? scandal.name).split(' ').slice(0, 2).map((w) => w[0]).join('');
   const badgeColor = scandal.is_open ? '#e31937' : '#4a6a8a';
+
+  // "Minden X-ról" cross-promo csak akkor, ha ennek az ügynek a személye a
+  // 10 GALERIA-profillal is rendelkező kiemelt személy egyike — ugyanaz a
+  // feltétel, mint a person-rollup oldalon.
+  const personRollupConfig = galeriaEntry
+    ? PERSON_ROLLUPS.find((p) => norm(p.personName) === norm(galeriaEntry.name))
+    : null;
+  const personRollupStats = personRollupConfig
+    ? await getPersonStats(db, personRollupConfig.personName, personRollupConfig.excludeIds ?? [])
+    : null;
 
   const offenceLabels = override?.crimeTypes ??
     (scandal.offence_labels ? scandal.offence_labels.split(', ').filter(Boolean) : []);
@@ -655,6 +668,22 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
       <div className="person-more-section">
         <div className="person-more-inner">
           <Link href="/adatbazis" className="back-link">← Vissza az adatbázisba</Link>
+        </div>
+      </div>
+
+      <div className="cross-promo-section">
+        <div className="cross-promo-section-inner">
+          {galeriaEntry && personRollupConfig && personRollupStats && (
+            <PersonGaleriaPromo
+              personName={galeriaEntry.name}
+              caseCount={personRollupStats.caseCount}
+              total={personRollupStats.total}
+              photoUrl={photoUrl}
+            />
+          )}
+          <CrossAdatbazisSzemelyek />
+          <CrossUgyek />
+          <CrossBirosag />
         </div>
       </div>
     </div>

@@ -67,6 +67,22 @@ export async function getFeaturedPeople(db: Executable): Promise<FeaturedPerson[
 }
 
 /**
+ * Case count + total damage_huf for a single person, respecting their
+ * rollup's excludeIds — the same aggregate getFeaturedPeople() computes per
+ * person, exposed standalone for callers (e.g. an individual case-detail
+ * page) that need stats for just one person, not the whole featured list.
+ */
+export async function getPersonStats(db: Executable, personName: string, excludeIds: string[] = []): Promise<{ caseCount: number; total: bigint }> {
+  const rows = (await db.execute(sql`
+    SELECT COALESCE(SUM(damage_huf), 0)::text AS total, count(*)::int AS n
+    FROM "ScandalCatalog"
+    WHERE person = ${personName}
+      ${excludeIds.length > 0 ? sql`AND id NOT IN (${sql.join(excludeIds.map((v) => sql`${v}`), sql`, `)})` : sql``}
+  `)) as unknown as Array<{ total: string; n: number }>;
+  return { caseCount: rows[0]?.n ?? 0, total: BigInt(rows[0]?.total ?? '0') };
+}
+
+/**
  * Raw sum of damage_huf across the entire ScandalCatalog (all ~935 cases,
  * no exclusions) — the same "teljes dokumentált kár" figure shown as the
  * homepage KPI, used here as the denominator for "the featured 12 people
