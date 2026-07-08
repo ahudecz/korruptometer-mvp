@@ -24,6 +24,9 @@ const VERDICT_KEYWORDS = [
   'börtönbüntetés', 'szabadságvesztés', 'elítélt', 'elítélték',
   'jogerős', 'elsőfokú ítélet', 'bíróság elé', 'bíróság ítélt',
   'fogdába', 'fogvatartott', 'kihallgat', 'gyanúsított',
+  // Gyakori előzmény-fázisú megfogalmazás letartóztatás előtt/helyett —
+  // hiányzott, pedig a relevance.ts BREAKING_TRIGGERS listája már ismeri.
+  'őrizetbe', 'házkutatás', 'razzia', 'körözik', 'elfogatóparancs',
 ];
 
 /**

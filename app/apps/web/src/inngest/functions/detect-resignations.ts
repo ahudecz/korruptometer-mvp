@@ -22,7 +22,7 @@ const DETECTOR_TYPE = 'resignation' as const;
 const RESIGNATION_KEYWORDS = [
   'lemond', 'kirúg', 'felment', 'leváltott', 'leváltják', 'lemondott',
   'kirúgták', 'felmentették', 'távozik', 'távozott', 'mond le',
-  'leváltás', 'menesztés', 'menesztette', 'menesztik',
+  'leváltás', 'menesztés', 'menesztette', 'menesztik', 'visszahív',
 ];
 
 /**
