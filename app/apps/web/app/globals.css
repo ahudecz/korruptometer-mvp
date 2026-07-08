@@ -3670,23 +3670,29 @@ button {
 .person-more-card--gone .person-more-sub {
   opacity: 0.6;
 }
+/* Full-width diagonal ribbon, matching .watchlist-badge--resigned/removed
+   on the homepage watchlist cards — reused by every "gone" badge across
+   the site's cross-promo person grids, so future removals inherit the
+   same edge-to-edge look automatically. */
 .person-more-gone-badge {
   position: absolute;
   top: 50%;
   left: 50%;
+  width: 150%;
+  text-align: center;
   transform: translate(-50%, -50%) rotate(-22deg);
   font-family: 'Archivo', sans-serif;
-  font-size: 8px;
+  font-size: clamp(8px, 6cqw, 14px);
   font-weight: 900;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  padding: 3px 6px;
-  background: transparent;
-  color: #e31937;
-  border: 2px solid #e31937;
-  border-radius: 2px;
+  padding: 4px 0;
+  background: rgba(10, 8, 14, 0.6);
+  color: #ff4d5e;
+  border-top: 2.5px solid #e31937;
+  border-bottom: 2.5px solid #e31937;
   white-space: nowrap;
-  opacity: 0.85;
+  opacity: 0.96;
   line-height: 1;
   pointer-events: none;
 }
@@ -3698,6 +3704,7 @@ button {
   border-radius: 2px;
   position: relative;
   border: 2px solid rgba(255,255,255,0.22);
+  container-type: inline-size;
 }
 
 .person-more-mug.r-loose   { border-color: rgba(255,255,255,0.55); }

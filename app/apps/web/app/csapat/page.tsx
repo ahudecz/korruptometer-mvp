@@ -20,8 +20,11 @@ export default function CsapatPage() {
             A Kegyencjárat nem egy szerkesztőség — két átlagember hozta létre,
             akik egy ponton elvesztették a fonalat. Annyira felgyorsult az
             eseménysor, hogy a mindennapi életben lehetetlenné vált követni:
-            ki mondott le, kit rúgtak ki, melyik médium szűnt meg. Aztán a
-            Vastagbőrön olvastuk, amit magunk is éreztünk — ők is azt írták,
+            ki mondott le, kit rúgtak ki, melyik médium szűnt meg. Aztán a{' '}
+            <a href="https://www.facebook.com/vastagbor/?locale=hu_HU" target="_blank" rel="noopener noreferrer">
+              Vastagbőrön
+            </a>{' '}
+            olvastuk, amit magunk is éreztünk — ők is azt írták,
             hogy ez már követhetetlen, egy lista kellene. Igaz. Úgyhogy megcsináltuk.
           </p>
 

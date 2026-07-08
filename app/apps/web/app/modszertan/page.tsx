@@ -57,9 +57,9 @@ export default function ModszertanPage() {
           <h3 className="modszertan-h3">Szerkesztési elvek</h3>
 
           <p>
-            <strong>Kettős forrás.</strong> Minden érintett személyhez, intézményhez vagy összeghez
-            legalább két független forrást csatolunk. Egyedi, ellenőrizetlen állítások nem kerülnek
-            közzétételre.
+            <strong>Ellenőrzött forrás.</strong> Minden érintett személyhez, intézményhez vagy összeghez
+            legalább egy nyilvánosan elérhető, ellenőrizhető forrást csatolunk. Egyedi, ellenőrizetlen
+            állítások nem kerülnek közzétételre.
           </p>
 
           <p>
