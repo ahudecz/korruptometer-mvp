@@ -3566,20 +3566,14 @@ button {
 
 /* 12-person featured-adatbazis grid: force 2 rows of 6, smaller photos than
    the default 5-col cross-promo grids so it reads as a compact index, not
-   another face-wall. Photo is centered (max-width + auto margin) — the
-   name/sub text must be centered too, otherwise the narrow photo floats
-   disconnected above the full-width left-aligned text. */
+   another face-wall. Photo and name/sub text both left-aligned, matching
+   the other cross-promo grids' default alignment. */
 .cross-promo .cross-featured-grid {
   grid-template-columns: repeat(6, 1fr);
   gap: 12px 8px;
 }
 .cross-promo .cross-featured-grid .person-more-mug {
   max-width: 104px;
-  margin: 0 auto;
-}
-.cross-promo .cross-featured-grid .person-more-name,
-.cross-promo .cross-featured-grid .person-more-sub {
-  text-align: center;
 }
 
 @media (max-width: 700px) {
