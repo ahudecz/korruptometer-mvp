@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { desc, ilike, or, eq } from 'drizzle-orm';
+import { desc, ilike, or, and, eq } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 import { UGYEK, type DescriptionBlock, type BreakingGroupArticle } from '../../_home/ugyek-config';
@@ -199,6 +199,11 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
   if (entry.articleKeywords) {
     for (const kw of entry.articleKeywords) {
       conditions.push(ilike(schema.newsArticles.headline, `%${kw}%`));
+    }
+  }
+  if (entry.articleKeywordGroups) {
+    for (const group of entry.articleKeywordGroups) {
+      conditions.push(and(...group.map((kw) => ilike(schema.newsArticles.headline, `%${kw}%`)))!);
     }
   }
 
@@ -431,13 +436,26 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
         )}
 
         {/* ── Kapcsolódó hírek ── */}
-        {articles.length > 0 && (
+        {(articles.length > 0 || (entry.pinnedNews?.length ?? 0) > 0) && (
           <div className="person-news">
             <h2 className="person-section-title">Kapcsolódó hírek</h2>
             <p className="person-section-note">
               Automatikusan szűrve a napi hírfolyamból — minden új cikk azonnal megjelenik.
             </p>
             <div className="person-news-list">
+              {entry.pinnedNews?.map((a, i) => (
+                <a
+                  key={`pinned-${i}`}
+                  href={a.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="person-news-item"
+                >
+                  <span className="person-news-source">{a.source}</span>
+                  {a.date && <span className="person-news-date">{a.date}</span>}
+                  <span className="person-news-headline">{a.headline}</span>
+                </a>
+              ))}
               {articles.map(a => (
                 <a
                   key={a.id}
@@ -455,7 +473,7 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
           </div>
         )}
 
-        {articles.length === 0 && (
+        {articles.length === 0 && (entry.pinnedNews?.length ?? 0) === 0 && (
           <div className="person-news-empty">
             Még nincs beindexelt hír ehhez az ügyhez — a következő scrape során frissül.
           </div>
