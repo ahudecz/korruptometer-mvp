@@ -4,7 +4,7 @@ import { getDb, schema } from '@/lib/db';
 import { UGYEK } from '../_home/ugyek-config';
 import { FtValue } from '../_home/ft-value';
 
-export const revalidate = 120;
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Visszaszerzett vagyon',

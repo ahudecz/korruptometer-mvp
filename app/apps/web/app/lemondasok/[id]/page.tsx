@@ -8,7 +8,7 @@ import { WATCHLIST_DETAIL, type WatchlistBreakingBlock } from '../../_home/watch
 import { CrossGaleria, CrossUgyek, CrossLemondosok } from '../../_home/cross-promo';
 import { truncate } from '../../_home/seo';
 
-export const revalidate = 120;
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import UgyekClient from './UgyekClient';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../_home/cross-promo';
 
-export const revalidate = 120;
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Kiemelt ügyek',

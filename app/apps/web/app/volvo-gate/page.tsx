@@ -3,7 +3,7 @@ import { desc, ilike, or, eq } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 
-export const revalidate = 120;
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Pécsi Volvo-gate',

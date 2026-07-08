@@ -11,7 +11,7 @@ import { DescBlock } from '../_components/desc-block';
 
 import { getDb } from '@/lib/db';
 
-export const revalidate = 120;
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Mészáros Lőrinc összes ügye',
