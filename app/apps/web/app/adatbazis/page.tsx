@@ -4,10 +4,8 @@ import { sql } from 'drizzle-orm';
 import { fmtNumber } from '@korr/shared/format';
 import { FtValue } from '../_home/ft-value';
 import { CaseRow } from './_components/case-row';
-import { autoDisplayTitle, getCaseDisplayTitle, getCaseOverride, CASE_OVERRIDES, PERSON_PHOTOS } from '../_home/case-detail-config';
-import { GALERIA } from '../_home/galeria-config';
-import { WATCH_LIST } from '../_home/watchlist-config';
-import { PERSON_ROLLUPS } from '../_home/person-rollup-config';
+import { autoDisplayTitle, getCaseDisplayTitle, getCaseOverride, CASE_OVERRIDES } from '../_home/case-detail-config';
+import { getFeaturedPeople } from '../_home/featured-persons';
 import { CrossUgyek, CrossLemondosok, CrossGaleria, CrossMegszunt, CrossFelszolitottak } from '../_home/cross-promo';
 
 import { getDb } from '@/lib/db';
@@ -20,18 +18,6 @@ export const metadata = {
   title: 'Adatbázis',
   description: 'Kereshető, szűrhető adatbázis a dokumentált magyar korrupciós ügyekről — érintettek, összegek és intézmények szerint.',
 };
-
-// Featured on the "Kiemelt személyek" strip — the 12 biggest, best-documented
-// person rollups by corrected (excludeIds-adjusted) total damage, per the
-// 2026-07-08 ranking audit (which also caught and excluded several
-// misattributed/macro-figure scandalKeys — see person-rollup-config.ts).
-// Order here is a fallback; actual display order is by live total (desc),
-// computed below.
-const FEATURED_ROLLUP_SLUGS = [
-  'meszaros-lorinc', 'balasy-gyula', 'tiborcz-istvan', 'orban-viktor',
-  'rogan-antal', 'lazar-janos', 'szijj-laszlo', 'lezsak-sandor',
-  'hernadi-zsolt', 'szijjarto-peter', 'palkovics-laszlo', 'matolcsy-gyorgy',
-];
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -96,37 +82,10 @@ export default async function AdatbazisPage({
 
   const db = getDb();
 
-  // ── "Kiemelt személyek" strip: live total per featured person, respecting
+  // "Kiemelt személyek" strip: live total per featured person, respecting
   // each rollup's excludeIds (duplicates/artifacts) so the number shown here
-  // matches what the rollup page itself reports. ──
-  const featuredConfigs = FEATURED_ROLLUP_SLUGS
-    .map((s) => PERSON_ROLLUPS.find((p) => p.slug === s))
-    .filter((p): p is (typeof PERSON_ROLLUPS)[number] => p != null);
-  const featuredPeople = (
-    await Promise.all(
-      featuredConfigs.map(async (cfg) => {
-        const excluded = cfg.excludeIds ?? [];
-        const totalRows = (await db.execute(sql`
-          SELECT COALESCE(SUM(damage_huf), 0)::text AS total, count(*)::int AS n
-          FROM "ScandalCatalog"
-          WHERE person = ${cfg.personName}
-            ${excluded.length > 0 ? sql`AND id NOT IN (${sql.join(excluded.map((v) => sql`${v}`), sql`, `)})` : sql``}
-        `)) as unknown as Array<{ total: string; n: number }>;
-        // Same fallback chain as the person-rollup page: GALERIA (full
-        // profile) → WATCH_LIST (lemondások) → PERSON_PHOTOS (photo-only).
-        const galeriaEntry = GALERIA.find((g) => g.name === cfg.personName);
-        const watchEntry = WATCH_LIST.find((w) => w.name === cfg.personName);
-        const photoEntry = PERSON_PHOTOS[cfg.personName];
-        return {
-          slug: cfg.slug,
-          name: cfg.personName,
-          total: BigInt(totalRows[0]?.total ?? '0'),
-          caseCount: totalRows[0]?.n ?? 0,
-          photoUrl: galeriaEntry?.photoUrl ?? watchEntry?.photoUrl ?? photoEntry?.photoUrl ?? null,
-        };
-      }),
-    )
-  ).sort((a, b) => (b.total > a.total ? 1 : b.total < a.total ? -1 : 0));
+  // matches what the rollup page itself reports.
+  const featuredPeople = await getFeaturedPeople(db);
 
   // Retired/merged duplicate ids (see RETIRED_REDIRECTS in [id]/page.tsx) are
   // hidden from the general listing so they don't dangle as stale, double-

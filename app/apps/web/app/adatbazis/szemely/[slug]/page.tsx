@@ -10,6 +10,7 @@ import { PERSON_PHOTOS, cleanTitle } from '../../../_home/case-detail-config';
 import { getPersonRollup } from '../../../_home/person-rollup-config';
 import { DescBlock } from '../../_components/desc-block';
 import { truncate } from '../../../_home/seo';
+import { PersonGaleriaPromo, CrossAdatbazisSzemelyek, CrossUgyek, CrossBirosag } from '../../../_home/cross-promo';
 
 import { getDb } from '@/lib/db';
 
@@ -201,6 +202,17 @@ export default async function PersonRollupPage({ params }: { params: Promise<{ s
       <div className="person-more-section">
         <div className="person-more-inner">
           <Link href="/adatbazis" className="back-link">← Vissza az adatbázisba</Link>
+        </div>
+      </div>
+
+      <div className="cross-promo-section">
+        <div className="cross-promo-section-inner">
+          {GALERIA.some((g) => g.name === config.personName) && (
+            <PersonGaleriaPromo personName={config.personName} />
+          )}
+          <CrossAdatbazisSzemelyek />
+          <CrossUgyek />
+          <CrossBirosag />
         </div>
       </div>
     </div>

@@ -3510,6 +3510,42 @@ button {
   opacity: 0.85;
 }
 
+.cross-promo-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.cross-promo-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.16);
+  border-radius: 20px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.cross-promo-pill:hover {
+  border-color: var(--accent);
+  background: rgba(255,255,255,0.1);
+}
+
+.cross-promo-pill-count {
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
 /* ugyek-more-grid inside cross-promo: add top/bottom margin */
 .cross-promo .ugyek-more-grid {
   margin-top: 0;

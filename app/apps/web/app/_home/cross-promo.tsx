@@ -1,9 +1,11 @@
 import Link from 'next/link';
-import { desc } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { UGYEK } from './ugyek-config';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './galeria-config';
 import { WATCH_LIST } from './watchlist-config';
+import { getFeaturedPeople } from './featured-persons';
+import { FtValue } from './ft-value';
 import { Mugshot } from '@korr/ui/mugshot';
 
 const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
@@ -205,37 +207,148 @@ export function CrossFelszolitottak() {
 }
 
 // ── CrossBirosag ─────────────────────────────────────────────────────────────
+// "Nincs már szabadlábon" státuszok — akit ezek egyike jelöl, az már nem
+// számít az élő előzetes/elítélt-összesítésbe. Tükrözi VerdictList.tsx
+// RELEASED_TYPES-ját (az a fájl kliens-komponens, innen nem importálható).
+const RELEASED_VERDICT_TYPES = ['szabadlábra helyezve', 'eljárás megszűnt', 'felmentve'];
 
 export async function CrossBirosag() {
   const db = getDb();
   const rows = await db
-    .select()
+    .select({
+      personUgyId: schema.courtVerdicts.personUgyId,
+      verdictType: schema.courtVerdicts.verdictType,
+      verdictDate: schema.courtVerdicts.verdictDate,
+    })
     .from(schema.courtVerdicts)
-    .orderBy(desc(schema.courtVerdicts.verdictDate))
-    .limit(5);
+    .where(eq(schema.courtVerdicts.reviewStatus, 'approved'));
 
   if (rows.length === 0) return null;
 
-  const totalYears = rows.reduce((sum, r) => sum + r.sentenceYears, 0);
+  const active = rows.filter(r => !RELEASED_VERDICT_TYPES.includes(r.verdictType));
+  const pretrialCount = active.filter(r => r.verdictType === 'előzetesben').length;
+  const convictedCount = active.filter(r => r.verdictType === 'elsőfokú' || r.verdictType === 'jogerős').length;
+
+  if (pretrialCount === 0 && convictedCount === 0) return null;
+
+  // Ügyenkénti gyorsgombok — csoportosítás personUgyId szerint, rendezés
+  // (létszám desc, majd legfrissebb dátum desc). 2-3 ügynél ez a sorrend
+  // nem sokat számít, de sok ügynél már ez lesz az irányadó rangsor.
+  const byUgy = new Map<string, { count: number; latest: Date }>();
+  for (const r of active) {
+    if (!r.personUgyId) continue;
+    const prev = byUgy.get(r.personUgyId);
+    if (prev) {
+      prev.count += 1;
+      if (r.verdictDate > prev.latest) prev.latest = r.verdictDate;
+    } else {
+      byUgy.set(r.personUgyId, { count: 1, latest: r.verdictDate });
+    }
+  }
+  const ugyPills = [...byUgy.entries()]
+    .map(([id, stat]) => ({ id, title: UGYEK.find(u => u.id === id)?.title ?? id, ...stat }))
+    .sort((a, b) => b.count - a.count || +b.latest - +a.latest);
+
+  const sentenceParts = [`${pretrialCount} fő van jelenleg előzetes letartóztatásban`];
+  if (convictedCount > 0) sentenceParts.push(`${convictedCount} fő jogerősen elítélve`);
 
   return (
     <div className="cross-promo">
-      <h2 className="cross-promo-title">Kiszabott börtönévek</h2>
+      <h2 className="cross-promo-title">Börtönben van-e már?</h2>
       <p className="cross-promo-deck">
-        NER-kapcsolatú ügyekben kiszabott szabadságvesztés ítéletek — {totalYears} év összesen.
+        {sentenceParts.join(', ')} — a NER-hez köthető ügyekben.
       </p>
-      <div className="cross-promo-rows">
-        {rows.map(r => (
-          <div key={r.id} className="cross-promo-row">
-            <span style={{ fontWeight: 800, color: '#E31937', minWidth: 52, flexShrink: 0 }}>{r.sentenceYears} ÉV</span>
-            <span className="cross-promo-row-name">{r.personName}</span>
-            {r.crimes[0] && <span className="cross-promo-row-sub">— {r.crimes[0]}</span>}
-          </div>
-        ))}
-      </div>
+      {ugyPills.length > 0 && (
+        <div className="cross-promo-pills">
+          {ugyPills.map(p => (
+            <Link key={p.id} href={`/birosagi-iteletek?ugy=${encodeURIComponent(p.id)}`} className="cross-promo-pill">
+              {p.title} <span className="cross-promo-pill-count">{p.count}</span>
+            </Link>
+          ))}
+        </div>
+      )}
       <Link href="/birosagi-iteletek" className="cross-promo-cta">
         Összes ítélet →
       </Link>
+    </div>
+  );
+}
+
+// ── PersonGaleriaPromo ───────────────────────────────────────────────────────
+// Csak a 10, GALERIA-profillal is rendelkező kiemelt személynek — a
+// magánhangzó-illeszkedést kézzel térképezzük fel, mert a személynevekre
+// nincs megbízható általános szabály.
+const PERSON_TITLE: Record<string, string> = {
+  'Orbán Viktor': 'Minden Orbánról',
+  'Rogán Antal': 'Minden Rogánról',
+  'Mészáros Lőrinc': 'Minden Mészárosról',
+  'Tiborcz István': 'Minden Tiborczról',
+  'Szijjártó Péter': 'Minden Szijjártóról',
+  'Takács Péter': 'Minden Takácsról',
+  'Matolcsy György': 'Minden Matolcsyról',
+  'Lázár János': 'Minden Lázárról',
+  'Balásy Gyula': 'Minden Balásyról',
+  'Semjén Zsolt': 'Minden Semjénről',
+};
+
+export function PersonGaleriaPromo({ personName }: { personName: string }) {
+  const entry = GALERIA.find(g => g.name === personName);
+  if (!entry) return null;
+  const title = PERSON_TITLE[personName] ?? `Minden ${personName}ról`;
+
+  return (
+    <div className="cross-promo">
+      <h2 className="cross-promo-title">{title}</h2>
+      <p className="cross-promo-deck">
+        Érdekel, kicsoda {personName}? Videókat néznél a legdurvább ügyeiről, és megnéznéd azokat
+        részletesen? Foglalkoztatnak a vele kapcsolatos hírek? {personName} kiemelt személy az
+        oldalon, mint a közérdeklődésre leginkább számot tartó személyek egyike, ezért
+        sajtójelentések és nyilvánosan hozzáférhető dokumentumok alapján összegyűjtöttük róla a
+        legfontosabb tudnivalókat.
+      </p>
+      <Link href={`/galeria/${entry.id}`} className="cross-promo-cta">
+        Teljes profil megnézése →
+      </Link>
+    </div>
+  );
+}
+
+// ── CrossAdatbazisSzemelyek ──────────────────────────────────────────────────
+
+export async function CrossAdatbazisSzemelyek() {
+  const db = getDb();
+  const people = await getFeaturedPeople(db);
+  if (people.length === 0) return null;
+
+  return (
+    <div className="cross-promo">
+      <h2 className="cross-promo-title">Érdekelnek az adatbázis kiemelt személyei?</h2>
+      <p className="cross-promo-deck">
+        12 kiemelt személy, akikhez a legtöbb, dokumentáltan érintett közpénz köthető —
+        sajtójelentések és nyilvános dokumentumok alapján.
+      </p>
+      <div className="person-more-grid">
+        {people.map(p => (
+          <Link key={p.slug} href={`/adatbazis/szemely/${p.slug}`} className="person-more-card">
+            <div className="person-more-mug r-loose">
+              {p.photoUrl ? (
+                <img
+                  src={p.photoUrl.startsWith('/') || p.photoUrl.includes('wikimedia.org') ? p.photoUrl : `/api/img-proxy?url=${encodeURIComponent(p.photoUrl)}`}
+                  alt={p.name}
+                  className="person-more-img"
+                />
+              ) : (
+                <div className="person-photo-placeholder">
+                  <span>{p.name.split(' ').slice(0, 2).map(w => w[0]).join('')}</span>
+                </div>
+              )}
+            </div>
+            <div className="person-more-name">{p.name}</div>
+            <div className="person-more-sub"><FtValue n={p.total} /> érintett közpénz</div>
+          </Link>
+        ))}
+      </div>
+      <Link href="/adatbazis" className="cross-promo-cta">Teljes adatbázis →</Link>
     </div>
   );
 }
