@@ -225,14 +225,6 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     title: 'Barta-Eke NGM 25 milliárdos per',
   },
   {
-    scandalKey: 'varkonyi-andrea-csongradi-fold',
-    pinnedCrossRefIds: ['varkonyi-andrea-csongradi-fold-vasarlas'],
-  },
-  {
-    scandalKey: 'varkonyi-andrea-csongradi-fold-vasarlas',
-    pinnedCrossRefIds: ['varkonyi-andrea-csongradi-fold'],
-  },
-  {
     // A deal meghiúsult — Budapest élt elővásárlási jogával (2025. január).
     // A DB 18 Mrd-os damage-becsléje félrevezető; nincs ténylegesen teljesített tranzakció.
     scandalKey: 'rakosrendezo-adasveteli',
@@ -563,6 +555,19 @@ export const RETIRED_REDIRECTS: Record<string, string> = {
   'barta-eke-nagyper-miniszterium': '/adatbazis/barta-eke-ngm-25-milliardos-per',
 };
 export const RETIRED_SCANDAL_IDS = Object.keys(RETIRED_REDIRECTS);
+
+/**
+ * ASCII is canonical for every /adatbazis/* URL — Investigation.scandalKey
+ * (the ScandalCatalog id) sometimes carries accents (e.g.
+ * "quaestor-dalkot-adatbiztonság"), but every link on the site must point at
+ * the ascii form so accented URLs never appear in an <a href> or a redirect
+ * target. [id]/page.tsx resolves the ascii URL back to the real (possibly
+ * accented) row via unaccent(); every href builder must wrap its id with
+ * this before interpolating into a /adatbazis/ URL.
+ */
+export function toAsciiId(id: string): string {
+  return id.normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
 
 /** Fotóregiszter azokhoz a személyekhez, akik nem szerepelnek a GALERIA-ban.
  * Kulcs: a ScandalCatalog.person mező értéke (pontos egyezés). */

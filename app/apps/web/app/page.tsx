@@ -19,7 +19,7 @@ import { BigCasesSection, type BigCaseConfig } from './_home/big-cases-section';
 import { BreakingBanner } from './_home/breaking-banner';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './_home/galeria-config';
 import { UGYEK } from './_home/ugyek-config';
-import { autoDisplayTitle, getCaseDisplayTitle, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS } from './_home/case-detail-config';
+import { autoDisplayTitle, getCaseDisplayTitle, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS, toAsciiId } from './_home/case-detail-config';
 import { NewsCardImage } from './hirek/news-card-image';
 
 // force-dynamic. ISR (revalidate) was tried instead on 2026-07-08, on the
@@ -809,9 +809,9 @@ export default async function HomePage() {
           </thead>
           <tbody>
             {recentScandals.map((c) => (
-              <CaseRow key={c.id} href={`/adatbazis/${encodeURIComponent(c.id)}`}>
+              <CaseRow key={c.id} href={`/adatbazis/${encodeURIComponent(toAsciiId(c.id))}`}>
                 <td data-label="Ügy">
-                  <Link href={`/adatbazis/${encodeURIComponent(c.id)}`} className="case-name">
+                  <Link href={`/adatbazis/${encodeURIComponent(toAsciiId(c.id))}`} className="case-name">
                     {autoDisplayTitle(c.name ?? '', c.person ?? null, getCaseDisplayTitle(c.id))}
                   </Link>
                   {c.investigation_count > 1 && (

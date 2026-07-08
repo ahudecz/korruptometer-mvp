@@ -6,7 +6,7 @@ import { fmtNumber, fmtFt } from '@korr/shared/format';
 import { FtValue } from '../../../_home/ft-value';
 import { GALERIA } from '../../../_home/galeria-config';
 import { WATCH_LIST } from '../../../_home/watchlist-config';
-import { PERSON_PHOTOS, cleanTitle } from '../../../_home/case-detail-config';
+import { PERSON_PHOTOS, cleanTitle, toAsciiId } from '../../../_home/case-detail-config';
 import { getPersonRollup } from '../../../_home/person-rollup-config';
 import { DescBlock } from '../../_components/desc-block';
 import { truncate } from '../../../_home/seo';
@@ -149,7 +149,7 @@ export default async function PersonRollupPage({ params }: { params: Promise<{ s
               <div key={r.id} className="person-case-card">
                 <div className="person-case-num">/ {String(i + 1).padStart(2, '0')}</div>
                 <div className="person-case-body">
-                  <Link href={`/adatbazis/${encodeURIComponent(r.id)}`} className="person-case-title">
+                  <Link href={`/adatbazis/${encodeURIComponent(toAsciiId(r.id))}`} className="person-case-title">
                     {cleanTitle(r.name)}
                   </Link>
                   {r.institution && <p className="person-case-desc">{r.institution}</p>}
@@ -165,7 +165,7 @@ export default async function PersonRollupPage({ params }: { params: Promise<{ s
                       <span className="person-case-dmg-lbl">Érintett közpénz</span>
                       <span className="person-case-dmg-val"><FtValue n={dmg} /></span>
                     </div>
-                    <Link href={`/adatbazis/${encodeURIComponent(r.id)}`} className="person-case-source">
+                    <Link href={`/adatbazis/${encodeURIComponent(toAsciiId(r.id))}`} className="person-case-source">
                       Részletek →
                     </Link>
                   </div>
@@ -185,7 +185,7 @@ export default async function PersonRollupPage({ params }: { params: Promise<{ s
               {rest.map((r) => {
                 const dmg = BigInt(r.damage_huf ?? 0);
                 return (
-                  <Link key={r.id} href={`/adatbazis/${encodeURIComponent(r.id)}`} className="ugyek-more-card">
+                  <Link key={r.id} href={`/adatbazis/${encodeURIComponent(toAsciiId(r.id))}`} className="ugyek-more-card">
                     <div className="ugyek-more-eyebrow">
                       {dmg > 0n ? <FtValue n={dmg} /> : `${fmtNumber(r.article_count)} cikk`}
                     </div>

@@ -4,7 +4,7 @@ import { sql } from 'drizzle-orm';
 import { fmtNumber } from '@korr/shared/format';
 import { FtValue } from '../_home/ft-value';
 import { CaseRow } from './_components/case-row';
-import { autoDisplayTitle, getCaseDisplayTitle, getCaseOverride, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS } from '../_home/case-detail-config';
+import { autoDisplayTitle, getCaseDisplayTitle, getCaseOverride, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS, toAsciiId } from '../_home/case-detail-config';
 import { getFeaturedPeople, getTotalDamage } from '../_home/featured-persons';
 import { CrossUgyek, CrossLemondosok, CrossGaleria, CrossMegszunt, CrossFelszolitottak } from '../_home/cross-promo';
 
@@ -262,9 +262,9 @@ export default async function AdatbazisPage({
           </thead>
           <tbody>
             {page.map((c) => (
-              <CaseRow key={c.id} href={`/adatbazis/${encodeURIComponent(c.id)}`}>
+              <CaseRow key={c.id} href={`/adatbazis/${encodeURIComponent(toAsciiId(c.id))}`}>
                 <td data-label="Ügy">
-                  <Link href={`/adatbazis/${encodeURIComponent(c.id)}`} className="case-name">
+                  <Link href={`/adatbazis/${encodeURIComponent(toAsciiId(c.id))}`} className="case-name">
                     {autoDisplayTitle(c.name, c.person ?? null, getCaseDisplayTitle(c.id))}
                   </Link>
                   {c.investigation_count > 1 && (

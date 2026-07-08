@@ -6,7 +6,7 @@ import { fmtNumber } from '@korr/shared/format';
 import { FtValue } from '../../_home/ft-value';
 import { GALERIA } from '../../_home/galeria-config';
 import { WATCH_LIST } from '../../_home/watchlist-config';
-import { getCaseOverride, cleanTitle, autoDisplayTitle, PERSON_PHOTOS, RETIRED_REDIRECTS } from '../../_home/case-detail-config';
+import { getCaseOverride, cleanTitle, autoDisplayTitle, PERSON_PHOTOS, RETIRED_REDIRECTS, toAsciiId } from '../../_home/case-detail-config';
 import { getCaseVideo } from '../../_home/case-video-registry';
 import { fetchYouTubeMeta } from '@/lib/youtube-meta';
 import { DamageFigure } from '../_components/damage-figure';
@@ -31,7 +31,19 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const rows = (await db.execute(sql`
     SELECT sc.name, sc.person, sc.institution FROM "ScandalCatalog" sc WHERE sc.id = ${id} LIMIT 1
   `)) as unknown as Array<{ name: string; person: string | null; institution: string | null }>;
-  const scandal = rows[0];
+  let scandal = rows[0];
+  if (!scandal) {
+    // DB id may carry accents the (canonical, ascii) URL doesn't — see the
+    // matching fallback in the page body below.
+    try {
+      const fallbackRows = (await db.execute(sql`
+        SELECT sc.name, sc.person, sc.institution FROM "ScandalCatalog" sc WHERE unaccent(sc.id) = unaccent(${id}) LIMIT 1
+      `)) as unknown as Array<{ name: string; person: string | null; institution: string | null }>;
+      scandal = fallbackRows[0];
+    } catch {
+      // unaccent() unavailable — fall through to {} below like a genuine miss.
+    }
+  }
   if (!scandal) return {};
   const title = autoDisplayTitle(scandal.name, scandal.person, override?.title ?? gen?.title);
   const description =
@@ -128,20 +140,37 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
   const richBlocks: DescriptionBlock[] | undefined = override?.descriptionBlocks ?? gen?.blocks;
   // Injektált article-card — feltöltve a DB-lekérdezések után (ld. displayBlocks).
 
-  const headRes = (await db.execute(sql`
+  const headSelect = sql`
     SELECT sc.id, sc.name, sc.person, sc.institution, sc.summary, sc.article_count,
            sc.investigation_count, sc.damage_huf, sc.is_open,
            (SELECT string_agg(o."labelHu", ', ' ORDER BY o."sortOrder")
             FROM "OffenceTypeRef" o WHERE o.code = ANY(sc.offence_codes)) AS offence_labels
-    FROM "ScandalCatalog" sc WHERE sc.id = ${id} LIMIT 1
-  `)) as unknown as ScandalHeader[];
-  const scandal = headRes[0];
+    FROM "ScandalCatalog" sc`;
+  const headRes = (await db.execute(sql`${headSelect} WHERE sc.id = ${id} LIMIT 1`)) as unknown as ScandalHeader[];
+  let scandal = headRes[0];
   if (!scandal) {
-    // Accent-stripped fallback: "gattyán-györgy" → "gattyan-gyorgy"
-    const asciiId = id.normalize('NFD').replace(/[̀-ͯ]/g, '');
-    if (asciiId !== id) redirect(`/adatbazis/${encodeURIComponent(asciiId)}`);
-    notFound();
+    // No exact match — Investigation.scandalKey (the ScandalCatalog id) can
+    // carry accents (e.g. "quaestor-dalkot-adatbiztonság") that the
+    // (canonical, ascii) URL never shows. Resolve via Postgres unaccent()
+    // and render straight through — the address bar already holds the
+    // ascii canonical URL, so no further redirect is needed for this case.
+    try {
+      const fallbackRes = (await db.execute(
+        sql`${headSelect} WHERE unaccent(sc.id) = unaccent(${id}) LIMIT 1`,
+      )) as unknown as ScandalHeader[];
+      scandal = fallbackRes[0];
+    } catch {
+      // unaccent() unavailable — fall through to notFound() below.
+    }
+    if (!scandal) notFound();
   }
+
+  // Ascii is canonical for every /adatbazis/ URL — if what's currently in
+  // the address bar carries accents (an old external link, or someone
+  // pasting the DB's own accented scandalKey), redirect to the ascii form
+  // so an accented URL never stays live on-site.
+  const asciiId = toAsciiId(id);
+  if (asciiId !== id) redirect(`/adatbazis/${encodeURIComponent(asciiId)}`);
 
   const [damageRows, procRows, members, crossRefs, articles, kmdbArticles, linkedKmdbArticles] = await Promise.all([
     db.execute(sql`
@@ -311,7 +340,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
             (SELECT string_agg(o."labelHu", ', ' ORDER BY o."sortOrder")
              FROM "OffenceTypeRef" o WHERE o.code = ANY(sc.offence_codes)) AS offence_labels
           FROM "ScandalCatalog" sc
-          WHERE sc.id = ANY(${missingIds}::text[])
+          WHERE sc.id IN (${sql.join(missingIds.map((v) => sql`${v}`), sql`, `)})
         `) as unknown as CrossRef[])
       : [];
     const allRefs = [...crossRefs, ...extraRefs];
@@ -536,7 +565,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
                 <div key={r.id} className="person-case-card">
                   <div className="person-case-num">/ {String(i + 1).padStart(2, '0')}</div>
                   <div className="person-case-body">
-                    <Link href={`/adatbazis/${encodeURIComponent(r.id)}`} className="person-case-title">{cleanTitle(r.name)}</Link>
+                    <Link href={`/adatbazis/${encodeURIComponent(toAsciiId(r.id))}`} className="person-case-title">{cleanTitle(r.name)}</Link>
                     {(r.person || r.institution) && (
                       <p className="person-case-desc">
                         {[r.person, r.institution].filter(Boolean).join(' · ')}
@@ -554,7 +583,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
                           {tags.map((t) => <span key={t} className="tag">{t}</span>)}
                         </div>
                       )}
-                      <Link href={`/adatbazis/${encodeURIComponent(r.id)}`} className="person-case-source">
+                      <Link href={`/adatbazis/${encodeURIComponent(toAsciiId(r.id))}`} className="person-case-source">
                         Részletek →
                       </Link>
                     </div>

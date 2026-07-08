@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import Link from 'next/link';
 
 import { NewsCardImage } from './news-card-image';
+import { toAsciiId } from '../_home/case-detail-config';
 
 type Article = {
   id: string;
@@ -73,7 +74,7 @@ function ArticleCard({ a, feature }: { a: Article; feature?: boolean }) {
       <p className="news-excerpt">{a.excerpt}</p>
       {a.relatedCaseId ? (
         <Link
-          href={`/adatbazis/${a.relatedCaseId}`}
+          href={`/adatbazis/${encodeURIComponent(toAsciiId(a.relatedCaseId))}`}
           className="news-source"
           style={{ color: 'var(--accent)' }}
           onClick={(e) => e.stopPropagation()}
