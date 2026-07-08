@@ -23,6 +23,8 @@ export function SiteFooter() {
           <li><Link href="/forrashivatkozasok">Forráshivatkozások</Link></li>
           <li><Link href="/adatok">CSV letöltés</Link></li>
           <li><Link href="/adatok">API hozzáférés</Link></li>
+          <li><Link href="/adatvedelem">Adatvédelem</Link></li>
+          <li><Link href="/impresszum">Impresszum</Link></li>
         </ul>
       </div>
       <div>
