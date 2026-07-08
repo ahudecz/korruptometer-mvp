@@ -24,6 +24,25 @@ const CLOSURE_KEYWORDS = [
   'felfüggesztik', 'felfüggesztés', 'elmarad', 'lemondják', 'nem jelenik meg',
 ];
 
+const VALID_CLOSURE_EVENT_TYPES = ['megszűnés', 'leépítés', 'elmaradt esemény', 'egyéb'] as const;
+type ValidClosureEventType = (typeof VALID_CLOSURE_EVENT_TYPES)[number];
+
+/**
+ * Same class of bug as detect-resignations.ts's coerceResignationType: a
+ * malformed/truncated LLM value inserted straight into a strict Postgres
+ * enum throws inside step.run and kills the whole hourly batch, silently
+ * starving every other queued article. Repair by prefix match; unknown
+ * values fall back to 'egyéb' instead of crashing.
+ */
+function coerceClosureEventType(value: string): ValidClosureEventType {
+  const normalized = value.normalize('NFC').trim();
+  if ((VALID_CLOSURE_EVENT_TYPES as readonly string[]).includes(normalized)) {
+    return normalized as ValidClosureEventType;
+  }
+  const match = VALID_CLOSURE_EVENT_TYPES.find((v) => v.startsWith(normalized) || normalized.startsWith(v.slice(0, 5)));
+  return match ?? 'egyéb';
+}
+
 /**
  * closure.detect — cron every hour.
  * Backlog scan (006) over NOT-YET-CHECKED articles from the last 7 days —
@@ -148,7 +167,7 @@ export const detectMediaClosures = inngest.createFunction(
 
           await db.insert(schema.mediaClosures).values({
             name: result.name.slice(0, 200),
-            eventType: result.eventType,
+            eventType: coerceClosureEventType(result.eventType),
             description: result.description.slice(0, 1000) || null,
             eventDate,
             sourceUrl: article.sourceUrl,
