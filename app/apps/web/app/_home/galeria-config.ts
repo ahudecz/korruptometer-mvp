@@ -363,7 +363,7 @@ export const GALERIA: GaleriaEntry[] = [
   },
   {
     id: 'szijjarto-peter',
-    name: 'Szíjjártó Péter',
+    name: 'Szijjártó Péter',
     subtitle: 'Volt külügyminiszter',
     description: 'Miniszteri időszaka alatt több stratégiai szerződés körül érdekkonfliktust és átláthatósági problémákat azonosított a sajtó. Az azerbajdzsáni és orosz energetikai cégekhez fűződő üzleti kapcsolatai 2026-ban parlamenti vizsgálat tárgyát képezik.',
     detention: 'investig',
@@ -378,7 +378,7 @@ export const GALERIA: GaleriaEntry[] = [
     videoChannel: 'Telex.hu',
     videoTitle: 'Önök milliárdosok?',
     videoSummary: 'Az újságíró egyenesen megkérdezi a külügyminisztert: milliárdosok-e? Szijjártó Péter válasza kitérő — de a vagyongyarapodás tényei egyértelműek. Ez a videó a 2024-es interjú legerősebb pillanatait mutatja be egy összeférhetetlenségi botrány árnyékában.',
-    newsTag: 'Szíjjártó Péter',
+    newsTag: 'Szijjártó Péter',
     newsKeywords: ['szíjjártó péter', 'szíjjártó'],
     personCases: [
       {
@@ -390,28 +390,28 @@ export const GALERIA: GaleriaEntry[] = [
       },
       {
         title: 'Azerbajdzsáni kapcsolatok',
-        description: 'Szíjjártó miniszteri évei alatt kötött azerbajdzsáni energetikai és befektetési szerződések körül az ellenzék és a sajtó összeférhetetlenséget azonosított. A Vagif Aliyev-üggyel való kapcsolat vizsgálat alatt.',
+        description: 'Szijjártó miniszteri évei alatt kötött azerbajdzsáni energetikai és befektetési szerződések körül az ellenzék és a sajtó összeférhetetlenséget azonosított. A Vagif Aliyev-üggyel való kapcsolat vizsgálat alatt.',
         crimeTypes: ['Érdekkonfliktus', 'Közbeszerzési visszaélés'],
         sourceUrl: 'https://telex.hu/tag/szijjarto-peter',
         sourceLabel: 'Telex',
       },
       {
         title: 'Felesége cégének terjeszkedése',
-        description: 'A HVG 2026-ban tárta fel, hogy Szíjjártó Péter felesége, Nagy Szilvia interior design cége a miniszteri évek alatt figyelemre méltó terjeszkedésen esett át — az összeférhetetlenség és a politikai protekció gyanúja sajtóvitát váltott ki.',
+        description: 'A HVG 2026-ban tárta fel, hogy Szijjártó Péter felesége, Nagy Szilvia interior design cége a miniszteri évek alatt figyelemre méltó terjeszkedésen esett át — az összeférhetetlenség és a politikai protekció gyanúja sajtóvitát váltott ki.',
         crimeTypes: ['Összeférhetetlenség (gyanú)', 'Közvetlen érdekkonfliktus'],
         sourceUrl: 'https://hvg.hu/kkv/20260531_szijjarto-peter-nagy-szilvia-interior-design',
         sourceLabel: 'HVG',
       },
       {
         title: 'Diplomata-útlevél-osztogatás',
-        description: 'Szíjjártó Péter külügyminiszteri irodájából 2010–2026 között mintegy 1322 diplomata-útlevelet ellenőrzött az új kormány — ezek közel 72%-át, 943-at visszavontak. Az útlevelek között sportolók (Rúzsa Magdi, Hajós András, Kálomista Gábor fia), NER-üzleti körök tagjai és külföldi állampolgárok is szerepeltek. Szakértők szerint a visszaélésszerű kiosztás komoly biztonsági kockázatot jelent.',
+        description: 'Szijjártó Péter külügyminiszteri irodájából 2010–2026 között mintegy 1322 diplomata-útlevelet ellenőrzött az új kormány — ezek közel 72%-át, 943-at visszavontak. Az útlevelek között sportolók (Rúzsa Magdi, Hajós András, Kálomista Gábor fia), NER-üzleti körök tagjai és külföldi állampolgárok is szerepeltek. Szakértők szerint a visszaélésszerű kiosztás komoly biztonsági kockázatot jelent.',
         crimeTypes: ['Hivatali visszaélés', 'Korrupció', 'Nemzeti biztonsági kockázat'],
         sourceUrl: 'https://444.hu/2026/06/05/ugy-osztogatta-a-diplomata-utleveleket-szijjarto-hivatala-mintha-kotelezo-lenne',
         sourceLabel: '444',
       },
       {
         title: 'Paks II. – hűtlen kezelés gyanúja',
-        description: 'Az EU Bírósága 2025 szeptemberében megsemmisítette a Paks II. bővítéshez nyújtott állami támogatás jóváhagyását, megállapítva, hogy az versenyjogilag szabálytalan volt. Tordai Bence 2026 januárjában 80 milliárd forintos hűtlen kezelés gyanúja miatt feljelentést tett Szíjjártó Péter, Orbán Viktor és Nagy Márton ellen — arra hivatkozva, hogy az EU-s tiltás ellenére folytatták a beruházást.',
+        description: 'Az EU Bírósága 2025 szeptemberében megsemmisítette a Paks II. bővítéshez nyújtott állami támogatás jóváhagyását, megállapítva, hogy az versenyjogilag szabálytalan volt. Tordai Bence 2026 januárjában 80 milliárd forintos hűtlen kezelés gyanúja miatt feljelentést tett Szijjártó Péter, Orbán Viktor és Nagy Márton ellen — arra hivatkozva, hogy az EU-s tiltás ellenére folytatták a beruházást.',
         estimatedDamage: '~80 milliárd Ft (Tordai feljelentés szerinti kár)',
         crimeTypes: ['Hűtlen kezelés (gyanú)', 'EU-szabályok megsértése', 'Közhatalommal visszaélés'],
         sourceUrl: 'https://nepszava.hu/3323893_paks-2-tordai-bence-feljelentes-hutlen-kezeles-gyanuja-orban-viktor-nagy-marton-szijjarto-peter',

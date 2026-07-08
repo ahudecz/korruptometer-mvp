@@ -389,7 +389,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
             </div>
 
             <div className="person-hero-amount">
-              <DamageFigure huf={damage} suppressed={damageSuppressed} basisText={basisText} label={override?.damageLabel ?? 'Becsült kár'} />
+              <DamageFigure huf={damage} suppressed={damageSuppressed} basisText={basisText} label={override?.damageLabel ?? 'Érintett közpénz'} />
             </div>
 
             {summaryText && <p className="person-hero-desc">{summaryText}</p>}
@@ -549,7 +549,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
                     <div className="person-case-footer">
                       {showDmg && (
                         <div className="person-case-dmg">
-                          <span className="person-case-dmg-lbl">Becsült kár</span>
+                          <span className="person-case-dmg-lbl">Érintett közpénz</span>
                           <span className="person-case-dmg-val"><FtValue n={rd} /></span>
                         </div>
                       )}

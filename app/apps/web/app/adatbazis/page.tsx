@@ -4,8 +4,9 @@ import { sql } from 'drizzle-orm';
 import { fmtNumber } from '@korr/shared/format';
 import { FtValue } from '../_home/ft-value';
 import { CaseRow } from './_components/case-row';
-import { autoDisplayTitle, getCaseDisplayTitle, getCaseOverride, CASE_OVERRIDES } from '../_home/case-detail-config';
+import { autoDisplayTitle, getCaseDisplayTitle, getCaseOverride, CASE_OVERRIDES, PERSON_PHOTOS } from '../_home/case-detail-config';
 import { GALERIA } from '../_home/galeria-config';
+import { WATCH_LIST } from '../_home/watchlist-config';
 import { PERSON_ROLLUPS } from '../_home/person-rollup-config';
 import { CrossUgyek, CrossLemondosok, CrossGaleria, CrossMegszunt, CrossFelszolitottak } from '../_home/cross-promo';
 
@@ -111,13 +112,17 @@ export default async function AdatbazisPage({
           WHERE person = ${cfg.personName}
             ${excluded.length > 0 ? sql`AND id NOT IN (${sql.join(excluded.map((v) => sql`${v}`), sql`, `)})` : sql``}
         `)) as unknown as Array<{ total: string; n: number }>;
+        // Same fallback chain as the person-rollup page: GALERIA (full
+        // profile) → WATCH_LIST (lemondások) → PERSON_PHOTOS (photo-only).
         const galeriaEntry = GALERIA.find((g) => g.name === cfg.personName);
+        const watchEntry = WATCH_LIST.find((w) => w.name === cfg.personName);
+        const photoEntry = PERSON_PHOTOS[cfg.personName];
         return {
           slug: cfg.slug,
           name: cfg.personName,
           total: BigInt(totalRows[0]?.total ?? '0'),
           caseCount: totalRows[0]?.n ?? 0,
-          photoUrl: galeriaEntry?.photoUrl ?? null,
+          photoUrl: galeriaEntry?.photoUrl ?? watchEntry?.photoUrl ?? photoEntry?.photoUrl ?? null,
         };
       }),
     )
@@ -226,7 +231,7 @@ export default async function AdatbazisPage({
                 </div>
                 <div className="featured-person-text">
                   <div className="featured-person-name">{p.name}</div>
-                  <div className="featured-person-dmg-lbl">Becsült kár</div>
+                  <div className="featured-person-dmg-lbl">Érintett közpénz</div>
                   <div className="featured-person-stat"><FtValue n={p.total} /></div>
                   <div className="featured-person-cases">{fmtNumber(p.caseCount)} ügy</div>
                   <div className="featured-person-cta">Összes ügy →</div>
@@ -286,7 +291,7 @@ export default async function AdatbazisPage({
               <th>Felelős</th>
               <th>Intézmény</th>
               <th className="num">Cikkek</th>
-              <th className="num">Becsült kár (Ft)</th>
+              <th className="num">Érintett közpénz (Ft)</th>
             </tr>
           </thead>
           <tbody>
@@ -307,7 +312,7 @@ export default async function AdatbazisPage({
                 <td className="num" data-label="Cikkek">
                   {fmtNumber(c.article_count)}
                 </td>
-                <td className="num db-damage-cell" data-label="Becsült kár">
+                <td className="num db-damage-cell" data-label="Érintett közpénz">
                   {getCaseOverride(c.id)?.hideAutoDamage ? (
                     <span style={{ color: 'var(--muted)', fontStyle: 'italic', fontSize: 13 }}>Becslés alatt</span>
                   ) : BigInt(c.damage_huf) > 0n ? (

@@ -35,7 +35,7 @@ export default function PartnerekPage() {
               A K-Monitor 2008 óta az ország legteljesebb korrupciós esetadatbázisát
               működteti. Módszertanuk átlátható, forrásaik ellenőrizhetők, és az egyetlen
               szervezet Magyarországon, amely ekkora mélységben dokumentálja a visszaéléseket
-              strukturált adatbázisban. Az adatbázisunkban lévő ügyek és becsült kárösszegek
+              strukturált adatbázisban. Az adatbázisunkban lévő ügyek és az érintett közpénz-összegek
               döntő többsége az ő nyilvánosan elérhető adataikon alapul.
             </p>
           </div>

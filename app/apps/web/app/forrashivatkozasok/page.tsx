@@ -58,7 +58,7 @@ export default function ForrashivatkozasokPage() {
             A K-Monitor 2008 óta gyűjti és dokumentálja a magyarországi korrupciós eseteket.
             Adatbázisuk jelenleg 64&nbsp;000+ dokumentált ügyet tartalmaz, bírósági iratokra,
             közbeszerzési nyilvántartásokra és sajtóanyagokra támaszkodva. Tőlük vesszük az
-            esetazonosítókat, a becsült kárösszegeket, az érintett személyek és intézmények
+            esetazonosítókat, az érintett közpénz-összegeket, az érintett személyek és intézmények
             adatait, valamint az ügyekhez tartozó elsődleges forráslinkeket. Az általuk gyűjtött
             adatokat feldolgoztuk és saját kategóriarendszerünkbe szűrtük — nem vesszük át őket
             változtatás nélkül.

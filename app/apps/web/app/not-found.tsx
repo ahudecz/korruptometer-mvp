@@ -5,7 +5,7 @@ const PRISON_PERSONS = [
   { name: 'Rogán Antal',     sub: 'Volt kabinetirodát vezető min.', photo: '/images/persons/rogan-antal.png',     objectPos: '50% 10%' },
   { name: 'Mészáros Lőrinc', sub: 'Felcsúti üzletember',           photo: '/images/persons/meszaros-lorinc.png', objectPos: '50% 5%'  },
   { name: 'Tiborcz István',  sub: 'Orbán Viktor veje',              photo: '/images/persons/tiborcz-istvan.png',  objectPos: '50% 10%' },
-  { name: 'Szíjjártó Péter', sub: 'Volt külügyminiszter',          photo: '/images/persons/szijjarto-peter.png', objectPos: '50% 10%' },
+  { name: 'Szijjártó Péter', sub: 'Volt külügyminiszter',          photo: '/images/persons/szijjarto-peter.png', objectPos: '50% 10%' },
   { name: 'Lázár János',     sub: 'Volt építési miniszter',         photo: '/images/persons/lazar-janos.png',     objectPos: '50% 10%' },
   { name: 'Balásy Gyula',    sub: 'New Land Media',                 photo: '/images/persons/balasy-gyula.png',    objectPos: '50% 10%' },
 ];

@@ -791,7 +791,7 @@ export default async function HomePage() {
               <th>Felelős</th>
               <th>Intézmény</th>
               <th className="num">Cikkek</th>
-              <th className="num">Becsült kár (Ft)</th>
+              <th className="num">Érintett közpénz (Ft)</th>
             </tr>
           </thead>
           <tbody>
@@ -812,7 +812,7 @@ export default async function HomePage() {
                 <td className="num" data-label="Cikkek">
                   {fmtNumber(c.article_count)}
                 </td>
-                <td className="num db-damage-cell" data-label="Becsült kár">
+                <td className="num db-damage-cell" data-label="Érintett közpénz">
                   {BigInt(c.damage_huf) > 0n ? <FtValue n={BigInt(c.damage_huf)} /> : '—'}
                 </td>
               </CaseRow>

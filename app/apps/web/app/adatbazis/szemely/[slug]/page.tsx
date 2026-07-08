@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: truncate(`${config.personName} összes ügye`, 40),
     description: truncate(
-      `${config.personName} ${fmtNumber(rows.length)} dokumentált ügye, összesen ${fmtFt(total)} becsült kárral — a Kegyencjárat adatbázisában.`,
+      `${config.personName} ${fmtNumber(rows.length)} dokumentált ügye, összesen ${fmtFt(total)} érintett közpénzzel — a Kegyencjárat adatbázisában.`,
       150,
     ),
   };
@@ -113,7 +113,7 @@ export default async function PersonRollupPage({ params }: { params: Promise<{ s
             </div>
 
             <div className="person-hero-amount">
-              <div className="person-hero-amount-lbl">Összesített becsült kár</div>
+              <div className="person-hero-amount-lbl">Összesített érintett közpénz</div>
               <div className="person-hero-amount-val"><FtValue n={total} mode="long" /></div>
             </div>
 
@@ -134,7 +134,7 @@ export default async function PersonRollupPage({ params }: { params: Promise<{ s
             {rest.length > 0 ? 'A 10 legnagyobb ügy' : 'A legnagyobb ügyei'} a K-Monitor adatbázisa alapján
           </h2>
           <p className="person-section-note">
-            {rest.length > 0 && <>A {fmtNumber(rows.length)} ügyből ez a 10 adja a kár kb. {topPct}%-át. </>}
+            {rest.length > 0 && <>A {fmtNumber(rows.length)} ügyből ez a 10 adja az érintett közpénz kb. {topPct}%-át. </>}
             Sajtójelentések és nyilvánosan hozzáférhető dokumentumok alapján. Jogerős ítélet hiányában
             az érintett személyek ártatlannak tekintendők.
           </p>
@@ -161,7 +161,7 @@ export default async function PersonRollupPage({ params }: { params: Promise<{ s
 
                   <div className="person-case-footer">
                     <div className="person-case-dmg">
-                      <span className="person-case-dmg-lbl">Becsült kár</span>
+                      <span className="person-case-dmg-lbl">Érintett közpénz</span>
                       <span className="person-case-dmg-val"><FtValue n={dmg} /></span>
                     </div>
                     <Link href={`/adatbazis/${encodeURIComponent(r.id)}`} className="person-case-source">

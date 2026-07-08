@@ -9,7 +9,7 @@ export function DamageFigure({
   huf,
   suppressed,
   basisText,
-  label = 'Becsült kár',
+  label = 'Érintett közpénz',
 }: {
   huf: bigint;
   suppressed: boolean;

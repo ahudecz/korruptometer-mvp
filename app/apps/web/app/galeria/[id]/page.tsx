@@ -166,11 +166,11 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                 </div>
                 <p className="adatbazis-promo-desc">
                   Ha az összes hozzá köthető, tételesen dokumentált ügyre és az összesített
-                  becsült kárra vagy kíváncsi, nézd meg a teljes áttekintést.
+                  érintett közpénzre vagy kíváncsi, nézd meg a teljes áttekintést.
                 </p>
               </div>
               <div className="adatbazis-promo-stat">
-                <div className="adatbazis-promo-stat-lbl">Összesített becsült kár</div>
+                <div className="adatbazis-promo-stat-lbl">Összesített érintett közpénz</div>
                 <div className="adatbazis-promo-stat-val"><FtValue n={rollup.total} mode="long" /></div>
                 <span className="adatbazis-promo-cta">{entry.name} összes ügye →</span>
               </div>

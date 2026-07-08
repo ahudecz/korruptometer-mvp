@@ -32,7 +32,7 @@ export default function AdatokPage() {
             </p>
             <ul className="modszertan-list">
               <li>ügyazonosító, cím, kategória, érintett személy(ek)</li>
-              <li>becsült kárösszeg és pénznem</li>
+              <li>érintett közpénz összege és pénznem</li>
               <li>ügy státusza (aktív / lezárt / ismeretlen)</li>
               <li>forrás URL-ek</li>
               <li>utolsó módosítás dátuma</li>

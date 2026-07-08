@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Mészáros Lőrinc összes ügye',
-  description: 'Mészáros Lőrinc összes, az adatbázisban külön-külön dokumentált ügye egy helyen, becsült kárral és forrásokkal.',
+  description: 'Mészáros Lőrinc összes, az adatbázisban külön-külön dokumentált ügye egy helyen, érintett közpénzzel és forrásokkal.',
 };
 
 // Single source of truth for excluded ids lives in person-rollup-config.ts
@@ -75,7 +75,7 @@ export default async function MeszarosOsszesUgyePage() {
             </div>
 
             <div className="person-hero-amount">
-              <div className="person-hero-amount-lbl">Összesített becsült kár</div>
+              <div className="person-hero-amount-lbl">Összesített érintett közpénz</div>
               <div className="person-hero-amount-val"><FtValue n={total} mode="long" /></div>
             </div>
 
@@ -92,7 +92,7 @@ export default async function MeszarosOsszesUgyePage() {
         <div className="ugy-description">
           <h2 className="person-section-title">A 10 legnagyobb ügy a K-Monitor adatbázisa alapján</h2>
           <p className="person-section-note">
-            A {fmtNumber(rows.length)} ügyből ez a 10 adja a kár kb. {topPct}%-át. Sajtójelentések és
+            A {fmtNumber(rows.length)} ügyből ez a 10 adja az érintett közpénz kb. {topPct}%-át. Sajtójelentések és
             nyilvánosan hozzáférhető dokumentumok alapján. Jogerős ítélet hiányában az érintett
             személyek ártatlannak tekintendők.
           </p>
@@ -119,7 +119,7 @@ export default async function MeszarosOsszesUgyePage() {
 
                   <div className="person-case-footer">
                     <div className="person-case-dmg">
-                      <span className="person-case-dmg-lbl">Becsült kár</span>
+                      <span className="person-case-dmg-lbl">Érintett közpénz</span>
                       <span className="person-case-dmg-val"><FtValue n={dmg} /></span>
                     </div>
                     <Link href={`/adatbazis/${encodeURIComponent(r.id)}`} className="person-case-source">
