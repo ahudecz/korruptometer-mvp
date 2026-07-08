@@ -39,7 +39,12 @@ function resolvePhoto(url: string | null | undefined, personName?: string): stri
   return `/api/img-proxy?url=${encodeURIComponent(src)}`;
 }
 
-export default async function BirosagPage() {
+export default async function BirosagPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ugy?: string }>;
+}) {
+  const { ugy } = await searchParams;
   const db = getDb();
   const rows = await db
     .select()
@@ -63,6 +68,7 @@ export default async function BirosagPage() {
       verdictDateFormatted: fmtDateLong(new Date(r.verdictDate)),
       court:                r.court,
       summary:              r.summary,
+      description:          r.description ?? null,
       sourceUrls:           r.sourceUrls,
       sourceNames:          r.sourceNames,
       sourceHeadlines:      r.sourceHeadlines,
@@ -93,20 +99,27 @@ export default async function BirosagPage() {
       <section className="section verdict-section" id="birosagi-iteletek">
         <div className="section-head">
           <div className="section-num">/ Bírósági ítéletek</div>
-          <h2 className="section-title">Kiszabott börtönévek</h2>
+          <h2 className="section-title">Börtönben van-e?</h2>
         </div>
 
         <p className="rogues-deck" style={{ marginTop: 24, marginBottom: 32, color: 'var(--ink)' }}>
-          NER-kapcsolatú ügyekben kiszabott jogerős és első fokú szabadságvesztés ítéletek —
-          tényeket és forrásokat közlünk, nem kommentárt.
+          NER-kapcsolatú és politikai indíttatású eljárások — előzetes letartóztatás, vádemelés,
+          első fokú és jogerős ítélet. Tényeket és forrásokat közlünk, nem kommentárt.
         </p>
+
+        {serialized.length > 0 && (
+          <div className="stat-unit stat-unit-fresh" style={{ marginBottom: 24 }}>
+            <h3 className="stat-card-list-title" style={{ marginTop: 0 }}>Legfrissebb</h3>
+            {serialized[0]?.description ?? serialized[0]?.personName}
+          </div>
+        )}
 
         {rows.length === 0 ? (
           <div style={{ marginTop: 32, padding: '40px 24px', textAlign: 'center', color: '#888', border: '1px dashed #e0e0e0', borderRadius: 12 }}>
             Még nincs rögzített ítélet — az első jogerős ítélettel frissül az oldal.
           </div>
         ) : (
-          <VerdictList rows={serialized} />
+          <VerdictList rows={serialized} initialUgyFilter={ugy ?? 'all'} />
         )}
       </section>
 

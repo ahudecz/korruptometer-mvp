@@ -168,18 +168,15 @@ const BREAKING_TRIGGERS = [
   'nyomozást rendeltek el', 'körözik', 'európai elfogatóparancs',
 ];
 
-// Statikus figyelt lista — csak a ténylegesen kiemelt entitások:
-// GALERIA (top 10 személy), WATCH_LIST (top 8 lemondásra felszólított) és a
-// UGYEK config-ban ténylegesen szereplő kiemelt ügyek kulcsszavai.
-// FONTOS: ez a lista korábban elszakadt a valós GALERIA/WATCH_LIST/UGYEK
-// tartalmától (régi, már nem szereplő nevek és ügyek maradtak benne:
-// Czeglédy Csaba, Kaleta, Mátrai Erőmű, Voldemort, atlétikai VB stadion
-// stb.) — emiatt teljesen ide nem tartozó cikkek (pl. iskolakezdési
-// támogatásról szóló hír) is "breaking"-nek jelölődtek, ha az excerptjük
-// véletlenül megemlített egy figyelt nevet egy más témájú mondatban.
-// Ha egy UGYEK / GALERIA / WATCH_LIST bővül, ezt a listát is frissíteni
-// kell — nincs élő import a scrapers csomagból a web-app configokra.
-const BREAKING_MONITORED = [
+// Fallback figyelt lista — csak akkor használt, ha a hívó (apps/web) nem ad
+// át élő listát. A packages/scrapers csomag nem importálhatja közvetlenül az
+// apps/web GALERIA/WATCH_LIST/UGYEK configjait (külön build-egység), ezért
+// apps/web/src/lib/breaking-monitored.ts állítja elő az élő listát ezekből a
+// configokból, és azt adja át isBreaking() paramétereként (spec
+// 007-political-prosecution-detection, FR-008/FR-009). Ez a tömb csak
+// biztonsági háló arra az esetre, ha az élő lista valamiért nem érhető el,
+// és a közvetlen (nem apps/web-es) hívóknak/teszteknek.
+export const BREAKING_MONITORED_FALLBACK = [
   // Kiemelt személyek (WATCH_LIST — top 8 lemondásra felszólított)
   'sulyok tamás', 'polt péter', 'nagy gábor bálint',
   'varga zs. andrás', 'windisch lászló', 'rigó csaba balázs',
@@ -195,7 +192,11 @@ const BREAKING_MONITORED = [
   'parkfenntartás', 'parkfenntartá', 'őrsi gergely',
 ];
 
-export function isBreaking(headline: string, excerpt: string): boolean {
+export function isBreaking(
+  headline: string,
+  excerpt: string,
+  monitoredNames: readonly string[] = BREAKING_MONITORED_FALLBACK,
+): boolean {
   const headlineText = headline.toLowerCase();
   const fullText = `${headlineText} ${excerpt}`.toLowerCase();
   const hasTrigger = BREAKING_TRIGGERS.some((t) => fullText.includes(t));
@@ -203,7 +204,7 @@ export function isBreaking(headline: string, excerpt: string): boolean {
   // A figyelt névnek/ügynek a CÍMBEN kell szerepelnie, nem elég, ha csak az
   // excerpt egy mellékes, más témájú mondatában bukkan fel — az adta a fenti
   // hamis pozitívokat.
-  return BREAKING_MONITORED.some((m) => headlineText.includes(m));
+  return monitoredNames.some((m) => headlineText.includes(m));
 }
 
 // ─── Scrape relevance tiering (003-detection-review-engine) ───────────────────

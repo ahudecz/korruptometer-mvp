@@ -2,6 +2,7 @@
 /* eslint-disable react/no-unescaped-entities -- Hungarian typographic quotes („ ") in display text */
 
 import Link from 'next/link';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState, useRef, useEffect, useMemo } from 'react';
 
 export type SerializedVerdict = {
@@ -15,6 +16,7 @@ export type SerializedVerdict = {
   verdictDateFormatted: string;
   court: string;
   summary: string;
+  description: string | null;
   sourceUrls: string[];
   sourceNames: string[];
   sourceHeadlines: string[];
@@ -212,14 +214,18 @@ function VerdictRow({ r }: { r: SerializedVerdict }) {
   );
 }
 
-export function VerdictList({ rows }: { rows: SerializedVerdict[] }) {
+export function VerdictList({ rows, initialUgyFilter = 'all' }: { rows: SerializedVerdict[]; initialUgyFilter?: string }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [search, setSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [verdictTypeFilter, setVerdictTypeFilter] = useState('all');
   const [crimeFilter, setCrimeFilter] = useState<string[]>([]);
   const [yearRange, setYearRange] = useState('all');
   const [courtFilter, setCourtFilter] = useState('all');
-  const [ugyFilter, setUgyFilter] = useState('all');
+  const [ugyFilter, setUgyFilter] = useState(initialUgyFilter);
   const [showCrimeDropdown, setShowCrimeDropdown] = useState(false);
   const [showCourtDropdown, setShowCourtDropdown] = useState(false);
   const [showUgyDropdown, setShowUgyDropdown] = useState(false);
@@ -227,6 +233,28 @@ export function VerdictList({ rows }: { rows: SerializedVerdict[] }) {
   const crimeRef = useRef<HTMLDivElement>(null);
   const courtRef = useRef<HTMLDivElement>(null);
   const ugyRef   = useRef<HTMLDivElement>(null);
+
+  // A megosztható link (?ugy=<id>) miatt: szűrésváltáskor visszaírjuk az
+  // URL-be, hogy a beállított nézet is linkelhető legyen — nem csak a
+  // bejövő link működik. Shallow (nincs scroll/navigáció).
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (ugyFilter === 'all') params.delete('ugy'); else params.set('ugy', ugyFilter);
+    const next = params.toString();
+    const current = searchParams.toString();
+    if (next !== current) {
+      router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- csak ugyFilter váltásra fusson, ne minden searchParams-változásra
+  }, [ugyFilter]);
+
+  // Ha ?ugy=-vel érkezett az oldal, görgessünk a listához.
+  useEffect(() => {
+    if (initialUgyFilter !== 'all') {
+      document.getElementById('birosagi-iteletek')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- csak mountkor fusson
+  }, []);
 
   const allCrimes = useMemo(() => [...new Set(rows.flatMap(r => r.crimes))].sort(), [rows]);
   const allCourts = useMemo(() => [...new Set(rows.map(r => r.court))].sort(), [rows]);

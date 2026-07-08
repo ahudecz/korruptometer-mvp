@@ -160,6 +160,7 @@ export const detectVerdicts = inngest.createFunction(
             verdictDate,
             court: (result.court || 'Ismeretlen bíróság').slice(0, 200),
             summary: result.summary.slice(0, 1000),
+            description: result.description ? result.description.slice(0, 200) : null,
             sourceUrls: [article.sourceUrl],
             sourceNames: article.sourceName ? [article.sourceName] : [],
             sourceHeadlines: article.headline ? [article.headline.slice(0, 500)] : [],

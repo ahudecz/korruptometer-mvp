@@ -204,6 +204,7 @@ export default async function HomePage() {
     pretrialCountDb,
     eliteltCountDb,
     pretrialByUgy,
+    latestVerdictDb,
     latestRecoveriesDb,
     totalRecoveredRaw,
     latestResignations5,
@@ -235,6 +236,12 @@ export default async function HomePage() {
       .where(and(eq(schema.courtVerdicts.reviewStatus, 'approved'), eq(schema.courtVerdicts.verdictType, 'előzetesben')))
       .groupBy(schema.courtVerdicts.personUgyId)
       .orderBy(sql`count(*) desc`),
+    db.select({ id: schema.courtVerdicts.id, personName: schema.courtVerdicts.personName, description: schema.courtVerdicts.description, personUgyId: schema.courtVerdicts.personUgyId })
+      .from(schema.courtVerdicts)
+      .where(eq(schema.courtVerdicts.reviewStatus, 'approved'))
+      .orderBy(desc(schema.courtVerdicts.verdictDate))
+      .limit(1)
+      .then(r => r[0] ?? null),
     db.select().from(schema.assetRecoveries).orderBy(desc(schema.assetRecoveries.recoveredAt)).limit(5),
     db.select({ total: sql<string>`coalesce(sum("amountFt"::bigint), 0)::text` }).from(schema.assetRecoveries).then(r => r[0]?.total ?? '0'),
     db.select().from(schema.politicalResignations)
@@ -272,6 +279,7 @@ export default async function HomePage() {
   const closureCount = closureCountRaw;
   const latestClosures = latestClosuresRaw;
   const pinnedClosures = pinnedClosuresRaw;
+  const latestVerdict = latestVerdictDb;
   const latestRecoveries = latestRecoveriesDb;
   const totalRecoveredFt = BigInt(totalRecoveredRaw);
   const offences = offRows.map((o) => ({ code: o.code, label: o.label }));
@@ -394,6 +402,16 @@ export default async function HomePage() {
                 );
               })}
             </div>
+            {latestVerdict && (
+              <>
+                <h3 className="stat-card-list-title">Legfrissebb</h3>
+                <div className="stat-unit stat-unit-fresh">
+                  <Link href="/birosagi-iteletek" className="stat-case-link">
+                    {latestVerdict.description ?? latestVerdict.personName}
+                  </Link>
+                </div>
+              </>
+            )}
             <Link href="/birosagi-iteletek" className="stat-card-list-link stat-card-corner-link">Részletek →</Link>
           </div>
 

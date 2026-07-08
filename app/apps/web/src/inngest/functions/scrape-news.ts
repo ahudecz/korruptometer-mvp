@@ -8,6 +8,7 @@ import { getDb } from '@/lib/db';
 import { postEditorAlert } from '@/lib/slack';
 import { classifyArticle } from '@/lib/ai-classify';
 import { findSameStoryDuplicate } from '@/lib/same-story';
+import { getMonitoredBreakingNames } from '@/lib/breaking-monitored';
 
 import { inngest } from '../client';
 
@@ -162,6 +163,7 @@ async function persistArticles(
   // URL alapján dől el INGYEN; az AI CSAK a bizonytalan "maybe" kupacra fut, ha
   // van LLM-kulcs. Így olcsó marad, mégis kiszűri a külföld/szemét híreket.
   const useAi = Boolean(process.env.LLM_API_KEY || process.env.ANTHROPIC_API_KEY);
+  const monitoredNames = getMonitoredBreakingNames();
 
   for (const a of scraped) {
     const canonical = canonicalUrl(a.sourceUrl, allowlist);
@@ -176,7 +178,7 @@ async function persistArticles(
     let finalTag = a.tag ?? null;
     let finalFeatured = shouldFeature(a.headline, a.excerpt);
     // Breaking-jelölt: börtön/eljárás-trigger + figyelt személy/ügy (kulcsszavas, AI nélkül).
-    const finalBreaking = isBreaking(a.headline, a.excerpt);
+    const finalBreaking = isBreaking(a.headline, a.excerpt, monitoredNames);
 
     // 2. AI CSAK a bizonytalan "maybe" kupacra (és csak ha van kulcs).
     if (tier === 'maybe' && useAi) {

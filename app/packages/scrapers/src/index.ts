@@ -10,7 +10,7 @@ export { clipExcerpt, EXCERPT_MAX, parseDate } from './parse';
 export { extractFromListing, parseListingHtml } from './extract';
 export { parseRss } from './rss';
 export { adapters, getAdapter, routeOutletByUrl } from './adapters';
-export { isRelevant, shouldFeature, isBreaking, scrapeRelevanceTier, isForeignOrJunk } from './relevance';
+export { isRelevant, shouldFeature, isBreaking, scrapeRelevanceTier, isForeignOrJunk, BREAKING_MONITORED_FALLBACK } from './relevance';
 export {
   extractNameCandidates,
   decideSameStoryTier,

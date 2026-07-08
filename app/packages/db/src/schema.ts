@@ -1401,6 +1401,10 @@ export const courtVerdicts = pgTable(
     verdictDate: timestamp('verdictDate', { withTimezone: true }).notNull(),
     court: text('court').notNull(),
     summary: text('summary').notNull(),
+    // Ultra-short (max 6 word) teaser for the homepage/birosagi-iteletek
+    // "legfrissebb" summary blocks — see 0035_court_verdict_description.sql.
+    // Distinct from `summary` above, which stays a full 1-2 sentence recap.
+    description: text('description'),
     sourceUrls: text('sourceUrls').array().notNull().default(sql`ARRAY[]::text[]`),
     sourceNames: text('sourceNames').array().notNull().default(sql`ARRAY[]::text[]`),
     sourceHeadlines: text('sourceHeadlines').array().notNull().default(sql`ARRAY[]::text[]`),

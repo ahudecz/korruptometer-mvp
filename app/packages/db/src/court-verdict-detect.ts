@@ -16,6 +16,8 @@ export type VerdictExtraction = {
   verdictDate: string;
   court: string;
   summary: string;
+  /** Max 6 word teaser for the homepage/birosagi-iteletek "legfrissebb" summary blocks. */
+  description: string;
   confidence: number;
 };
 
@@ -71,6 +73,10 @@ const TOOL: LlmToolSpec = {
         type: 'string',
         description: 'One or two sentence summary in Hungarian of what happened. Empty if isVerdict is false.',
       },
+      description: {
+        type: 'string',
+        description: 'Ultra-short Hungarian teaser, MAXIMUM 6 words, format "Név: esemény, ügy" (e.g. "Szakács István: letartóztatás, terrorcselekmény előkészítése"). Empty string if isVerdict is false.',
+      },
       confidence: {
         type: 'number',
         description: 'Confidence 0–1 that this is a real court verdict/pretrial/indictment of a politically connected person in Hungary.',
@@ -79,7 +85,7 @@ const TOOL: LlmToolSpec = {
     required: [
       'isVerdict', 'personName', 'position', 'crimes', 'sentenceYears',
       'sentenceMonths', 'sentenceLabel', 'verdictType', 'verdictDate',
-      'court', 'summary', 'confidence',
+      'court', 'summary', 'description', 'confidence',
     ],
   },
 };
@@ -103,16 +109,32 @@ akkor is jelöld, ha ő maga nem politikus és nem NER-közeli. Ide tartoznak pl
 Példa: a parkfenntartási kenőpénzbotrányban a politikusok mellett letartóztatott
 parkfenntartó vállalkozó és a kenőpénz-közvetítő is beleszámít.
 
+FONTOS — politikai indíttatású eljárások is beleszámítanak: ha valakit
+NYILVÁNVALÓAN POLITIKAI indíttatású (nem hagyományos bűnügyi) eljárásban
+tartóztatnak le / állítanak bíróság elé / ítélnek el — pl. egy kormánykritikus
+közösségimédia-tartalom, tüntetésen való részvétel, vagy a kormánnyal szembeni
+nyilvános kiállás miatt —, akkor is jelöld, ha az érintett:
+- NER-közeli közéleti szereplő (pl. állami propagandaszervezet, pl. Megafon,
+  munkatársa/aktivistája), VAGY
+- nyilvánosan ismert, kormánykritikus közéleti szereplő.
+Ez nem klasszikus korrupciós ügy, de a rendszer célja a NER-hez köthető
+jogi fellépések nyomon követése is, nem csak a korrupciós elszámoltatásé.
+Példa: egy állami propagandaoldal munkatársát letartóztatják, mert kritikus
+posztot írt a kormányfő nyilatkozatára reagálva — ez jelölendő.
+
 Csak akkor jelöld isVerdict=true-val, ha:
 - Egyértelmű, hogy bírósági döntés, előzetes letartóztatás, vagy formális vádemelés történt
 - Magyar ügyre vonatkozik
 - Az érintett politikailag kötött személy, VAGY egy politikai/közpénzes
-  korrupciós ügy gyanúsítottja/vádlottja (akkor is, ha nem politikus)
+  korrupciós ügy gyanúsítottja/vádlottja (akkor is, ha nem politikus), VAGY
+  egy fent leírt politikai indíttatású eljárás érintettje
 
 Ne jelöld, ha:
-- Csak nyomozás folyik (előzetes letartóztatás nélkül)
+- Csak nyomozás folyik (előzetes letartóztatás, vádemelés vagy ítélet nélkül)
 - Más ország ügyéről van szó
-- Csak spekuláció vagy vélemény`;
+- Csak spekuláció vagy vélemény
+- Az érintett teljesen ismeretlen magánszemély, nincs közéleti szerepe, és
+  az ügy sem politikai, sem közpénzes/korrupciós jellegű`;
 
 /** See resignation-detect.ts for why this returns the full LlmResult. */
 export async function detectVerdictFromArticle(
