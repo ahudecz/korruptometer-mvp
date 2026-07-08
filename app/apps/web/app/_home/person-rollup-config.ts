@@ -40,16 +40,38 @@ export const PERSON_ROLLUPS: PersonRollupConfig[] = [
     // magántőkealapokba") is a state-wide private-equity investment figure,
     // not a Mészáros-attributed sum. Both were single-article, never-reviewed
     // "besorolatlan" stubs that alone accounted for 56% of his nominal total.
+    // 2026-07-08 top-500 sweep — 12 more scandalKeys whose title names a
+    // different person entirely (Mészáros isn't mentioned anywhere in them):
+    // tiborcz-jellinek-central-european-opportunity (Tiborcz/Jellinek deal),
+    // matolcsy-adam-balaton-butor (Matolcsy Ádám), matolcsy-uszotusolas
+    // (Matolcsy's case being covered up), schmidt-bif-osztalek (Schmidt),
+    // nagy-marton-iparkamara-szekhazbeszerzese (Nagy Márton),
+    // orban-kormanyzat-rokonok (Orbán's relatives),
+    // orban-viktor-formula-gp-tularak (Orbán's F1 venture),
+    // tiborcz-arcfelismo-szoftver / tiborcz-kulfold-ingatlan (Tiborcz),
+    // meszaros-epkar-kozbeszerzesek (actually Paár Attila's Épkar despite
+    // the id), orban-brusszel-szekhely-denco (Orbán), szijj-duna-aszfalt
+    // (Szíjj — Mészáros's own much larger Duna Aszfalt entry already covers
+    // the real joint case).
     excludeIds: [
       'ner-milliardok', 'meszaros-szvj-autopalya-koncesszio', 'mnb-botrany',
       'meszaros-kormany-3750-mrd-pluszkoltseg', 'meszaros-magantokealap-1311mrd',
+      'tiborcz-jellinek-central-european-opportunity', 'matolcsy-adam-balaton-butor',
+      'matolcsy-uszotusolas', 'schmidt-bif-osztalek', 'nagy-marton-iparkamara-szekhazbeszerzese',
+      'orban-kormanyzat-rokonok', 'orban-viktor-formula-gp-tularak',
+      'tiborcz-arcfelismo-szoftver', 'tiborcz-kulfold-ingatlan',
+      'meszaros-epkar-kozbeszerzesek', 'orban-brusszel-szekhely-denco', 'szijj-duna-aszfalt',
     ],
     writeups: MESZAROS_TOP_CASES,
   },
   {
     slug: 'tiborcz-istvan',
     personName: 'Tiborcz István',
-    excludeIds: ['rezsibiznisz-energiaszolgaltatas'],
+    // nagy-marton-napenergia-testvere: fact-checked 2026-07-08 — about Nagy
+    // Márton's sibling's solar business, no Tiborcz mention.
+    // orban-rakel-foldvasarlas: about Orbán Ráhel's (Tiborcz's ex-wife) own
+    // land purchase — no Tiborcz mention in the source article.
+    excludeIds: ['rezsibiznisz-energiaszolgaltatas', 'nagy-marton-napenergia-testvere', 'orban-rakel-foldvasarlas'],
   },
   {
     slug: 'orban-viktor',
@@ -62,9 +84,17 @@ export const PERSON_ROLLUPS: PersonRollupConfig[] = [
     // article ("Tiborcz István és Garancsi István cégeinek 120 milliárd
     // juthat") is explicitly about Tiborcz's and Garancsi's companies, not
     // Orbán Viktor; the scandalKey name itself says so.
+    // 2026-07-08 top-500 sweep — 6 more, all title-checked to name someone
+    // else with zero Orbán mention: alabbar-bm-epulet (Mohamed Alabbar),
+    // leszak-sandor-lakiteleki-nepfoiskola (Lezsák Sándor's own foundation —
+    // duplicates his own lezsaksandor-lakiteleki-nepfoiskola entry),
+    // tiborcz-bar-co-adozas / tiborcz-napeleempark-mvm / tiborcz-mav-palota-bge
+    // (Tiborcz), schmidt-maria-onkologia-kommunikacio (Schmidt Mária).
     excludeIds: [
       'orban-eszak-macedonia-500meuro', 'dolomit-meszaros', 'fidesz-kampanyarc-tamogatas',
-      'tiborcz-garancsi-durer-120mrd',
+      'tiborcz-garancsi-durer-120mrd', 'alabbar-bm-epulet', 'leszak-sandor-lakiteleki-nepfoiskola',
+      'tiborcz-bar-co-adozas', 'tiborcz-napeleempark-mvm', 'tiborcz-mav-palota-bge',
+      'schmidt-maria-onkologia-kommunikacio',
     ],
   },
   {
@@ -102,7 +132,12 @@ export const PERSON_ROLLUPS: PersonRollupConfig[] = [
     // is the state's overall communication-budget total (ScandalCatalog's
     // own scandalName even attributes it to "Gulyás Gergely minisztériuma"),
     // not a documented sum tied to Rogán personally.
-    excludeIds: ['familiabar-rogan-balasy-propagandapenz', 'garancsi-kazino', 'gulyasministrium-kommunikacio'],
+    // balasy-rendezveny-kozbeszerzesi: fact-checked 2026-07-08 — title only
+    // names Balásy Gyula, no Rogán mention.
+    excludeIds: [
+      'familiabar-rogan-balasy-propagandapenz', 'garancsi-kazino', 'gulyasministrium-kommunikacio',
+      'balasy-rendezveny-kozbeszerzesi',
+    ],
   },
   {
     slug: 'balasy-gyula',
@@ -112,7 +147,14 @@ export const PERSON_ROLLUPS: PersonRollupConfig[] = [
     excludeIds: ['balasy-gyula-ugy', 'balasy-gyula-lounge-communications'],
   },
   { slug: 'szijj-laszlo', personName: 'Szíjj László' },
-  { slug: 'lazar-janos', personName: 'Lázár János' },
+  {
+    slug: 'lazar-janos',
+    personName: 'Lázár János',
+    // garancsi-criterion-logisztika / pinter-civil-biztonsagi-mav-penztarak:
+    // fact-checked 2026-07-08 — titles name Garancsi István and Pintér
+    // Sándor respectively, no Lázár mention in either.
+    excludeIds: ['garancsi-criterion-logisztika', 'pinter-civil-biztonsagi-mav-penztarak'],
+  },
   { slug: 'szijjarto-peter', personName: 'Szijjártó Péter' },
   {
     slug: 'habony-arpad',
