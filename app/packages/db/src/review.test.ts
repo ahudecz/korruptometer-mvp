@@ -9,18 +9,18 @@ describe('decideStatus', () => {
     expect(decideStatus(0.0, false)).toBe('discard');
   });
 
-  it('auto-publishes >= 0.90 regardless of watchlist (FR-003)', () => {
-    expect(decideStatus(0.9, false)).toBe('approved');
+  it('auto-publishes >= 0.77 regardless of watchlist', () => {
+    expect(decideStatus(0.77, false)).toBe('approved');
     expect(decideStatus(0.93, false)).toBe('approved');
     expect(decideStatus(1.0, false)).toBe('approved');
     expect(decideStatus(0.95, true)).toBe('approved');
-    expect(decideStatus(0.9, true)).toBe('approved');
+    expect(decideStatus(0.77, true)).toBe('approved');
   });
 
-  it('queues 0.70–0.8999 for review (FR-004)', () => {
+  it('queues 0.70–0.7699 for review', () => {
     expect(decideStatus(0.7, false)).toBe('pending');
-    expect(decideStatus(0.82, false)).toBe('pending');
-    expect(decideStatus(0.8999, false)).toBe('pending');
+    expect(decideStatus(0.72, false)).toBe('pending');
+    expect(decideStatus(0.7699, false)).toBe('pending');
     expect(decideStatus(0.75, true)).toBe('pending');
   });
 

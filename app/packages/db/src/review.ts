@@ -9,7 +9,7 @@ import { normalizeName } from './watchlist';
 
 export type ReviewDecision = 'approved' | 'pending' | 'discard';
 
-export const AUTO_PUBLISH_THRESHOLD = 0.9; // FR-003
+export const AUTO_PUBLISH_THRESHOLD = 0.77; // lowered from 0.9 — false positives get deleted after the fact instead of stuck in review
 export const REVIEW_FLOOR = 0.7; // FR-004 / FR-005
 export const DEDUP_WINDOW_DAYS = 30; // FR-009
 
@@ -17,8 +17,10 @@ export const DEDUP_WINDOW_DAYS = 30; // FR-009
  * Decide what to do with a detection.
  *
  *   confidence < 0.70           → 'discard'   (FR-005, universal floor)
- *   confidence >= 0.90          → 'approved'  (FR-003, watchlist included)
- *   0.70 <= confidence < 0.90   → 'pending'   (FR-004)
+ *   confidence >= 0.77          → 'approved'  (lowered from 0.90 — false
+ *                                  positives get deleted after the fact
+ *                                  instead of sitting in the review queue)
+ *   0.70 <= confidence < 0.77   → 'pending'
  */
 export function decideStatus(confidence: number, _isWatchlist: boolean): ReviewDecision {
   if (confidence < REVIEW_FLOOR) return 'discard';
