@@ -18,6 +18,27 @@ import { inngest } from '../client';
 const BATCH_SIZE = 20;
 const DETECTOR_TYPE = 'resignation' as const;
 
+const VALID_RESIGNATION_TYPES = ['lemondás', 'kirúgás', 'felmentés', 'egyéb'] as const;
+type ValidResignationType = (typeof VALID_RESIGNATION_TYPES)[number];
+
+/**
+ * The LLM tool call is schema-constrained to these 4 values, but streamed/
+ * partial tool-call output has been observed to truncate or otherwise mangle
+ * the string (e.g. "lemond" instead of "lemondás") — a raw insert of that
+ * value throws a Postgres enum error that kills the whole batch step, so
+ * every other article queued in the same hourly run silently goes
+ * unprocessed too. Repair obvious truncations by prefix match; anything
+ * unrecognisable falls back to 'egyéb' rather than crashing the batch.
+ */
+function coerceResignationType(value: string): ValidResignationType {
+  const normalized = value.normalize('NFC').trim();
+  if ((VALID_RESIGNATION_TYPES as readonly string[]).includes(normalized)) {
+    return normalized as ValidResignationType;
+  }
+  const match = VALID_RESIGNATION_TYPES.find((v) => v.startsWith(normalized) || normalized.startsWith(v.slice(0, 5)));
+  return match ?? 'egyéb';
+}
+
 // Quick keyword pre-filter — avoids burning LLM tokens on irrelevant articles.
 const RESIGNATION_KEYWORDS = [
   'lemond', 'kirúg', 'felment', 'leváltott', 'leváltják', 'lemondott',
@@ -162,7 +183,7 @@ export const detectResignations = inngest.createFunction(
             name: result.name.slice(0, 200),
             position: result.position.slice(0, 200),
             institution: result.institution.slice(0, 200),
-            resignationType: result.resignationType,
+            resignationType: coerceResignationType(result.resignationType),
             resignationDate,
             description: result.description.slice(0, 1000) || null,
             pinned,
