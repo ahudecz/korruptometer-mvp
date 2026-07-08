@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractNameCandidates, decideSameStoryTier, SAME_STORY_LOW, SAME_STORY_HIGH } from './same-story';
+import { extractNameCandidates, decideSameStoryTier, stemCandidate, SAME_STORY_LOW, SAME_STORY_HIGH } from './same-story';
 
 describe('extractNameCandidates', () => {
   it('extracts a Hungarian person name from a headline', () => {
@@ -22,6 +22,24 @@ describe('extractNameCandidates', () => {
 
   it('deduplicates repeated candidates case-insensitively', () => {
     expect(extractNameCandidates('Orbán Viktor és orbán viktor ugyanaz')).toEqual(['Orbán Viktor']);
+  });
+});
+
+describe('stemCandidate', () => {
+  it('truncates a long inflected last word so different noun cases share a stem', () => {
+    // "Szakács Istvánt" (accusative) vs. "Szakács István" (nominative) — two
+    // outlets reporting the same arrest, one naming him as the grammatical
+    // object, the other as the subject.
+    expect(stemCandidate('Szakács Istvánt')).toBe('Szakács Istvá');
+    expect(stemCandidate('Szakács István')).not.toBe('Szakács Istvánt');
+    // The accusative's stem must line up as a substring/prefix of the
+    // nominative's full form — that's what makes the ILIKE search work.
+    expect('Szakács István'.startsWith(stemCandidate('Szakács Istvánt'))).toBe(true);
+  });
+
+  it('leaves short last words untouched to avoid over-truncating into noise', () => {
+    expect(stemCandidate('Magyar Péter')).toBe('Magyar Péter');
+    expect(stemCandidate('Áder János')).toBe('Áder János');
   });
 });
 

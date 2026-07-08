@@ -57,6 +57,29 @@ export function extractNameCandidates(headline: string): string[] {
   return candidates;
 }
 
+/**
+ * Hungarian is agglutinative — the same name comes out inflected
+ * differently depending on the sentence ("Szakács István" nominative vs.
+ * "Szakács Istvánt" accusative when he's the grammatical object of
+ * "letartóztatták"). Two outlets covering the same event can headline it
+ * around the same name in different grammatical cases, which defeats a
+ * literal ILIKE substring match entirely (neither string contains the
+ * other). Truncate the last word of a candidate before it's used to build
+ * a search pattern, so the match lands on the shared stem instead of the
+ * exact inflected form — e.g. "Szakács Istvánt" and "Szakács István" both
+ * reduce to a "Szakács Istvá" stem, which is a substring/prefix of both.
+ * Guarded to only touch names long enough that a 2-char chop still leaves
+ * a distinctive stem (short names pass through unchanged, since
+ * over-truncating risks matching unrelated people).
+ */
+export function stemCandidate(candidate: string): string {
+  const words = candidate.split(' ');
+  const last = words[words.length - 1];
+  if (!last || last.length < 6) return candidate;
+  words[words.length - 1] = last.slice(0, -2);
+  return words.join(' ');
+}
+
 /** Below this word_similarity score, two headlines are treated as unrelated — free. */
 export const SAME_STORY_LOW = 0.15;
 /** At or above this score (with a shared name candidate), auto-flag as the same story — free. */

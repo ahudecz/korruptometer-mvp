@@ -80,18 +80,44 @@ function pickImageUrl(item: RawItem): string | null {
   return null;
 }
 
+// Named entities RSS feeds commonly ship (beyond the numeric/hex entities
+// handled generically below).
+const NAMED_ENTITIES: Record<string, string> = {
+  nbsp: ' ',
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: "'",
+  hellip: '…',
+  mdash: '—',
+  ndash: '–',
+  ldquo: '“',
+  rdquo: '”',
+  lsquo: '‘',
+  rsquo: '’',
+};
+
+/**
+ * Decodes HTML entities RSS/XML feeds embed in <title>/<description> text —
+ * both numeric (&#39; &#039; &#x27;) and named (&amp; &nbsp; …). Must run on
+ * every text field pulled out of RSS content, not just descriptions: a
+ * feed's <title> is just as likely to contain an escaped apostrophe (e.g.
+ * "&#039;70-es évek") as its <description>, and the old code only ever
+ * decoded the latter — leaving raw entities visible on the site.
+ */
+export function decodeEntities(text: string): string {
+  return text
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec: string) => String.fromCodePoint(parseInt(dec, 10)))
+    .replace(/&([a-z]+);/gi, (m, name: string) => NAMED_ENTITIES[name.toLowerCase()] ?? m);
+}
+
 function stripHtml(text: string): string {
   // Most RSS descriptions ship with <p>, <a>, <br>, <img>, etc. Strip
   // tags conservatively so the excerpt is plain text.
-  return text
+  return decodeEntities(text)
     .replace(/<\/?[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&[a-z]+;/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -105,7 +131,7 @@ export function parseRss(xml: string): ScrapedArticle[] {
   for (const item of items) {
     const sourceUrl = pickLink(item.link);
     if (!sourceUrl) continue;
-    const headline = pickText(item.title);
+    const headline = decodeEntities(pickText(item.title));
     if (!headline) continue;
     const description = pickText(item.description) || pickText(item['content:encoded']);
     const excerpt = clipExcerpt(stripHtml(description));

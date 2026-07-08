@@ -14,6 +14,7 @@ export { isRelevant, shouldFeature, isBreaking, scrapeRelevanceTier, isForeignOr
 export {
   extractNameCandidates,
   decideSameStoryTier,
+  stemCandidate,
   SAME_STORY_LOW,
   SAME_STORY_HIGH,
 } from './same-story';
