@@ -174,7 +174,7 @@ export default async function AdatbazisPage({
             az adott személy összes, tételes ügye és a legnagyobbak áttekintése (K-Monitor-adatok
             alapján). Erre a 12 emberre összesen{' '}
             <strong><FtValue n={featuredSum} /></strong> dokumentáltan érintett közpénz jut — ez a
-            teljes adatbázisban dokumentált kár{' '}
+            teljes adatbázisban érintett közpénz{' '}
             <strong>{String(featuredPct).replace('.', ',')}%-a</strong>.
           </p>
           <div className="featured-persons-grid">

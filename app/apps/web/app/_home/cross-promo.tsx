@@ -355,8 +355,8 @@ export async function CrossAdatbazisSzemelyek() {
       <p className="cross-promo-deck">
         12 kiemelt személy, akikhez a legtöbb, dokumentáltan érintett közpénz köthető —
         sajtójelentések és nyilvános dokumentumok alapján. Összesen{' '}
-        <strong><FtValue n={featuredSum} /></strong> jut rájuk, ami a teljes adatbázisban
-        dokumentált kár <strong>{String(featuredPct).replace('.', ',')}%-a</strong>.
+        <strong><FtValue n={featuredSum} /></strong> jut rájuk, ami a teljes adatbázisban érintett
+        közpénz <strong>{String(featuredPct).replace('.', ',')}%-a</strong>.
       </p>
       <div className="person-more-grid cross-featured-grid">
         {people.map(p => (
