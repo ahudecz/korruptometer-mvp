@@ -65,3 +65,16 @@ export async function getFeaturedPeople(db: Executable): Promise<FeaturedPerson[
 
   return people.sort((a, b) => (b.total > a.total ? 1 : b.total < a.total ? -1 : 0));
 }
+
+/**
+ * Raw sum of damage_huf across the entire ScandalCatalog (all ~935 cases,
+ * no exclusions) — the same "teljes dokumentált kár" figure shown as the
+ * homepage KPI, used here as the denominator for "the featured 12 people
+ * account for X% of the total" callouts.
+ */
+export async function getTotalDamage(db: Executable): Promise<bigint> {
+  const rows = (await db.execute(sql`
+    SELECT COALESCE(SUM(damage_huf), 0)::text AS total FROM "ScandalCatalog"
+  `)) as unknown as Array<{ total: string }>;
+  return BigInt(rows[0]?.total ?? '0');
+}

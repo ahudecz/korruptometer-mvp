@@ -4,7 +4,7 @@ import { getDb, schema } from '@/lib/db';
 import { UGYEK } from './ugyek-config';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './galeria-config';
 import { WATCH_LIST } from './watchlist-config';
-import { getFeaturedPeople } from './featured-persons';
+import { getFeaturedPeople, getTotalDamage } from './featured-persons';
 import { FtValue } from './ft-value';
 import { Mugshot } from '@korr/ui/mugshot';
 
@@ -345,12 +345,18 @@ export async function CrossAdatbazisSzemelyek() {
   const people = await getFeaturedPeople(db);
   if (people.length === 0) return null;
 
+  const featuredSum = people.reduce((s, p) => s + p.total, 0n);
+  const totalDamageAll = await getTotalDamage(db);
+  const featuredPct = totalDamageAll > 0n ? Math.round((Number(featuredSum) / Number(totalDamageAll)) * 1000) / 10 : 0;
+
   return (
     <div className="cross-promo">
       <h2 className="cross-promo-title">Érdekelnek az adatbázis kiemelt személyei?</h2>
       <p className="cross-promo-deck">
         12 kiemelt személy, akikhez a legtöbb, dokumentáltan érintett közpénz köthető —
-        sajtójelentések és nyilvános dokumentumok alapján.
+        sajtójelentések és nyilvános dokumentumok alapján. Összesen{' '}
+        <strong><FtValue n={featuredSum} /></strong> jut rájuk, ami a teljes adatbázisban
+        dokumentált kár <strong>{String(featuredPct).replace('.', ',')}%-a</strong>.
       </p>
       <div className="person-more-grid cross-featured-grid">
         {people.map(p => (

@@ -5,7 +5,7 @@ import { fmtNumber } from '@korr/shared/format';
 import { FtValue } from '../_home/ft-value';
 import { CaseRow } from './_components/case-row';
 import { autoDisplayTitle, getCaseDisplayTitle, getCaseOverride, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS } from '../_home/case-detail-config';
-import { getFeaturedPeople } from '../_home/featured-persons';
+import { getFeaturedPeople, getTotalDamage } from '../_home/featured-persons';
 import { CrossUgyek, CrossLemondosok, CrossGaleria, CrossMegszunt, CrossFelszolitottak } from '../_home/cross-promo';
 
 import { getDb } from '@/lib/db';
@@ -84,6 +84,9 @@ export default async function AdatbazisPage({
   // each rollup's excludeIds (duplicates/artifacts) so the number shown here
   // matches what the rollup page itself reports.
   const featuredPeople = await getFeaturedPeople(db);
+  const featuredSum = featuredPeople.reduce((s, p) => s + p.total, 0n);
+  const totalDamageAll = await getTotalDamage(db);
+  const featuredPct = totalDamageAll > 0n ? Math.round((Number(featuredSum) / Number(totalDamageAll)) * 1000) / 10 : 0;
 
   // Retired/merged duplicate ids (see RETIRED_REDIRECTS in [id]/page.tsx) are
   // hidden from the general listing so they don't dangle as stale, double-
@@ -169,7 +172,10 @@ export default async function AdatbazisPage({
             A K-Monitor adatbázisa alapján összefűztük a kiemelt személyekhez tartozó ügyeket,
             hogy megspóroljuk az időd a szűrésre és a felesleges kattintgatásra — egy kattintással
             az adott személy összes, tételes ügye és a legnagyobbak áttekintése (K-Monitor-adatok
-            alapján).
+            alapján). Erre a 12 emberre összesen{' '}
+            <strong><FtValue n={featuredSum} /></strong> dokumentáltan érintett közpénz jut — ez a
+            teljes adatbázisban dokumentált kár{' '}
+            <strong>{String(featuredPct).replace('.', ',')}%-a</strong>.
           </p>
           <div className="featured-persons-grid">
             {featuredPeople.map((p) => (
