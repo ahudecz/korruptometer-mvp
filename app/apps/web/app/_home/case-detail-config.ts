@@ -482,7 +482,36 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
   { scandalKey: 'tiborcz-nagy-marton-lakhatasi-alap', hideVideo: true },
   { scandalKey: 'tiborcz-konfector-szlovak-korhaz', hideVideo: true },
   { scandalKey: 'tiborcz-durer-park-adavetele', hideVideo: true },
-  { scandalKey: 'tiborcz-alapkezelo-trollhalo', hideVideo: true },
+  {
+    // 2026-07-09 title audit: auto-name mashed two topics from one long
+    // headline into an incoherent fragment.
+    scandalKey: 'tiborcz-alapkezelo-trollhalo',
+    title: 'Tiborcz-közeli alapkezelő és a Fidesz trollhálózata',
+    hideVideo: true,
+  },
+  {
+    // 2026-07-09 title audit: name says "százmilliárd", source headline
+    // says 50 milliárd — numeric mismatch.
+    scandalKey: 'mnb-matolcsy-szazmilyardok',
+    title: 'MNB Matolcsy 50 milliárdos ügy',
+  },
+  {
+    // 2026-07-09 title audit: raw sentence fragment, not a title (number
+    // itself is consistent — "száz" ≈ 100 Mrd).
+    scandalKey: 'matolcsy-mnb-szazmilyardok',
+    title: 'Matolcsy MNB-elnökségének százmilliárdos költségei',
+  },
+  {
+    // 2026-07-09 title audit: "Balaton Bútor" is a real company name but
+    // reads as a garbled fragment without context.
+    scandalKey: 'matolcsy-adam-balaton-butor',
+    title: 'Matolcsy Ádám és a Balaton Bútor cégügy',
+  },
+  {
+    // 2026-07-09 title audit: mid-word capitalization typo ("BudaPesT").
+    scandalKey: 'meszaros-vagyon-kitakritsa',
+    title: 'Mészáros–Tiborcz budapesti vagyonügylete',
+  },
   { scandalKey: 'tiborcz-csaladi-vezetoi-poziciok', hideVideo: true },
   { scandalKey: 'tiborcz-allami-szerzodesek', hideVideo: true },
   { scandalKey: 'tiborcz-diorit-tozsdepalota', hideVideo: true },
