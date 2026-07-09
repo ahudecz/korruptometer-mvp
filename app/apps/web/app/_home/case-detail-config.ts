@@ -56,9 +56,16 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
   {
     // DB name has "335 milliárd" baked in; after auto-clean "Rogán KESMA sajtó-támogatási ügye" marad.
     // Override-dal adjunk K-Monitor-szerű kanonikus nevet.
+    // 2026-07-09: article_count=1 + a scandalName-be sült "335 milliárd
+    // forintot" szám az autoSuppress heurisztikát váltotta ki (Becslés
+    // alatt-ot mutatott), holott basis='alleged_reported', high confidence —
+    // a cikkben ténylegesen szereplő szám, nem durva becslés. getCaseOverride
+    // csak az ELSŐ egyező scandalKey-t veszi (Array.find) — egy külön,
+    // későbbi bejegyzésbe tett hideAutoDamage néma no-op volt, ide kellett.
     scandalKey: 'rogan-kesma-335-milliard',
     title: 'KESMA sajtótámogatási botrány',
     crimeTypes: ['Médiakorrupció', 'Közpénzfelhasználás'],
+    hideAutoDamage: false,
   },
   {
     // CORRECTION (2026-07-05): a previous override here mislabeled this as
@@ -156,14 +163,6 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
   // ── "Költségvetés/közbeszerzés-érték kárként" — az auto-heurisztika ezeket
   // nem szűri (nincs szám a névben), ezért kézzel jelöljük: a headline szám
   // egy keret/volumen-érték, nem azonosított korrupciós kár. ──
-  {
-    // 2026-07-09: article_count=1 + a scandalName-be sült "335 milliárd
-    // forintot" szám az autoSuppress heurisztikát váltotta ki (Becslés
-    // alatt-ot mutatott), holott basis='alleged_reported', high confidence —
-    // a cikkben ténylegesen szereplő szám, nem durva becslés.
-    scandalKey: 'rogan-kesma-335-milliard',
-    hideAutoDamage: false,
-  },
   {
     scandalKey: 'gulyasministrium-kommunikacio',
     hidePhoto: true, // DB person Rogán Antal vagy Balásy Gyula között ingadozik holtversenynél (téves mindkettő) → ne mutassuk egyik arcot sem
