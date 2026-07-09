@@ -6,7 +6,7 @@ import { fmtNumber } from '@korr/shared/format';
 import { FtValue } from '../../_home/ft-value';
 import { GALERIA } from '../../_home/galeria-config';
 import { WATCH_LIST } from '../../_home/watchlist-config';
-import { getCaseOverride, cleanTitle, autoDisplayTitle, PERSON_PHOTOS, RETIRED_REDIRECTS, toAsciiId } from '../../_home/case-detail-config';
+import { getCaseOverride, cleanTitle, autoDisplayTitle, PERSON_PHOTOS, RETIRED_REDIRECTS, RETIRED_SCANDAL_IDS, toAsciiId } from '../../_home/case-detail-config';
 import { getCaseVideo } from '../../_home/case-video-registry';
 import { fetchYouTubeMeta } from '@/lib/youtube-meta';
 import { DamageFigure } from '../_components/damage-figure';
@@ -199,6 +199,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
          FROM "OffenceTypeRef" o WHERE o.code = ANY(sc.offence_codes)) AS offence_labels
       FROM "ScandalCatalog" sc
       WHERE sc.id <> ${id}
+        AND sc.id NOT IN (${sql.join(RETIRED_SCANDAL_IDS.map((v) => sql`${v}`), sql`, `)})
         AND ((${scandal.person}::text IS NOT NULL AND sc.person = ${scandal.person})
           OR (${scandal.institution}::text IS NOT NULL AND sc.institution = ${scandal.institution}))
       ORDER BY sc.damage_huf DESC LIMIT 8

@@ -255,18 +255,14 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     hidePhoto: true,
   },
   {
+    // 2026-07-09: DB scandalName ("Orbán Viktor közpénz konzultáció") téves —
+    // a valós, jól ismert téma a "nemzeti konzultáció" levelezési kampányok
+    // (2010 óta), nem egy kitalált "közpénz konzultáció" fogalom. A korábbi
+    // descriptionBlocks override egy sosem-kitöltött TODO-placeholdert
+    // (headline/lead) hagyott élesben — törölve, a JSON-generált (Phase 3)
+    // tartalom veszi át ugyanarról a 24.hu cikkről.
     scandalKey: 'orban-viktor-kozpenzkonsultacio',
-    descriptionBlocks: [
-      {
-        type: 'article-card',
-        breaking: true,
-        source: '24',
-        date: '2026. febr. 09.',
-        headline: 'TODO: pontosítsd a headlinet — a 24.hu nem tölthető be automatikusan',
-        lead: 'TODO: pontosítsd a leadet',
-        url: 'https://24.hu/belfold/2026/02/09/nemzeti-konzultacio-fidesz-kormany-koltseg/',
-      },
-    ],
+    title: 'Nemzeti konzultáció — a Fidesz-kormány levelezési kampányainak költségei',
   },
   {
     scandalKey: 'lezsaksandor-lakiteleki-nepfoiskola',
@@ -645,6 +641,13 @@ export function getCaseDisplayTitle(scandalKey: string): string | null {
 export function cleanTitle(name: string | null | undefined): string {
   if (!name) return '';
   const c = name
+    // "ügyelete(k)" a névadó LLM visszatérő nyelvtani hibája — "ügyelet"
+    // (készenlét/felügyelet) helyett "ügye" (birtokos "ügy") kellett volna.
+    // 2026-07-09 audit: 181/939 cím érintett. A (?=\s|$) lookahead csak a
+    // szóvégi előfordulást cseréli (pl. "felügyeleti ügyelete" →
+    // "felügyeleti ügye" — a "felügyeleti" szót nem bántja).
+    .replace(/ügyeletek(?=\s|$)/gi, 'ügyek')
+    .replace(/ügyelete(?=\s|$)/gi, 'ügye')
     .replace(/[\s—-]*\b\d[\d\s.,]*\s*(milli[aá]rd(os)?|mrd\.?|milli[oó]s?|md)(?!\w)\s*(forint(os)?|ft|eur[oó]s?|eur[oó])?/gi, ' ')
     .replace(/\s{2,}/g, ' ')
     .replace(/\s+[—-]\s*$/, '')
@@ -654,7 +657,7 @@ export function cleanTitle(name: string | null | undefined): string {
 
 // Általános korrupciós-jogi szavak amelyek egyedül értelmetlen címet alkotnak.
 const GENERIC_WORDS = new Set([
-  'ügye', 'ügyei', 'ügyelete', 'ügy', 'korrupciós', 'botrány', 'per',
+  'ügye', 'ügyei', 'ügy', 'korrupciós', 'botrány', 'per',
   'vád', 'vádak', 'visszaélés', 'korrupcióper', 'ügyletei', 'üzlete',
 ]);
 
@@ -662,7 +665,7 @@ const GENERIC_WORDS = new Set([
 // a cím grammatikailag az eltávolított személyre utal vissza → ne vágjuk le.
 // Pl. "Észak-macedoniai hitele", "Kastély-birtok ügye", "Vasúti közbeszerzése"
 const POSSESSIVE_SUFFIXES = [
-  'ügye', 'ügyei', 'ügyelete',
+  'ügye', 'ügyei',
   'hitele', 'hitelei',
   'pere', 'perei',
   'vagyona',
