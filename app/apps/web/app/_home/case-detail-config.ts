@@ -153,7 +153,7 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
   // egy keret/volumen-érték, nem azonosított korrupciós kár. ──
   {
     scandalKey: 'gulyasministrium-kommunikacio',
-    hidePhoto: true, // DB person = "Rogán Antal" (téves) → ne mutassuk a rossz arcot
+    hidePhoto: true, // DB person Rogán Antal vagy Balásy Gyula között ingadozik holtversenynél (téves mindkettő) → ne mutassuk egyik arcot sem
     hideAutoDamage: true,
     damageText:
       'A hivatkozott ~1360 Mrd Ft a minisztérium kommunikációs kerete — nem azonosított korrupciós kár. Ellenőrzés alatt.',

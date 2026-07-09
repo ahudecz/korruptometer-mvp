@@ -144,7 +144,19 @@ export const PERSON_ROLLUPS: PersonRollupConfig[] = [
     personName: 'Balásy Gyula',
     // balasy-gyula-ugy: headline tagged to Orbán Viktor, not Balásy.
     // balasy-gyula-lounge-communications: headline tagged to Simicska Lajos.
-    excludeIds: ['balasy-gyula-ugy', 'balasy-gyula-lounge-communications'],
+    // gulyasministrium-kommunikacio: 2026-07-09 — the 0037 ScandalCatalog
+    // tiebreak fix (SUM(articleCount), person ASC on ties) flipped this
+    // scandalKey's person from Rogán Antal to Balásy Gyula on a genuine
+    // 1-article-vs-1-article tie. Already known-bad (see rogan-antal's own
+    // excludeIds above, fact-checked 2026-07-08): the 1360 Mrd figure is the
+    // state's total communication budget since 2015, not personal to either.
+    // balasy-rogani-propaganda: user call 2026-07-09 — excluded from the
+    // rollup total alongside the above (both had reappeared on his page
+    // after the tiebreak fix; user asked to re-exclude both).
+    excludeIds: [
+      'balasy-gyula-ugy', 'balasy-gyula-lounge-communications',
+      'gulyasministrium-kommunikacio', 'balasy-rogani-propaganda',
+    ],
   },
   { slug: 'szijj-laszlo', personName: 'Szíjj László' },
   {
