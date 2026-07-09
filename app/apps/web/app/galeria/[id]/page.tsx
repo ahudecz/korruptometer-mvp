@@ -278,7 +278,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                   <div className="person-case-footer">
                     {c.estimatedDamage && (
                       <div className="person-case-dmg">
-                        <span className="person-case-dmg-lbl">Becsült kár</span>
+                        <span className="person-case-dmg-lbl">Érintett közpénz</span>
                         <span className="person-case-dmg-val">{c.estimatedDamage}</span>
                       </div>
                     )}
@@ -311,7 +311,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                             <div className="person-subcase-footer">
                               {sc.estimatedDamage && (
                                 <div className="person-case-dmg">
-                                  <span className="person-case-dmg-lbl">Becsült kár</span>
+                                  <span className="person-case-dmg-lbl">Érintett közpénz</span>
                                   <span className="person-case-dmg-val">{sc.estimatedDamage}</span>
                                 </div>
                               )}
@@ -356,7 +356,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                   <div className="person-related-case-title">{u.title}</div>
                   {u.estimatedDamage && (
                     <div className="person-related-case-dmg">
-                      <span className="person-related-case-dmg-lbl">Becsült kár</span>
+                      <span className="person-related-case-dmg-lbl">Érintett közpénz</span>
                       <span className="person-related-case-dmg-val">{u.estimatedDamage}</span>
                     </div>
                   )}

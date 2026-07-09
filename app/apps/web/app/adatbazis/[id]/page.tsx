@@ -104,7 +104,7 @@ function isJunkSummary(s: string | null | undefined): boolean {
 
 const BASIS_LABEL: Record<string, string> = {
   estimated_rough: 'Durva becslés sajtóadatokból',
-  alleged_reported: 'Sajtóban közölt vélelmezett kár',
+  alleged_reported: 'Sajtóban vélelmezett közpénz-érintettség',
   procurement_modeled: 'Közbeszerzési (TED) adat alapján modellezve',
 };
 const CONF_HU: Record<string, string> = { low: 'alacsony', medium: 'közepes', high: 'magas' };

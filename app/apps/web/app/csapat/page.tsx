@@ -92,9 +92,9 @@ export default function CsapatPage() {
           </p>
 
           <p>
-            Az ismertetett adatoknál törekszünk arra, hogy a kárösszegek, ítéletek és
-            állásváltozások a leggondosabban ellenőrzöttek legyenek — ez az a három
-            terület, ahol a tévedés a legtöbb kárt okozza.
+            Az ismertetett adatoknál törekszünk arra, hogy a közpénz-érintettségi összegek,
+            ítéletek és állásváltozások a leggondosabban ellenőrzöttek legyenek — ez az a
+            három terület, ahol a tévedés a legtöbb kárt okozza.
           </p>
 
           <h3 className="modszertan-h3">Támogatnál minket?</h3>

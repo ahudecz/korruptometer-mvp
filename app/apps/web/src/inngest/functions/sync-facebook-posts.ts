@@ -7,9 +7,16 @@ import { inngest } from '../client';
 
 const APIFY_API = 'https://api.apify.com/v2';
 const ACTOR_ID = 'apify~facebook-posts-scraper';
-const RESULTS_PER_PAGE = 3;
+const RESULTS_PER_PAGE = 2;
+const ONLY_POSTS_NEWER_THAN = '1 day';
 const MIN_TEXT_LENGTH = 20;
 const STORAGE_BUCKET = 'social-images';
+
+// Apify-nak nincs natív napi költséglimitje (csak havi plan-cap) — ezért itt,
+// alkalmazás-szinten védekezünk. $0.0053/poszt verifikálva 2026-07-01
+// (specs/005-apify-facebook-scraper/research.md).
+const COST_PER_POST_USD = 0.0053;
+const DAILY_BUDGET_USD = 0.5;
 
 interface ApifyPost {
   facebookUrl: string;
@@ -103,6 +110,12 @@ export const syncFacebookPosts = inngest.createFunction(
       return { pages: 0, inserted: 0 };
     }
 
+    const estimatedCost = pages.length * RESULTS_PER_PAGE * COST_PER_POST_USD;
+    if (estimatedCost > DAILY_BUDGET_USD) {
+      logger?.warn?.(`sync-facebook-posts: becsült cost ~$${estimatedCost.toFixed(2)} meghaladja a napi $${DAILY_BUDGET_USD} keretet — megszakítva`);
+      return { pages: pages.length, inserted: 0, skipped: 'budget' };
+    }
+
     const pageUrlMap = new Map(
       pages.map(p => [
         `https://www.facebook.com/${p.pageHandle ?? p.pageId}`,
@@ -120,7 +133,7 @@ export const syncFacebookPosts = inngest.createFunction(
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ startUrls, resultsLimit: RESULTS_PER_PAGE }),
+          body: JSON.stringify({ startUrls, resultsLimit: RESULTS_PER_PAGE, onlyPostsNewerThan: ONLY_POSTS_NEWER_THAN }),
         },
       );
       if (!res.ok) {

@@ -13,9 +13,16 @@ loadEnv({ path: resolve(__dirname, '../../../.env') });
 
 const APIFY_API = 'https://api.apify.com/v2';
 const ACTOR_ID = 'apify~facebook-posts-scraper';
-const RESULTS_PER_PAGE = 3;
+const RESULTS_PER_PAGE = 2;
+const ONLY_POSTS_NEWER_THAN = '1 day';
 const MIN_TEXT_LENGTH = 20;
 const STORAGE_BUCKET = 'social-images';
+
+// Apify-nak nincs natív napi költséglimitje (csak havi plan-cap) — ezért itt,
+// alkalmazás-szinten védekezünk. $0.0053/poszt verifikálva 2026-07-01
+// (specs/005-apify-facebook-scraper/research.md).
+const COST_PER_POST_USD = 0.0053;
+const DAILY_BUDGET_USD = 0.5;
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -137,6 +144,13 @@ async function main() {
   console.log(`\n${pages.length} aktív Facebook oldal\n`);
   if (pages.length === 0) return;
 
+  const estimatedCost = pages.length * RESULTS_PER_PAGE * COST_PER_POST_USD;
+  console.log(`Becsült cost: ~$${estimatedCost.toFixed(2)} (napi keret: $${DAILY_BUDGET_USD})`);
+  if (estimatedCost > DAILY_BUDGET_USD) {
+    console.log('Megszakítva: a becsült cost meghaladja a napi keretet.');
+    return;
+  }
+
   const pageUrlMap = new Map(
     pages.map(p => [`https://www.facebook.com/${p.pageHandle ?? p.pageId}`, p.pageName]),
   );
@@ -149,7 +163,7 @@ async function main() {
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ startUrls, resultsLimit: RESULTS_PER_PAGE }),
+      body: JSON.stringify({ startUrls, resultsLimit: RESULTS_PER_PAGE, onlyPostsNewerThan: ONLY_POSTS_NEWER_THAN }),
     },
   );
   if (!runRes.ok) throw new Error(`Apify run sikertelen: HTTP ${runRes.status}`);

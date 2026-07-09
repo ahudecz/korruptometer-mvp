@@ -37,7 +37,7 @@ type ScandalRow = {
 };
 
 // Rows with a hideAutoDamage override show "Becslés alatt" instead of the
-// raw number (see the table below) — sorting by "Kár" must not rank those
+// raw number (see the table below) — sorting by "Közpénz" must not rank those
 // artifact/suppressed figures above real ones just because damage_huf is
 // still a big raw number under the hood.
 function orderBySql(sort: Sort) {
@@ -228,7 +228,7 @@ export default async function AdatbazisPage({
         <div className="db-sort">
           <a href={sortHref('damage_desc')}>
             <button type="button" className={sort === 'damage_desc' ? 'active' : ''}>
-              Kár ↓
+              Közpénz ↓
             </button>
           </a>
           <a href={sortHref('recent')}>
@@ -246,7 +246,7 @@ export default async function AdatbazisPage({
 
       {page.length === 0 ? (
         <div className="empty-state">
-          Nincs ilyen találat. Próbáld lazítani a szűrőket — különösen a min. kárt
+          Nincs ilyen találat. Próbáld lazítani a szűrőket — különösen a min. közpénz-érintettséget
           vagy a jogsértés típusát.
         </div>
       ) : (

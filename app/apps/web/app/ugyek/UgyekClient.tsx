@@ -59,7 +59,7 @@ function UgyekDetail({ entry }: { entry: typeof UGYEK[number] }) {
       <div className="gal-detail-body">
         {entry.estimatedDamage && (
           <div className="gal-detail-amount">
-            <div className="gal-detail-amount-lbl">Becsült kár</div>
+            <div className="gal-detail-amount-lbl">{entry.estimatedDamageLabel ?? 'Érintett közpénz'}</div>
             <div className="gal-detail-amount-val">{entry.estimatedDamage}</div>
           </div>
         )}

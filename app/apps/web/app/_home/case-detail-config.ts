@@ -141,7 +141,7 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     title: 'Mészáros-érdekeltségek és a költségvetési többletkiadások',
     galeriaId: 'meszaros-lorinc',
     hideAutoDamage: true,
-    damageLabel: 'Becsült kár',
+    damageLabel: 'Becsült közpénz-érintettség',
     damageText:
       'A nyilvánosan hivatkozott 3750 Mrd Ft költségvetési tétel — nem azonosított konkrét korrupciós kár. Ellenőrzés alatt; a végleges becslés folyamatban.',
     crimeTypes: ['Közpénzfelhasználás', 'Költségvetési kérdések'],

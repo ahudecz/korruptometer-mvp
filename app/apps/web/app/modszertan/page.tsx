@@ -63,9 +63,10 @@ export default function ModszertanPage() {
           </p>
 
           <p>
-            <strong>Összegszerűség és kategorizálás.</strong> A feltüntetett kárösszegek sajtóban
-            és vizsgálati iratokban szereplő becsült értékek, kivéve ahol jogerős bírósági ítélet
-            pontos összeget tartalmaz. A kategóriák — pl.{' '}
+            <strong>Összegszerűség és kategorizálás.</strong> A feltüntetett összegek jellemzően
+            érintett közpénzt jelölnek, nem jogilag bizonyított kárt — sajtóban és vizsgálati
+            iratokban szereplő becsült értékek, kivéve ahol jogerős bírósági ítélet pontos
+            kárösszeget tartalmaz. A kategóriák — pl.{' '}
             <em>közbeszerzési visszaélés</em>, <em>hűtlen kezelés</em> — jogi minősítések helyett
             közérthető gyűjtőkategóriák: jelzik az ügy jellegét, de nem helyettesítik az ügyészi
             vagy bírósági minősítést.

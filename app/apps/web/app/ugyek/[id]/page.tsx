@@ -292,7 +292,7 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
             )}
             {entry.estimatedDamage && (
               <div className="person-hero-amount">
-                <span className="person-hero-amount-lbl">{entry.estimatedDamageLabel ?? 'Becsült kár'}</span>
+                <span className="person-hero-amount-lbl">{entry.estimatedDamageLabel ?? 'Érintett közpénz'}</span>
                 <span className="person-hero-amount-val">{entry.estimatedDamage}</span>
               </div>
             )}

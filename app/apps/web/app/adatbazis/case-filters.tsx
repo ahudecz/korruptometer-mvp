@@ -182,14 +182,14 @@ export function CaseFilters({ offences, initial }: Props) {
             )}
           </div>
 
-          {/* Min. kár */}
+          {/* Min. közpénz-érintettség */}
           <div className="verdict-dropdown-wrap" ref={damageRef}>
             <button
               type="button"
               className={`verdict-dropdown-btn${(initial.minDamage ?? '0') !== '0' ? ' verdict-dropdown-btn--active' : ''}`}
               onClick={() => { setShowDamage(v => !v); setShowOffence(false); setShowOpen(false); }}
             >
-              {(initial.minDamage ?? '0') !== '0' ? `Min. ${activeDamageLabel}` : 'Min. kár'}
+              {(initial.minDamage ?? '0') !== '0' ? `Min. ${activeDamageLabel}` : 'Min. közpénz'}
               {(initial.minDamage ?? '0') !== '0' && <span className="verdict-dropdown-badge">1</span>}
               <span className="verdict-dropdown-arrow">{showDamage ? '▲' : '▼'}</span>
             </button>

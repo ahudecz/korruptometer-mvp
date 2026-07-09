@@ -333,7 +333,7 @@ export default async function HomePage() {
           <div className="hero-stats">
             <Link href="/adatbazis" className="hero-stat">
               <div className="hero-stat-value"><FtValue n={totalDamage} mode="long" /></div>
-              <div className="hero-stat-label">Dokumentált kár összesen</div>
+              <div className="hero-stat-label">Dokumentált közpénz-érintettség összesen</div>
             </Link>
             <Link href="/birosagi-iteletek" className="hero-stat">
               <div className="hero-stat-value">{fmtNumber(pretrialCountDb)} fő</div>
@@ -353,7 +353,7 @@ export default async function HomePage() {
         <div className="stat-grid">
           <div className="stat-card">
             <div className="stat-card-head">
-              <div className="stat-label">Becsült / lehetséges kár</div>
+              <div className="stat-label">Becsült / lehetséges közpénz-érintettség</div>
               <div className="stat-id">/ KPI–01</div>
             </div>
             <div className="stat-value stat-value--money"><FtValue n={totalDamage} mode="short" /></div>
@@ -362,7 +362,7 @@ export default async function HomePage() {
               <span className="stat-unit-part">· valós dokumentált adatok</span>
               <span className="stat-unit-part">· {moneySlices.length} kategória szerint</span>
             </div>
-            <Pie3D slices={moneySlices} palette={PALETTE_MONEY} className="donut" ariaLabel="Kár szektoronként" legend />
+            <Pie3D slices={moneySlices} palette={PALETTE_MONEY} className="donut" ariaLabel="Közpénz-érintettség szektoronként" legend />
           </div>
 
           <div className="stat-card">
@@ -785,7 +785,7 @@ export default async function HomePage() {
           <div className="db-sort">
             <Link href="/adatbazis?sort=damage_desc" className="db-sort-link">
               <button type="button" className="active">
-                Kár ↓
+                Közpénz ↓
               </button>
             </Link>
             <Link href="/adatbazis?sort=recent" className="db-sort-link">

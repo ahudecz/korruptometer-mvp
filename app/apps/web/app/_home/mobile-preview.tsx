@@ -104,7 +104,7 @@ export function HomeMobilePreview({
                     <div className="phone-stat">
                       <MiniDonut slices={moneySlices} palette={moneyPalette} />
                       <div className="v">{kpiMoney}</div>
-                      <div className="l">Kár</div>
+                      <div className="l">Közpénz</div>
                     </div>
                     <div className="phone-stat">
                       <MiniDonut slices={prisonSlices} palette={prisonPalette} />
