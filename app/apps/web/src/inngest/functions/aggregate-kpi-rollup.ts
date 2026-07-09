@@ -29,7 +29,7 @@ export const aggregateKpiRollup = inngest.createFunction(
     debounce: { period: '10s' },
   },
   [{ cron: '0 * * * *' }, { event: 'kpi.recompute' }],
-  async ({ step }) => {
+  async ({ step, logger }) => {
     const db = getDb();
 
     await step.run('rollup', async () => {
@@ -123,12 +123,16 @@ export const aggregateKpiRollup = inngest.createFunction(
 
     await step.run('refresh-scandal-catalog', async () => {
       const db = getDb();
-      // Refresh the materialized view (0030 migration) so homepage reads instant data.
-      // Gracefully no-ops if the migration hasn't been applied yet (still a regular VIEW).
+      // Refresh the materialized view (0030 + 0037 migrations) so homepage reads
+      // instant data. CONCURRENTLY needs the unique index added in 0037 — before
+      // that this call failed on every single run and a bare catch{} swallowed
+      // it silently, so the view never actually refreshed. Now logged instead of
+      // hidden, so a future regression (e.g. the unique index getting dropped)
+      // is visible in Inngest run logs rather than silently no-op'ing forever.
       try {
         await db.execute(sql`REFRESH MATERIALIZED VIEW CONCURRENTLY "ScandalCatalog"`);
-      } catch {
-        // VIEW not yet converted to MATERIALIZED VIEW — skip silently
+      } catch (err) {
+        logger?.warn?.(`refresh-scandal-catalog failed: ${err instanceof Error ? err.message : String(err)}`);
       }
     });
 
