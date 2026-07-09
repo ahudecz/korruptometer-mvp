@@ -172,6 +172,37 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     video: { id: 'RJ-nGkKzhoY', channel: 'Telex', title: 'Rogán és Balásy 16 évig tolták az arcunkba a hazugságaikat', summary: 'Az országot beborító kék plakátok és a kormányzati információnak álcázott propaganda Orbán Viktor kormányzásának szimbólumai lettek. Megnéztük honnan indult és hova jutott tizenhat év alatt a Fidesz tömegmanipulációs gépezete, aminek az egyik legfőbb felelőse és nyertese Balásy Gyula, a héten sírva ajánlotta fel a cégeit az államnak.' },
   },
   {
+    // 2026-07-09: a badge 5 Mrd-ot mutatott, mert egy MÁSIK, ebbe a
+    // scandalKey-be tévesen bekerült OLAF-vizsgálati fragmentum (a teljes
+    // vidékfejlesztési program visszaéléseiről, nem kifejezetten erről a
+    // projektről) hozta a legmagasabb DamageEstimate-et. A user szerint a
+    // lombkoronasétányra ténylegesen elköltött, forrásolt összeg 112 millió.
+    scandalKey: 'lombkoronasétány-botrány',
+    hideAutoDamage: true,
+    damageText: 'A lombkoronasétányra ténylegesen elköltött, dokumentált összeg 112 millió Ft — az 5 Mrd-os figura egy tágabb, a teljes vidékfejlesztési programot érintő OLAF-vizsgálat száma, nem erre a projektre vonatkozik.',
+  },
+  {
+    // 2026-07-09: user fact-check — a valós sztori Szita Károly kaposvári
+    // polgármester és a Versenyképes Járások program pénzeinek elterelése,
+    // nem a nyers cikk-mondat mint "cím". Ld. kapost.hu forrás.
+    scandalKey: 'pofatlan-lenyulas-oszt-jonapot-torvenyserto-modon-probalja-k',
+    title: 'Szita Károly és a Versenyképes Járások program pénzei',
+  },
+  {
+    // 2026-07-09 user call: a régi "kb. 8 Mrd, százmilliárdos" cím/becslés
+    // helyett kizárólag az atlatszo.hu által feltárt, konkrét 54 Mrd Ft-os
+    // KEF-megbízásról szóljon (ld. case-content.generated.json).
+    scandalKey: 'kis-szolgyemi-b-plus-n',
+    title: 'B+N 54 milliárdos KEF-megbízása versenyszűkítő feltételekkel',
+  },
+  {
+    // 2026-07-09: a cím korábban a "3,5 milliárdos" testvér-scandalKey
+    // headline-jét örökölte tévesen, holott ennek a klaszternek a tényleges
+    // tartalma (400 M Ft-os szervezeti támogatás) más téma.
+    scandalKey: 'szolloesi-nemzeti-sport-kesma',
+    title: 'Szöllősi sportújságírói szervezetének 400 milliós támogatása',
+  },
+  {
     scandalKey: 'familiabar-rogan-balasy-propagandapenz',
     video: { id: 'RJ-nGkKzhoY', channel: 'Telex', title: 'Rogán és Balásy 16 évig tolták az arcunkba a hazugságaikat', summary: 'Az országot beborító kék plakátok és a kormányzati információnak álcázott propaganda Orbán Viktor kormányzásának szimbólumai lettek. Megnéztük honnan indult és hova jutott tizenhat év alatt a Fidesz tömegmanipulációs gépezete, aminek az egyik legfőbb felelőse és nyertese Balásy Gyula, a héten sírva ajánlotta fel a cégeit az államnak.' },
   },
@@ -583,6 +614,15 @@ export const RETIRED_REDIRECTS: Record<string, string> = {
   // Barta-Eke 25 Mrd-os per — already title-aliased in case-detail-config;
   // this makes the merge real so the damage isn't counted twice.
   'barta-eke-nagyper-miniszterium': '/adatbazis/barta-eke-ngm-25-milliardos-per',
+  // 2026-07-09 user-requested merges: same Nemzeti Sport/KESMA vásárlás,
+  // three scandalKeys — the sourced 3,5 Mrd-os cikk a kanonikus.
+  'nemzeti-sport-felvasarlasa-kesma': '/adatbazis/szöllősi-nemzeti-sport-kesma',
+  'nemzeti-sport-kesma': '/adatbazis/szöllősi-nemzeti-sport-kesma',
+  // Két önálló "MNB gigaprojekt" scandalKey ugyanahhoz az affér-hoz
+  // (mnb-botrany, a 270 Mrd-os Matolcsy/PADME ügy) tartozó cikkeket
+  // mondott el külön "projektként" — a cikkek most a fő ügy alá tartoznak.
+  'matolcsy-mnb-alapitvany-botrany': '/adatbazis/mnb-botrany',
+  'mnb-matolcsy-alapitvany-botrany': '/adatbazis/mnb-botrany',
 };
 export const RETIRED_SCANDAL_IDS = Object.keys(RETIRED_REDIRECTS);
 
