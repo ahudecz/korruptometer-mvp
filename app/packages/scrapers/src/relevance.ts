@@ -23,7 +23,12 @@ const KEYWORDS = [
   // Intézmények / ügyek
   'nka ', 'nemzeti kulturális alap',
   'mnb ', 'jegybank', 'magyar nemzeti bank',
-  'állami számvevőszék', 'számvevőszék', 'ász ',
+  // 'ász ' (rövid ÁSZ-alak) szándékosan NINCS itt: substring-illeszkedéssel
+  // hamis pozitívot adott a "Hamász" szóra (2026-07-09, egy gázai háborús
+  // cikk emiatt jutott át a /kulfold/ URL-szekció-szűrőn is, mert isRelevant()
+  // előbb fut le, mint isForeignOrJunk()). A teljes 'állami számvevőszék' és
+  // 'számvevőszék' alak elég a valós ÁSZ-hírekhez.
+  'állami számvevőszék', 'számvevőszék',
   'aranykonvoj',
   'volvo gate', 'volvo-gate', 'tüke zrt', 'tüke busz',
   'szőlő utca',
