@@ -18,15 +18,15 @@ export default function ImpresszumPage() {
 
           <h3 className="modszertan-h3">A tartalomszolgáltató</h3>
           <p>
-            Hudecz Attila és Marosi Balázs, magánszemélyek (a továbbiakban: „Szolgáltató"),
-            akik közösen üzemeltetik a kegyencjarat.hu weboldalt (a továbbiakban: „Kegyencjárat").
+            Marosi Balázs, magánszemély (a továbbiakban: „Szolgáltató"),
+            aki üzemelteti a kegyencjarat.hu weboldalt (a továbbiakban: „Kegyencjárat").
           </p>
 
           <h3 className="modszertan-h3">Elérhetőség</h3>
           <p>
             E-mail: <a href="mailto:hello@kegyencjarat.hu">hello@kegyencjarat.hu</a><br />
-            Postai levelezési cím: a Szolgáltatók a személyes biztonsági kockázatokra
-            hivatkozva jelenleg nem tesznek közzé postai levelezési címet. Minden
+            Postai levelezési cím: a Szolgáltató a személyes biztonsági kockázatokra
+            hivatkozva jelenleg nem tesz közzé postai levelezési címet. Minden
             megkeresést a fenti e-mail címen fogadunk.
           </p>
 
@@ -38,7 +38,7 @@ export default function ImpresszumPage() {
 
           <h3 className="modszertan-h3">A tartalomért felelős szerkesztők</h3>
           <p>
-            Hudecz Attila, Marosi Balázs.
+            Marosi Balázs.
           </p>
 
           <p style={{ color: 'var(--muted)', fontSize: 13 }}>

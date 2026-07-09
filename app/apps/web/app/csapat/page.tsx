@@ -66,7 +66,7 @@ export default function CsapatPage() {
           <div className="adom-costs">
             <div className="adom-cost-row">
               <span className="adom-cost-label">Tartalom, adatgyűjtés, döntések</span>
-              <span className="adom-cost-val">Hudecz Attila és Marosi Balázs</span>
+              <span className="adom-cost-val">Marosi Balázs</span>
             </div>
             <div className="adom-cost-row">
               <span className="adom-cost-label">Technikai megvalósítás</span>
