@@ -111,9 +111,9 @@ export default async function LemondasokPage() {
   ]);
   const rest = rows.filter(r => !r.pinned);
 
-  const kirugasCount = rows.filter(r => r.resignationType === 'kirúgás' && !r.name.includes('szerkesztőség')).length;
-  const lemondasCount = rows.filter(r => r.resignationType === 'lemondás' || r.resignationType === 'felmentés').length;
-  const osszes = kirugasCount + lemondasCount;
+  const kirugasFelmentesCount = rows.filter(r => (r.resignationType === 'kirúgás' || r.resignationType === 'felmentés') && !r.name.includes('szerkesztőség')).length;
+  const lemondasCount = rows.filter(r => r.resignationType === 'lemondás').length;
+  const osszes = kirugasFelmentesCount + lemondasCount;
   const szerkLeepitesCount = mediaLeepites.length;
 
   return (
@@ -334,12 +334,12 @@ export default async function LemondasokPage() {
                 <div className="megszunt-stat-label">NER-káder távozott összesen</div>
               </div>
               <div className="megszunt-stat">
-                <div className="megszunt-stat-value megszunt-stat-value--red">{kirugasCount}</div>
-                <div className="megszunt-stat-label">Kirúgás</div>
+                <div className="megszunt-stat-value megszunt-stat-value--red">{kirugasFelmentesCount}</div>
+                <div className="megszunt-stat-label">Kirúgás / felmentés</div>
               </div>
               <div className="megszunt-stat">
                 <div className="megszunt-stat-value" style={{ color: '#4B7AFF' }}>{lemondasCount}</div>
-                <div className="megszunt-stat-label">Lemondás / felmentés</div>
+                <div className="megszunt-stat-label">Lemondás</div>
               </div>
               <div className="megszunt-stat">
                 <div className="megszunt-stat-value megszunt-stat-value--orange">{szerkLeepitesCount}</div>
