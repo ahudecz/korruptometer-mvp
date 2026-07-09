@@ -844,18 +844,6 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     logoCredit: 'Index',
   },
   {
-    id: 'vadhajtasok',
-    name: 'Vadhajtások.hu',
-    group: 'tv-youtube',
-    owner: 'Bede Zsolt (független NER-közeli)',
-    editorInChief: 'Bede Zsolt',
-    description: 'Orbán Viktor „igeforrása" — szélsőjobboldali propagandaoldal. 2026. június 17-én Bede Zsoltnál házkutatást tartottak (Perintfalvi Rita és Pottyondy Edina feljelentései nyomán), adathordozóit lefoglalták. Az oldal ezután elérhetetlen lett.',
-    status: 'closed',
-    statusLabel: 'Megszűnt (2026. jún. — házkutatás után)',
-    logoUrl: 'https://vadhajtasok.wordpress.com/wp-content/uploads/2018/01/cropped-26166222_765724486952641_7768550140202283466_n.jpg',
-    logoCredit: 'Vadhajtások',
-  },
-  {
     id: 'igazsag-oraja',
     name: 'Igazság Órája',
     group: 'tv-youtube',
