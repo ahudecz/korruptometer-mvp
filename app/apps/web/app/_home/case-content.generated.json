@@ -17,55 +17,22 @@
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
  },
  "rezsibiznisz-energiaszolgaltatas": {
-  "title": "Az Elios Zrt. közbeszerzési sikerei",
+  "title": "Rezsibiznisz — ALTEO állami energiakedvezmények",
   "blocks": [
    {
     "type": "text",
-    "content": "A sajtó szerint az Elios Zrt.-hez köthető közbeszerzési ügy az Orbán-kormány alatt feltárt korrupciós esetek egyike. A cég a közvilágítási beruházások keretében nagy mennyiségű LED-lámpatesteket szállított magyarországi településeknek, azonban az ügyet a nyomozó hatóságok hosszú évek óta vizsgálják anélkül, hogy vádemelésre kerülne sor. A 444 beszámolója szerint az Elios-ügy az olyan korrupciógyanús esetek közé tartozik, amelyeket Polt Péter, a korrupciógyanús ügyek vizsgálatáért felel kormányzati szereplő, végigmentett a hatóságokon anélkül, hogy következmények adódtak volna."
+    "content": "A sajtó szerint a Mészáros Lőrinc és Tiborcz István üzleti köréhez köthető ALTEO Energiaszolgáltató Nyrt. és háttércégei jelentős állami kedvezményeket és támogatásokat kaptak. A társaság 2016-ban rekordösszegű, mintegy 900 milliárd forintos szerződéses kerettel öt céggel kötött megállapodást; Kóbor György, az ALTEO-hoz köthető üzletember neve is felmerült a beszámolókban."
    },
    {
     "type": "text",
-    "content": "Az ügy hátterében a közpénzek elosztásában megfigyelhető anomáliák állnak. A Financial Times 350 ezer magyar közbeszerzést átnézve azt találta, hogy az Orbán-kormányzat alatt az állami pályázatokon odaítélt összes pénz 14 százaléka csupán 13 társtulajdonos 42 vállalatához került – szemben a 2005 és 2010 közötti egy százalékkal. Ez a szerkezeti változás számos közbeszerzési ügyhez kapcsolódik, amelyek közül az Elios-beruházások jelentős tételt képeztek. Hódmezővásárhely példájából ismert, hogy több száz, az Elios-beruházás idején felszerelt LED-lámpatest csere szükségessé vált, amely felvet kérdéseket az eredeti munka minőségéről és a megvalósítás körülményeiről."
-   },
-   {
-    "type": "article-card",
-    "source": "HVG360",
-    "headline": "Tiborcz István testvére volt az elnöke annak a bírálóbizottságnak, amely a Microsoft-botrány NAV-os pályázatainál eljárt",
-    "date": "2026-04-16",
-    "url": "https://hvg.hu/360/20260416_tiborcz-istvan-testvere-tiborcz-peter-biralo-bizottsag-microsoft-nemzeti-ado-vamhivatal",
-    "lead": "A Nemzeti Adó- és Vámhivatalnál Tiborcz Péter Sándor, a miniszterelnök vejének testvére volt annak a bírálóbizottságnak az elnöke, amely eljárt a Microsoft-lice"
+    "content": "Tiborcz István Alternatív Energia Holding Kft.-je szélpark-fejlesztésben is érdekelt, miközben az ALTEO több tízmilliárd forintos állami támogatást és kedvezményes tendereket nyert el. A sajtó szerint a magas árrések és a szankciós rendszerrel kapcsolatos állami szubvenciók félrevezetőnek tűnnek, az eljárások stádiuma a nyilvánosan elérhető információk szerint egyelőre nem ismert."
    },
    {
     "type": "text",
-    "content": "Az Elios-ügy vizsgálata a magyar és az európai szinten is elakadt. A Központi Nyomozó Főügyészség csaknem hét éve nyomoz a szerződésekkel kapcsolatos jogszabálysértésekre gyanakodva, azonban vádemelés eddig nem történt. Az Európai Csalás Elleni Hivatal (OLAF) által feltárt ügyekben Magyarország összesen 3,3 milliárd forintot fizetett vissza az Unió költségvetésébe, noha a belföldi nyomozások nagy része nem jutott el hosszú évek alatt sem vádemelésig. Ez a minta számos korrupciógyanús ügyre jellemző a magyar rendszerben."
-   },
-   {
-    "type": "text",
-    "content": "A sajtó szerint az Elios-ügy vizsgálatában érdekelt kormányzati szereplők közül többen közvetlen befolyási pozícióban voltak. A Microsoft-licenc-botrány feltárásánál – amely szintén az OLAF nyomozásához vezetett – a Nemzeti Adó- és Vámhivatalnál Tiborcz Péter Sándor, a miniszterelnök vejének testvére volt az eljáró bírálóbizottság elnöke. Az ilyen összefonódások a közpénzek szabályos felhasználásában bizalmi deficitet teremthetnek."
-   },
-   {
-    "type": "article-card",
-    "source": "HVG360",
-    "headline": "A Financial Times átnézett 350 ezer magyar közbeszerzést, és megnevezte Orbán 13 oligarcháját, aki a legtöbbet kaszálta",
-    "date": "2026-03-23",
-    "url": "https://hvg.hu/360/20260323_financial-times-350-ezer-magyar-kozbeszerzes-28-milliard-euro-orban-13-oligarchaja",
-    "lead": "Az Orbán-rendszert cikksorozatban elemző brit lap szerint az Orbán-kormány idején az állami pályázatokon odaítélt összes pénz 14 százaléka 13 társtulajdonos 42 "
-   },
-   {
-    "type": "text",
-    "content": "Az ügy jelenlegi állása szerint az eljárás még folyamatban van, de vádemelés eddig nem történt. Az Elios-ügy így a magyar közpénz-felhasználás átláthatóságának és az erőforrások indokolt elosztásának a kérdéseit vetí fel a közérdek szempontjából."
-   },
-   {
-    "type": "article-card",
-    "source": "HVG360",
-    "headline": "Magyarország milliárdokat fizetett vissza Brüsszelnek, de a legtöbb felelős eddig megúszta a büntetést",
-    "date": "2025-11-19",
-    "url": "https://hvg.hu/360/20251119_Milliardokat-kellett-visszafizetni-Brusszelnek-nyomozas-ugyeszseg-olaf",
-    "lead": "A magyar ügyészség szorgosan vizsgálatot indít az OLAF által feltárt esetek miatt, miközben az állam becsületesen fizet az Európai Bizottságnak, ha a csalás ell"
+    "content": "Az ügy továbbra is nyitott — jogerős megállapítás vagy hatósági eljárás eredménye egyelőre nem ismert, az érintettek ártatlannak tekintendők. (Az ehhez korábban tévesen társított, valójában az Elios Zrt. közvilágítási közbeszerzéseiről szóló tartalom külön ügyként, a tiborcz-elios-innovativ oldalon szerepel.)"
    }
   ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)",
-  "filesKey": "Az Elios Zrt. közbeszerzési sikerei"
+  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
  },
  "kosa-lajos-ugy": {
   "title": "Kósa és a milliárdos örökség",

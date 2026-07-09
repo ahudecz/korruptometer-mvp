@@ -157,6 +157,14 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
   // nem szűri (nincs szám a névben), ezért kézzel jelöljük: a headline szám
   // egy keret/volumen-érték, nem azonosított korrupciós kár. ──
   {
+    // 2026-07-09: article_count=1 + a scandalName-be sült "335 milliárd
+    // forintot" szám az autoSuppress heurisztikát váltotta ki (Becslés
+    // alatt-ot mutatott), holott basis='alleged_reported', high confidence —
+    // a cikkben ténylegesen szereplő szám, nem durva becslés.
+    scandalKey: 'rogan-kesma-335-milliard',
+    hideAutoDamage: false,
+  },
+  {
     scandalKey: 'gulyasministrium-kommunikacio',
     hidePhoto: true, // DB person Rogán Antal vagy Balásy Gyula között ingadozik holtversenynél (téves mindkettő) → ne mutassuk egyik arcot sem
     hideAutoDamage: true,
