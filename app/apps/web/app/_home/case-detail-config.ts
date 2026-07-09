@@ -615,9 +615,12 @@ export const RETIRED_REDIRECTS: Record<string, string> = {
   // this makes the merge real so the damage isn't counted twice.
   'barta-eke-nagyper-miniszterium': '/adatbazis/barta-eke-ngm-25-milliardos-per',
   // 2026-07-09 user-requested merges: same Nemzeti Sport/KESMA vásárlás,
-  // three scandalKeys — the sourced 3,5 Mrd-os cikk a kanonikus.
-  'nemzeti-sport-felvasarlasa-kesma': '/adatbazis/szöllősi-nemzeti-sport-kesma',
-  'nemzeti-sport-kesma': '/adatbazis/szöllősi-nemzeti-sport-kesma',
+  // three scandalKeys — the sourced 3,5 Mrd-os cikk a kanonikus. ASCII
+  // target (not the accented DB id) — redirect()'s Location header can't
+  // carry raw non-Latin1 chars (crashed with ERR_INVALID_CHAR); the ascii
+  // form resolves fine via [id]/page.tsx's own unaccent() fallback.
+  'nemzeti-sport-felvasarlasa-kesma': '/adatbazis/szollosi-nemzeti-sport-kesma',
+  'nemzeti-sport-kesma': '/adatbazis/szollosi-nemzeti-sport-kesma',
   // Két önálló "MNB gigaprojekt" scandalKey ugyanahhoz az affér-hoz
   // (mnb-botrany, a 270 Mrd-os Matolcsy/PADME ügy) tartozó cikkeket
   // mondott el külön "projektként" — a cikkek most a fő ügy alá tartoznak.
