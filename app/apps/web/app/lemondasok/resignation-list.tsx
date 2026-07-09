@@ -221,6 +221,12 @@ export function ResignationList({ rows, initialSector = '' }: { rows: Serialized
                   </div>
                 )}
               </div>
+
+              {hasFilter && (
+                <button type="button" className="verdict-clear-all" onClick={clearAll}>
+                  × Szűrők törlése
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -231,11 +237,6 @@ export function ResignationList({ rows, initialSector = '' }: { rows: Serialized
               ? `${filtered.length} találat (${rows.length} bejegyzésből)`
               : `${rows.length} bejegyzés összesen`}
           </span>
-          {hasFilter && (
-            <button type="button" className="verdict-clear-all" onClick={clearAll}>
-              × Szűrők törlése
-            </button>
-          )}
         </div>
       </div>
 
