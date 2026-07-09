@@ -54,6 +54,7 @@ function releasedLabel(t: string) {
 function verdictTypeLabel(t: string) {
   if (t === 'jogerős') return 'Jogerős ítélet';
   if (t === 'elsőfokú') return 'Elsőfokú ítélet';
+  if (t === 'vádemelés') return 'Vádemelés';
   if (t === 'fellebbezés alatt') return 'Fellebbezés alatt';
   if (t === 'szabadlábra helyezve') return 'Szabadlábra helyezve';
   if (t === 'eljárás megszűnt') return 'Eljárás megszűnt';
@@ -68,6 +69,7 @@ function verdictTypeColor(t: string) {
   if (t === 'jogerős') return '#E31937';
   if (t === 'elsőfokú') return '#FF9D00';
   if (t === 'fellebbezés alatt') return '#4B7AFF';
+  if (t === 'vádemelés') return '#4B7AFF';
   if (isReleased(t)) return '#5c5e62';
   return '#888';
 }
@@ -84,6 +86,13 @@ function StatusBadge({ r }: { r: SerializedVerdict }) {
     return (
       <div className="vrow-badge vrow-badge--released">
         <span>{releasedLabel(r.verdictType)}</span>
+      </div>
+    );
+  }
+  if (r.verdictType === 'vádemelés') {
+    return (
+      <div className="vrow-badge vrow-badge--indictment">
+        <span>VÁDEMELVE</span>
       </div>
     );
   }
@@ -387,6 +396,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all' }: { rows: Serializ
               {[
                 { val: 'all',                  label: 'Összes' },
                 { val: 'előzetesben',           label: 'Előzetesben' },
+                { val: 'vádemelés',            label: 'Vádemelés' },
                 { val: 'elsőfokú',             label: 'Elsőfokú' },
                 { val: 'jogerős',              label: 'Jogerős' },
                 { val: 'fellebbezés alatt',    label: 'Fellebbezés alatt' },
@@ -535,32 +545,42 @@ export function VerdictList({ rows, initialUgyFilter = 'all' }: { rows: Serializ
         </div>
       </div>
 
-      {/* Sorok — aktív */}
-      <div className="vlist" style={{ marginTop: 20 }}>
-        {activeFiltered.length === 0 ? (
+      {/* Sorok — aktív. A "nincs találat" üzenet csak akkor jelenik meg, ha
+          SEHOL (sem itt, sem a lezárt/kiengedett szekcióban) nincs találat —
+          korábban egy pl. "Kiengedve" szűrés itt üresnek tűnt, miközben a
+          találat ténylegesen a lenti szekcióban jelent meg, ami megtévesztő
+          volt. */}
+      {activeFiltered.length === 0 && releasedFiltered.length === 0 ? (
+        <div className="vlist" style={{ marginTop: 20 }}>
           <div style={{ padding: '40px 24px', textAlign: 'center', color: '#888' }}>
             Nincs a feltételeknek megfelelő bejegyzés.
           </div>
-        ) : (
-          activeFiltered.map(r => <VerdictRow key={r.id} r={r} />)
-        )}
-      </div>
-
-      {/* Lezárt / kiengedett szekció */}
-      {releasedFiltered.length > 0 && (
-        <div style={{ marginTop: 48 }}>
-          <div style={{ borderTop: '2px solid #e0e0e0', paddingTop: 32, marginBottom: 16 }}>
-            <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
-              Szabadlábra helyezve / Eljárás megszűnt
-            </h3>
-            <p style={{ fontSize: 13, color: '#888', margin: 0 }}>
-              Az alábbi személyek letartóztatása megszűnt vagy az ellenük folyó eljárás lezárult — az ügy azonban folyamatban van.
-            </p>
-          </div>
-          <div className="vlist">
-            {releasedFiltered.map(r => <VerdictRow key={r.id} r={r} />)}
-          </div>
         </div>
+      ) : (
+        <>
+          {activeFiltered.length > 0 && (
+            <div className="vlist" style={{ marginTop: 20 }}>
+              {activeFiltered.map(r => <VerdictRow key={r.id} r={r} />)}
+            </div>
+          )}
+
+          {/* Lezárt / kiengedett szekció */}
+          {releasedFiltered.length > 0 && (
+            <div style={{ marginTop: activeFiltered.length > 0 ? 48 : 20 }}>
+              <div style={{ borderTop: '2px solid #e0e0e0', paddingTop: 32, marginBottom: 16 }}>
+                <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
+                  {hasFilter ? `Találat — ${releasedFiltered.length} db` : 'Szabadlábra helyezve / Eljárás megszűnt'}
+                </h3>
+                <p style={{ fontSize: 13, color: '#888', margin: 0 }}>
+                  Az alábbi személyek letartóztatása megszűnt vagy az ellenük folyó eljárás lezárult — az ügy azonban folyamatban van.
+                </p>
+              </div>
+              <div className="vlist">
+                {releasedFiltered.map(r => <VerdictRow key={r.id} r={r} />)}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </>
   );

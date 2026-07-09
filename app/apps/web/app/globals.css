@@ -11632,6 +11632,8 @@ body:has(.admin-nav) > main {
 }
 .vrow-badge--pretrial { background: #171a20; color: #fff; }
 .vrow-badge--pretrial span { font-size: 10px; font-weight: 900; letter-spacing: 0.12em; }
+.vrow-badge--indictment { background: #4B7AFF; color: #fff; }
+.vrow-badge--indictment span { font-size: 10px; font-weight: 900; letter-spacing: 0.12em; }
 .vrow-badge--released { background: #1a7a3c; color: #fff; border: 1px solid #1a7a3c; }
 .vrow-badge--released span { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; }
 .vrow-badge--sentence { background: #E31937; color: #fff; }
