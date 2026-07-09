@@ -1295,6 +1295,20 @@ export const resignationTypeEnum = pgEnum('resignation_type', [
   'Hivatalban van',
 ]);
 
+export const resignationSectorEnum = pgEnum('resignation_sector', [
+  'nemzetbiztonság',
+  'fegyveres és rendvédelmi szervek',
+  'ügyészség',
+  'honvédség',
+  'hatóságok, hivatalok, állami cégek',
+  'egészségügy',
+  'média',
+  'sport és civil szervezetek',
+  'kultúra',
+  'közigazgatás',
+  'egyéb',
+]);
+
 export const politicalResignations = pgTable(
   'PoliticalResignation',
   {
@@ -1305,6 +1319,9 @@ export const politicalResignations = pgTable(
     resignationType: resignationTypeEnum('resignationType').notNull(),
     resignationDate: timestamp('resignationDate', { withTimezone: true }).notNull(),
     description: text('description'),
+    // Nullable — filled in by a one-time backfill + manual curation, not
+    // auto-assigned by the detectors, so older/auto-detected rows can be NULL.
+    sector: resignationSectorEnum('sector'),
     pinned: boolean('pinned').notNull().default(false),
     sourceUrls: text('sourceUrls').array().notNull().default(sql`ARRAY[]::text[]`),
     sourceNames: text('sourceNames').array().notNull().default(sql`ARRAY[]::text[]`),

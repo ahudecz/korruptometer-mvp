@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { and, desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { getActiveBreaking, findBreakingForName, type BreakingArticle } from '@/lib/breaking';
+import { SectorFilter } from './sector-filter';
 
 export const metadata: Metadata = {
   title: 'Lemondott-e már?',
@@ -88,6 +89,8 @@ async function fetchRows() {
     .limit(100);
 }
 
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
 const tableHead = (
   <thead>
     <tr style={{ borderBottom: '1px solid #e5e5e5' }}>
@@ -102,14 +105,21 @@ const tableHead = (
   </thead>
 );
 
-export default async function LemondasokPage() {
+export default async function LemondasokPage({ searchParams }: { searchParams: SearchParams }) {
+  const sp = await searchParams;
+  const teruletParam = Array.isArray(sp.terulet) ? sp.terulet[0] : sp.terulet;
+  const sector = teruletParam && (schema.resignationSectorEnum.enumValues as readonly string[]).includes(teruletParam)
+    ? teruletParam
+    : '';
+
   const db = getDb();
   const [rows, mediaLeepites, breakingArticles] = await Promise.all([
     fetchRows(),
     db.select().from(schema.mediaClosures).where(and(eq(schema.mediaClosures.eventType, 'leépítés'), eq(schema.mediaClosures.reviewStatus, 'approved'))),
     getActiveBreaking(),
   ]);
-  const rest = rows.filter(r => !r.pinned);
+  const allRest = rows.filter(r => !r.pinned);
+  const rest = allRest.filter(r => !sector || r.sector === sector);
 
   const kirugasFelmentesCount = rows.filter(r => (r.resignationType === 'kirúgás' || r.resignationType === 'felmentés') && !r.name.includes('szerkesztőség')).length;
   const lemondasCount = rows.filter(r => r.resignationType === 'lemondás').length;
@@ -310,7 +320,7 @@ export default async function LemondasokPage() {
           </div>
         </div>
 
-        {rest.length > 0 && (
+        {allRest.length > 0 && (
           <>
             <h2 style={{
               fontSize: '18px',
@@ -346,14 +356,19 @@ export default async function LemondasokPage() {
                 <div className="megszunt-stat-label">Szerkesztőségi leépítés</div>
               </div>
             </div>
-            <div className="res-table-wrap">
-              <table style={{ width: '100%', minWidth: 700, fontSize: '14px', lineHeight: '1.6' }}>
-                {tableHead}
-                <tbody>
-                  {rest.map(r => <Row key={r.id} r={r} breakingArticle={findBreakingForName(r.name, breakingArticles)} />)}
-                </tbody>
-              </table>
-            </div>
+            <SectorFilter initial={{ sector }} />
+            {rest.length > 0 ? (
+              <div className="res-table-wrap">
+                <table style={{ width: '100%', minWidth: 700, fontSize: '14px', lineHeight: '1.6' }}>
+                  {tableHead}
+                  <tbody>
+                    {rest.map(r => <Row key={r.id} r={r} breakingArticle={findBreakingForName(r.name, breakingArticles)} />)}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="empty-state" style={{ marginTop: 32 }}>Nincs találat ebben a kategóriában.</div>
+            )}
           </>
         )}
 
