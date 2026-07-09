@@ -85,8 +85,7 @@ async function fetchRows() {
     .select()
     .from(schema.politicalResignations)
     .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
-    .orderBy(desc(schema.politicalResignations.resignationDate))
-    .limit(100);
+    .orderBy(desc(schema.politicalResignations.resignationDate), desc(schema.politicalResignations.createdAt));
 }
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
