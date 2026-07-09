@@ -26,8 +26,8 @@ export default function AdatvedelemPage() {
           <h3 className="modszertan-h3">Az adatkezelő</h3>
 
           <p>
-            Hudecz Attila és Marosi Balázs, magánszemélyek, kereskedelmi
-            szervezet nélkül üzemeltetik a Kegyencjárat weboldalt. Nincs
+            Marosi Balázs, magánszemély, kereskedelmi
+            szervezet nélkül üzemelteti a Kegyencjárat weboldalt. Nincs
             kijelölt adatvédelmi tisztviselő (DPO) — a GDPR 37. cikke szerint
             erre jelen tevékenység terjedelme mellett nem vagyunk kötelezettek.
             Kapcsolat: <a href="mailto:hello@kegyencjarat.hu">hello@kegyencjarat.hu</a>
