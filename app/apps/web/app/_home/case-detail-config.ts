@@ -146,6 +146,20 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     title: 'Az Elios-botrány',
   },
   {
+    // 2026-07-09 user report: the 1311 Mrd (state → private-equity funds)
+    // figure was shown as solely Mészáros Lőrinc's — but the source
+    // (Transparency International, via Népszava) attributes the 740 Mrd
+    // MFB-routed portion roughly evenly across 3 SEPARATE fund managers:
+    // Gránit Alapkezelő (Tiborcz), Solus Capital (Mészáros), Indotek
+    // Investments (Jellinek Dániel). Hiding the single photo/face — this
+    // isn't one person's case. Real breakdown (per fund manager) not
+    // published; content updated with the honest 3-way structure instead
+    // of a single-person total.
+    scandalKey: 'meszaros-magantokealap-1311mrd',
+    hidePhoto: true,
+    relatedPersonIds: ['tiborcz-istvan', 'meszaros-lorinc'],
+  },
+  {
     // The DB damage (3750 Mrd) is a budget-context number baked into the name —
     // an artifact, not an alleged corruption damage. Suppress it and link the
     // canonical Mészáros photo. Curated body blocks to be added with real sources.

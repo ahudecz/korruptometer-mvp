@@ -11578,30 +11578,27 @@
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
  },
  "meszaros-magantokealap-1311mrd": {
+  "title": "Állami milliárdok a NER-közeli magántőkealapokban",
   "blocks": [
    {
     "type": "text",
-    "content": "# Mészáros magántőkealapok – 1311 milliárd forint közpénz-érintettség"
+    "content": "A Transparency International Magyarország kimutatása szerint a magyar állam összesen 1311 milliárd forintot fektetett magántőkealapokba — ebből az MFB Csoport 2024 végéig 740 milliárd forint közpénzt helyezett ki 23 alapkezelő 34 alapjába. Ez a szám tévesen jelent meg korábban kizárólag Mészáros Lőrinchez kötve: a cikk szerint a 740 milliárd nagyjából fele három, egymástól független NER-közeli alapkezelőnél koncentrálódik."
    },
    {
     "type": "text",
-    "content": "A sajtójelentések szerint Mészáros Lőrinc magántőkealapjainak keretében mintegy 1311 milliárd forint közpénz-érintettség merült fel, amely a Magyar Export-Import Bank (Eximbank) Zrt. finanszírozásával kapcsolódik. A K-Monitor becslése szerint ez a közpénzösszeg a NER-csoporthoz tartozó tőkealapokba áramlott, amelyek befektetési aktivitásáról azonban hosszú ideig korlátozott volt a nyilvános információ."
+    "content": "A három nagy alapkezelő: a Gránit Alapkezelő Zrt. (Tiborcz István, a miniszterelnök vejének érdekeltsége), a Solus Capital Zrt. (Mészáros Lőrinc gyerekkori jóbarátjához köthető), és az Indotek Investments Zrt. (Jellinek Dániel kezelésében). A cikk nem közöl pontos, alapkezelőnkénti bontást a 740 milliárdon belül."
    },
    {
     "type": "text",
-    "content": "A sajtó szerint a tőkealapok rejtőzködő szerkezete miatt a civil szervezetek és kutatók számára hosszú ideig nem voltak hozzáférhetőek a befektetési adatok. A политическая helyzet 2026-ban változni kezdett: a sajtóban megjelent cikkek szerint kormányzati törvényjavaslat készült az ezermilliárdnyi közpénzeket felszívó tőkealapok befektetői körének transzparensebbé tételéről. A sajtójelentések továbbá a Mészáros-csoport banki műveleteit és az azokhoz köthető üzleti tranzakciókat vizsgálták, ugyanakkor a jogi eljárások és megállapítások az elérhető adatok alapján nem részletezhetőek."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy nyitott státuszban van, és a sajtó továbbra is figyelemmel kíséri a fejleményeket és a lehetséges jogi következményeket."
+    "content": "A tágabb kép még nagyobb: a magántőkealapok érdekeltségébe tartozó 83 cég 2021 és 2024 között összesen 2603 milliárd forint értékben nyert el állami közbeszerzési tendereket, a nyomon követett alapok együttes nettó eszközértéke pedig eléri a 3100 milliárd forintot. Az ügy nyitott, jogerős megállapítás egyelőre nincs, az érintettek ártatlannak tekintendők."
    },
    {
     "type": "article-card",
-    "source": "444.hu",
-    "headline": "Mészáros Lőrinctől Rogánon át Lázár Jánosig: kiket és miket vizsgálhat a Vagyonvisszaszerzési Hivatal?",
-    "date": "2026-06-24",
-    "url": "https://444.hu/2026/06/24/meszaros-lorinctol-roganon-at-lazar-janosig-kiket-es-miket-vizsgalhat-a-vagyonvisszaszerzesi-hivatal",
-    "lead": "Magyar Péter hónapok óta emlegeti a vagyonvisszaszerzési hivatalt, amely a NER kegyeltjeinek vagyonosodását is vizsgálná. Összegyűjtöttük, ki érezheti magát ez alapján veszélyben."
+    "source": "Népszava",
+    "headline": "Transparency International: 1311 milliárd forintot fektetett az állam magántőkealapokba",
+    "date": "2025-12-09",
+    "url": "https://nepszava.hu/3304435_transparency-international-magantokealapok-allami-tenderek",
+    "lead": "A magántőkealapok a közbeszerzéseken is jól szerepelnek, az érdekeltségükbe tartozó 83 cég 2021 és 2024 között 2600 milliárd forint értékben nyert el állami tendereket."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
