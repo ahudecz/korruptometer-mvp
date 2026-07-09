@@ -183,10 +183,14 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
       WHERE "scandalKey" = ${id} AND status NOT IN ('merged','dismissed')
       ORDER BY "articleCount" DESC NULLS LAST LIMIT 1
     `) as unknown as Promise<ProcRow[]>,
+    // articleCount > 1 excludes singleton investigations — their caseName is
+    // just the one source article's raw headline (catalog-llm-name.ts only
+    // LLM-names multi-article cases), and that article already surfaces
+    // below in "Kapcsolódó hírek" via the same InvestigationArticleLink join.
     db.execute(sql`
       SELECT id, "caseName", "primaryPersonName", "primaryEntityName", "articleCount"
       FROM "Investigation"
-      WHERE "scandalKey" = ${id} AND status NOT IN ('merged','dismissed')
+      WHERE "scandalKey" = ${id} AND status NOT IN ('merged','dismissed') AND "articleCount" > 1
       ORDER BY "articleCount" DESC NULLS LAST
     `) as unknown as Promise<Member[]>,
     db.execute(sql`
@@ -302,6 +306,16 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
       : kmdbArticles.map((a) => ({ source: a.newspaper ?? 'Forrás', date: a.pub_time, headline: a.title, url: a.source_url }))),
     ...articles.map((a) => ({ source: a.source_name ?? 'Forrás', date: a.publishedAt.toISOString(), headline: a.headline, url: a.sourceUrl })),
   ];
+  // linkedKmdbArticles only otherwise feeds injectedCard below — without this,
+  // a singleton investigation's K-Monitor-sourced article (now excluded from
+  // "Kapcsolódó ügyrészek", see the members query above) would disappear
+  // from the page entirely instead of surfacing here.
+  const seenNewsUrls = new Set(newsList.map((n) => n.url));
+  for (const a of linkedKmdbArticles) {
+    if (seenNewsUrls.has(a.source_url)) continue;
+    newsList.push({ source: a.newspaper ?? 'K-Monitor', date: a.pub_time, headline: a.title, url: a.source_url });
+    seenNewsUrls.add(a.source_url);
+  }
   const kmdbTotal = kmdbArticles[0]?.total ?? 0;
 
   // Ha a leírásban nincs article-card, injektálunk egyet — csak ügy-specifikus forrásból.
@@ -595,7 +609,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
         )}
 
         {/* ── Member investigations (clickable cards) ── */}
-        {scandal.investigation_count > 1 && (
+        {members.length > 0 && (
           <div className="case-section">
             <h2 className="person-section-title">Kapcsolódó ügyrészek</h2>
             <div className="ugyek-more-grid">
