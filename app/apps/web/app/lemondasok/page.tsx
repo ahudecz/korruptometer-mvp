@@ -335,7 +335,9 @@ export default async function LemondasokPage({ searchParams }: { searchParams: S
             <p className="elszamoltatas-deck" style={{ marginBottom: 24 }}>
               Itt dokumentáljuk a NER összeomlásával távozó, kirúgott és felmentett embereket —
               köztisztviselőket, propagandistákat és mindenkit, aki a rendszer szekerét tolta,
-              és most mennie kellett.
+              és most mennie kellett. Ha tudsz olyan fontos pozícióból távozó, kirúgott vagy
+              felmentett emberről, aki még nem szerepel a listában, írj nekünk a{' '}
+              <a href="mailto:hello@kegyencjarat.hu">hello@kegyencjarat.hu</a> címre.
             </p>
             <div className="megszunt-stats megszunt-stats--4" style={{ marginBottom: 32 }}>
               <div className="megszunt-stat">
