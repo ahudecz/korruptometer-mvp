@@ -121,6 +121,11 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     institution: 'Pallas Athéné Domus Meriti Alapítvány (PADME)',
     galeriaId: 'matolcsy-gyorgy',
     crimeTypes: ['Vagyonkezelési visszaélés', 'Összeférhetetlenség'],
+    // 2026-07-09: hero számként a nyers 200 Mrd (damage_huf) jelent meg a
+    // damageText melletti, ami 270 Mrd-ot mond — a cím és a szöveg is 270-et
+    // ír, csak a badge maradt a réginél. hideAutoDamage-dzsel a badge is a
+    // damageText-re vált ("Becslés alatt" + a szöveg), így konzisztens.
+    hideAutoDamage: true,
     damageText:
       'Ez az ügy Matolcsy György MNB-alapítványi (Pallas Athéné/PADME) hálózatához tartozik, nem Mészáros Lőrinchez. A hivatkozott 200 Mrd Ft egy korai (2025. márciusi) becslés — a PADME saját 2024-es beszámolója és a sajtó (HVG, Portfolio) szerint az eredeti 283 Mrd Ft-os vagyonból 2024 végére csak 13 Mrd Ft maradt, azaz kb. 270 Mrd Ft veszett el, elsősorban a GTC- és Ultima Capital-befektetéseken keresztül.',
     video: { id: 'I7-rw1so1p0' },
