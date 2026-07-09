@@ -123,7 +123,7 @@ type ScandalHeader = {
 };
 type DamageRow = { totalHighHuf: string; confidence: string; basis: string | null; components: Array<{ notes?: string }> | null };
 type ProcRow = { proceduralStage: string | null; competentAuthority: string | null };
-type Member = { id: string; caseName: string | null; primaryPersonName: string | null; primaryEntityName: string | null; articleCount: number };
+type Member = { id: string; caseName: string | null; primaryPersonName: string | null; primaryEntityName: string | null; articleCount: number; article_url: string | null };
 type CrossRef = { id: string; name: string; person: string | null; institution: string | null; article_count: number; damage_huf: string; offence_labels: string | null };
 type Article = { id: string; headline: string; excerpt: string | null; sourceUrl: string; publishedAt: Date; source_name: string | null };
 type KmdbRow = { news_id: number; title: string; source_url: string; kmdb_url: string; newspaper: string | null; pub_time: string | null; total: number };
@@ -188,10 +188,18 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
     // LLM-names multi-article cases), and that article already surfaces
     // below in "Kapcsolódó hírek" via the same InvestigationArticleLink join.
     db.execute(sql`
-      SELECT id, "caseName", "primaryPersonName", "primaryEntityName", "articleCount"
-      FROM "Investigation"
-      WHERE "scandalKey" = ${id} AND status NOT IN ('merged','dismissed') AND "articleCount" > 1
-      ORDER BY "articleCount" DESC NULLS LAST
+      SELECT i.id, i."caseName", i."primaryPersonName", i."primaryEntityName", i."articleCount",
+        COALESCE(
+          (SELECT n."sourceUrl" FROM "InvestigationArticleLink" l
+             JOIN "NewsArticle" n ON n.id::text = l."articleId" AND l."articleSource" = 'news'
+             WHERE l."investigationId" = i.id ORDER BY n."publishedAt" DESC LIMIT 1),
+          (SELECT COALESCE(k.source_url, k.kmdb_url) FROM "InvestigationArticleLink" l
+             JOIN "KmdbArticle" k ON k.news_id::text = l."articleId" AND l."articleSource" = 'kmonitor'
+             WHERE l."investigationId" = i.id ORDER BY k.pub_time DESC LIMIT 1)
+        ) AS article_url
+      FROM "Investigation" i
+      WHERE i."scandalKey" = ${id} AND i.status NOT IN ('merged','dismissed') AND i."articleCount" > 1
+      ORDER BY i."articleCount" DESC NULLS LAST
     `) as unknown as Promise<Member[]>,
     db.execute(sql`
       SELECT sc.id, sc.name, sc.person, sc.institution, sc.article_count, sc.damage_huf,
@@ -609,27 +617,44 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
           </div>
         )}
 
-        {/* ── Member investigations (clickable cards) ── */}
-        {members.length > 0 && (
+        {/* ── Member investigations (clickable cards) ──
+            members.length > 1: a single member investigation just *is* the
+            case itself (nothing to relate it to) — listing it "related to
+            itself" reads as a confusing self-duplicate on single-investigation
+            scandalKeys (reported 2026-07-09, tiborcz-konfector-szlovák-kórház). */}
+        {members.length > 1 && (
           <div className="case-section">
             <h2 className="person-section-title">Kapcsolódó ügyrészek</h2>
             <div className="ugyek-more-grid">
-              {members.map((m) => (
-                <Link
-                  key={m.id}
-                  href={`/adatbazis?q=${encodeURIComponent(m.primaryPersonName ?? m.caseName ?? '')}`}
-                  className="ugyek-more-card"
-                >
-                  <div className="ugyek-more-eyebrow">{fmtNumber(m.articleCount)} cikk</div>
-                  <div className="ugyek-more-title">{m.caseName ?? '—'}</div>
-                  {m.primaryPersonName && (
-                    <div className="ugyek-more-sub">
-                      {m.primaryPersonName}
-                      {m.primaryEntityName ? ` · ${m.primaryEntityName}` : ''}
-                    </div>
-                  )}
-                </Link>
-              ))}
+              {members.map((m) => {
+                // A member Investigation-nek nincs saját /adatbazis oldala —
+                // korábban egy generikus /adatbazis?q= névkeresésre linkelt,
+                // ami gyakran semmi relevánsat nem talált ("nagy lófasz
+                // oldalra visz sehova" — user report, 2026-07-09). A tényleges
+                // forráscikkre mutat most; ha egyáltalán nincs cikk-URL, nem
+                // klikkelhető (nem linkelünk félrevezetően sehova).
+                const content = (
+                  <>
+                    <div className="ugyek-more-eyebrow">{fmtNumber(m.articleCount)} cikk</div>
+                    <div className="ugyek-more-title">{m.caseName ?? '—'}</div>
+                    {m.primaryPersonName && (
+                      <div className="ugyek-more-sub">
+                        {m.primaryPersonName}
+                        {m.primaryEntityName ? ` · ${m.primaryEntityName}` : ''}
+                      </div>
+                    )}
+                  </>
+                );
+                return m.article_url ? (
+                  <a key={m.id} href={m.article_url} target="_blank" rel="noopener noreferrer" className="ugyek-more-card">
+                    {content}
+                  </a>
+                ) : (
+                  <div key={m.id} className="ugyek-more-card ugyek-more-card--static">
+                    {content}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
