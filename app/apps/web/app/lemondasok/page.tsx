@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { and, desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
-import { getActiveBreaking, findBreakingForName, type BreakingArticle } from '@/lib/breaking';
-import { SectorFilter } from './sector-filter';
+import { getActiveBreaking, findBreakingForName } from '@/lib/breaking';
+import { ResignationList, type SerializedResignation } from './resignation-list';
 
 export const metadata: Metadata = {
   title: 'Lemondott-e már?',
@@ -14,71 +15,6 @@ import { CrossMegszunt, CrossUgyek, CrossGaleria } from '../_home/cross-promo';
 
 export const revalidate = 120;
 
-function typeLabel(t: string): string {
-  if (t === 'lemondás') return '↓ Lemondás';
-  if (t === 'kirúgás') return '✕ Kirúgás';
-  if (t === 'felmentés') return '⟲ Felmentés';
-  return t;
-}
-
-function typeColor(t: string): string {
-  if (t === 'lemondás') return '#4B7AFF';
-  if (t === 'kirúgás') return '#E31937';
-  if (t === 'felmentés') return '#FF9D00';
-  return '#666';
-}
-
-const cellStyle = { padding: '12px', color: '#666' } as const;
-
-function Row({ r, breakingArticle }: { r: Awaited<ReturnType<typeof fetchRows>>[number]; breakingArticle?: BreakingArticle | null }) {
-  const color = typeColor(r.resignationType);
-  return (
-    <tr className={breakingArticle ? 'res-row-breaking' : undefined} style={{ borderBottom: '1px solid #f0f0f0' }}>
-      <td className="res-col-date" style={{ ...cellStyle, whiteSpace: 'nowrap' as const }}>
-        {new Date(r.resignationDate).toLocaleDateString('hu-HU')}
-      </td>
-      <td style={{ ...cellStyle, whiteSpace: 'nowrap' as const }}>
-        <span style={{
-          display: 'inline-block',
-          padding: '4px 8px',
-          borderRadius: '4px',
-          backgroundColor: `${color}20`,
-          color,
-          fontSize: '12px',
-          fontWeight: 600,
-          whiteSpace: 'nowrap',
-        }}>
-          {typeLabel(r.resignationType)}
-        </span>
-      </td>
-      <td style={{ ...cellStyle, fontWeight: 500, color: 'var(--ink)' }}>
-        {r.name}
-        {breakingArticle && (
-          <a
-            href={breakingArticle.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="res-breaking-inline"
-          >
-            <span className="res-breaking-dot" />
-            BREAKING
-          </a>
-        )}
-      </td>
-      <td style={cellStyle}>{r.position}</td>
-      <td className="res-col-institution" style={cellStyle}>{r.institution}</td>
-      <td className="res-col-desc" style={{ ...cellStyle, maxWidth: 320, fontSize: 13 }}>{r.description ?? '—'}</td>
-      <td style={cellStyle}>
-        {r.sourceUrls?.[0] ? (
-          <a href={r.sourceUrls[0]} target="_blank" rel="noopener noreferrer" className="res-source-link">
-            {r.sourceNames?.[0] ?? 'Forrás'} →
-          </a>
-        ) : '—'}
-      </td>
-    </tr>
-  );
-}
-
 async function fetchRows() {
   const db = getDb();
   return db
@@ -89,20 +25,6 @@ async function fetchRows() {
 }
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
-
-const tableHead = (
-  <thead>
-    <tr style={{ borderBottom: '1px solid #e5e5e5' }}>
-      <th className="res-col-date" style={{ textAlign: 'left', padding: '12px', fontWeight: 600 }}>Dátum</th>
-      <th style={{ textAlign: 'left', padding: '12px', fontWeight: 600 }}>Státusz</th>
-      <th style={{ textAlign: 'left', padding: '12px', fontWeight: 600 }}>Név</th>
-      <th style={{ textAlign: 'left', padding: '12px', fontWeight: 600 }}>Pozíció</th>
-      <th className="res-col-institution" style={{ textAlign: 'left', padding: '12px', fontWeight: 600 }}>Intézmény</th>
-      <th className="res-col-desc" style={{ textAlign: 'left', padding: '12px', fontWeight: 600 }}>Leírás</th>
-      <th style={{ textAlign: 'left', padding: '12px', fontWeight: 600 }}>Forrás</th>
-    </tr>
-  </thead>
-);
 
 export default async function LemondasokPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
@@ -118,7 +40,19 @@ export default async function LemondasokPage({ searchParams }: { searchParams: S
     getActiveBreaking(),
   ]);
   const allRest = rows.filter(r => !r.pinned);
-  const rest = allRest.filter(r => !sector || r.sector === sector);
+  const serializedRest: SerializedResignation[] = allRest.map(r => ({
+    id: r.id,
+    resignationDateFormatted: new Date(r.resignationDate).toLocaleDateString('hu-HU'),
+    resignationType: r.resignationType,
+    name: r.name,
+    position: r.position,
+    institution: r.institution,
+    description: r.description,
+    sector: r.sector,
+    sourceUrl: r.sourceUrls?.[0] ?? null,
+    sourceName: r.sourceNames?.[0] ?? null,
+    breakingSourceUrl: findBreakingForName(r.name, breakingArticles)?.sourceUrl ?? null,
+  }));
 
   const kirugasFelmentesCount = rows.filter(r => (r.resignationType === 'kirúgás' || r.resignationType === 'felmentés') && !r.name.includes('szerkesztőség')).length;
   const lemondasCount = rows.filter(r => r.resignationType === 'lemondás').length;
@@ -319,7 +253,7 @@ export default async function LemondasokPage({ searchParams }: { searchParams: S
           </div>
         </div>
 
-        {allRest.length > 0 && (
+        {serializedRest.length > 0 && (
           <>
             <h2 style={{
               fontSize: '18px',
@@ -357,19 +291,9 @@ export default async function LemondasokPage({ searchParams }: { searchParams: S
                 <div className="megszunt-stat-label">Szerkesztőségi leépítés</div>
               </div>
             </div>
-            <SectorFilter initial={{ sector }} />
-            {rest.length > 0 ? (
-              <div className="res-table-wrap">
-                <table style={{ width: '100%', minWidth: 700, fontSize: '14px', lineHeight: '1.6' }}>
-                  {tableHead}
-                  <tbody>
-                    {rest.map(r => <Row key={r.id} r={r} breakingArticle={findBreakingForName(r.name, breakingArticles)} />)}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="empty-state" style={{ marginTop: 32 }}>Nincs találat ebben a kategóriában.</div>
-            )}
+            <Suspense fallback={null}>
+              <ResignationList rows={serializedRest} initialSector={sector} />
+            </Suspense>
           </>
         )}
 
