@@ -64,7 +64,7 @@ export default function AdomanyozasPage() {
                 Egy egyszerű, megbízható platform egyszerű, egyszeri támogatásra — kártyával, PayPal-lal vagy Apple Pay-jel, regisztráció nélkül is. Minden összeg egyenesen hozzánk érkezik.
               </p>
               <a
-                href="https://buymeacoffee.com/ahudecza"
+                href="https://buymeacoffee.com/kegyencjarat1"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="adom-bmc-btn"
