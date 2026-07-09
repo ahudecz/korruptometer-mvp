@@ -1,10 +1,10 @@
 import 'server-only';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 import { detectVerdictFromArticle } from '@korr/db/ai-verdicts';
 import {
   decideStatus,
-  isDuplicate,
+  findExistingVerdict,
   isTransientLlmFailure,
   isWatchlistPerson,
   loadUncheckedArticles,
@@ -27,6 +27,16 @@ const VERDICT_KEYWORDS = [
   // Gyakori előzmény-fázisú megfogalmazás letartóztatás előtt/helyett —
   // hiányzott, pedig a relevance.ts BREAKING_TRIGGERS listája már ismeri.
   'őrizetbe', 'házkutatás', 'razzia', 'körözik', 'elfogatóparancs',
+  // Szabadon engedés / eljárás-vég — enélkül egy korábban letartóztatott
+  // személy kiengedése sosem jutott el az LLM-ig (2026-07-08, Szakács
+  // István-eset: a "Kiengedték Szakács Istvánt" jellegű cikkek egyike sem
+  // tartalmazott letartóztatás-szót, csak ezeket).
+  'szabadlábra', 'kiengedt', 'elengedt', 'szabadon engedt', 'szabadult',
+  'megszüntették az eljárást', 'ejtette a vádat', 'felmentették',
+  // Entitás-jelző: egy Megafon-hoz köthető személyt érintő cikk gyakran nem
+  // tartalmaz önmagában letartóztatás-szót a címben/kivonatban — a "megafon"
+  // szó önmagában is elég ok az LLM-ellenőrzésre.
+  'megafon',
 ];
 
 /**
@@ -117,7 +127,15 @@ export const detectVerdicts = inngest.createFunction(
             continue;
           }
 
-          if (await isDuplicate(db, { table: 'CourtVerdict', nameColumn: 'personName' }, result.personName)) {
+          // CourtVerdict rows track a case's real lifecycle (letartóztatás →
+          // szabadlábra helyezve → jogerős ítélet, etc.), unlike a
+          // resignation or media closure, which are one-shot events. So a
+          // matching existing row is only a TRUE duplicate if it already has
+          // the SAME verdictType — a different verdictType means a real
+          // status change that must UPDATE the existing row, not silently
+          // discard the development the way isDuplicate() used to.
+          const existingVerdict = await findExistingVerdict(db, result.personName);
+          if (existingVerdict && existingVerdict.verdictType === result.verdictType) {
             await markChecked(db, {
               articleId: article.id,
               detectorType: DETECTOR_TYPE,
@@ -130,7 +148,7 @@ export const detectVerdicts = inngest.createFunction(
           }
 
           // A public entry MUST always be traceable to a source article —
-          // never publish an unsourced claim.
+          // never publish/update from an unsourced claim.
           if (!article.sourceUrl) {
             await markChecked(db, {
               articleId: article.id,
@@ -152,24 +170,41 @@ export const detectVerdicts = inngest.createFunction(
             verdictDate = fallbackDate;
           }
 
-          await db.insert(schema.courtVerdicts).values({
-            personName: result.personName.slice(0, 200),
-            position: result.position.slice(0, 200),
-            crimes: result.crimes.map((c) => c.slice(0, 200)),
-            sentenceYears: result.sentenceYears ?? 0,
-            sentenceMonths: result.sentenceMonths ?? null,
-            sentenceLabel: (result.sentenceLabel ?? '').slice(0, 200),
-            verdictType: result.verdictType,
-            verdictDate,
-            court: (result.court || 'Ismeretlen bíróság').slice(0, 200),
-            summary: result.summary.slice(0, 1000),
-            description: result.description ? result.description.slice(0, 200) : null,
-            sourceUrls: [article.sourceUrl],
-            sourceNames: article.sourceName ? [article.sourceName] : [],
-            sourceHeadlines: article.headline ? [article.headline.slice(0, 500)] : [],
-            sourceDates: [todayIso],
-            reviewStatus,
-          });
+          if (existingVerdict) {
+            await db.update(schema.courtVerdicts).set({
+              verdictType: result.verdictType,
+              sentenceYears: result.sentenceYears ?? 0,
+              sentenceMonths: result.sentenceMonths ?? null,
+              sentenceLabel: (result.sentenceLabel ?? '').slice(0, 200),
+              verdictDate,
+              summary: result.summary.slice(0, 1000),
+              description: result.description ? result.description.slice(0, 200) : null,
+              sourceUrls: sql`array_append("sourceUrls", ${article.sourceUrl})`,
+              sourceNames: sql`array_append("sourceNames", ${article.sourceName ?? ''})`,
+              sourceHeadlines: sql`array_append("sourceHeadlines", ${article.headline.slice(0, 500)})`,
+              sourceDates: sql`array_append("sourceDates", ${todayIso})`,
+              updatedAt: new Date(),
+            }).where(eq(schema.courtVerdicts.id, existingVerdict.id));
+          } else {
+            await db.insert(schema.courtVerdicts).values({
+              personName: result.personName.slice(0, 200),
+              position: result.position.slice(0, 200),
+              crimes: result.crimes.map((c) => c.slice(0, 200)),
+              sentenceYears: result.sentenceYears ?? 0,
+              sentenceMonths: result.sentenceMonths ?? null,
+              sentenceLabel: (result.sentenceLabel ?? '').slice(0, 200),
+              verdictType: result.verdictType,
+              verdictDate,
+              court: (result.court || 'Ismeretlen bíróság').slice(0, 200),
+              summary: result.summary.slice(0, 1000),
+              description: result.description ? result.description.slice(0, 200) : null,
+              sourceUrls: [article.sourceUrl],
+              sourceNames: article.sourceName ? [article.sourceName] : [],
+              sourceHeadlines: article.headline ? [article.headline.slice(0, 500)] : [],
+              sourceDates: [todayIso],
+              reviewStatus,
+            });
+          }
 
           // Egy detektált ítélet/előzetes börtönhöz kötődő esemény → breaking-jelölt,
           // így megjelenik a breaking csíkban és az érintett doboz/végoldal breaking blokkjában.

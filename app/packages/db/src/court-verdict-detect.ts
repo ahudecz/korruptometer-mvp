@@ -12,7 +12,7 @@ export type VerdictExtraction = {
   sentenceYears: number;
   sentenceMonths: number | null;
   sentenceLabel: string;
-  verdictType: 'előzetesben' | 'elsőfokú' | 'jogerős' | 'vádemelés' | 'egyéb';
+  verdictType: 'előzetesben' | 'elsőfokú' | 'jogerős' | 'vádemelés' | 'szabadlábra helyezve' | 'eljárás megszűnt' | 'felmentve' | 'egyéb';
   verdictDate: string;
   court: string;
   summary: string;
@@ -58,8 +58,8 @@ const TOOL: LlmToolSpec = {
       },
       verdictType: {
         type: 'string',
-        enum: ['előzetesben', 'elsőfokú', 'jogerős', 'vádemelés', 'egyéb'],
-        description: 'előzetesben = pretrial detention ordered; elsőfokú = first-degree verdict; jogerős = final/binding verdict; vádemelés = indictment filed; egyéb = other.',
+        enum: ['előzetesben', 'elsőfokú', 'jogerős', 'vádemelés', 'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve', 'egyéb'],
+        description: 'előzetesben = held in custody/pretrial detention; elsőfokú = first-degree verdict; jogerős = final/binding verdict; vádemelés = indictment filed; szabadlábra helyezve = released from custody/detention (article reports the person was let go — this is itself a reportable status change, not "nothing happened"); eljárás megszűnt = proceedings terminated/dropped; felmentve = acquitted; egyéb = other.',
       },
       verdictDate: {
         type: 'string',
@@ -122,8 +122,17 @@ jogi fellépések nyomon követése is, nem csak a korrupciós elszámoltatásé
 Példa: egy állami propagandaoldal munkatársát letartóztatják, mert kritikus
 posztot írt a kormányfő nyilatkozatára reagálva — ez jelölendő.
 
+FONTOS — a szabadon engedés/kiengedés is önálló, jelölendő esemény: ha egy
+korábban letartóztatott/őrizetbe vett/előzetesben lévő személyt szabadlábra
+helyeznek, elengednek a rendőrségről, vagy megszüntetik/ejtik ellene az
+eljárást, ez ÖNMAGÁBAN is isVerdict=true, verdictType='szabadlábra helyezve'
+(vagy 'eljárás megszűnt'/'felmentve') — NEM "nem történt semmi". Ez egy
+állapotváltozás, amit a korábbi letartóztatás-bejegyzés frissítéséhez
+használunk.
+
 Csak akkor jelöld isVerdict=true-val, ha:
-- Egyértelmű, hogy bírósági döntés, előzetes letartóztatás, vagy formális vádemelés történt
+- Egyértelmű, hogy bírósági döntés, előzetes letartóztatás, szabadon
+  engedés/az eljárás megszüntetése, vagy formális vádemelés történt
 - Magyar ügyre vonatkozik
 - Az érintett politikailag kötött személy, VAGY egy politikai/közpénzes
   korrupciós ügy gyanúsítottja/vádlottja (akkor is, ha nem politikus), VAGY

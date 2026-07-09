@@ -67,3 +67,36 @@ export async function isDuplicate(
   `)) as unknown as { length: number };
   return rows.length > 0;
 }
+
+export type ExistingVerdict = { id: string; verdictType: string };
+
+/**
+ * Finds the most recent CourtVerdict row for a person within the dedup
+ * window, if any — so a legal case can be tracked through its real-world
+ * status changes (letartóztatás → szabadlábra helyezve → jogerős ítélet
+ * etc.) instead of every follow-up article being silently swallowed by
+ * isDuplicate(). A court case is fundamentally not a one-shot event the way
+ * a resignation or media closure is; it has a lifecycle, and a status
+ * change is itself news, not noise.
+ *
+ * Callers should compare the returned `verdictType` against the newly
+ * extracted one: same type → genuinely the same event re-reported (still a
+ * true duplicate, discard); different type → a real status change (UPDATE
+ * the existing row instead of inserting a new one or discarding).
+ */
+export async function findExistingVerdict(
+  db: Executable,
+  personName: string,
+  withinDays: number = DEDUP_WINDOW_DAYS,
+): Promise<ExistingVerdict | null> {
+  const key = normalizeName(personName);
+  if (!key) return null;
+  const rows = (await db.execute(sql`
+    SELECT id, "verdictType" FROM "CourtVerdict"
+    WHERE trim(regexp_replace(lower(unaccent(trim("personName"))), '[^a-z0-9]+', ' ', 'g')) = ${key}
+      AND "createdAt" >= now() - make_interval(days => ${withinDays})
+    ORDER BY "verdictDate" DESC
+    LIMIT 1
+  `)) as unknown as ExistingVerdict[];
+  return rows[0] ?? null;
+}
