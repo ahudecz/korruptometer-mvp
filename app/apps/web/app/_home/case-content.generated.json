@@ -3224,11 +3224,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Az Autóipari Próbapálya Zala Kft. körül korrupciós gyanú merül fel, amely Palkovics László felelős személyhez köthető. Az ügyet a sajtó szerint körülbelül 22 milliárd forint közpénz-érintettség jellemzi. A gyanú szerint az ügy a közalapítványba kiszervezett állami vagyon visszavételéhez és az Orbán-kormány által biztosított jogi eszközökhöz kapcsolódik."
+    "content": "Az Autóipari Próbapálya Zala korrupciós ügy Palkovics László felelősségét érinti a Zalazone tesztpályát működtető cég körül. A sajtó szerint a közpénz-érintettség megközelítőleg 22 milliárd forintot tesz ki. Az ügy nyitott státuszban van, és a K-Monitor becslése alapján értékelik a közpénz-érintettség nagyságát."
    },
    {
     "type": "text",
-    "content": "Az eljárás jelenleg aktív, az ügyészség és a bírósági folyamatok még folyamatban vannak. Az ügyben vádat emeltek Palkovics bizalmasa ellen is, amely az ügy összetettségét és az állított jogsértések körét mutatja. A nyomozás továbbra is egy nyitott ügyként kezelt eset."
+    "content": "A sajtójelentések szerint az ügy a Széchenyi Egyetemből egy másik alapítványhoz kerülő, több tízmilliárd forint értékű vagyontartalmú cég körül koncentrálódik. 2025 májusában az Autóipari Próbapálya Zala Kft. egy vagyonkezelő alapítványba kerülhetett, ahol az állam csatlakozó alapítóként vesz részt. Ezt követően 2025 júniusában a parlament elfogadott egy olyan törvényt, amely lehetővé tette az Autóipari Próbapálya Zala Kft. kiszervezett közvagyonának visszavételét a közalapítványba."
+   },
+   {
+    "type": "text",
+    "content": "2026 júniusában a magyar kormány benyújtott egy törvénycsomagot az uniós források hazahozatala céljából, amely között szerepel a közfeladatot ellátó közérdekű vagyonkezelő alapítványok felszámolása. Az Autóipari Próbapálya Zala alapítványa szintén érintett volt ebben a folyamatban, amely augusztus 31-i határidővel zárult."
+   },
+   {
+    "type": "article-card",
+    "source": "Telex",
+    "headline": "Most szavazta meg a parlament azt, hogy hogyan lehet visszavenni a közalapítványba kiszervezett állami vagyont",
+    "date": "2025-06-11",
+    "url": "https://telex.hu/belfold/2025/06/11/zalazone-onvezeto-tesztpalya-szechenyi-istvan-egyetemert-alapitvany-alapitvany",
+    "lead": "Elfogadták azt a törvényt, amivel a Széchenyi Egyetemtől egy másik alapítványhoz kerülhet a a Zalazone tesztpályával rendelkező, sok tízmilliárd forint értékű cég."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -3237,19 +3249,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "# Euronews felvásárlás közpénz-ügy"
+    "content": "Az Euronews felvásárlás közpénz-ügyében Balásy Gyula vezetésével működő cégcsoportot több sajtócikk alapján szoros állami közpénz-kapcsolatok fűzik össze. A K-Monitor becslése szerint az ügy során mintegy 17 milliárd forint közpénz volt érintett, bár ezt jogilag még nem bizonyította sem bírósági ítélet, sem ügyészségi vádirat. Az ügy a nyitott ügyek közé tartozik, feldolgozása nem lezárult."
    },
    {
     "type": "text",
-    "content": "A sajtó szerint Balásy Gyula szerepe az Euronews felvásárlásában közpénz-érintettséget vet fel. Az ügyet az European Future Media Investment Fund érintett intézményként dokumentálták. A sajtó által becsült közpénz-érintettség körülbelül 17 milliárd forint."
+    "content": "A sajtóban szereplő információk szerint több állami szerv is szerződött a Balásy-féle cégcsoporttal. Egy 2023-as közbeszerzésből, amelyet a Nemzeti Kommunikációs Hivatal írta ki, a lombikszektort reklámozó cégek mintegy 211 millió forint keretösszegből 86,5 millió forintot használtak fel. Egy másik csatornán a Kulturális és Innovációs Minisztérium játékmotorokat szerzett be, amelyekért a sajtó szerint jelentősen magasabb árat fizetett, mint a piaci átlag. 2026 júniusában az állami rendezvényügynökség azonnali hatállyal mondott fel szerződéseket a Balásy-féle Lounge-cégeknek."
    },
    {
     "type": "text",
-    "content": "Az ügy jelenleg nyitott státuszban van. Az üggyel foglalkozó sajtójelentések száma 2, mely azt jelzi, hogy az esetre többszöri médiai figyelem irányult. Balásy Gyulával kapcsolatban korábban egy besorolatlan ügy is dokumentálva lett."
+    "content": "A cégcsoport több sajtójelentés szerint nehéz helyzetbe került, a felszámolás lehetősége merült fel. Az üggyel kapcsolatban kevés az újabb információ, és jogilag bizonyított következtetések még nem születtek."
    },
    {
-    "type": "text",
-    "content": "Az Euronews-tranzakcióval összefüggő közpénz-felhasználást érintő kérdések továbbra is vizsgálat alatt állnak. A nyitott státusz azt tükrözi, hogy az ügy lezárása még nem történt meg."
+    "type": "article-card",
+    "source": "Index",
+    "headline": "Azonnali hatállyal felmondta a Balásy-féle Lounge-cégek szerződéseit az állami rendezvényügynökség",
+    "date": "2026-06-24",
+    "url": "https://index.hu/belfold/2026/06/24/balasy-gyula-lounge-szerzodes-allam-felmondas-belugyminiszterium-kormany-magyar-peter-tisza",
+    "lead": "Azonnali hatállyal felmondta a Balásy-féle Lounge-cégek szerződéseit az állami rendezvényügynökség - A közpénzek védelmére hivatkozva szakította meg a kapcsolatot a bajba jutott cégcsoporttal."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -3283,15 +3299,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Gattyán György és a Nemzeti Adó- és Vámhivatal (NAV) között korrupciós gyanú merült fel. Az üggyel kapcsolatban az ügyészség nyilatkozott, valamint feljelentés is érkezett. A sajtó szerint az ügy során körülbelül 19 milliárd forint közpénz-érintettség dokumentálódott."
+    "content": "Gattyán György elleni adóügye a Nemzeti Adó- és Vámhivatal (NAV) nyomozása során került nyilvánosságra. Az ügy kapcsán a sajtó szerint 19 milliárd forint közpénz-érintettség merült fel. A NAV volt nyomozója, Tiszolczi Lajos a 444.hu és a 24.hu cikkei szerint nyilvánosságra hozta, hogy Rogán Antal, Orbán Ráhel és Tiborcz István állhattak a nyomozás szüneteltetése mögött. A volt nyomozó 2024-ben kezdett nyilvánosságra kerülni az üggyel kapcsolatos információkkal, majd később neveket is említett."
    },
    {
     "type": "text",
-    "content": "Az ügy vizsgálata jelenleg is folyamatban van. Az üggyel foglalkozó sajtóbeszámolók alapján az Nemzeti Adó- és Vámhivatal szerepet játszik az ügyben, azonban a folyamatban lévő státusz azt jelenti, hogy a vizsgálat még nem zárult le."
+    "content": "A Megoldás Mozgalom pénzügyi helyzete szintén Gattyán György hozzájárulásához köthető. A HVG 2025 júniusi cikke szerint a párt beszámolójából kiderült, hogy szinte kizárólag alapítójának pénzeiből működik, miközben papíron nyereséges maradt, de valójában több mint félmilliárd forintot bukott."
    },
    {
     "type": "text",
-    "content": "A nyilvánosság számára jelenleg az elérhető két sajtóközlemény ad információt az ügy részleteiről, amely továbbra is nyitott kérdéseket hagy az ügyet követő szakemberek számára."
+    "content": "A NAV intézményt érintő további vizsgálatok is folyamatban vannak. A 444.hu beszámolt arról, hogy a MOL és az Új Európa Alapítvány közötti egyes kifizetések miatt költségvetési csalás gyanújával nyomozást rendeltek el. A februári feljelentést a NAV az év végi választások előtt elutasította, azonban az ügyészség a feljelentő panaszát jóváhagyta, így az eljárás újraindult."
+   },
+   {
+    "type": "article-card",
+    "source": "444.hu",
+    "headline": "A NAV volt nyomozója szerint Rogán Antal, Orbán Ráhel és Tiborcz István intézte el, hogy ejtsék Gattyán György adócsalásos ügyét",
+    "date": "2026-05-15",
+    "url": "https://444.hu/2026/05/15/a-nav-volt-nyomozoja-szerint-rogan-antal-orban-rahel-es-tiborcz-istvan-intezte-el-hogy-ejtsek-gattyan-gyorgy-adocsalasos-ugyet",
+    "lead": "Tiszolczi Lajos beszélt ellenzéki szereplők állítólagos titkosszolgálati lehallgatásáról is."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -3342,25 +3366,26 @@
   "blocks": [
    {
     "type": "text",
-    "content": "A Magyar Vagon Zrt.-t 2022-ben kapta meg Hernádi Zsolt, a MOL Nyrt. vezérigazgatója a Honvédelmi Minisztériumtól. A cégcsoportból ezt követően a NER-elit közel 10 milliárd forintot vett ki, majd a vállalkozás összeomlott."
+    "content": "A Hernádi Magyar Vagon ügy a K-Monitor becslése szerint 40 milliárd forint közpénz-érintettséggel dokumentált nyitott ügy. Az ügyben Hernádi Zsolt szerepel felelős személyként, a Dunakeszi Járműjavító Kft. pedig érintett intézményként. A sajtójelentések szerint a cégcsoportból 2022 óta tízmilliárd forint osztalékot vontak ki magántőkealapok mögé rejtőző tulajdonosok."
    },
    {
     "type": "text",
-    "content": "Az állam legalább 20–40 milliárd forint közpénzzel mentette meg a csődközeli vagongyártót: a MÁV megvásárolta a Magyar Vagon csoport romjait. A mentőakció nyomán a közpénz fedezi azt a veszteséget, amelyet a profitként kivett összeg okozott."
+    "content": "Az ügy történetének szerint a kormány a Magyar Vagon-csoport bedőlt cégei megmentésére nyúlt közpénzhez. A sajtó beszámolói szerint a MÁV megvásárolta a dunakeszi járműjavítót, valamint több mint kétszer annyi közpénzzel igyekeztek stabilizálni a válságba került vállalatokat, mint amennyi profitot korábban kivontak a csoportból. A sajtó által közölt szám szerint az érintett közpénz meghaladja a 40 milliárd forintot."
    },
    {
     "type": "text",
-    "content": "Az eset a NER jellemző mintája: politikailag kapcsolt szereplő jut hozzá állami vagyonelemhez, abból nyereséget realizál, majd az összeomlott céget az állam közpénzből veszi vissza és újra finanszírozza."
+    "content": "Az ügy jelenleg nyitott státuszban van. A sajtóban megjelent cikkek szerint a pénzügyi folyamatok és az ezzel kapcsolatos döntési mechanizmusok közpénzfelhasználásának kérdéseit veszik górcső alá. Az ügy jogászi feldolgozottsága az adott dokumentumok alapján nem ismert."
    },
    {
     "type": "article-card",
     "source": "HVG",
-    "headline": "40 milliárd forint közpénzbe kerül, hogy a kormány megmenti a Magyar Vagont",
-    "date": "2025-08-11",
-    "url": "https://hvg.hu/gazdasag/20250811_40-milliard-forint-kozpenz-magyar-vagon-megmentes"
+    "headline": "Azonnal meglódult a nyereség, amint Hernádi Zsolté lett a Magyar Vagon",
+    "date": "2026-03-25",
+    "url": "https://hvg.hu/kkv/20260325_magyar-vagon-hernadi-zsolt-mav-nyereseg#mn7zdtku55je8q819z3",
+    "lead": "A cechet az adófizetők állhatják."
    }
   ],
-  "attribution": "Forrás: 444.hu, hvg.hu, Forbes.hu (2025–2026)"
+  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
  },
  "kazari-bolcsode-ugy": {
   "blocks": [
@@ -3383,15 +3408,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Lázár János közlekedési minisztériumi tevékenységét korrupciós gyanú övezi. A K-Monitor civil szervezet vizsgálatai szerint a minisztérium vezetése alatt mintegy 7 milliárd forint közpénz-érintettség azonosítható volt különböző kiadási tételek kapcsán. Az ügy nyitott, jogerős ítélet vagy véglegesen lezárt vizsgálat nem rendelkezésre áll."
+    "content": "Lázár János közlekedési kiadásait vizsgáló ügy az egyre táguló korrupciós ügyek közé tartozik, amelyekben a Közlekedési Minisztérium által kezeltek közpénzekkel való gazdálkodás kerül előtérbe. A K-Monitor becslése szerint a sajtójelentések alapján körülbelül 7 milliárd forint közpénz-érintettség merült fel az üggyel kapcsolatban. Az ügy jelenleg nyitott státuszban van, további vizsgálatokra vár."
    },
    {
     "type": "text",
-    "content": "A gyanú szerint a közpénz-érintettség több területet érint: kastelyok felújítása, MÁV-ügyletek, illetve egyéb közlekedési minisztériumi kiadások. A sajtójelentések szerint ezekben az ügyletekben gyanús pénzmozgások azonosítottak. Az eset a civil társadalom és a nyomozó hatóságok figyelme alatt maradt."
+    "content": "A sajtójelentések szerint nagyobb összegű közpénzáramlásokra kerül sor. A sajtó relációjában egy 451 milliárdos beruházás kapcsán a NER-közelségű vállalkozások jelentős előlegezéseket kaptak. Lázár János személyessége mellett az alapítványok és közérdekű vagyonkezelő szervezetek működésének szabályozása is az ügyet érinti, különösen a kormányzat által javasolt módosítások kapcsán, amelyek ezek felszámolását célozták."
    },
    {
     "type": "text",
-    "content": "Az ügy jelenleg nyitott státuszban van. A többszörös sajtómegjelenés ellenére a vizsgálatok még nem vezettek jogilag megállapított okozati kapcsolat vagy büntetőjogi felelősségre vonáshoz. Az ügy továbbra is a közérdeklődés és a rendszeres civil monitoring tárgya."
+    "content": "Az ügy kutatása során nyilvánosságra kerültek az elektronikus építéshatósági rendszer titkosítási kérdései is. Az ügyet politikai szemszögből is megvitatják, a vagyonvisszaszerzési hivatal lehetséges szerepe kapcsán pedig szélesebb körű vizsgálatok kerülhetnének napvilágra. A sajtó számos összefüggésre világít rá, ugyanakkor jogerős bírósági vagy ügyészségi megállapítások még nem érhetőek el az ügyről."
+   },
+   {
+    "type": "article-card",
+    "source": "444.hu",
+    "headline": "Mészáros Lőrinctől Rogánon át Lázár Jánosig: kiket és miket vizsgálhat a Vagyonvisszaszerzési Hivatal?",
+    "date": "2026-06-24",
+    "url": "https://444.hu/2026/06/24/meszaros-lorinctol-roganon-at-lazar-janosig-kiket-es-miket-vizsgalhat-a-vagyonvisszaszerzesi-hivatal",
+    "lead": "Magyar Péter hónapok óta emlegeti a vagyonvisszaszerzési hivatalt, amely a NER kegyeltjeinek vagyonosodását is vizsgálná. Összegyűjtöttük, ki érezheti magát ez alapján veszélyben."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -3400,15 +3433,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Mészáros Lőrinc és családi cégeinek köre több nagyértékű közbeszerzési szerződést nyert állami projektekre. A Fejér B.Á.L. Építő és Szolgáltató Zrt. mint érintett cég szerint a sajtó szerint körülbelül 25 milliárd forint közpénz-érintettséggel rendelkező szerződések były kapcsolódnak az esethez."
+    "content": "A Fejér B.Á.L. Építő és Szolgáltató Zrt. ügye Mészáros Lőrincet érinti, és a sajtó szerint körülbelül 25 milliárd forint közpénz áramlott az érintett szervezethez. Az ügy jelenleg nyitott státuszban van. A sajtójelentések szerint a vállalatot állami vasúti beruházások keretében többek között informatikai fejlesztési feladatokra szerződtették, miközben alvállalkozók szerint jelentős összegek ki nem fizetéséről panaszkodtak."
    },
    {
     "type": "text",
-    "content": "A közterületi felvetések szerint az ügy jellegzetessége az átláthatatlan üzleti szerkezetezés, az összefonódott érdekek és a szoros kormányi kapcsolatok, amelyek során jelentős közpénz-összegek kerültek a család cégeihez. Az üggyel foglalkozó sajtójelentések az állami projektek megítélésének transzparenciáját és a konkurencia-feltételeket állítják kérdésbe."
+    "content": "Az ügyre vonatkozó sajtócikkek azt tartalmazzák, hogy a vállalat vezetése és a Mészáros-familia tagjai jelentős osztalékfizetéseket realizáltak a cégből. Sajtójelentések szerint több milliárd forint osztalék került kifizetésre, beleértve rendezvényszervezési cégek részét is. Mészáros Lőrinc öccse, Mészáros János szintén részesült osztalékban, csakúgy mint más családtagok."
    },
    {
     "type": "text",
-    "content": "Az ügy jelenleg nyitott státuszban van, és hét sajtócikk dokumentálja a témát. Az ügynek jogi lezárása, vagy annak eredménye még nem ismert a közölt adatok alapján."
+    "content": "Sajtójelentések szerint a Vagyonvisszaszerzési Hivatal potenciálisan vizsgálhatja az ügyet a közpénzekből való vagyonosodás tekintetében. Az ügy több sajtóorgánum által követett és dokumentált, azonban jogilag még nem zárult le eljárás."
+   },
+   {
+    "type": "article-card",
+    "source": "HVG",
+    "headline": "Hiába a ki nem fizetett alvállalkozókról szóló hírek, 3 milliárdos osztalékot vesznek ki Mészárosék a vasútépítő cégükből",
+    "date": "2026-06-02",
+    "url": "https://hvg.hu/kkv/20260602_r-kord-nyereseg-osztalek-milliard-meszaros-lorinc",
+    "lead": "Korábban több alvállalkozó is arról beszélt: a cég jelentős összegekkel tartozik nekik állami vasúti beruházásokon elvégzett munkák után, miközben a vállalat egy vitatott vasúti informatikai fejlesztés miatt is vizsgálatok kereszttüzébe került."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -3417,15 +3458,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Mészáros Lőrinc cégeként tárgyalt Elsewedy Electric Co S.A.E. a sajtójelentések szerint potenciálisan irreguláris körülmények között nyert meg egy mátrai gázerőmű-építési tendert az MVM-hez. Az üggyel kapcsolatban dokumentált közpénz-érintettség a K-Monitor becslése szerint 52 milliárd forint."
+    "content": "A Mészáros Mátrai gázerőmű Elsewedy ügyre vonatkozóan a K-Monitor 52 milliárd forint közpénz-érintettséget becsült. Az ügy Mészáros Lőrincet és az egyiptomi Elsewedy Electric Co S.A.E. céget érinti, és jelenleg nyitott státuszú. A sajtójelentések szerint a vizsgálatot a vagyonvisszaszerzési hivatal is potenciálisan felülvizsgálhatja a közpénz-felhasználás körülményei miatt."
    },
    {
     "type": "text",
-    "content": "Az eljárás állóban van, a sajtóban szereplő gyanú szerint tenderpályázati és versenyjogi szabályok megsértésének lehetőségét vizsgálják. Az ügy az Elsewedy Electric potenciálisan szabálytalan szerződésszerzésével függ össze, amely nagymennyiségű közpénz felhasználásával járt."
+    "content": "Az ügyet övező sajtóvisszhang jellegzetes képet rajzol a közpénz-érintettségről és a különféle üzleti összefonódásokról. A hírek között szerepel, hogy a NER-hez köthető szereplők bankjai és vállalkozásai vizsgálat alatt állhatnak, valamint hogy kapcsolódó projektekben alvállalkozók állnak ki fizetésért, miközben más részből osztalékokat vesznek ki az érintett vállalkozások."
    },
    {
     "type": "text",
-    "content": "Az ügyet három sajtócikk dokumentálja, a státusz nyitott marad."
+    "content": "Az ügy jelenleg nyitott státuszában várható, hogy a kitöltésére vonatkozó vizsgálatok folytatódnak. A sajtó szerint a közpénz-érintettség feltárása és az üzleti kapcsolatok transparenciája fokozódhat a jogszabályi és intézményi feltételek változása révén."
+   },
+   {
+    "type": "article-card",
+    "source": "444.hu",
+    "headline": "Mészáros Lőrinctől Rogánon át Lázár Jánosig: kiket és miket vizsgálhat a Vagyonvisszaszerzési Hivatal?",
+    "date": "2026-06-24",
+    "url": "https://444.hu/2026/06/24/meszaros-lorinctol-roganon-at-lazar-janosig-kiket-es-miket-vizsgalhat-a-vagyonvisszaszerzesi-hivatal",
+    "lead": "Magyar Péter hónapok óta emlegeti a vagyonvisszaszerzési hivatalt, amely a NER kegyeltjeinek vagyonosodását is vizsgálná. Összegyűjtöttük, ki érezheti magát ez alapján veszélyben."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -3451,19 +3500,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "# Quaestor-Dalkot adatbiztonsági ügyelete"
+    "content": "A Quaestor-Dalkot adatbiztonsági ügy Tarsoly Csaba Dalkot Kft.-vel kapcsolatos ügyét érinti. Az üggyel kapcsolatban dokumentált közpénz-érintettség becslése 250 milliárd forint. Az ügy jelenleg nyitott státuszban van."
    },
    {
     "type": "text",
-    "content": "Az ügyeletre Tarsoly Csaba köréhez kapcsolódó közpénz-érintettség miatt kerül sor. Az Dalkot Kft. érintett szervezetként szerepel az esetben, amely során a sajtó szerint körülbelül 250 milliárd forint közpénz volt érintett. Az ügy még nyitott státuszban van, és egy dokumentált cikk foglalkozik az ügyelete körülményeivel."
+    "content": "Tarsoly Csabát első fokon 13 évre ítélték bűnszervezetben elkövetett csalás, sikkasztás és közokirat-hamisítás miatt. A sajtójelentések szerint a vádlottak között összesen közel 60 év börtön és 247 millió forintnyi bűnügyi költség szerepel. Az ügyészség azonban további, súlyosabb büntetéseket sérelmez, nem tartva megfelelőnek az első fokon kiszabott büntetéseket."
    },
    {
     "type": "text",
-    "content": "Az adatbiztonsági kérdések központi szerepet játszanak az ügy megítélésében. A közpénz-érintettség mértéke a K-Monitor szervezet becslésén alapul, amely közvetlenül kapcsolódik a szóban forgó szerződések és közpénz-áramlások értékeléséhez."
+    "content": "A sajtó szerint a Quaestor-vállalatok több tízezer irata illetéktelen kezekbe kerülhetett az adatbiztonsági probléma során. A felszámolási eljárás során a kisbefektetőknek okozott kár feldolgozása folyamatban van. Az ügy jelenleg a bíróságon halad, és az ítélkezési eljárás előrehaladottabb szakaszához közelít."
    },
    {
-    "type": "text",
-    "content": "Az eset jelenleg nyitott státuszban folyamatban van, és a továbbiakban további vizsgálatok vagy bírósági eljárások lehetségesek. Az ügyhez kapcsolódó részletesebb információk az alapító adatok és az elérhető sajtóanyag alapján érhetők el."
+    "type": "article-card",
+    "source": "Index",
+    "headline": "Újra bíróságon a Quaestor-ügy, ekkor veheti kezdetét a tárgyalás",
+    "date": "2026-03-25",
+    "url": "https://index.hu/belfold/2026/03/25/fovarosi-itelotabla-mediaklub-ribai-csilla-ujvari-akos-quaestor-per",
+    "lead": "Újra bíróságon a Quaestor-ügy, ekkor veheti kezdetét a tárgyalás - Az is kiderült, melyik a legforgalmasabb ítélőtábla Magyarországon."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -3472,23 +3525,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Rákay Philip ellen korrupciógyanú merült fel a Nemzeti Filmintézetnél, a Petőfi-film díszletvároshoz köthető szerződések kezelése kapcsán. Az ügy középpontjában a becsült 7 milliárd forint értékű költségvetési túlkezelés áll, amely a projektre vonatkozó rejtett árazás és átlátatlansági vádakhoz köthető."
+    "content": "A Rákay Philip által rendezett Petőfi-film, a \"Most vagy soha!\" production során a Nemzeti Filmintézethez köthető közpénz-érintettség a sajtó szerint mintegy 7 milliárd forintra becsülhető. Az ügy központjában a filmhez felépített díszletváros áll, melynek költségvetési túlkezelése miatt több sajtóorgánum is vizsgálódott. A K-Monitor becslése alapján ezt az összeget érinti az ügy közpénz-perspektívájából."
    },
    {
     "type": "text",
-    "content": "A gyanú szerint az ügy az ún. fóti bérleti szerződésekhez kapcsolódik, amelyek kezelésében anomáliákat észleltek. Az intézmény szerződéskötésében tapasztalt visszásságok miatt nyomozás indult az ügyben. Az eset a közfinanciális recursos felhasználásának ellenőrzésére és az intézmény működésének átláthatóságára irányította a figyelmet."
+    "content": "A sajtóban megjelent cikkek szerint az üggyel kapcsolatos szerződések kezelésében átláthatóságbeli problémák merültek fel. Az Átlátszó által közölt információk alapján a Filmintézet által benyújtott szerződéslistáról több adat (pénzösszegek, bérlők nevei) ki volt takarva, amely miatt a szerkesztőség azt közölte, hogy jogi útra tereli az ügyet. A HVG360 újraszámításai szerint a díszletvárosi projekt költségvetésénél később nagyobb összegek váltak ismertté."
    },
    {
     "type": "text",
-    "content": "Az ügy jelenleg nyitott státuszban van, ami azt jelenti, hogy a vizsgálat még nem zárult le. A sajtóban négy cikk jelent meg az üggyel kapcsolatban, amely szélesebb közfigyelmé tette az esetet."
+    "content": "Az ügy nyitott státuszú, és a sajtóban szereplő információk mellett további közpénzügyi kapcsolatok is napvilágra kerültek. A megadott adatok alapján azonban a konkrét jogerős bírósági ítéletről vagy jogerős kárösszegről nincsenek elérhető információk."
    },
    {
     "type": "article-card",
     "source": "Átlátszó",
-    "date": "2025-06-06",
-    "url": "https://atlatszo.hu/kozpenz/2025/06/06/perre-megyunk-a-petofi-film-milliardos-diszleterol-kotott-szerzodesek-ugyeben",
-    "lead": "A Filmintézet korábban olyan szerződéslistát mutatott be a több milliárdból épült díszletvárosról, ahol ki voltak takarva a pénzösszegek és a bérlők nevei.",
-    "headline": "Perre megyünk a Petőfi-film milliárdos díszletéről kötött szerződések ügyében"
+    "headline": "Így fest most a Rákay-féle Petőfi-film milliárdokból felépített díszletvárosa",
+    "date": "2025-04-03",
+    "url": "https://atlatszo.hu/orszagszerte/2025/04/03/igy-fest-most-a-rakay-fele-petofi-film-milliardokbol-felepitett-diszletvarosa/",
+    "lead": "Drónfelvételen látható a Most vagy soha! díszletvárosa, ami Rákay Philip szerint hamar visszahozza majd minden idők legdrágább magyar filmjének árát."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -3497,15 +3550,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Lázár János magyar állami tisztségviselő ellen korrupciós gyanú merül fel a Rákosrendezői beruházás ügyében. Az ügyet a Magyar Államkincstár (MÁK) intézmény érintettségével dokumentálták, és a közpénz-érintettség a sajtó szerint megközelítőleg 8 milliárd forint."
+    "content": "A Rákosrendezői beruházás MÁK ügyéről szóló sajtójelentések szerint körülbelül 8 milliárd forint közpénz-érintettség áll fenn. Az ügy Lázár János volt kormányzati szereplőhöz kötődik, és a Magyar Államkincstár (MÁK) intézményt érinti. Az eset nyitott státuszú, jelenleg vizsgálat tárgya lehet."
    },
    {
     "type": "text",
-    "content": "Az ügy bonyolultságát az állam által előírt feltételek és az Emírségek jóváhagyásának szükségessége tovább növeli. Budapest polgármestere tárgyalásra hívta fel az érintett személyt az üggyel kapcsolatban. A sajtó szerint legalább 2 cikk foglalkozik az esettel."
+    "content": "A sajtó közleményei alapján az ügy a szélesebb vagyonkezelési kérdésekhez kapcsolódhat, amelyek az Orbán-kormányzat alatt állami alapítványokat és közérdekű vagyonkezelő szervezeteket érintettek. A Vagyonvisszaszerzési Hivatal potenciális szerepével kapcsolatos sajtóbeszerzések között szerepel Lázár János is, aki több kormányzati tisztséget töltött be."
    },
    {
     "type": "text",
-    "content": "Az ügy jelenleg nyitott státuszban van, nem zárult le véglegesen. A vizsgálatokat és értékeléseket az üggyel foglalkozó szervek folytatják, ugyanakkor jogerős bírósági ítélet vagy végleges megállapítás az ügyről még nem érkezett."
+    "content": "A rendelkezésre álló sajtójelentések korlátozott részleteket tartalmaznak az ügy konkrét körülményeiről. Az ártatlanság velmét tiszteletben tartva megjegyzhető, hogy az ügyet nyilvánosságra hozó sajtó információi alapján továbbra is nyomozás vagy vizsgálat tárgyát képezheti az eset, annak jogi lezárása azonban a közöltek alapján még nem történt meg."
+   },
+   {
+    "type": "article-card",
+    "source": "444.hu",
+    "headline": "\"A lényegi döntést, utasításokat hozó személyek a következők: Dr. Orbán Viktor volt miniszterelnök\"",
+    "date": "2026-06-25",
+    "url": "https://444.hu/2026/06/25/a-lenyegi-dontest-utasitasokat-hozo-szemelyek-a-kovetkezok-dr-orban-viktor-volt-miniszterelnok",
+    "lead": "Lapunk birtokába jutott egy fotó egy állítólagos ügyészségi dokumentumról. Felsorolják benne, kiknek a büntetőjogi felelősségét kellene tisztázni az úgynevezett aranykonvoj-ügyben. A nevek között ott van Orbán Viktoré is. Farkas Örs exállamtitkárról és Hajdu János ex-TEK-főigazgatóról azt írják, „gy"
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -3564,15 +3625,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Tiborcz István köréhez tartozó Confector Mérnökiroda Kft. és kapcsolódó magyar cégek gigatendert nyertek egy szlovákiai katonai kórház megépítésére. A sajtó szerint a projektben körülbelül 180 milliárd forint közpénz-érintettség merült fel, bár ennek teljes volumene a sajtóban 180–220 milliárd forintot is érhet."
+    "content": "A Tiborcz István köréhez köthető Confector, a Paár Attila tulajdonában lévő West Hungária Bau (WHB) és a szlovákiai Bekor alkotta konzorcium nyerte el egy eperjesi (Prešov) szlovák katonai kórház megépítésének megbízását. A szerződés értéke mintegy 450 millió euró — kb. 180 milliárd forint —, ami a szlovák állam eredeti költségvetését körülbelül 100 millió euróval haladta meg."
    },
    {
     "type": "text",
-    "content": "Az ügy a kormányhoz közeli cégek szerepvállalása miatt keltett figyelmet. A sajtójelentések szerint korrupciós és versenyeztetési anomáliákat vethet fel az eljárás során. Az ügy az alapján jelezhető kutatások, sajtó-nyomozások tárgya volt, azonban jogerős bírósági ítélet, ügyészségi vádirat vagy hivatalos állami vizsgálat által konkrétan megállapított kár eddig nem ismert."
+    "content": "A WHB a Transparency International Magyarország tender-bajnokai közt szereplő, az Orbán-kormány egyik fő építőipari partnerének számító cég. A Confector korábban a Karmelita kolostor (a Miniszterelnökség székhelye) felújítását is elnyerte, mintegy 14 milliárd forint értékben. Tiborcz István korábban az Elios Zrt.-ben is érdekelt volt, amelyet 2015-ben a WHB vásárolt fel."
    },
    {
     "type": "text",
-    "content": "Az ügy jelenleg nyitottnak számít. A K-Monitor becslése szerint a dokumentált közpénz-érintettség 180 milliárd forintot érhet, azonban az eset körüli tényleges korrupciós vagy törvénysértő elemek tisztázása további vizsgálatot igényel. Az ügyrôl eddig három sajtócikk jelent meg."
+    "content": "Az ügy jelenleg nyitott, jogerős megállapítás vagy hatósági eljárás eredménye egyelőre nem ismert, az érintettek ártatlannak tekintendők."
+   },
+   {
+    "type": "article-card",
+    "source": "mfor.hu",
+    "headline": "Ismert magyar cégek is építhetik a szlovák katonai kórházat",
+    "date": "2025-06-27",
+    "url": "https://mfor.hu/cikkek/vallalatok/ismert-magyar-cegek-is-epithetik-szlovak-katonai-korhaza.html",
+    "lead": "A West Hungária Bau, a Confector és a szlovákiai Bekor alkotta konzorcium nyerte el az eperjesi katonai kórház építését, mintegy 450 millió eurós szerződéssel."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -4147,15 +4216,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Balásy Gyula ügyéhez kapcsolódó sajtóhírek szerint: A NAV támogatásával Balásy Gyula beszállt a reptéri cuccok vámolásába is."
+    "content": "A Balásy reptéri vámolási ügy Balásy Gyula és a Loginvent Zrt. körül összpontosul. A K-Monitor becslése szerint az ügy mintegy 5 milliárd forint közpénz-érintettséggel jár. Az ügy jelenleg nyitott státuszban van."
+   },
+   {
+    "type": "text",
+    "content": "A sajtójelentések szerint Balásy Gyula cégei több állami megrendeléssel kapcsolatos ügybe voltak bevonva. A Nemzeti Kommunikációs Hivatal által kiírt közbeszerzésben 86,5 millió forint értékű hirdetési szolgáltatást nyújtottak, amely a 211 millió forintos keretösszeg része volt. A Kulturális és Innovációs Minisztérium játékmotorokat szerzett be cégeitől, darabonként több mint 15 ezer forintért, amely a szokásos piaci árnak a háromszorosa volt. Ezek a termékeket bölcsödékben használták kampánycélokra."
+   },
+   {
+    "type": "text",
+    "content": "Balásy Gyula cégei közül a Lounge Group likviditási gondokkal nézett szembe, mivel a működési költségek nem voltak finanszírozhatók a számlák zárolása miatt. A sajtó szerint Balásy cégei tavaly mintegy 200 milliárd forint bevételt értek el, azonban ő ezekből az osztalékot nem szándékozott kivenni. A cégek felszámolásával kapcsolatban nyilatkozott, hogy azt reálisnak látja."
    },
    {
     "type": "article-card",
-    "source": "mfor.hu",
-    "date": "2024-09-06",
-    "url": "https://mfor.hu/cikkek/makro/nav-vam-balasy-gyula-repter-kereskedelem-ceg-logisztika-raktar.html",
-    "lead": "Rogán Antal kedvenc plakátosának maglódi csarnokában már megkezdték a beérkező áruk vámkezelését.",
-    "headline": "A NAV támogatásával Balásy Gyula beszállt a reptéri cuccok vámolásába is"
+    "source": "Telex",
+    "headline": "Az államosított lombikbébiszektornak is hirdetéseket gyártottak Balásy Gyula cégei",
+    "date": "2026-06-23",
+    "url": "https://telex.hu/belfold/2026/06/23/balasy-gyula-szezrodes-humanreprodukcios-igazgatosag-lombikszektor",
+    "lead": "86,5 millió forintot használtak fel a 211 millió forintos keretösszegből, hogy hirdessenek valamit, aminek nem is igazán kell reklám. A közbeszerzést a Nemzeti Kommunikációs Hivatal írta ki, az eljárás végén Balásy cége szerződhetett az Országos Kórházi Főigazgatósággal."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -4544,15 +4621,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Balázs Attila ügyéhez kapcsolódó sajtóhírek szerint: Alkut kötne a kavicskirály Zuglóval: ad 1,5 milliárdot, épít egy szakrendelőt, cserébe kér két telket és az önkormányzat."
+    "content": "A Zuglói szakrendelő és telekcsere ügylete Balázs Attila, a NER közeli ingatlanfejlesztő és bányatulajdonos nevéhez köthető. Az ügy középpontjában a ZVK Development Kft. áll, amely Zuglóban több beruházást végzett. A sajtó szerint körülbelül 1 milliárd forint közpénz érintettségéről számol be az ügyet feldolgozó cikkekben."
+   },
+   {
+    "type": "text",
+    "content": "A sajtójelentések szerint Balázs Attila egy nagyobb alkuban érintett lenne, amely a zuglói városközpont fejlesztésével kapcsolatos. Az egyik jelentés szerint a beruházó 1,5 milliárd forint beruházást ígért egy szakrendelő megépítésére, cserébe pedig ingatlanokhoz és egyéb kedvezmények garantálásához kötné ezt. A Bosnyák téri Zenit Corso bevásárlóközpont megnyitása kapcsán a zuglói önkormányzat azonban per indítását helyezte kilátásba, amely a beruházás több aspektusával kapcsolatban merült fel. A sajtó beszámolói szerint az épület működtetésével kapcsolatos engedélyügyek és környezetvédelmi kérdések is viták tárgya voltak."
+   },
+   {
+    "type": "text",
+    "content": "Az ügy jelenlegi státusza nyitott, a sajtóban szereplő információk alapján azonban többféle jogi és engedélyezési kérdés merült fel a beruházások körül."
    },
    {
     "type": "article-card",
-    "source": "Népszava",
-    "date": "2026-01-27",
-    "url": "https://nepszava.hu/3309620_zuglo-ner-beruhazas-ingatlanfejlesztes-balazs-attila-kavicskiraly",
-    "lead": "A XV. kerületi önkormányzat által megkötött, nagy vihart kavart alkuhoz hasonló útra terelné Zuglót Balázs Attila, a NER kedvelt ingatlanfejlesztője és bányatulajdonosa.",
-    "headline": "Alkut kötne a kavicskirály Zuglóval: ad 1,5 milliárdot, épít egy szakrendelőt, cserébe kér két telket és az önkormányzat hallgatását"
+    "source": "HVG360",
+    "headline": "Milliárdosok egymás között: Lakatos Benjámin és Balázs Attila ingatlanos ügylete",
+    "date": "2026-02-27",
+    "url": "https://hvg.hu/360/20260227_lakatos-benjamin-balazs-attila-met-bayer-construct-milliardos-porto-bello-residence",
+    "lead": "A Molban felnőtt Lakatos Benjámin ma már nemcsak a svájci központú MET-csoport első embere, hanem az ingatlanos vállalkozásai mellett egy nemzetközi médiaprojektben is befektető."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -5024,15 +5109,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Gubík László ügyéhez kapcsolódó sajtóhírek szerint: 1,5 milliárd forint jutott tavaly a magyar kormánytól szlovákiai futballklubokra és akadémiákra."
+    "content": "A Bethlen Gábor Alap szlovákiai futball-támogatásait övező ügy Gubík László felelős személyéhez kapcsolódik. Sajtójelentések szerint az alapítványnak a határon túli magyar közösségek támogatásáért felelős Bethlen Gábor Alapon keresztül több szlovákiai futballklub és akadémia részesült magyar állami támogatásban. A dokumentált közpénz-érintettség a sajtóbecslések szerint 5 milliárd forint körül mozog."
+   },
+   {
+    "type": "text",
+    "content": "Az ügy nyitott státusza tükrözi, hogy a sajtó több, potenciális szabálytalanságra utaló körülményt azonosított. A cikkek szerint az alapítvány pénzfelosztási gyakorlatáról felmerültek kérdések, illetve az alapot érintő általánosabb kritikák is ismertté váltak. A sajtójelentések rámutattak arra is, hogy az alapítványnál alacsonyabb összegek esetén elmaradt a részletes elszámolási követelmény."
+   },
+   {
+    "type": "text",
+    "content": "Az eset a magyar közpénzek határon túli felhasználásáról szóló szélesebb társadalmi és politikai vita része. Az ügy jelenleg nyitott, további vizsgálatok vagy jogi eljárások lehetségesek. A sajtó által feltárt körülmények alapján releváns intézmények vizsgálata indokoltak lehetnek."
    },
    {
     "type": "article-card",
     "source": "Magyar Narancs",
+    "headline": "1,5 milliárd forint jutott tavaly a magyar kormánytól szlovákiai futballklubokra és akadémiákra",
     "date": "2024-01-08",
     "url": "https://magyarnarancs.hu/belpol/15-milliard-forint-jutott-tavaly-a-magyar-kormanytol-szlovakiai-futballklubokra-es-akademiakra-264723",
-    "lead": "Több szlovákiai szervezet is kapott magyar állami támogatást a határon túli pénzekért felelős Bethlen Gábor Alapon keresztül,  a református egyház is jól járt a határon túli támogatásokból.",
-    "headline": "1,5 milliárd forint jutott tavaly a magyar kormánytól szlovákiai futballklubokra és akadémiákra"
+    "lead": "Több szlovákiai szervezet is kapott magyar állami támogatást a határon túli pénzekért felelős Bethlen Gábor Alapon keresztül,  a református egyház is jól járt a határon túli támogatásokból."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -5732,15 +5825,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Demeter Szilárd ügyéhez kapcsolódó sajtóhírek szerint: Egymilliárd forint és teljes káosz maradt a múzeumi gigaközpontban Demeter Szilárd után."
+    "content": "A Demeter múzeumi gigaprojekt káusza során a sajtó szerint közpénz-érintettség merült fel a Kulturális és Innovációs Minisztérium és Demeter Szilárd alapítványa között. A sajtójelentések szerint az alapítvány választás előtti támogatásban részesült: a 2026 júniusban nyilvánosságra hozott dokumentumok szerint 9 milliárd forint érintett közpénz. Demeter szerint ez az összeg a hozzá kapcsolódó céghálóban maradt, és az alapítvány készen áll a visszautalásra."
+   },
+   {
+    "type": "text",
+    "content": "A sajtó által dokumentált problémák szélesebb körűek, mivel az ügy több kulturális intézményt is érintett. Az Országos Széchényi Könyvtárban a minisztérium rendkívüli vizsgálatot indított a vezetési hiányosságok és informatikai kudarc miatt. Az Iparművészeti Múzeum kapcsán felmerültek kérdések a kormányzati döntésekkel és támogatásokkal kapcsolatban."
+   },
+   {
+    "type": "text",
+    "content": "A K-Monitor becslése szerint összesen 1 milliárd forint közpénz-érintettség áll az ügy középpontjában. Az eset jelenleg nyitott státuszú, és a sajtójelentések alapján a többek között szerkezeti és pénzügyi problémákat mutattak ki az érintett intézmények működésében."
    },
    {
     "type": "article-card",
-    "source": "HVG360",
-    "date": "2025-11-06",
-    "url": "https://hvg.hu/360/20251106_hvg-mnmkk-demeter-szilard-zsigmond-gabor",
-    "lead": "Miközben a muzeológusok gyalázatos fizetésért dolgoznak, és néha nyomtatópapírra sincs pénz, a felfelé buktatott, miniszterelnöki biztossá kinevezett Demeter Szilárd vezetése alatt egymilliárd forintnyi maradványt halmozott fel tavaly a közgyűjteményi központ.",
-    "headline": "Egymilliárd forint és teljes káosz maradt a múzeumi gigaközpontban Demeter Szilárd után"
+    "source": "HVG",
+    "headline": "Demeter Szilárd alapítványa 9 milliárd forintot kapott a választás előtt Hankó Balázs minisztériumától",
+    "date": "2026-06-17",
+    "url": "https://hvg.hu/kultura/20260617_kulturalis-es-innovacios-miniszterium-magyar-kulturaert-alapitvany-tamogatas-demeter-szilard",
+    "lead": "Demeter azt állítja, hogy a pénz az alapítványhoz kapcsolódó céghálóban maradt, és készek is visszaadni azt."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -6684,15 +6785,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Forró Krisztián (SK) ügyéhez kapcsolódó sajtóhírek szerint: Magyar közpénz tűnt fel a legutóbbi két szlovákiai választás kampányaiban."
+    "content": "A Forró Krisztián SK kampány ügye a magyar közpénzek szlovákiai felhasználásához kapcsolódik. A sajtójelentések szerint a ProRegia Cultura nevű, 2022-ben létrehozott felvidéki civil szervezet a Bethlen Gábor Alaptól több száz millió forintot kapott közvélemény-kutatásokra. Az egyik közlemény szerint a szervezet 270 millió forintot nyert el a magyar állami alaptól, azonban a kutatások konkrét eredménye nem dokumentált, míg a szervezet nyilván finanszírozta kapcsolódó kampánytevékenységeket."
+   },
+   {
+    "type": "text",
+    "content": "Az ügy közpénz-érintettségéről a sajtó által becsült 1 milliárd forint értékről tudunk. A dokumentációk szerint a Bethlen Gábor Alap pályázati szerkezete révén a közfinanszírozás felhasználásáról hosszú ideig kevés információ volt nyilvános. Sajtójelentések szerint az illegális kampányfinanszírozásra vonatkozó pénzek szétosztása a szervezeten keresztül történt, azonban a konkrét jogi következmények és felelősségek tisztázása még folyamatban van."
+   },
+   {
+    "type": "text",
+    "content": "Az ügy jelenleg nyitott státuszban van. A sajtó több cikkben számolt be a közpénzek felhasználásáról és az intézmények szerkezeti hiányosságairól, amelyek az átlátható közfinanszírozást nehézzé teszik."
    },
    {
     "type": "article-card",
     "source": "24.hu",
+    "headline": "Magyar közpénz tűnt fel a legutóbbi két szlovákiai választás kampányaiban",
     "date": "2025-01-10",
     "url": "https://24.hu/kulfold/2025/01/10/szlovakia-valasztasi-kampany-kozpenz-proregia-cultura-magyar-szovetseg/",
-    "lead": "A ProRegia Cultura nevű civil szervezet közvélemény-kutatásokra kapott több száz millió forintot a magyar kormánytól. A kutatásaiknak nincs nyoma, az ellenben biztos, hogy a szervezet fizette ki a Magyar Szövetség aktivistáit.",
-    "headline": "Magyar közpénz tűnt fel a legutóbbi két szlovákiai választás kampányaiban"
+    "lead": "A ProRegia Cultura nevű civil szervezet közvélemény-kutatásokra kapott több száz millió forintot a magyar kormánytól. A kutatásaiknak nincs nyoma, az ellenben biztos, hogy a szervezet fizette ki a Magyar Szövetség aktivistáit."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -6726,15 +6835,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Vitályos Eszter ügyéhez kapcsolódó sajtóhírek szerint: Vitályos Eszter úgy mentette ki magát a kínos pénzosztásból, hogy azzal végképp nevetségessé tette a kormányzati \"civil\"."
+    "content": "A Fulco Deák Egyesület civil pályázat-ügyében Vitályos Eszter személyéhez kapcsolódik egy nyitott korrupciós ügy, melynek kapcsán a sajtó szerint legalább 5 milliárd forint közpénz-érintettség merült fel. Az RTL Klubnak 2026. január 9-én közölt információi szerint az egyesület legalább tízmillió forint állami támogatást kapott az elmúlt években, miközben plakátokon népszerűsítette a kormányszóvivőt."
+   },
+   {
+    "type": "text",
+    "content": "A dokumentált közpénz-érintettség körülményeit illetően a sajtó szerint az egyesület pályázati úton szerzett állami forrásokhoz, azonban az ügyet tartalmazó cikkek az adott közpénzek konkrét felhasználásáról nem tartalmaznak részleteket. Az ügy jellegéből adódóan – civil szervezet költségvetési támogatása és a kormányzati szereplő közötti lehetséges összefonódás – az állami szervek közpénz-felhasználásának ellenőrzésére irányuló érdeklődés megfogalmazódott a sajtóban."
+   },
+   {
+    "type": "text",
+    "content": "Az ügy továbbra is nyitott státuszban van, jogilag bizonyított kárról, illetve jogerős bírósági ítéletről, ügyészségi vádiratról vagy hivatalos állami vizsgálat eredményéről a rendelkezésre álló sajtóanyag nem számol be."
    },
    {
     "type": "article-card",
-    "source": "444.hu",
-    "date": "2025-05-23",
-    "url": "https://444.hu/2025/05/23/vitalyos-eszter-ugy-mentette-ki-magat-a-kinos-penzosztasbol-hogy-azzal-vegkepp-nevetsegesse-tette-a-kormanyzati-civil-palyazatot",
-    "lead": "Olyan vihart kavart, hogy elutasították a törökországi földrengés után hősies mentést végző csapatot, miközben álciviles pénzt kaptak, hogy Vitályos akcióba lépett. A mentők is kaptak, az álciviles is megtarthatták a támogatást.",
-    "headline": "Vitályos Eszter úgy mentette ki magát a kínos pénzosztásból, hogy azzal végképp nevetségessé tette a kormányzati \"civil\" pályázatot"
+    "source": "RTL",
+    "headline": "Legalább tízmillió forint közpénzt kapott a kormányszóvivőt népszerűsítő egyesület",
+    "date": "2026-01-09",
+    "url": "https://rtl.hu/hirado/2026/01/09/tizmillio-forint-kozpenzt-kapott-kormanyszovivot-nepszerusito-egyesulet",
+    "lead": "Egy egyesület plakátokon népszerűsíti a kormányszóvivőt, miközben legalább tízmillió forint állami támogatást kapott az elmúlt években."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -7308,15 +7425,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Maróth Gáspár ügyéhez kapcsolódó sajtóhírek szerint: Hadházy: Torzó maradt a magyar kórház Vietmamban."
+    "content": "A Vietnami kórház torzó ügy a magyar kormányzati közreműködéssel, magyar hitelből elkezdett kórházépítés befejezésének elmaradásához kapcsolódik. Az ügyre vonatkozó sajtójelentések szerint körülbelül 5 milliárd forint közpénz volt érintett. Az ügy státusza nyitott, felelős személyként Maróth Gáspárt, az érintett intézményként a VMD Zrt.-t jelölik meg."
+   },
+   {
+    "type": "text",
+    "content": "A sajtójelentések szerint az üggyel kapcsolatban korrupciós problémák merültek fel. A Gazdasági Versenyhivatal (GVH) a 2015-ös közbeszerzésre vonatkozóan bírságot szabott ki, amely EU-s támogatást is felhasználó beszerzés volt. Az Európai Csalás Elleni Hivatal (OLAF) 2022 januárjában már csalást állapított meg. A szóban forgó közbeszerzéshez kapcsolódóan diagnosztikai gépek beszerzésével összefüggő vizsgálatok is zajlottak. A rendőrség azonban kilenc év után, 2025 május végén megszüntette a nyomozást a szabálytalan kórházi beszerzések ügyében."
+   },
+   {
+    "type": "text",
+    "content": "Az ügy jelenleg is nyitott státuszban van, további jogi vagy административ vizsgálatok lehetőségeivel."
    },
    {
     "type": "article-card",
-    "source": "Magyar Rádió",
+    "source": "Klubrádió online",
+    "headline": "Hadházy: Torzó maradt a magyar kórház Vietmamban",
     "date": "2024-11-02",
     "url": "https://www.klubradio.hu/hirek/hadhazy-torzo-maradt-a-magyar-korhaz-vietmamban-147915",
-    "lead": "Nem sikerült befejezni a Vietnamban magyar kormányzati közreműködéssel, magyar hitelből elkezdett kórház építését – erről írt Hadházy Ákos ellenzéki politikus.",
-    "headline": "Hadházy: Torzó maradt a magyar kórház Vietmamban"
+    "lead": "Nem sikerült befejezni a Vietnamban magyar kormányzati közreműködéssel, magyar hitelből elkezdett kórház építését – erről írt Hadházy Ákos ellenzéki politikus."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -9354,15 +9479,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Cseresnyés Péter ügyéhez kapcsolódó sajtóhírek szerint: Köddé vált a misztikus lombkoronasétány, amelyre már elköltöttek 112 milliót."
+    "content": "A Zala vármegyei Misztikus erdő projekt keretében tervezett lombkoronasétányra és egy 1200 méteres futópályára eddig 112 millió forintot költöttek el, a beruházás azonban félbemaradt — a projekt Tasó László fideszes országgyűlési képviselőhöz és a Build It Mérnökiroda Zrt.-hez köthető."
+   },
+   {
+    "type": "text",
+    "content": "Az Integritás Hatóság 2024 februárjában feljelentést tett az ügyben, miután súlyos szabálytalanságokat talált a projekt minden főbb állomásán, amelyek sértik az uniós támogatások felhasználására vonatkozó előírásokat. Tasó László szerint a hatóság koncepciós eljárást folytat ellene."
+   },
+   {
+    "type": "text",
+    "content": "Az ügy nyitott; kérdéses az építkezés tulajdonjogi helyzete is, a sajtó szerint a futópálya egyelőre nem került önkormányzati tulajdonba. Jogerős megállapítás egyelőre nincs, az érintettek ártatlannak tekintendők."
    },
    {
     "type": "article-card",
     "source": "24.hu",
+    "headline": "Köddé vált a misztikus lombkoronasétány, amelyre már elköltöttek 112 milliót",
     "date": "2025-04-11",
     "url": "https://24.hu/belfold/2025/04/11/112-millio-lombkoronasetany-negymilliard-zala-varmegye/",
-    "lead": "A Misztikus erdő projekt megépítése előtt elapadtak a források.",
-    "headline": "Köddé vált a misztikus lombkoronasétány, amelyre már elköltöttek 112 milliót"
+    "lead": "A Misztikus erdő projekt megépítése előtt elapadtak a források."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -10957,15 +11090,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Mészáros Lőrinc ügyéhez kapcsolódó sajtóhírek szerint: Abbahagyták a munkát a kivitelezők a csaknem teljes vagyonától megszabadított Mészáros-cég építkezésén."
+    "content": "A Mészáros Envirotis vagyontulajdonítás ügye a sajtójelentések szerint körülbelül 4 milliárd forint közpénz-érintettséggel áll kapcsolatban. Az ügy Mészáros Lőrinc és az Envirotis Holding Zrt. köré összpontosul, és jelenleg nyitott ügyként szerepel nyilvántartásban."
+   },
+   {
+    "type": "text",
+    "content": "A sajtó szerint az üggyel kapcsolatos kérdések között szerepelnek az állami vasúti beruházásokhoz köthető alvállalkozói tartozások és a vasúti cégből kivont osztalékok. Egy 2026 júniusában megjelent híradás szerint a vállalat jelentős összegekkel állhat tartozásban alvállalkozóinak a munkák elvégzése után, miközben ugyanekkor több milliárdos osztalékot vonnának ki a cégből. Az ügy kapcsán felmerültek a vagyonvisszaszerzés és az átláthatóságot növelő intézkedések lehetősége is."
+   },
+   {
+    "type": "text",
+    "content": "A nyitott ügy státusza arra utal, hogy az ügyek körül továbbra is nyomozási vagy vizsgálati tevékenységek lehetségesek, azonban az eljárások jelenlegi állapotáról a megadott adatok és cikkek nem tartalmaznak részleteket."
    },
    {
     "type": "article-card",
-    "source": "HVG",
-    "date": "2026-04-23",
-    "url": "https://hvg.hu/kkv/20260423_abbahagy-munka-kivitelezo-vagyon-megszabadit-meszaros-ceg-epitkezes",
-    "lead": "A Mészáros-csoport közleményben próbálta nyugtatni partnereit, a kivitelezőket viszont, úgy tűnik, nem győzték meg.",
-    "headline": "Abbahagyták a munkát a kivitelezők a csaknem teljes vagyonától megszabadított Mészáros-cég építkezésén"
+    "source": "444.hu",
+    "headline": "Mészáros Lőrinctől Rogánon át Lázár Jánosig: kiket és miket vizsgálhat a Vagyonvisszaszerzési Hivatal?",
+    "date": "2026-06-24",
+    "url": "https://444.hu/2026/06/24/meszaros-lorinctol-roganon-at-lazar-janosig-kiket-es-miket-vizsgalhat-a-vagyonvisszaszerzesi-hivatal",
+    "lead": "Magyar Péter hónapok óta emlegeti a vagyonvisszaszerzési hivatalt, amely a NER kegyeltjeinek vagyonosodását is vizsgálná. Összegyűjtöttük, ki érezheti magát ez alapján veszélyben."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -11526,15 +11667,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Mészáros Lőrinc ügyéhez kapcsolódó sajtóhírek szerint: Újabb utazás bizonyítja Mészáros Lőrinc és a két osztrák légijármű kapcsolatát."
+    "content": "A Mészáros Lőrinc légijármű üzletében érintett AVCON JET GmbH cég kapcsán a sajtó szerint körülbelül 5 milliárd forint közpénz-érintettség merülhet fel. Az ügy jelenleg nyitott státuszban van, és a K-Monitor becslése alapján dokumentálódott a közpénz-kapcsolat. A sajtójelentések szerint az ügy vizsgálata során a Vagyonvisszaszerzési Hivatal lehetőségeivel is foglalkoztak a médiaforrások."
+   },
+   {
+    "type": "text",
+    "content": "Az ügy kontextusában a sajtó több Mészáros-kapcsolódású tranzakcióról számolt be, amely a vagyonosodáshoz vezető üzleteket mutat. Ezek között szerepel az egyik bányavagyonnak egy Mészáros-közeli céghez történt átadása, valamint a rendezvényszervezési és egyéb üzletágakban megvalósult osztalékos megállapodások. A sajtójelentések szerint Mészáros Lőrinc rokonai is részesültek jelentős osztalékokból az összefüggő céghálózatban."
+   },
+   {
+    "type": "text",
+    "content": "A rendelkezésre álló információk alapján az ügy főként sajtóbecslésekre támaszkodik, és jogilag még nem történt meg sem a közpénz-érintettség véglegesen bizonyított megállapítása, sem a felelősség jogi megállapítása. Az ügy továbbra is nyitott marad."
    },
    {
     "type": "article-card",
-    "source": "Átlátszó",
-    "date": "2024-02-06",
-    "url": "https://atlatszo.hu/kozugy/2024/02/06/ujabb-utazas-bizonyitja-meszaros-lorinc-es-a-ket-osztrak-legijarmu-kapcsolatat/",
-    "lead": "A Puskás Akadémia elnöki szerepét is betöltő Mészáros Lőrinc nemrég a dél-spanyolországi Marbellán járt, ahol az NB 1-es Puskás Akadémia FC edzőtáborát, illetve egyik felkészülési meccsét látogatta meg. A repülőgép-figyelő oldalak tanúsága szerint a felcsúti vállalkozó mindkét – vele korábban összef",
-    "headline": "Újabb utazás bizonyítja Mészáros Lőrinc és a két osztrák légijármű kapcsolatát"
+    "source": "444.hu",
+    "headline": "Mészáros Lőrinctől Rogánon át Lázár Jánosig: kiket és miket vizsgálhat a Vagyonvisszaszerzési Hivatal?",
+    "date": "2026-06-24",
+    "url": "https://444.hu/2026/06/24/meszaros-lorinctol-roganon-at-lazar-janosig-kiket-es-miket-vizsgalhat-a-vagyonvisszaszerzesi-hivatal",
+    "lead": "Magyar Péter hónapok óta emlegeti a vagyonvisszaszerzési hivatalt, amely a NER kegyeltjeinek vagyonosodását is vizsgálná. Összegyűjtöttük, ki érezheti magát ez alapján veszélyben."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -11543,19 +11692,27 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Mészáros Lőrinc — Gyerekáruháza és luxusfogászata"
+    "content": "# Mészáros Lőrinc gyerekáruháza és luxusfogászata"
    },
    {
     "type": "text",
-    "content": "Mészáros Lőrinc körül közpénz-érintettséggel kapcsolatos esetek között szerepel a Baba MAgazin Kft. és annak üzleti tevékenységei. Az ügy legalább részben egy gyerekáruházzal és egy luxusfogászati praxissal áll kapcsolatban. Az ügyet nyitott státuszúként követik, ami azt jelenti, hogy a további vizsgálatok vagy nyilvánosságra kerülés még lehetséges."
+    "content": "A K-Monitor becslése szerint legalább 5 milliárd forint közpénz-érintettség köthető Mészáros Lőrinc Baba Magazin Kft. cégeinek működéséhez. Az ügy jelenleg nyitott, a sajtójelentések szerint többek között a cég rendezvényszervezési tevékenysége és osztalékjutalmak vonhatnak közpénzekkel kapcsolatos kérdéseket. A cég körül az elmúlt időszakban több vagyonosodási ügy került nyilvánosságra."
    },
    {
     "type": "text",
-    "content": "A sajtó és a Transparency International hazai szervezete, a K-Monitor által készített becslések szerint körülbelül 5 milliárd forint közpénz volt érintett az érintett intézménnyel és üzleti tevékenységekkel kapcsolatos tranzakciók során. Ez az összeg azonban nem jogerős ítélettel vagy végzett vizsgálattal bizonyított kár, hanem sajtójelentéseken és közpénz-felhasználás nyomon követésén alapuló becslés."
+    "content": "A sajtó beszámolói szerint Mészáros Lőrinc üzleti portfoliója igen szélesnek bizonyult, többek között a rendezvényszervezésbe is beruházott. Az ehhez kapcsolódó cégek milliárdos osztalékokat hoztak. Közben a Mészáros-család más tagjainak, köztük Mészáros János öccsének is jelentős kereset jutott üzleti kapcsolatokon keresztül. A vagyonvisszaszerzési hivatal lehetséges működésével kapcsolatban olyan politikai szereplők is felmerülhetnek a sajtóban, mint Mészáros Lőrinc."
    },
    {
     "type": "text",
-    "content": "Az ügy a szélesebb vagyonosodási vizsgálatok közé tartozik, amelyek Mészáros Lőrinc tulajdon- és üzleti tevékenységeinek gyors kiszélesedésére vonatkoznak. A nyitott státusz azt mutatja, hogy az ügynek lehetnek még nyilvánosságra kerülő részletei vagy folyamatban lévő közigazgatási, illetve polgári eljárásai."
+    "content": "Az ügy megítéléséhez hiányzik a jogerős bírósági ítélet, illetve az ügyészségi vagy hatósági hivatalos vizsgálat. A sajtójelentések alapján továbbra is feldolgozás alatt álló korrupciós gyanús ügyről van szó."
+   },
+   {
+    "type": "article-card",
+    "source": "444.hu",
+    "headline": "Mészáros Lőrinctől Rogánon át Lázár Jánosig: kiket és miket vizsgálhat a Vagyonvisszaszerzési Hivatal?",
+    "date": "2026-06-24",
+    "url": "https://444.hu/2026/06/24/meszaros-lorinctol-roganon-at-lazar-janosig-kiket-es-miket-vizsgalhat-a-vagyonvisszaszerzesi-hivatal",
+    "lead": "Magyar Péter hónapok óta emlegeti a vagyonvisszaszerzési hivatalt, amely a NER kegyeltjeinek vagyonosodását is vizsgálná. Összegyűjtöttük, ki érezheti magát ez alapján veszélyben."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -12717,15 +12874,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Szalay-Bobrovniczky Kristóf ügyéhez kapcsolódó sajtóhírek szerint: Nagy Mártonék minden pénzt ki akartak söpörni az állami fegyverkereskedő cégből, mielőtt visszaadják a HM-nek."
+    "content": "Az ügyet a Nagy Márton és Szalay-Bobrovniczky Kristóf nevéhez fűződő haditechnikai tranzakciók köré csoportosítják, amelyek a Haditechnikai Kereskedelmi Ügynökség Kft. működésével állnak összefüggésben. A sajtójelentések szerint körülbelül 5 milliárd forint közpénz-érintettség dokumentálható az ügyben."
+   },
+   {
+    "type": "text",
+    "content": "Az egyik központi elem egy kormányrendelet, amely az NGM-et arra kötelezte, hogy adja vissza a honvédség cégének a Milipol nevű fegyverkereskedő céget. A sajtó szerint azonban előzően jelentős összegeket kívántak kirántani a vállalatból, amely műveletet az ellenzék az állami vagyon felélésének szándékaként értékelte."
+   },
+   {
+    "type": "text",
+    "content": "Az ügy nyitott státuszban van, és a sajtóban szereplő információk alapján továbbra is felmerülnek kérdések a közpénzek kezeléséről és a transzparencia hiányáról. A K-Monitor által becsült közpénz-érintettség nagysága miatt az eset az intermediális korrupciós ügyeket körülvevő diskurzus részét képezi."
    },
    {
     "type": "article-card",
     "source": "24.hu",
+    "headline": "Nagy Mártonék minden pénzt ki akartak söpörni az állami fegyverkereskedő cégből, mielőtt visszaadják a HM-nek",
     "date": "2025-10-28",
     "url": "https://24.hu/belfold/2025/10/28/magyar-vedelmi-exportugynokseg-ngm-hm-nagy-marton-fegyverkereskedo-ceg/",
-    "lead": "Egy tavalyi kormányrendelet arra kötelezte az NGM-et, hogy adja vissza a honvédség cégének a Milipol nevű fegyverkereskedő céget, amelyből azonban előbb annyi pénzt akartak kirántani, hogy a vállalat akár csődbe is mehetett volna.",
-    "headline": "Nagy Mártonék minden pénzt ki akartak söpörni az állami fegyverkereskedő cégből, mielőtt visszaadják a HM-nek"
+    "lead": "Egy tavalyi kormányrendelet arra kötelezte az NGM-et, hogy adja vissza a honvédség cégének a Milipol nevű fegyverkereskedő céget, amelyből azonban előbb annyi pénzt akartak kirántani, hogy a vállalat akár csődbe is mehetett volna."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -13287,15 +13452,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Mészáros Lőrinc ügyéhez kapcsolódó sajtóhírek szerint: Nyerges Zsolt szőröstül-bőröstül bekebelezte a NER legnagyobb őrző-védő cégét."
+    "content": "A Nyerges-Arno őrzővédő cég ügye a sajtójelentések szerint közpénz-érintettséggel járó tranzakciókat takar. A K-Monitor becslése szerint körülbelül 5 milliárd forint közpénz volt érintett az esetben. Az ügy nyitott státuszban van, és Mészáros Lőrincet nevezik meg a felelős személyként, míg az Arno'99 intézmény az érintett szervezet."
+   },
+   {
+    "type": "text",
+    "content": "A sajtóban megjelent cikkek a NER-közeli szereplőknek jutó közpénzek szélesebb kontextusában helyezik el az ügyet. Az egyik sajtóforrás szerint a Civil Zrt. 2025-ben is jó évet zárt, ugyanakkor több beszámoló utal a kormányzati kedvezményezetteknek folyósított közpénzekre és az ezekből eredő vagyongyarapodásra. A cikkek szerint a különféle NER-közeli cégek és személyek még a kormányváltás előtti időszakban is jelentős közpénz-áramlásban részesültek."
+   },
+   {
+    "type": "text",
+    "content": "Az ügy továbbra is nyitott, és a sajtójelentések szerint a vagyonvisszaszerzési hivatal is foglalkozhat hasonló esetekkel. Az üggyel kapcsolatban eddig egyetlen sajtócikk került feldolgozásra, amely alapján a dokumentált közpénz-érintettség körülbelül 5 milliárd forint nagyságrendű."
    },
    {
     "type": "article-card",
     "source": "mfor.hu",
-    "date": "2026-01-25",
-    "url": "https://mfor.hu/cikkek/makro/nyerges-zsolt-szorostul-borostul-bekebelezte-a-ner-legnagyobb-orzo-vedo-ceget.html",
-    "lead": "A közbeszerzéseken továbbra is sikeres a Civil Zrt., így zökkenőmentesen zsilipelt át Pintér Sándor belügyminiszter volt cége az új tulajdonoshoz.",
-    "headline": "Nyerges Zsolt szőröstül-bőröstül bekebelezte a NER legnagyobb őrző-védő cégét"
+    "headline": "Nyerges Zsoltnak milliárdokat termelt a NER legnagyobb őrző-védő cége",
+    "date": "2026-06-02",
+    "url": "https://mfor.hu/cikkek/makro/nyerges-zsoltnak-milliardokat-termelt-a-ner-legnagyobb-orzo-vedo-cege.html",
+    "lead": "Forgalma alapján a Civil Zrt. 2025-ben is a története legjobb évét zárta, a profit pedig már Nyerges Zsoltot gazdagítja."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -13639,15 +13812,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Orbán Viktor ügyéhez kapcsolódó sajtóhírek szerint: A nálunk menedékjogot kapott lengyel miniszterhelyettes a Varga Juditot is fizető akadémia visszatérő vendége volt."
+    "content": "A Közép-európai Akadémia alapítványi ügyét Orbán Viktor volt miniszterelnök szerepéthez kötik, aki szerint sajtójelentések alapján döntő szerepet játszott az ügy során. A K-Monitor becslése szerint az ügyben körülbelül 5 milliárd forint közpénz-érintettség merült fel. Az ügy nyitott státuszú, és több sajtóorgánum közölt cikkeket az üggyel kapcsolatban."
+   },
+   {
+    "type": "text",
+    "content": "A megjelent sajtójelentések szerint Orbán Viktor szerepe több aspektust érint. Telex-beszámolók alapján az úgynevezett aranykonvoj-akcióban az esetleges szakmai indokoltatlanság ellenére Orbán Viktor rendelte meg a rajtaütést, amely a legmagasabb szintről jött még március elején. Az Index és 444.hu cikkei szerint az ügyészség nyilatkozott az aranykonvoj-botrányról, valamint egy feltételezett ügyészségi dokumentum felsorolása szerint Orbán Viktor szerepe került vizsgálat alá a büntetőjogi felelősség tisztázása kapcsán."
+   },
+   {
+    "type": "text",
+    "content": "Az ügy továbbá összekapcsolódott más történésekkel is, például a kormány korábbi különadó-politikájához kötött kártérítési kérdésekkel és az ezzel kapcsolatos közigazgatási cselekmények vizsgálatával. Az ügypörlyeg egyértelműen nyitott maradt, jogi lezárása és végleges megállapításai függőben vannak."
    },
    {
     "type": "article-card",
-    "source": "Magyar Narancs",
-    "date": "2025-01-29",
-    "url": "https://magyarnarancs.hu/belpol/a-nalunk-menedekjogot-kapott-lengyel-miniszterhelyettes-a-varga-juditot-is-fizeto-akademia-visszatero-vendege-volt-274229",
-    "lead": "A Budapestre menekült Marcin Romanowski korábban a Miskolci Egyetem jogkutató intézetének több rendezvényén is tartott előadást. A Közép-európai Akadémián öt önálló magyar-lengyel kutatócsoportot hoztak létre, a jogtudósoknak egy év alatt 338 millió forintot, átlagosan havonta 1 millió forintot fize",
-    "headline": "A nálunk menedékjogot kapott lengyel miniszterhelyettes a Varga Juditot is fizető akadémia visszatérő vendége volt"
+    "source": "444.hu",
+    "headline": "\"A lényegi döntést, utasításokat hozó személyek a következők: Dr. Orbán Viktor volt miniszterelnök\"",
+    "date": "2026-06-25",
+    "url": "https://444.hu/2026/06/25/a-lenyegi-dontest-utasitasokat-hozo-szemelyek-a-kovetkezok-dr-orban-viktor-volt-miniszterelnok",
+    "lead": "Lapunk birtokába jutott egy fotó egy állítólagos ügyészségi dokumentumról. Felsorolják benne, kiknek a büntetőjogi felelősségét kellene tisztázni az úgynevezett aranykonvoj-ügyben. A nevek között ott van Orbán Viktoré is. Farkas Örs exállamtitkárról és Hajdu János ex-TEK-főigazgatóról azt írják, „gy"
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -13824,15 +14005,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Jászai Gellért ügyéhez kapcsolódó sajtóhírek szerint: Orbán Sárát kerestük, Tiborcz-cégekbe és a Mészáros-bank művészeti projektjébe futottunk bele."
+    "content": "Az Orbán–Tiborcz ingatlan-ügy nyitott korrupciós ügynek számít, amelyet a K-Monitor becslése szerint körülbelül 5 milliárd forint közpénz-érintettség jellemez. Az ügy Orbán Viktor volt miniszterelnök személyéhez köthető, és a BDPST Group intézményt érinti. A sajtójelentések szerint az ügy több aspektust foglal magában, amelyek az Orbán család különböző tagjainak gazdasági tevékenységeit érintik."
+   },
+   {
+    "type": "text",
+    "content": "A rendelkezésre álló sajtócikkek szerint az üggyel kapcsolatban az Orbán család tagjai között gazdasági tranzakciók zajlottak. Az egyik cikk szerint Orbán Dávid, a volt miniszterelnök unokaöccse bányajait 2024-ben, egy halálos baleset után Mészáros Lőrinchez közelálló cégnek adta át, miközben a közelben maradtak további üzleti érdekeltségei. Más közlemények szerint az Orbán család különböző tagjainak cégeivel kapcsolatban eltérő üzleti teljesítmény volt tapasztalható."
+   },
+   {
+    "type": "text",
+    "content": "Az ügyhez kapcsolódóan felvetődött a volt miniszterelnök személyes felelőssége is. Egy állítólagos ügyészségi dokumentum szerint Orbán Viktor szerepe a lényegi döntéseket hozó személyek között jelenik meg. A sajtó szerint az üggyel továbbá az építőanyag-gyártókra kivetett különadók piaci hatásai és az aranykonvoj-ügy is kapcsolódnak. Az ügy jelenleg nyitott státuszú."
    },
    {
     "type": "article-card",
     "source": "444.hu",
-    "date": "2025-03-10",
-    "url": "https://444.hu/2025/03/10/orban-sarat-kerestuk-tiborcz-cegekbe-es-a-meszaros-bank-muveszeti-projektjebe-futottunk-bele",
-    "lead": "Orbán Sára cége egy olyan művészeti projektben adhatott tanácsot, ami az MBH Bank alapítványához kötődik. Szakmai körökben úgy tudják, Orbán második legidősebb lánya évek óta érdeklődik a képzőművészet iránt.",
-    "headline": "Orbán Sárát kerestük, Tiborcz-cégekbe és a Mészáros-bank művészeti projektjébe futottunk bele"
+    "headline": "Mészáros Lőrincé lett az egyik Orbán-bánya",
+    "date": "2026-06-01",
+    "url": "https://444.hu/2026/06/01/meszaros-lorince-lett-az-egyik-orban-banya",
+    "lead": "Orbán Dávid, a volt miniszterelnök unokaöccse egy bányáját 2024-ben, egy halálos baleset után adta át, vagy el egy Mészáros-közeli cégnek. De nem távolodott el a helyszíntől, az átadott bánya szomszédságában tavaly decemberben szerezte meg a bányászati jogot."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -15118,15 +15307,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Garancsi István ügyéhez kapcsolódó sajtóhírek szerint: A Budapesti Közművek már jelezte, hogy megvenné Rákosrendezőt."
+    "content": "# Rákosrendezői Eagle Hills botrány"
+   },
+   {
+    "type": "text",
+    "content": "A Rákosrendezői Eagle Hills botrány az Eagle Hills Hungary Zrt. nevű céghez köthető, amelynek ügyeihez Garancsi István neve kapcsolódik. A sajtójelentések szerint az ügy a főváros egy nagyléptékű fejlesztési projektjét érinti, amely arab befektetők pénzéből valósulna meg. A K-Monitor becslése szerint körülbelül 15 milliárd forint közpénz-érintettség áll az ügy mögött, bár a projekt teljes hatásköreit és finanszírozási szerkezetét csak a 2028-ban bemutatandó mesterterv tisztázhatja majd."
+   },
+   {
+    "type": "text",
+    "content": "A sajtó szerint az ügy azzal kapcsolatos, hogy a projekt megvalósulása jelentős állami támogatáson múlik, amely finanszírozás nélkül nem valósulhatna meg. Az ügyet jelenleg nyitott státuszú nyomozás jellemzi, és a sajtó számos kérdést vetett fel a projekt finanszírozásának és szerződéskötésének körülményeiről. Az ügy összesen tíz sajtócikk tárgyát képezi, amely a közpénzek felhasználásának átláthatóságára és az ellenőrzésre vonatkozó kérdéseket érinti."
    },
    {
     "type": "article-card",
-    "source": "Népszava",
-    "date": "2025-02-04",
-    "url": "https://nepszava.hu/3267408_rakosrendezo-mini-dubaj-fovarosi-kozgyules-elovasarlasi-jog-bkm",
-    "lead": "A Fővárosi Közgyűlés szerdán megadta a felhatalmazást az elővásárlási joggal rendelkező Főtáv jogutód BKM-nek a joggyakorlásra vonatkozó nyilatkozattételre. Egyelőre nem tudni, hogy a másik elővásárlásra jogosult cég, a Stockton Zrt. él-e ezzel a jogával.",
-    "headline": "A Budapesti Közművek már jelezte, hogy megvenné Rákosrendezőt"
+    "source": "24.hu",
+    "headline": "Számtalan kérdést felvet a főváros Rákosrendező-projektje, ami az állam százmilliárdjai nélkül sosem válhat valóra",
+    "date": "2026-04-27",
+    "url": "https://24.hu/kultura/2026/04/27/rakosrendezo-fovaros-allam-mini-dubaj-problema/",
+    "lead": "A legtöbb fehér foltot csak a 2028-ban bemutatkozó mesterterv oszlatja majd el, az azonban az egész projekt alól kihúzhatja a talajt, ha a következő kormányok kitáncolnak az arab befektetőnek szerződésben vállalt ígéretekből."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -15152,15 +15349,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Garancsi István ügyéhez kapcsolódó sajtóhírek szerint: Breaking: megtaláltuk a Garancsi-Habony-csapatot a Rákos-Dubaj mögött."
+    "content": "A Rákosrendezői ECEquity Garancsi-Habony ügy Garancsi István üzletemberre és az ECEquity Befektetési Vagyonkezelő Zrt.-re vonatkozik, amelyhez K-Monitor becslése szerint körülbelül 5 milliárd forint közpénz-érintettség társul. Az ügy jelenleg nyitott státuszban van."
+   },
+   {
+    "type": "text",
+    "content": "A sajtójelentések szerint Garancsi István és Habony Árpád érdekeltsége alatt álló cégek jelentős osztalékfizetéseket eszközöltek. A Garinvest Projekt Zrt. körülbelül 19,7 milliárd forint osztalék kifizetésről döntött, míg a sajtó szerint Habony Árpád egy év alatt több mint 8,8 milliárd forintot vett fel egyik vagyonkezelőjéből. A cég eredménye jelentősen megemelkedett, azonban a közpénz-érintettség pontos jogi megalapozottsága az elérhető sajtóforrások alapján nem tisztázott."
+   },
+   {
+    "type": "text",
+    "content": "Az ügyhöz kapcsolódik továbbá, hogy Garancsi István a Gazdasági Versenyhivatal jóváhagyásával a soproni kaszinó többségi tulajdonosa lett, valamint hogy cégétől egy ukrán pénzszállítási feladat átvételére is sor kerülhetett. A sajtó által dokumentált közpénz-érintettség mértéke és a tényleges jogsértés vizsgálata azonban jelenleg nem tisztázott az adat alapján."
    },
    {
     "type": "article-card",
-    "source": "valaszonline.hu",
-    "date": "2025-01-22",
-    "url": "https://www.valaszonline.hu/2025/01/22/habony-arpad-garancsi-istvan-rakosdubaj-rakosrendezo-stockton-ecequity-novacitas-mohamed-alabbar-rakosrendezo/",
-    "lead": "Breaking: megtaláltuk a Garancsi-Habony-csapatot a Rákos-Dubaj mögött",
-    "headline": "Breaking: megtaláltuk a Garancsi-Habony-csapatot a Rákos-Dubaj mögött"
+    "source": "24.hu",
+    "headline": "20 milliárdos osztalékot fizet a Garancsi-Habony-féle kaszinós cég",
+    "date": "2026-05-29",
+    "url": "https://24.hu/fn/gazdasag/2026/05/29/garancsi-istvan-habony-arpad-merleg-garinvest-2025/",
+    "lead": "A frissen közzétett közgyűlési jegyzőkönyv szerint a cég a 2025-ös, kiugró nyereség után is hasonló nagyságrendű kifizetésről döntött, mint egy évvel korábban."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -15982,15 +16187,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Rogán Antal ügyéhez kapcsolódó sajtóhírek szerint: A Fidesz kedvenc őrző-védő cége 3,1 milliárdos megbízást kapott a Városligetben."
+    "content": "A Valton Városligeti őrző-védő megbízás nyitott ügye Rogán Antal felelőssége alatt áll, és K-Monitor szerint körülbelül 3 milliárd forint közpénz-érintettséggel járhat. A Valton-Sec Zrt. az Orbán-kormány időszakában az egyik legsikeresebb biztonsági cég volt a közbeszerzéseken, azonban a kormányváltás után a cégcsoport sorsa bizonytalanná vált."
+   },
+   {
+    "type": "text",
+    "content": "A sajtójelentések szerint az ügy szálai több irányban futnak. Rogán Antal egy találmányhoz is kapcsolódik, amelyből a Telekom 2015-ben egy összegben fizetett; a NAV 2026 közepén nyomozást folytatott ezzel kapcsolatban. Emellett Csányi Sándor 2026 júniusában a Valton-birodalom egy teljes részét kihasította magának. A sajtó több cikke kitér arra is, hogy Rogánhoz közel álló személyek – köztük Sarka Kata és Szendrei-Rogán Cecília – különféle vállalkozásokon keresztül jelentős pénzügyi nyereségeket értek el."
+   },
+   {
+    "type": "text",
+    "content": "Az ügy jelenleg nyitott státuszban van, és a sajtójelentések szerint vizsgálatok folynak rá vonatkozóan."
    },
    {
     "type": "article-card",
-    "source": "Átlátszó",
-    "date": "2025-11-05",
-    "url": "https://atlatszo.hu/kozpenz/2025/11/05/a-fidesz-kedvenc-orzo-vedo-cege-31-milliardos-megbizast-kapott-a-varosligetben",
-    "lead": "A Valton ezúttal is egyedül indult a Városliget Zrt. terület- és objektumőrzési, valamint személy- és vagyonvédelmi feladatok ellátására kiírt tenderén.",
-    "headline": "A Fidesz kedvenc őrző-védő cége 3,1 milliárdos megbízást kapott a Városligetben"
+    "source": "444.hu",
+    "headline": "Mészáros Lőrinctől Rogánon át Lázár Jánosig: kiket és miket vizsgálhat a Vagyonvisszaszerzési Hivatal?",
+    "date": "2026-06-24",
+    "url": "https://444.hu/2026/06/24/meszaros-lorinctol-roganon-at-lazar-janosig-kiket-es-miket-vizsgalhat-a-vagyonvisszaszerzesi-hivatal",
+    "lead": "Magyar Péter hónapok óta emlegeti a vagyonvisszaszerzési hivatalt, amely a NER kegyeltjeinek vagyonosodását is vizsgálná. Összegyűjtöttük, ki érezheti magát ez alapján veszélyben."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -17072,15 +17285,23 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Baán László ügyéhez kapcsolódó sajtóhírek szerint: Több mint 50 millió forintos bírságot kell fizetnie a Szépművészeti Múzeumnak a tender nélküli műtárgybeszerzések miatt."
+    "content": "A Szépművészeti Múzeum tenderbeszerzéseit érintő ügy nyomán a Közbeszerzési Döntőbizottság több közpénzzel finanszírozott műtárgyvásárlás során jogtalan közbeszerzési eljárás-mellőzést állapított meg. A sajtójelentések szerint legalább hat értékhatár feletti műtárgyvásárlás történt a szükséges eljárás nélkül. A múzeum több mint 50 millió forintos bírságot kapott e jogsértések miatt."
+   },
+   {
+    "type": "text",
+    "content": "Az Állami Számvevőszék szintén megtámadott hét műtárgy beszerzésénél azonosított közbeszerzési eljárás-mellőzést. Az érintett közpénz a sajtó szerint meghaladhatja az 1,5 milliárd forintot. A múzeum vezetésében Baán László volt a felelős személy. A K-Monitor becslése szerint az ügyhez kapcsolódó dokumentált közpénz-érintettség mintegy 1 milliárd forint."
+   },
+   {
+    "type": "text",
+    "content": "Az ügy az intézmény működésében történt eljárási hiányosságokat tár fel, miközben nyitott maradt, és a múzeum jelzése szerint felülvizsgáltatta a jogszabályi hátteret. Az eset az intézmény több korábban sajtóban szereplő közbeszerzésekhez is kapcsolódott, azonban a vizsgálati és döntési folyamatok még nem zárultak le véglegesen."
    },
    {
     "type": "article-card",
     "source": "Népszava",
+    "headline": "Több mint 50 millió forintos bírságot kell fizetnie a Szépművészeti Múzeumnak a tender nélküli műtárgybeszerzések miatt",
     "date": "2025-09-22",
     "url": "https://nepszava.hu/3295367_szepmuveszeti-muzeum-50-millio-forint-birsag",
-    "lead": "Nem fogott túl vastagon a Közbeszerzési Döntőbizottság ceruzája.",
-    "headline": "Több mint 50 millió forintos bírságot kell fizetnie a Szépművészeti Múzeumnak a tender nélküli műtárgybeszerzések miatt"
+    "lead": "Nem fogott túl vastagon a Közbeszerzési Döntőbizottság ceruzája."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -17190,15 +17411,27 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Szíjj László ügyéhez kapcsolódó sajtóhírek szerint: Tavaly is jól fialt Orbán és Erdogan oligarcháinak a honvédségi Gidrán-biznisz."
+    "content": "# Szíjj László Gidrán-biznisz"
+   },
+   {
+    "type": "text",
+    "content": "A Szíjj László NER-közeli üzletembert és HT Division Zrt. cégét érintő ügykörben a sajtó szerint 5 milliárd forint közpénz-érintettség dokumentálható. A sajtójelentések szerint a kormányzat több, érzékeny infrastrukturális beruházást bízott meg a céggel, amelyek közül a mohácsi híd fejlesztése állt nagyobb figyelem alatt. Az ügyet nyitott, még nem jogerősen lezárt ügyként tartják nyilván."
+   },
+   {
+    "type": "text",
+    "content": "A sajtóbeszámolók szerint Szíjj László cégei rendszeres közpénzhez jutottak, többek között a választásokat megelőzően is. Az egyik sajtóértesülés szerint a projekt 451 milliárdos keretéből a cég 98 százalékos előleget kapott. A sajtó szerint a számok jelentősen megemelkedtek, amikor a kormányzat \"háborús áremelkedés\" indokkal további forrásokat biztosított az érintett cégeknek."
+   },
+   {
+    "type": "text",
+    "content": "Az ügyhöz kapcsolódóan sajtóbeszámolók említenek kapcsolódó személyeket is, így Szijjártó Péter külügyminisztert és Benkő Szilárdot, akinek cége szintén több, a külügyhöz kötődő projektben feltűnt. A sajtó szerint ezek a kapcsolatrendszeri elemek az ügy körüli kérdéseket tovább bonyolítják, ám ezek önmagukban nyitott kérdések maradnak."
    },
    {
     "type": "article-card",
-    "source": "Átlátszó",
-    "date": "2024-06-20",
-    "url": "https://atlatszo.hu/kozpenz/2024/06/20/tavaly-is-jol-fialt-orban-es-erdogan-oligarchainak-a-honvedsegi-gidran-biznisz/",
-    "lead": "A magyar honvédség 2019-ben rendelt török páncélozott járműveket, amelyeket nem közvetlenül a gyártótól, hanem egy közvetítőcégtől vettek. A beszerzés részleteit 30 évre titkosították, a beszámolói szerint viszont a közvetítő HT Divison Zrt. nagyon jól járt az üzlettel. A cég tavalyelőtt 2,6 milliár",
-    "headline": "Tavaly is jól fialt Orbán és Erdogan oligarcháinak a honvédségi Gidrán-biznisz"
+    "source": "Telex",
+    "headline": "Szijjártó Péter legjobb barátjának különös története az állami milliárdokkal",
+    "date": "2026-06-18",
+    "url": "https://telex.hu/direkt36/2026/06/18/szijjarto-peter-legjobb-baratjanak-kulonos-tortenete-az-allami-milliardokkal",
+    "lead": "A Direkt36 nyomozása szerint már egy magyar hitelből zajló afrikai beruházásban is feltűnt Szijjártó Péter legjobb barátjának, Benkő Szilárdnak a cége, amely a külügyhöz kötődő sok más projekten is dolgozott. A volt miniszter állítja, hogy neki fogalma sem volt ezekről az üzletekről."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -17633,15 +17866,27 @@
   "blocks": [
    {
     "type": "text",
-    "content": "Szöllősi György ügyéhez kapcsolódó sajtóhírek szerint: Kipereltük: 3,5 milliárd forintért vette meg az állam a Nemzeti Sportot."
+    "content": "# Nemzeti Sport 3,5 milliárd forint KESMA vásárlása"
+   },
+   {
+    "type": "text",
+    "content": "Az állam 3,5 milliárd forint közpénz-érintettséggel szerzett meg a Nemzeti Sport című újságot a Közép-Európei Sajtó és Média Alapítvány (KESMA) révén. Szöllősi György vezetésével működő szervezet egyéb gazdasági tevékenységeihez kapcsolódóan a sajtó szerint 610 millió forint állami költségvetésből finanszírozott terjesztési kiadás is felmerült. Az ügyet nyitott korrupciós esetek közül tartják nyilván."
+   },
+   {
+    "type": "text",
+    "content": "A K-Monitor becslése szerint 3 milliárd forint közpénz áramlott az ügylethez kapcsolódóan. Az Átlátszó tényfeltárásai alapján több mint kétéves jogi pereskedés után derült nyilvánosságra az újságvásárlás konkrét ára. Az Orbán-kormányzathoz közeli szervezeteknek ítélt támogatások rendszeres jellegét pedig a 2024 végén publikált sajtóbeszámolók is dokumentálták, miszerint az ehhez köthető személyek kormányzati támogatásban részesültek."
+   },
+   {
+    "type": "text",
+    "content": "A sajtójelentések szerint a Honvédelmi Minisztérium is közvetlenül finanszírozta az érintett szervezetet mintegy 240 millió forinttal, mely szintén az ügy közpénz-vonatkozását erősítette."
    },
    {
     "type": "article-card",
-    "source": "Átlátszó",
-    "date": "2025-02-18",
-    "url": "https://atlatszo.hu/kozadat/2025/02/18/kipereltuk-35-milliard-forintert-vette-meg-az-allam-a-nemzeti-sportot",
-    "lead": "Több mint 2 évig pereskedtünk az állammal, hogy megtudjuk, mennyibe került az adófizetőknek a miniszterelnök kedvenc újságjának megvásárlása.",
-    "headline": "Kipereltük: 3,5 milliárd forintért vette meg az állam a Nemzeti Sportot"
+    "source": "Népszava",
+    "headline": "Több mint 400 millió forint közpénzt kap a sportújságírók Szöllősi-féle szervezete",
+    "date": "2026-03-30",
+    "url": "https://nepszava.hu/3317127_magyar-sportujsagirok-szovetsege-koltsegvetes-400-millio-forint-kozpenz-szollosi-gyorgy",
+    "lead": "Ebből a Honvédelmi Minisztérium 240 millió forintot fizet."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
@@ -19890,56 +20135,6 @@
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
  },
- "quaestor-dalkot-adatbiztonság": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Quaestor-Dalkot adatbiztonsági ügy Tarsoly Csaba Dalkot Kft.-vel kapcsolatos ügyét érinti. Az üggyel kapcsolatban dokumentált közpénz-érintettség becslése 250 milliárd forint. Az ügy jelenleg nyitott státuszban van."
-   },
-   {
-    "type": "text",
-    "content": "Tarsoly Csabát első fokon 13 évre ítélték bűnszervezetben elkövetett csalás, sikkasztás és közokirat-hamisítás miatt. A sajtójelentések szerint a vádlottak között összesen közel 60 év börtön és 247 millió forintnyi bűnügyi költség szerepel. Az ügyészség azonban további, súlyosabb büntetéseket sérelmez, nem tartva megfelelőnek az első fokon kiszabott büntetéseket."
-   },
-   {
-    "type": "text",
-    "content": "A sajtó szerint a Quaestor-vállalatok több tízezer irata illetéktelen kezekbe kerülhetett az adatbiztonsági probléma során. A felszámolási eljárás során a kisbefektetőknek okozott kár feldolgozása folyamatban van. Az ügy jelenleg a bíróságon halad, és az ítélkezési eljárás előrehaladottabb szakaszához közelít."
-   },
-   {
-    "type": "article-card",
-    "source": "Index",
-    "headline": "Újra bíróságon a Quaestor-ügy, ekkor veheti kezdetét a tárgyalás",
-    "date": "2026-03-25",
-    "url": "https://index.hu/belfold/2026/03/25/fovarosi-itelotabla-mediaklub-ribai-csilla-ujvari-akos-quaestor-per",
-    "lead": "Újra bíróságon a Quaestor-ügy, ekkor veheti kezdetét a tárgyalás - Az is kiderült, melyik a legforgalmasabb ítélőtábla Magyarországon."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "tiborcz-konfector-szlovák-kórház": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Tiborcz István köréhez köthető Confector, a Paár Attila tulajdonában lévő West Hungária Bau (WHB) és a szlovákiai Bekor alkotta konzorcium nyerte el egy eperjesi (Prešov) szlovák katonai kórház megépítésének megbízását. A szerződés értéke mintegy 450 millió euró — kb. 180 milliárd forint —, ami a szlovák állam eredeti költségvetését körülbelül 100 millió euróval haladta meg."
-   },
-   {
-    "type": "text",
-    "content": "A WHB a Transparency International Magyarország tender-bajnokai közt szereplő, az Orbán-kormány egyik fő építőipari partnerének számító cég. A Confector korábban a Karmelita kolostor (a Miniszterelnökség székhelye) felújítását is elnyerte, mintegy 14 milliárd forint értékben. Tiborcz István korábban az Elios Zrt.-ben is érdekelt volt, amelyet 2015-ben a WHB vásárolt fel."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy jelenleg nyitott, jogerős megállapítás vagy hatósági eljárás eredménye egyelőre nem ismert, az érintettek ártatlannak tekintendők."
-   },
-   {
-    "type": "article-card",
-    "source": "mfor.hu",
-    "headline": "Ismert magyar cégek is építhetik a szlovák katonai kórházat",
-    "date": "2025-06-27",
-    "url": "https://mfor.hu/cikkek/vallalatok/ismert-magyar-cegek-is-epithetik-szlovak-katonai-korhaza.html",
-    "lead": "A West Hungária Bau, a Confector és a szlovákiai Bekor alkotta konzorcium nyerte el az eperjesi katonai kórház építését, mintegy 450 millió eurós szerződéssel."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
  "orban-viktor-kozpenzkonsultacio": {
   "blocks": [
    {
@@ -19998,152 +20193,6 @@
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
  },
- "meszaros-matrai-gazerőmu-elsewedy": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Mészáros Mátrai gázerőmű Elsewedy ügyre vonatkozóan a K-Monitor 52 milliárd forint közpénz-érintettséget becsült. Az ügy Mészáros Lőrincet és az egyiptomi Elsewedy Electric Co S.A.E. céget érinti, és jelenleg nyitott státuszú. A sajtójelentések szerint a vizsgálatot a vagyonvisszaszerzési hivatal is potenciálisan felülvizsgálhatja a közpénz-felhasználás körülményei miatt."
-   },
-   {
-    "type": "text",
-    "content": "Az ügyet övező sajtóvisszhang jellegzetes képet rajzol a közpénz-érintettségről és a különféle üzleti összefonódásokról. A hírek között szerepel, hogy a NER-hez köthető szereplők bankjai és vállalkozásai vizsgálat alatt állhatnak, valamint hogy kapcsolódó projektekben alvállalkozók állnak ki fizetésért, miközben más részből osztalékokat vesznek ki az érintett vállalkozások."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy jelenleg nyitott státuszában várható, hogy a kitöltésére vonatkozó vizsgálatok folytatódnak. A sajtó szerint a közpénz-érintettség feltárása és az üzleti kapcsolatok transparenciája fokozódhat a jogszabályi és intézményi feltételek változása révén."
-   },
-   {
-    "type": "article-card",
-    "source": "444.hu",
-    "headline": "Mészáros Lőrinctől Rogánon át Lázár Jánosig: kiket és miket vizsgálhat a Vagyonvisszaszerzési Hivatal?",
-    "date": "2026-06-24",
-    "url": "https://444.hu/2026/06/24/meszaros-lorinctol-roganon-at-lazar-janosig-kiket-es-miket-vizsgalhat-a-vagyonvisszaszerzesi-hivatal",
-    "lead": "Magyar Péter hónapok óta emlegeti a vagyonvisszaszerzési hivatalt, amely a NER kegyeltjeinek vagyonosodását is vizsgálná. Összegyűjtöttük, ki érezheti magát ez alapján veszélyben."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "hernadi-magyar-vagon-mentesítés": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Hernádi Magyar Vagon ügy a K-Monitor becslése szerint 40 milliárd forint közpénz-érintettséggel dokumentált nyitott ügy. Az ügyben Hernádi Zsolt szerepel felelős személyként, a Dunakeszi Járműjavító Kft. pedig érintett intézményként. A sajtójelentések szerint a cégcsoportból 2022 óta tízmilliárd forint osztalékot vontak ki magántőkealapok mögé rejtőző tulajdonosok."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy történetének szerint a kormány a Magyar Vagon-csoport bedőlt cégei megmentésére nyúlt közpénzhez. A sajtó beszámolói szerint a MÁV megvásárolta a dunakeszi járműjavítót, valamint több mint kétszer annyi közpénzzel igyekeztek stabilizálni a válságba került vállalatokat, mint amennyi profitot korábban kivontak a csoportból. A sajtó által közölt szám szerint az érintett közpénz meghaladja a 40 milliárd forintot."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy jelenleg nyitott státuszban van. A sajtóban megjelent cikkek szerint a pénzügyi folyamatok és az ezzel kapcsolatos döntési mechanizmusok közpénzfelhasználásának kérdéseit veszik górcső alá. Az ügy jogászi feldolgozottsága az adott dokumentumok alapján nem ismert."
-   },
-   {
-    "type": "article-card",
-    "source": "HVG",
-    "headline": "Azonnal meglódult a nyereség, amint Hernádi Zsolté lett a Magyar Vagon",
-    "date": "2026-03-25",
-    "url": "https://hvg.hu/kkv/20260325_magyar-vagon-hernadi-zsolt-mav-nyereseg#mn7zdtku55je8q819z3",
-    "lead": "A cechet az adófizetők állhatják."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "meszaros-fejér-bal-osztálék": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Fejér B.Á.L. Építő és Szolgáltató Zrt. ügye Mészáros Lőrincet érinti, és a sajtó szerint körülbelül 25 milliárd forint közpénz áramlott az érintett szervezethez. Az ügy jelenleg nyitott státuszban van. A sajtójelentések szerint a vállalatot állami vasúti beruházások keretében többek között informatikai fejlesztési feladatokra szerződtették, miközben alvállalkozók szerint jelentős összegek ki nem fizetéséről panaszkodtak."
-   },
-   {
-    "type": "text",
-    "content": "Az ügyre vonatkozó sajtócikkek azt tartalmazzák, hogy a vállalat vezetése és a Mészáros-familia tagjai jelentős osztalékfizetéseket realizáltak a cégből. Sajtójelentések szerint több milliárd forint osztalék került kifizetésre, beleértve rendezvényszervezési cégek részét is. Mészáros Lőrinc öccse, Mészáros János szintén részesült osztalékban, csakúgy mint más családtagok."
-   },
-   {
-    "type": "text",
-    "content": "Sajtójelentések szerint a Vagyonvisszaszerzési Hivatal potenciálisan vizsgálhatja az ügyet a közpénzekből való vagyonosodás tekintetében. Az ügy több sajtóorgánum által követett és dokumentált, azonban jogilag még nem zárult le eljárás."
-   },
-   {
-    "type": "article-card",
-    "source": "HVG",
-    "headline": "Hiába a ki nem fizetett alvállalkozókról szóló hírek, 3 milliárdos osztalékot vesznek ki Mészárosék a vasútépítő cégükből",
-    "date": "2026-06-02",
-    "url": "https://hvg.hu/kkv/20260602_r-kord-nyereseg-osztalek-milliard-meszaros-lorinc",
-    "lead": "Korábban több alvállalkozó is arról beszélt: a cég jelentős összegekkel tartozik nekik állami vasúti beruházásokon elvégzett munkák után, miközben a vállalat egy vitatott vasúti informatikai fejlesztés miatt is vizsgálatok kereszttüzébe került."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "autoipari-probapálya-zala": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "Az Autóipari Próbapálya Zala korrupciós ügy Palkovics László felelősségét érinti a Zalazone tesztpályát működtető cég körül. A sajtó szerint a közpénz-érintettség megközelítőleg 22 milliárd forintot tesz ki. Az ügy nyitott státuszban van, és a K-Monitor becslése alapján értékelik a közpénz-érintettség nagyságát."
-   },
-   {
-    "type": "text",
-    "content": "A sajtójelentések szerint az ügy a Széchenyi Egyetemből egy másik alapítványhoz kerülő, több tízmilliárd forint értékű vagyontartalmú cég körül koncentrálódik. 2025 májusában az Autóipari Próbapálya Zala Kft. egy vagyonkezelő alapítványba kerülhetett, ahol az állam csatlakozó alapítóként vesz részt. Ezt követően 2025 júniusában a parlament elfogadott egy olyan törvényt, amely lehetővé tette az Autóipari Próbapálya Zala Kft. kiszervezett közvagyonának visszavételét a közalapítványba."
-   },
-   {
-    "type": "text",
-    "content": "2026 júniusában a magyar kormány benyújtott egy törvénycsomagot az uniós források hazahozatala céljából, amely között szerepel a közfeladatot ellátó közérdekű vagyonkezelő alapítványok felszámolása. Az Autóipari Próbapálya Zala alapítványa szintén érintett volt ebben a folyamatban, amely augusztus 31-i határidővel zárult."
-   },
-   {
-    "type": "article-card",
-    "source": "Telex",
-    "headline": "Most szavazta meg a parlament azt, hogy hogyan lehet visszavenni a közalapítványba kiszervezett állami vagyont",
-    "date": "2025-06-11",
-    "url": "https://telex.hu/belfold/2025/06/11/zalazone-onvezeto-tesztpalya-szechenyi-istvan-egyetemert-alapitvany-alapitvany",
-    "lead": "Elfogadták azt a törvényt, amivel a Széchenyi Egyetemtől egy másik alapítványhoz kerülhet a a Zalazone tesztpályával rendelkező, sok tízmilliárd forint értékű cég."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "gattyán-györgy-adougy": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "Gattyán György elleni adóügye a Nemzeti Adó- és Vámhivatal (NAV) nyomozása során került nyilvánosságra. Az ügy kapcsán a sajtó szerint 19 milliárd forint közpénz-érintettség merült fel. A NAV volt nyomozója, Tiszolczi Lajos a 444.hu és a 24.hu cikkei szerint nyilvánosságra hozta, hogy Rogán Antal, Orbán Ráhel és Tiborcz István állhattak a nyomozás szüneteltetése mögött. A volt nyomozó 2024-ben kezdett nyilvánosságra kerülni az üggyel kapcsolatos információkkal, majd később neveket is említett."
-   },
-   {
-    "type": "text",
-    "content": "A Megoldás Mozgalom pénzügyi helyzete szintén Gattyán György hozzájárulásához köthető. A HVG 2025 júniusi cikke szerint a párt beszámolójából kiderült, hogy szinte kizárólag alapítójának pénzeiből működik, miközben papíron nyereséges maradt, de valójában több mint félmilliárd forintot bukott."
-   },
-   {
-    "type": "text",
-    "content": "A NAV intézményt érintő további vizsgálatok is folyamatban vannak. A 444.hu beszámolt arról, hogy a MOL és az Új Európa Alapítvány közötti egyes kifizetések miatt költségvetési csalás gyanújával nyomozást rendeltek el. A februári feljelentést a NAV az év végi választások előtt elutasította, azonban az ügyészség a feljelentő panaszát jóváhagyta, így az eljárás újraindult."
-   },
-   {
-    "type": "article-card",
-    "source": "444.hu",
-    "headline": "A NAV volt nyomozója szerint Rogán Antal, Orbán Ráhel és Tiborcz István intézte el, hogy ejtsék Gattyán György adócsalásos ügyét",
-    "date": "2026-05-15",
-    "url": "https://444.hu/2026/05/15/a-nav-volt-nyomozoja-szerint-rogan-antal-orban-rahel-es-tiborcz-istvan-intezte-el-hogy-ejtsek-gattyan-gyorgy-adocsalasos-ugyet",
-    "lead": "Tiszolczi Lajos beszélt ellenzéki szereplők állítólagos titkosszolgálati lehallgatásáról is."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "pataky-közösségi-misszió-pünkösdi-csalás": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Pataky Albert által vezetett, a Magyar Pünkösdi Egyházhoz tartozó békéscsabai Közösségi Misszió ellen nyitott ügyben költségvetési csalás és pénzmosás gyanúja merült fel. A K-Monitor becslése szerint az ügy során mintegy 18 milliárd forint közpénz-érintettség volt dokumentálható. Az ügy rendőrségi nyomozása több évet vett igénybe, majd az ügyészség vádat emelt bűnszervezetben elkövetett, különösen nagyértékű költségvetési csalás és pénzmosás bűntettei miatt."
-   },
-   {
-    "type": "text",
-    "content": "Az eljárás során a Békéscsabai Járásbíróság előzetesbe helyezte az intézmény volt ügyvezetőit. Az előzetesben tartóztatottak szerint az egyházi intézmény vezetése tudomással bírt a gyanúsított lépésekről. A sajtóbejelentések szerint az egyházi szervezet volt vezetői azzal védekeznek az ismertetett vádak ellen, hogy világi hatóságok nem ítélkezhetnek az egyházak gazdálkodásáról, ezért az EU Bíróságához kívánnak fordulni. Az ügy továbbra is nyitott, előzetesben lévő vádlottakkal és az egyházi szervezetet érintő védekezéssel."
-   },
-   {
-    "type": "article-card",
-    "source": "Magyar Narancs",
-    "headline": "A vádlottak szerint a bíróság nem ítélkezhet az egyházról a pünkösdieket érintő csalási ügyben",
-    "date": "2025-03-10",
-    "url": "https://magyarnarancs.hu/bun/a-vadlottak-szerint-a-birosag-nem-itelkezhet-az-egyhazrol-a-punkosdieket-erinto-csalasi-ugyben-274985",
-    "lead": "Azzal védekeznek a pünkösdi egyház volt intézményének sokmilliárdos költségvetési csalással vádolt volt vezetői, hogy világi hatóság nem ítélheti meg az egyházak gazdálkodását, ezért kikérnék az EU Bíróságának véleményét az ügyben."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
  "rakosrendező-adasetel": {
   "blocks": [
    {
@@ -20165,643 +20214,6 @@
     "date": "2026-06-12",
     "url": "https://telex.hu/belfold/2026/06/12/velkey-gyorgy-laszlo-kulugyminiszterium-allamtitkar-diplomata-utlevelek-visszavonasa",
     "lead": "Velkey György László bejelentette azt is: ellenjegyezte azoknak a diplomata-útleveleknek a visszavonását, amelyekkel évek óta visszaéltek."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "balásy-euronews-vasarlas": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "Az Euronews felvásárlás közpénz-ügyében Balásy Gyula vezetésével működő cégcsoportot több sajtócikk alapján szoros állami közpénz-kapcsolatok fűzik össze. A K-Monitor becslése szerint az ügy során mintegy 17 milliárd forint közpénz volt érintett, bár ezt jogilag még nem bizonyította sem bírósági ítélet, sem ügyészségi vádirat. Az ügy a nyitott ügyek közé tartozik, feldolgozása nem lezárult."
-   },
-   {
-    "type": "text",
-    "content": "A sajtóban szereplő információk szerint több állami szerv is szerződött a Balásy-féle cégcsoporttal. Egy 2023-as közbeszerzésből, amelyet a Nemzeti Kommunikációs Hivatal írta ki, a lombikszektort reklámozó cégek mintegy 211 millió forint keretösszegből 86,5 millió forintot használtak fel. Egy másik csatornán a Kulturális és Innovációs Minisztérium játékmotorokat szerzett be, amelyekért a sajtó szerint jelentősen magasabb árat fizetett, mint a piaci átlag. 2026 júniusában az állami rendezvényügynökség azonnali hatállyal mondott fel szerződéseket a Balásy-féle Lounge-cégeknek."
-   },
-   {
-    "type": "text",
-    "content": "A cégcsoport több sajtójelentés szerint nehéz helyzetbe került, a felszámolás lehetősége merült fel. Az üggyel kapcsolatban kevés az újabb információ, és jogilag bizonyított következtetések még nem születtek."
-   },
-   {
-    "type": "article-card",
-    "source": "Index",
-    "headline": "Azonnali hatállyal felmondta a Balásy-féle Lounge-cégek szerződéseit az állami rendezvényügynökség",
-    "date": "2026-06-24",
-    "url": "https://index.hu/belfold/2026/06/24/balasy-gyula-lounge-szerzodes-allam-felmondas-belugyminiszterium-kormany-magyar-peter-tisza",
-    "lead": "Azonnali hatállyal felmondta a Balásy-féle Lounge-cégek szerződéseit az állami rendezvényügynökség - A közpénzek védelmére hivatkozva szakította meg a kapcsolatot a bajba jutott cégcsoporttal."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "rákosrendező-eagle-hills": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "# Rákosrendezői Eagle Hills botrány"
-   },
-   {
-    "type": "text",
-    "content": "A Rákosrendezői Eagle Hills botrány az Eagle Hills Hungary Zrt. nevű céghez köthető, amelynek ügyeihez Garancsi István neve kapcsolódik. A sajtójelentések szerint az ügy a főváros egy nagyléptékű fejlesztési projektjét érinti, amely arab befektetők pénzéből valósulna meg. A K-Monitor becslése szerint körülbelül 15 milliárd forint közpénz-érintettség áll az ügy mögött, bár a projekt teljes hatásköreit és finanszírozási szerkezetét csak a 2028-ban bemutatandó mesterterv tisztázhatja majd."
-   },
-   {
-    "type": "text",
-    "content": "A sajtó szerint az ügy azzal kapcsolatos, hogy a projekt megvalósulása jelentős állami támogatáson múlik, amely finanszírozás nélkül nem valósulhatna meg. Az ügyet jelenleg nyitott státuszú nyomozás jellemzi, és a sajtó számos kérdést vetett fel a projekt finanszírozásának és szerződéskötésének körülményeiről. Az ügy összesen tíz sajtócikk tárgyát képezi, amely a közpénzek felhasználásának átláthatóságára és az ellenőrzésre vonatkozó kérdéseket érinti."
-   },
-   {
-    "type": "article-card",
-    "source": "24.hu",
-    "headline": "Számtalan kérdést felvet a főváros Rákosrendező-projektje, ami az állam százmilliárdjai nélkül sosem válhat valóra",
-    "date": "2026-04-27",
-    "url": "https://24.hu/kultura/2026/04/27/rakosrendezo-fovaros-allam-mini-dubaj-problema/",
-    "lead": "A legtöbb fehér foltot csak a 2028-ban bemutatkozó mesterterv oszlatja majd el, az azonban az egész projekt alól kihúzhatja a talajt, ha a következő kormányok kitáncolnak az arab befektetőnek szerződésben vállalt ígéretekből."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "rakosrendezett-beruházas-mak": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Rákosrendezői beruházás MÁK ügyéről szóló sajtójelentések szerint körülbelül 8 milliárd forint közpénz-érintettség áll fenn. Az ügy Lázár János volt kormányzati szereplőhöz kötődik, és a Magyar Államkincstár (MÁK) intézményt érinti. Az eset nyitott státuszú, jelenleg vizsgálat tárgya lehet."
-   },
-   {
-    "type": "text",
-    "content": "A sajtó közleményei alapján az ügy a szélesebb vagyonkezelési kérdésekhez kapcsolódhat, amelyek az Orbán-kormányzat alatt állami alapítványokat és közérdekű vagyonkezelő szervezeteket érintettek. A Vagyonvisszaszerzési Hivatal potenciális szerepével kapcsolatos sajtóbeszerzések között szerepel Lázár János is, aki több kormányzati tisztséget töltött be."
-   },
-   {
-    "type": "text",
-    "content": "A rendelkezésre álló sajtójelentések korlátozott részleteket tartalmaznak az ügy konkrét körülményeiről. Az ártatlanság velmét tiszteletben tartva megjegyzhető, hogy az ügyet nyilvánosságra hozó sajtó információi alapján továbbra is nyomozás vagy vizsgálat tárgyát képezheti az eset, annak jogi lezárása azonban a közöltek alapján még nem történt meg."
-   },
-   {
-    "type": "article-card",
-    "source": "444.hu",
-    "headline": "\"A lényegi döntést, utasításokat hozó személyek a következők: Dr. Orbán Viktor volt miniszterelnök\"",
-    "date": "2026-06-25",
-    "url": "https://444.hu/2026/06/25/a-lenyegi-dontest-utasitasokat-hozo-szemelyek-a-kovetkezok-dr-orban-viktor-volt-miniszterelnok",
-    "lead": "Lapunk birtokába jutott egy fotó egy állítólagos ügyészségi dokumentumról. Felsorolják benne, kiknek a büntetőjogi felelősségét kellene tisztázni az úgynevezett aranykonvoj-ügyben. A nevek között ott van Orbán Viktoré is. Farkas Örs exállamtitkárról és Hajdu János ex-TEK-főigazgatóról azt írják, „gy"
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "lazar-közlekedési-minisztérium-korrupcios": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "Lázár János közlekedési kiadásait vizsgáló ügy az egyre táguló korrupciós ügyek közé tartozik, amelyekben a Közlekedési Minisztérium által kezeltek közpénzekkel való gazdálkodás kerül előtérbe. A K-Monitor becslése szerint a sajtójelentések alapján körülbelül 7 milliárd forint közpénz-érintettség merült fel az üggyel kapcsolatban. Az ügy jelenleg nyitott státuszban van, további vizsgálatokra vár."
-   },
-   {
-    "type": "text",
-    "content": "A sajtójelentések szerint nagyobb összegű közpénzáramlásokra kerül sor. A sajtó relációjában egy 451 milliárdos beruházás kapcsán a NER-közelségű vállalkozások jelentős előlegezéseket kaptak. Lázár János személyessége mellett az alapítványok és közérdekű vagyonkezelő szervezetek működésének szabályozása is az ügyet érinti, különösen a kormányzat által javasolt módosítások kapcsán, amelyek ezek felszámolását célozták."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy kutatása során nyilvánosságra kerültek az elektronikus építéshatósági rendszer titkosítási kérdései is. Az ügyet politikai szemszögből is megvitatják, a vagyonvisszaszerzési hivatal lehetséges szerepe kapcsán pedig szélesebb körű vizsgálatok kerülhetnének napvilágra. A sajtó számos összefüggésre világít rá, ugyanakkor jogerős bírósági vagy ügyészségi megállapítások még nem érhetőek el az ügyről."
-   },
-   {
-    "type": "article-card",
-    "source": "444.hu",
-    "headline": "Mészáros Lőrinctől Rogánon át Lázár Jánosig: kiket és miket vizsgálhat a Vagyonvisszaszerzési Hivatal?",
-    "date": "2026-06-24",
-    "url": "https://444.hu/2026/06/24/meszaros-lorinctol-roganon-at-lazar-janosig-kiket-es-miket-vizsgalhat-a-vagyonvisszaszerzesi-hivatal",
-    "lead": "Magyar Péter hónapok óta emlegeti a vagyonvisszaszerzési hivatalt, amely a NER kegyeltjeinek vagyonosodását is vizsgálná. Összegyűjtöttük, ki érezheti magát ez alapján veszélyben."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "rakay-petőfi-film-költségvetési-túlkezelés": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Rákay Philip által rendezett Petőfi-film, a \"Most vagy soha!\" production során a Nemzeti Filmintézethez köthető közpénz-érintettség a sajtó szerint mintegy 7 milliárd forintra becsülhető. Az ügy központjában a filmhez felépített díszletváros áll, melynek költségvetési túlkezelése miatt több sajtóorgánum is vizsgálódott. A K-Monitor becslése alapján ezt az összeget érinti az ügy közpénz-perspektívájából."
-   },
-   {
-    "type": "text",
-    "content": "A sajtóban megjelent cikkek szerint az üggyel kapcsolatos szerződések kezelésében átláthatóságbeli problémák merültek fel. Az Átlátszó által közölt információk alapján a Filmintézet által benyújtott szerződéslistáról több adat (pénzösszegek, bérlők nevei) ki volt takarva, amely miatt a szerkesztőség azt közölte, hogy jogi útra tereli az ügyet. A HVG360 újraszámításai szerint a díszletvárosi projekt költségvetésénél később nagyobb összegek váltak ismertté."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy nyitott státuszú, és a sajtóban szereplő információk mellett további közpénzügyi kapcsolatok is napvilágra kerültek. A megadott adatok alapján azonban a konkrét jogerős bírósági ítéletről vagy jogerős kárösszegről nincsenek elérhető információk."
-   },
-   {
-    "type": "article-card",
-    "source": "Átlátszó",
-    "headline": "Így fest most a Rákay-féle Petőfi-film milliárdokból felépített díszletvárosa",
-    "date": "2025-04-03",
-    "url": "https://atlatszo.hu/orszagszerte/2025/04/03/igy-fest-most-a-rakay-fele-petofi-film-milliardokbol-felepitett-diszletvarosa/",
-    "lead": "Drónfelvételen látható a Most vagy soha! díszletvárosa, ami Rákay Philip szerint hamar visszahozza majd minden idők legdrágább magyar filmjének árát."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "balasy-gyula-loginvent-vami-reptér": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Balásy reptéri vámolási ügy Balásy Gyula és a Loginvent Zrt. körül összpontosul. A K-Monitor becslése szerint az ügy mintegy 5 milliárd forint közpénz-érintettséggel jár. Az ügy jelenleg nyitott státuszban van."
-   },
-   {
-    "type": "text",
-    "content": "A sajtójelentések szerint Balásy Gyula cégei több állami megrendeléssel kapcsolatos ügybe voltak bevonva. A Nemzeti Kommunikációs Hivatal által kiírt közbeszerzésben 86,5 millió forint értékű hirdetési szolgáltatást nyújtottak, amely a 211 millió forintos keretösszeg része volt. A Kulturális és Innovációs Minisztérium játékmotorokat szerzett be cégeitől, darabonként több mint 15 ezer forintért, amely a szokásos piaci árnak a háromszorosa volt. Ezek a termékeket bölcsödékben használták kampánycélokra."
-   },
-   {
-    "type": "text",
-    "content": "Balásy Gyula cégei közül a Lounge Group likviditási gondokkal nézett szembe, mivel a működési költségek nem voltak finanszírozhatók a számlák zárolása miatt. A sajtó szerint Balásy cégei tavaly mintegy 200 milliárd forint bevételt értek el, azonban ő ezekből az osztalékot nem szándékozott kivenni. A cégek felszámolásával kapcsolatban nyilatkozott, hogy azt reálisnak látja."
-   },
-   {
-    "type": "article-card",
-    "source": "Telex",
-    "headline": "Az államosított lombikbébiszektornak is hirdetéseket gyártottak Balásy Gyula cégei",
-    "date": "2026-06-23",
-    "url": "https://telex.hu/belfold/2026/06/23/balasy-gyula-szezrodes-humanreprodukcios-igazgatosag-lombikszektor",
-    "lead": "86,5 millió forintot használtak fel a 211 millió forintos keretösszegből, hogy hirdessenek valamit, aminek nem is igazán kell reklám. A közbeszerzést a Nemzeti Kommunikációs Hivatal írta ki, az eljárás végén Balásy cége szerződhetett az Országos Kórházi Főigazgatósággal."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "bethlen-alap-szlovákiai-futball": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Bethlen Gábor Alap szlovákiai futball-támogatásait övező ügy Gubík László felelős személyéhez kapcsolódik. Sajtójelentések szerint az alapítványnak a határon túli magyar közösségek támogatásáért felelős Bethlen Gábor Alapon keresztül több szlovákiai futballklub és akadémia részesült magyar állami támogatásban. A dokumentált közpénz-érintettség a sajtóbecslések szerint 5 milliárd forint körül mozog."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy nyitott státusza tükrözi, hogy a sajtó több, potenciális szabálytalanságra utaló körülményt azonosított. A cikkek szerint az alapítvány pénzfelosztási gyakorlatáról felmerültek kérdések, illetve az alapot érintő általánosabb kritikák is ismertté váltak. A sajtójelentések rámutattak arra is, hogy az alapítványnál alacsonyabb összegek esetén elmaradt a részletes elszámolási követelmény."
-   },
-   {
-    "type": "text",
-    "content": "Az eset a magyar közpénzek határon túli felhasználásáról szóló szélesebb társadalmi és politikai vita része. Az ügy jelenleg nyitott, további vizsgálatok vagy jogi eljárások lehetségesek. A sajtó által feltárt körülmények alapján releváns intézmények vizsgálata indokoltak lehetnek."
-   },
-   {
-    "type": "article-card",
-    "source": "Magyar Narancs",
-    "headline": "1,5 milliárd forint jutott tavaly a magyar kormánytól szlovákiai futballklubokra és akadémiákra",
-    "date": "2024-01-08",
-    "url": "https://magyarnarancs.hu/belpol/15-milliard-forint-jutott-tavaly-a-magyar-kormanytol-szlovakiai-futballklubokra-es-akademiakra-264723",
-    "lead": "Több szlovákiai szervezet is kapott magyar állami támogatást a határon túli pénzekért felelős Bethlen Gábor Alapon keresztül,  a református egyház is jól járt a határon túli támogatásokból."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "fulco-deák-egyesulet-penza-osztasa": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Fulco Deák Egyesület civil pályázat-ügyében Vitályos Eszter személyéhez kapcsolódik egy nyitott korrupciós ügy, melynek kapcsán a sajtó szerint legalább 5 milliárd forint közpénz-érintettség merült fel. Az RTL Klubnak 2026. január 9-én közölt információi szerint az egyesület legalább tízmillió forint állami támogatást kapott az elmúlt években, miközben plakátokon népszerűsítette a kormányszóvivőt."
-   },
-   {
-    "type": "text",
-    "content": "A dokumentált közpénz-érintettség körülményeit illetően a sajtó szerint az egyesület pályázati úton szerzett állami forrásokhoz, azonban az ügyet tartalmazó cikkek az adott közpénzek konkrét felhasználásáról nem tartalmaznak részleteket. Az ügy jellegéből adódóan – civil szervezet költségvetési támogatása és a kormányzati szereplő közötti lehetséges összefonódás – az állami szervek közpénz-felhasználásának ellenőrzésére irányuló érdeklődés megfogalmazódott a sajtóban."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy továbbra is nyitott státuszban van, jogilag bizonyított kárról, illetve jogerős bírósági ítéletről, ügyészségi vádiratról vagy hivatalos állami vizsgálat eredményéről a rendelkezésre álló sajtóanyag nem számol be."
-   },
-   {
-    "type": "article-card",
-    "source": "RTL",
-    "headline": "Legalább tízmillió forint közpénzt kapott a kormányszóvivőt népszerűsítő egyesület",
-    "date": "2026-01-09",
-    "url": "https://rtl.hu/hirado/2026/01/09/tizmillio-forint-kozpenzt-kapott-kormanyszovivot-nepszerusito-egyesulet",
-    "lead": "Egy egyesület plakátokon népszerűsíti a kormányszóvivőt, miközben legalább tízmillió forint állami támogatást kapott az elmúlt években."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "hadhaży-vietnami-korhaz-torzó": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Vietnami kórház torzó ügy a magyar kormányzati közreműködéssel, magyar hitelből elkezdett kórházépítés befejezésének elmaradásához kapcsolódik. Az ügyre vonatkozó sajtójelentések szerint körülbelül 5 milliárd forint közpénz volt érintett. Az ügy státusza nyitott, felelős személyként Maróth Gáspárt, az érintett intézményként a VMD Zrt.-t jelölik meg."
-   },
-   {
-    "type": "text",
-    "content": "A sajtójelentések szerint az üggyel kapcsolatban korrupciós problémák merültek fel. A Gazdasági Versenyhivatal (GVH) a 2015-ös közbeszerzésre vonatkozóan bírságot szabott ki, amely EU-s támogatást is felhasználó beszerzés volt. Az Európai Csalás Elleni Hivatal (OLAF) 2022 januárjában már csalást állapított meg. A szóban forgó közbeszerzéshez kapcsolódóan diagnosztikai gépek beszerzésével összefüggő vizsgálatok is zajlottak. A rendőrség azonban kilenc év után, 2025 május végén megszüntette a nyomozást a szabálytalan kórházi beszerzések ügyében."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy jelenleg is nyitott státuszban van, további jogi vagy административ vizsgálatok lehetőségeivel."
-   },
-   {
-    "type": "article-card",
-    "source": "Klubrádió online",
-    "headline": "Hadházy: Torzó maradt a magyar kórház Vietmamban",
-    "date": "2024-11-02",
-    "url": "https://www.klubradio.hu/hirek/hadhazy-torzo-maradt-a-magyar-korhaz-vietmamban-147915",
-    "lead": "Nem sikerült befejezni a Vietnamban magyar kormányzati közreműködéssel, magyar hitelből elkezdett kórház építését – erről írt Hadházy Ákos ellenzéki politikus."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "lombkoronasétány-botrány": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Lombkoronasétány 112 milliós ügy Tasó László fideszes országgyűlési képviselőhöz és a Build It Mérnökiroda Zrt.-hez köthető. A sajtó szerint az ügyben összesen mintegy 5 milliárd forint közpénz-érintettség merülhet fel. A projekt keretében egy lombkoronasétány, illetve egy 1200 méteres futópálya építése valósult meg, azonban a Misztikus erdő projekt megépítése során az elapadtak a források."
-   },
-   {
-    "type": "text",
-    "content": "Az Integritás Hatóság 2024 februárjában feljelentést tett az ügyben, miután súlyos szabálytalanságokat talált a projektek minden főbb állomásán. A hatóság megállapította, hogy az irregularitások sértik az európai uniós támogatások felhasználására vonatkozó előírásokat. Tasó László később azt állította, hogy az Integritás Hatóság koncepciós eljárást folytat ellene."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy továbbra is nyitott, az önkormányzat költségvetésére gyakorolt hatása mellett kérdésesnek tűnik az építkezések tulajdonjogi helyzete is. A sajtójelentések alapján a futópálya egyelőre nem a város tulajdona maradt, és az önkormányzat költségvetése majdnem bedőlt az építkezés miatt."
-   },
-   {
-    "type": "article-card",
-    "source": "HVG",
-    "headline": "Már az északkelet-magyarországi utak is miniszteri biztost kaptak, havi kétmillióért a lombkoronasétányos Tasó László vállalta el",
-    "date": "2025-06-07",
-    "url": "https://hvg.hu/itthon/20250607_Mar-az-eszakkelet-magyarorszagi-utak-is-miniszteri-biztost-kaptak-havi-ketmillioert-a-lombkoronasetanyos-Taso-Laszlo-vallalta-el",
-    "lead": "A másik jó hír: továbbra is lesz a szub-szaharai térségben megvalósuló magyar összkormányzati tevékenységek külpolitikai összehangolásáért felelős miniszteri biztosa az országnak."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "meszaros-lőrinc-avcon-jet": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Mészáros Lőrinc légijármű üzletében érintett AVCON JET GmbH cég kapcsán a sajtó szerint körülbelül 5 milliárd forint közpénz-érintettség merülhet fel. Az ügy jelenleg nyitott státuszban van, és a K-Monitor becslése alapján dokumentálódott a közpénz-kapcsolat. A sajtójelentések szerint az ügy vizsgálata során a Vagyonvisszaszerzési Hivatal lehetőségeivel is foglalkoztak a médiaforrások."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy kontextusában a sajtó több Mészáros-kapcsolódású tranzakcióról számolt be, amely a vagyonosodáshoz vezető üzleteket mutat. Ezek között szerepel az egyik bányavagyonnak egy Mészáros-közeli céghez történt átadása, valamint a rendezvényszervezési és egyéb üzletágakban megvalósult osztalékos megállapodások. A sajtójelentések szerint Mészáros Lőrinc rokonai is részesültek jelentős osztalékokból az összefüggő céghálózatban."
-   },
-   {
-    "type": "text",
-    "content": "A rendelkezésre álló információk alapján az ügy főként sajtóbecslésekre támaszkodik, és jogilag még nem történt meg sem a közpénz-érintettség véglegesen bizonyított megállapítása, sem a felelősség jogi megállapítása. Az ügy továbbra is nyitott marad."
-   },
-   {
-    "type": "article-card",
-    "source": "444.hu",
-    "headline": "Mészáros Lőrinctől Rogánon át Lázár Jánosig: kiket és miket vizsgálhat a Vagyonvisszaszerzési Hivatal?",
-    "date": "2026-06-24",
-    "url": "https://444.hu/2026/06/24/meszaros-lorinctol-roganon-at-lazar-janosig-kiket-es-miket-vizsgalhat-a-vagyonvisszaszerzesi-hivatal",
-    "lead": "Magyar Péter hónapok óta emlegeti a vagyonvisszaszerzési hivatalt, amely a NER kegyeltjeinek vagyonosodását is vizsgálná. Összegyűjtöttük, ki érezheti magát ez alapján veszélyben."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "meszaros-lőrinc-gyerekaru-fogaszat": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "# Mészáros Lőrinc gyerekáruháza és luxusfogászata"
-   },
-   {
-    "type": "text",
-    "content": "A K-Monitor becslése szerint legalább 5 milliárd forint közpénz-érintettség köthető Mészáros Lőrinc Baba Magazin Kft. cégeinek működéséhez. Az ügy jelenleg nyitott, a sajtójelentések szerint többek között a cég rendezvényszervezési tevékenysége és osztalékjutalmak vonhatnak közpénzekkel kapcsolatos kérdéseket. A cég körül az elmúlt időszakban több vagyonosodási ügy került nyilvánosságra."
-   },
-   {
-    "type": "text",
-    "content": "A sajtó beszámolói szerint Mészáros Lőrinc üzleti portfoliója igen szélesnek bizonyult, többek között a rendezvényszervezésbe is beruházott. Az ehhez kapcsolódó cégek milliárdos osztalékokat hoztak. Közben a Mészáros-család más tagjainak, köztük Mészáros János öccsének is jelentős kereset jutott üzleti kapcsolatokon keresztül. A vagyonvisszaszerzési hivatal lehetséges működésével kapcsolatban olyan politikai szereplők is felmerülhetnek a sajtóban, mint Mészáros Lőrinc."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy megítéléséhez hiányzik a jogerős bírósági ítélet, illetve az ügyészségi vagy hatósági hivatalos vizsgálat. A sajtójelentések alapján továbbra is feldolgozás alatt álló korrupciós gyanús ügyről van szó."
-   },
-   {
-    "type": "article-card",
-    "source": "444.hu",
-    "headline": "Mészáros Lőrinctől Rogánon át Lázár Jánosig: kiket és miket vizsgálhat a Vagyonvisszaszerzési Hivatal?",
-    "date": "2026-06-24",
-    "url": "https://444.hu/2026/06/24/meszaros-lorinctol-roganon-at-lazar-janosig-kiket-es-miket-vizsgalhat-a-vagyonvisszaszerzesi-hivatal",
-    "lead": "Magyar Péter hónapok óta emlegeti a vagyonvisszaszerzési hivatalt, amely a NER kegyeltjeinek vagyonosodását is vizsgálná. Összegyűjtöttük, ki érezheti magát ez alapján veszélyben."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "nagy-marton-haditechnika-ügyelete": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "Az ügyet a Nagy Márton és Szalay-Bobrovniczky Kristóf nevéhez fűződő haditechnikai tranzakciók köré csoportosítják, amelyek a Haditechnikai Kereskedelmi Ügynökség Kft. működésével állnak összefüggésben. A sajtójelentések szerint körülbelül 5 milliárd forint közpénz-érintettség dokumentálható az ügyben."
-   },
-   {
-    "type": "text",
-    "content": "Az egyik központi elem egy kormányrendelet, amely az NGM-et arra kötelezte, hogy adja vissza a honvédség cégének a Milipol nevű fegyverkereskedő céget. A sajtó szerint azonban előzően jelentős összegeket kívántak kirántani a vállalatból, amely műveletet az ellenzék az állami vagyon felélésének szándékaként értékelte."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy nyitott státuszban van, és a sajtóban szereplő információk alapján továbbra is felmerülnek kérdések a közpénzek kezeléséről és a transzparencia hiányáról. A K-Monitor által becsült közpénz-érintettség nagysága miatt az eset az intermediális korrupciós ügyeket körülvevő diskurzus részét képezi."
-   },
-   {
-    "type": "article-card",
-    "source": "24.hu",
-    "headline": "Nagy Mártonék minden pénzt ki akartak söpörni az állami fegyverkereskedő cégből, mielőtt visszaadják a HM-nek",
-    "date": "2025-10-28",
-    "url": "https://24.hu/belfold/2025/10/28/magyar-vedelmi-exportugynokseg-ngm-hm-nagy-marton-fegyverkereskedo-ceg/",
-    "lead": "Egy tavalyi kormányrendelet arra kötelezte az NGM-et, hogy adja vissza a honvédség cégének a Milipol nevű fegyverkereskedő céget, amelyből azonban előbb annyi pénzt akartak kirántani, hogy a vállalat akár csődbe is mehetett volna."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "nyerges-arno-őrzővédő": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Nyerges-Arno őrzővédő cég ügye a sajtójelentések szerint közpénz-érintettséggel járó tranzakciókat takar. A K-Monitor becslése szerint körülbelül 5 milliárd forint közpénz volt érintett az esetben. Az ügy nyitott státuszban van, és Mészáros Lőrincet nevezik meg a felelős személyként, míg az Arno'99 intézmény az érintett szervezet."
-   },
-   {
-    "type": "text",
-    "content": "A sajtóban megjelent cikkek a NER-közeli szereplőknek jutó közpénzek szélesebb kontextusában helyezik el az ügyet. Az egyik sajtóforrás szerint a Civil Zrt. 2025-ben is jó évet zárt, ugyanakkor több beszámoló utal a kormányzati kedvezményezetteknek folyósított közpénzekre és az ezekből eredő vagyongyarapodásra. A cikkek szerint a különféle NER-közeli cégek és személyek még a kormányváltás előtti időszakban is jelentős közpénz-áramlásban részesültek."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy továbbra is nyitott, és a sajtójelentések szerint a vagyonvisszaszerzési hivatal is foglalkozhat hasonló esetekkel. Az üggyel kapcsolatban eddig egyetlen sajtócikk került feldolgozásra, amely alapján a dokumentált közpénz-érintettség körülbelül 5 milliárd forint nagyságrendű."
-   },
-   {
-    "type": "article-card",
-    "source": "mfor.hu",
-    "headline": "Nyerges Zsoltnak milliárdokat termelt a NER legnagyobb őrző-védő cége",
-    "date": "2026-06-02",
-    "url": "https://mfor.hu/cikkek/makro/nyerges-zsoltnak-milliardokat-termelt-a-ner-legnagyobb-orzo-vedo-cege.html",
-    "lead": "Forgalma alapján a Civil Zrt. 2025-ben is a története legjobb évét zárta, a profit pedig már Nyerges Zsoltot gazdagítja."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "orban-közép-európai-akadémia": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Közép-európai Akadémia alapítványi ügyét Orbán Viktor volt miniszterelnök szerepéthez kötik, aki szerint sajtójelentések alapján döntő szerepet játszott az ügy során. A K-Monitor becslése szerint az ügyben körülbelül 5 milliárd forint közpénz-érintettség merült fel. Az ügy nyitott státuszú, és több sajtóorgánum közölt cikkeket az üggyel kapcsolatban."
-   },
-   {
-    "type": "text",
-    "content": "A megjelent sajtójelentések szerint Orbán Viktor szerepe több aspektust érint. Telex-beszámolók alapján az úgynevezett aranykonvoj-akcióban az esetleges szakmai indokoltatlanság ellenére Orbán Viktor rendelte meg a rajtaütést, amely a legmagasabb szintről jött még március elején. Az Index és 444.hu cikkei szerint az ügyészség nyilatkozott az aranykonvoj-botrányról, valamint egy feltételezett ügyészségi dokumentum felsorolása szerint Orbán Viktor szerepe került vizsgálat alá a büntetőjogi felelősség tisztázása kapcsán."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy továbbá összekapcsolódott más történésekkel is, például a kormány korábbi különadó-politikájához kötött kártérítési kérdésekkel és az ezzel kapcsolatos közigazgatási cselekmények vizsgálatával. Az ügypörlyeg egyértelműen nyitott maradt, jogi lezárása és végleges megállapításai függőben vannak."
-   },
-   {
-    "type": "article-card",
-    "source": "444.hu",
-    "headline": "\"A lényegi döntést, utasításokat hozó személyek a következők: Dr. Orbán Viktor volt miniszterelnök\"",
-    "date": "2026-06-25",
-    "url": "https://444.hu/2026/06/25/a-lenyegi-dontest-utasitasokat-hozo-szemelyek-a-kovetkezok-dr-orban-viktor-volt-miniszterelnok",
-    "lead": "Lapunk birtokába jutott egy fotó egy állítólagos ügyészségi dokumentumról. Felsorolják benne, kiknek a büntetőjogi felelősségét kellene tisztázni az úgynevezett aranykonvoj-ügyben. A nevek között ott van Orbán Viktoré is. Farkas Örs exállamtitkárról és Hajdu János ex-TEK-főigazgatóról azt írják, „gy"
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "orban-sara-tiborcz-meszaros-ügyeletek": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "Az Orbán–Tiborcz ingatlan-ügy nyitott korrupciós ügynek számít, amelyet a K-Monitor becslése szerint körülbelül 5 milliárd forint közpénz-érintettség jellemez. Az ügy Orbán Viktor volt miniszterelnök személyéhez köthető, és a BDPST Group intézményt érinti. A sajtójelentések szerint az ügy több aspektust foglal magában, amelyek az Orbán család különböző tagjainak gazdasági tevékenységeit érintik."
-   },
-   {
-    "type": "text",
-    "content": "A rendelkezésre álló sajtócikkek szerint az üggyel kapcsolatban az Orbán család tagjai között gazdasági tranzakciók zajlottak. Az egyik cikk szerint Orbán Dávid, a volt miniszterelnök unokaöccse bányajait 2024-ben, egy halálos baleset után Mészáros Lőrinchez közelálló cégnek adta át, miközben a közelben maradtak további üzleti érdekeltségei. Más közlemények szerint az Orbán család különböző tagjainak cégeivel kapcsolatban eltérő üzleti teljesítmény volt tapasztalható."
-   },
-   {
-    "type": "text",
-    "content": "Az ügyhez kapcsolódóan felvetődött a volt miniszterelnök személyes felelőssége is. Egy állítólagos ügyészségi dokumentum szerint Orbán Viktor szerepe a lényegi döntéseket hozó személyek között jelenik meg. A sajtó szerint az üggyel továbbá az építőanyag-gyártókra kivetett különadók piaci hatásai és az aranykonvoj-ügy is kapcsolódnak. Az ügy jelenleg nyitott státuszú."
-   },
-   {
-    "type": "article-card",
-    "source": "444.hu",
-    "headline": "Mészáros Lőrincé lett az egyik Orbán-bánya",
-    "date": "2026-06-01",
-    "url": "https://444.hu/2026/06/01/meszaros-lorince-lett-az-egyik-orban-banya",
-    "lead": "Orbán Dávid, a volt miniszterelnök unokaöccse egy bányáját 2024-ben, egy halálos baleset után adta át, vagy el egy Mészáros-közeli cégnek. De nem távolodott el a helyszíntől, az átadott bánya szomszédságában tavaly decemberben szerezte meg a bányászati jogot."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "rákosrendező-ecequity-garancsi-habony": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Rákosrendezői ECEquity Garancsi-Habony ügy Garancsi István üzletemberre és az ECEquity Befektetési Vagyonkezelő Zrt.-re vonatkozik, amelyhez K-Monitor becslése szerint körülbelül 5 milliárd forint közpénz-érintettség társul. Az ügy jelenleg nyitott státuszban van."
-   },
-   {
-    "type": "text",
-    "content": "A sajtójelentések szerint Garancsi István és Habony Árpád érdekeltsége alatt álló cégek jelentős osztalékfizetéseket eszközöltek. A Garinvest Projekt Zrt. körülbelül 19,7 milliárd forint osztalék kifizetésről döntött, míg a sajtó szerint Habony Árpád egy év alatt több mint 8,8 milliárd forintot vett fel egyik vagyonkezelőjéből. A cég eredménye jelentősen megemelkedett, azonban a közpénz-érintettség pontos jogi megalapozottsága az elérhető sajtóforrások alapján nem tisztázott."
-   },
-   {
-    "type": "text",
-    "content": "Az ügyhöz kapcsolódik továbbá, hogy Garancsi István a Gazdasági Versenyhivatal jóváhagyásával a soproni kaszinó többségi tulajdonosa lett, valamint hogy cégétől egy ukrán pénzszállítási feladat átvételére is sor kerülhetett. A sajtó által dokumentált közpénz-érintettség mértéke és a tényleges jogsértés vizsgálata azonban jelenleg nem tisztázott az adat alapján."
-   },
-   {
-    "type": "article-card",
-    "source": "24.hu",
-    "headline": "20 milliárdos osztalékot fizet a Garancsi-Habony-féle kaszinós cég",
-    "date": "2026-05-29",
-    "url": "https://24.hu/fn/gazdasag/2026/05/29/garancsi-istvan-habony-arpad-merleg-garinvest-2025/",
-    "lead": "A frissen közzétett közgyűlési jegyzőkönyv szerint a cég a 2025-ös, kiugró nyereség után is hasonló nagyságrendű kifizetésről döntött, mint egy évvel korábban."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "szij-gidrán-honved-biznisz": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "# Szíjj László Gidrán-biznisz"
-   },
-   {
-    "type": "text",
-    "content": "A Szíjj László NER-közeli üzletembert és HT Division Zrt. cégét érintő ügykörben a sajtó szerint 5 milliárd forint közpénz-érintettség dokumentálható. A sajtójelentések szerint a kormányzat több, érzékeny infrastrukturális beruházást bízott meg a céggel, amelyek közül a mohácsi híd fejlesztése állt nagyobb figyelem alatt. Az ügyet nyitott, még nem jogerősen lezárt ügyként tartják nyilván."
-   },
-   {
-    "type": "text",
-    "content": "A sajtóbeszámolók szerint Szíjj László cégei rendszeres közpénzhez jutottak, többek között a választásokat megelőzően is. Az egyik sajtóértesülés szerint a projekt 451 milliárdos keretéből a cég 98 százalékos előleget kapott. A sajtó szerint a számok jelentősen megemelkedtek, amikor a kormányzat \"háborús áremelkedés\" indokkal további forrásokat biztosított az érintett cégeknek."
-   },
-   {
-    "type": "text",
-    "content": "Az ügyhöz kapcsolódóan sajtóbeszámolók említenek kapcsolódó személyeket is, így Szijjártó Péter külügyminisztert és Benkő Szilárdot, akinek cége szintén több, a külügyhöz kötődő projektben feltűnt. A sajtó szerint ezek a kapcsolatrendszeri elemek az ügy körüli kérdéseket tovább bonyolítják, ám ezek önmagukban nyitott kérdések maradnak."
-   },
-   {
-    "type": "article-card",
-    "source": "Telex",
-    "headline": "Szijjártó Péter legjobb barátjának különös története az állami milliárdokkal",
-    "date": "2026-06-18",
-    "url": "https://telex.hu/direkt36/2026/06/18/szijjarto-peter-legjobb-baratjanak-kulonos-tortenete-az-allami-milliardokkal",
-    "lead": "A Direkt36 nyomozása szerint már egy magyar hitelből zajló afrikai beruházásban is feltűnt Szijjártó Péter legjobb barátjának, Benkő Szilárdnak a cége, amely a külügyhöz kötődő sok más projekten is dolgozott. A volt miniszter állítja, hogy neki fogalma sem volt ezekről az üzletekről."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "meszaros-envirotis-vagyonkezelés": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Mészáros Envirotis vagyontulajdonítás ügye a sajtójelentések szerint körülbelül 4 milliárd forint közpénz-érintettséggel áll kapcsolatban. Az ügy Mészáros Lőrinc és az Envirotis Holding Zrt. köré összpontosul, és jelenleg nyitott ügyként szerepel nyilvántartásban."
-   },
-   {
-    "type": "text",
-    "content": "A sajtó szerint az üggyel kapcsolatos kérdések között szerepelnek az állami vasúti beruházásokhoz köthető alvállalkozói tartozások és a vasúti cégből kivont osztalékok. Egy 2026 júniusában megjelent híradás szerint a vállalat jelentős összegekkel állhat tartozásban alvállalkozóinak a munkák elvégzése után, miközben ugyanekkor több milliárdos osztalékot vonnának ki a cégből. Az ügy kapcsán felmerültek a vagyonvisszaszerzés és az átláthatóságot növelő intézkedések lehetősége is."
-   },
-   {
-    "type": "text",
-    "content": "A nyitott ügy státusza arra utal, hogy az ügyek körül továbbra is nyomozási vagy vizsgálati tevékenységek lehetségesek, azonban az eljárások jelenlegi állapotáról a megadott adatok és cikkek nem tartalmaznak részleteket."
-   },
-   {
-    "type": "article-card",
-    "source": "444.hu",
-    "headline": "Mészáros Lőrinctől Rogánon át Lázár Jánosig: kiket és miket vizsgálhat a Vagyonvisszaszerzési Hivatal?",
-    "date": "2026-06-24",
-    "url": "https://444.hu/2026/06/24/meszaros-lorinctol-roganon-at-lazar-janosig-kiket-es-miket-vizsgalhat-a-vagyonvisszaszerzesi-hivatal",
-    "lead": "Magyar Péter hónapok óta emlegeti a vagyonvisszaszerzési hivatalt, amely a NER kegyeltjeinek vagyonosodását is vizsgálná. Összegyűjtöttük, ki érezheti magát ez alapján veszélyben."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "szöllősi-nemzeti-sport-kesma": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "# Nemzeti Sport 3,5 milliárd forint KESMA vásárlása"
-   },
-   {
-    "type": "text",
-    "content": "Az állam 3,5 milliárd forint közpénz-érintettséggel szerzett meg a Nemzeti Sport című újságot a Közép-Európei Sajtó és Média Alapítvány (KESMA) révén. Szöllősi György vezetésével működő szervezet egyéb gazdasági tevékenységeihez kapcsolódóan a sajtó szerint 610 millió forint állami költségvetésből finanszírozott terjesztési kiadás is felmerült. Az ügyet nyitott korrupciós esetek közül tartják nyilván."
-   },
-   {
-    "type": "text",
-    "content": "A K-Monitor becslése szerint 3 milliárd forint közpénz áramlott az ügylethez kapcsolódóan. Az Átlátszó tényfeltárásai alapján több mint kétéves jogi pereskedés után derült nyilvánosságra az újságvásárlás konkrét ára. Az Orbán-kormányzathoz közeli szervezeteknek ítélt támogatások rendszeres jellegét pedig a 2024 végén publikált sajtóbeszámolók is dokumentálták, miszerint az ehhez köthető személyek kormányzati támogatásban részesültek."
-   },
-   {
-    "type": "text",
-    "content": "A sajtójelentések szerint a Honvédelmi Minisztérium is közvetlenül finanszírozta az érintett szervezetet mintegy 240 millió forinttal, mely szintén az ügy közpénz-vonatkozását erősítette."
-   },
-   {
-    "type": "article-card",
-    "source": "Népszava",
-    "headline": "Több mint 400 millió forint közpénzt kap a sportújságírók Szöllősi-féle szervezete",
-    "date": "2026-03-30",
-    "url": "https://nepszava.hu/3317127_magyar-sportujsagirok-szovetsege-koltsegvetes-400-millio-forint-kozpenz-szollosi-gyorgy",
-    "lead": "Ebből a Honvédelmi Minisztérium 240 millió forintot fizet."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "rogan-valton-városligeti-megbizas": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Valton Városligeti őrző-védő megbízás nyitott ügye Rogán Antal felelőssége alatt áll, és K-Monitor szerint körülbelül 3 milliárd forint közpénz-érintettséggel járhat. A Valton-Sec Zrt. az Orbán-kormány időszakában az egyik legsikeresebb biztonsági cég volt a közbeszerzéseken, azonban a kormányváltás után a cégcsoport sorsa bizonytalanná vált."
-   },
-   {
-    "type": "text",
-    "content": "A sajtójelentések szerint az ügy szálai több irányban futnak. Rogán Antal egy találmányhoz is kapcsolódik, amelyből a Telekom 2015-ben egy összegben fizetett; a NAV 2026 közepén nyomozást folytatott ezzel kapcsolatban. Emellett Csányi Sándor 2026 júniusában a Valton-birodalom egy teljes részét kihasította magának. A sajtó több cikke kitér arra is, hogy Rogánhoz közel álló személyek – köztük Sarka Kata és Szendrei-Rogán Cecília – különféle vállalkozásokon keresztül jelentős pénzügyi nyereségeket értek el."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy jelenleg nyitott státuszban van, és a sajtójelentések szerint vizsgálatok folynak rá vonatkozóan."
-   },
-   {
-    "type": "article-card",
-    "source": "444.hu",
-    "headline": "Mészáros Lőrinctől Rogánon át Lázár Jánosig: kiket és miket vizsgálhat a Vagyonvisszaszerzési Hivatal?",
-    "date": "2026-06-24",
-    "url": "https://444.hu/2026/06/24/meszaros-lorinctol-roganon-at-lazar-janosig-kiket-es-miket-vizsgalhat-a-vagyonvisszaszerzesi-hivatal",
-    "lead": "Magyar Péter hónapok óta emlegeti a vagyonvisszaszerzési hivatalt, amely a NER kegyeltjeinek vagyonosodását is vizsgálná. Összegyűjtöttük, ki érezheti magát ez alapján veszélyben."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "balazs-attila-zvk-zugloi-szakrendelő": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Zuglói szakrendelő és telekcsere ügylete Balázs Attila, a NER közeli ingatlanfejlesztő és bányatulajdonos nevéhez köthető. Az ügy középpontjában a ZVK Development Kft. áll, amely Zuglóban több beruházást végzett. A sajtó szerint körülbelül 1 milliárd forint közpénz érintettségéről számol be az ügyet feldolgozó cikkekben."
-   },
-   {
-    "type": "text",
-    "content": "A sajtójelentések szerint Balázs Attila egy nagyobb alkuban érintett lenne, amely a zuglói városközpont fejlesztésével kapcsolatos. Az egyik jelentés szerint a beruházó 1,5 milliárd forint beruházást ígért egy szakrendelő megépítésére, cserébe pedig ingatlanokhoz és egyéb kedvezmények garantálásához kötné ezt. A Bosnyák téri Zenit Corso bevásárlóközpont megnyitása kapcsán a zuglói önkormányzat azonban per indítását helyezte kilátásba, amely a beruházás több aspektusával kapcsolatban merült fel. A sajtó beszámolói szerint az épület működtetésével kapcsolatos engedélyügyek és környezetvédelmi kérdések is viták tárgya voltak."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy jelenlegi státusza nyitott, a sajtóban szereplő információk alapján azonban többféle jogi és engedélyezési kérdés merült fel a beruházások körül."
-   },
-   {
-    "type": "article-card",
-    "source": "HVG360",
-    "headline": "Milliárdosok egymás között: Lakatos Benjámin és Balázs Attila ingatlanos ügylete",
-    "date": "2026-02-27",
-    "url": "https://hvg.hu/360/20260227_lakatos-benjamin-balazs-attila-met-bayer-construct-milliardos-porto-bello-residence",
-    "lead": "A Molban felnőtt Lakatos Benjámin ma már nemcsak a svájci központú MET-csoport első embere, hanem az ingatlanos vállalkozásai mellett egy nemzetközi médiaprojektben is befektető."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "szepműveszeti-muzeum-tender": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Szépművészeti Múzeum tenderbeszerzéseit érintő ügy nyomán a Közbeszerzési Döntőbizottság több közpénzzel finanszírozott műtárgyvásárlás során jogtalan közbeszerzési eljárás-mellőzést állapított meg. A sajtójelentések szerint legalább hat értékhatár feletti műtárgyvásárlás történt a szükséges eljárás nélkül. A múzeum több mint 50 millió forintos bírságot kapott e jogsértések miatt."
-   },
-   {
-    "type": "text",
-    "content": "Az Állami Számvevőszék szintén megtámadott hét műtárgy beszerzésénél azonosított közbeszerzési eljárás-mellőzést. Az érintett közpénz a sajtó szerint meghaladhatja az 1,5 milliárd forintot. A múzeum vezetésében Baán László volt a felelős személy. A K-Monitor becslése szerint az ügyhez kapcsolódó dokumentált közpénz-érintettség mintegy 1 milliárd forint."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy az intézmény működésében történt eljárási hiányosságokat tár fel, miközben nyitott maradt, és a múzeum jelzése szerint felülvizsgáltatta a jogszabályi hátteret. Az eset az intézmény több korábban sajtóban szereplő közbeszerzésekhez is kapcsolódott, azonban a vizsgálati és döntési folyamatok még nem zárultak le véglegesen."
-   },
-   {
-    "type": "article-card",
-    "source": "Népszava",
-    "headline": "Több mint 50 millió forintos bírságot kell fizetnie a Szépművészeti Múzeumnak a tender nélküli műtárgybeszerzések miatt",
-    "date": "2025-09-22",
-    "url": "https://nepszava.hu/3295367_szepmuveszeti-muzeum-50-millio-forint-birsag",
-    "lead": "Nem fogott túl vastagon a Közbeszerzési Döntőbizottság ceruzája."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "forró-krisztián-sk-kampanya": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Forró Krisztián SK kampány ügye a magyar közpénzek szlovákiai felhasználásához kapcsolódik. A sajtójelentések szerint a ProRegia Cultura nevű, 2022-ben létrehozott felvidéki civil szervezet a Bethlen Gábor Alaptól több száz millió forintot kapott közvélemény-kutatásokra. Az egyik közlemény szerint a szervezet 270 millió forintot nyert el a magyar állami alaptól, azonban a kutatások konkrét eredménye nem dokumentált, míg a szervezet nyilván finanszírozta kapcsolódó kampánytevékenységeket."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy közpénz-érintettségéről a sajtó által becsült 1 milliárd forint értékről tudunk. A dokumentációk szerint a Bethlen Gábor Alap pályázati szerkezete révén a közfinanszírozás felhasználásáról hosszú ideig kevés információ volt nyilvános. Sajtójelentések szerint az illegális kampányfinanszírozásra vonatkozó pénzek szétosztása a szervezeten keresztül történt, azonban a konkrét jogi következmények és felelősségek tisztázása még folyamatban van."
-   },
-   {
-    "type": "text",
-    "content": "Az ügy jelenleg nyitott státuszban van. A sajtó több cikkben számolt be a közpénzek felhasználásáról és az intézmények szerkezeti hiányosságairól, amelyek az átlátható közfinanszírozást nehézzé teszik."
-   },
-   {
-    "type": "article-card",
-    "source": "24.hu",
-    "headline": "Magyar közpénz tűnt fel a legutóbbi két szlovákiai választás kampányaiban",
-    "date": "2025-01-10",
-    "url": "https://24.hu/kulfold/2025/01/10/szlovakia-valasztasi-kampany-kozpenz-proregia-cultura-magyar-szovetseg/",
-    "lead": "A ProRegia Cultura nevű civil szervezet közvélemény-kutatásokra kapott több száz millió forintot a magyar kormánytól. A kutatásaiknak nincs nyoma, az ellenben biztos, hogy a szervezet fizette ki a Magyar Szövetség aktivistáit."
-   }
-  ],
-  "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"
- },
- "demeter-szilard-multiplex-multimuzeumközpont": {
-  "blocks": [
-   {
-    "type": "text",
-    "content": "A Demeter múzeumi gigaprojekt káusza során a sajtó szerint közpénz-érintettség merült fel a Kulturális és Innovációs Minisztérium és Demeter Szilárd alapítványa között. A sajtójelentések szerint az alapítvány választás előtti támogatásban részesült: a 2026 júniusban nyilvánosságra hozott dokumentumok szerint 9 milliárd forint érintett közpénz. Demeter szerint ez az összeg a hozzá kapcsolódó céghálóban maradt, és az alapítvány készen áll a visszautalásra."
-   },
-   {
-    "type": "text",
-    "content": "A sajtó által dokumentált problémák szélesebb körűek, mivel az ügy több kulturális intézményt is érintett. Az Országos Széchényi Könyvtárban a minisztérium rendkívüli vizsgálatot indított a vezetési hiányosságok és informatikai kudarc miatt. Az Iparművészeti Múzeum kapcsán felmerültek kérdések a kormányzati döntésekkel és támogatásokkal kapcsolatban."
-   },
-   {
-    "type": "text",
-    "content": "A K-Monitor becslése szerint összesen 1 milliárd forint közpénz-érintettség áll az ügy középpontjában. Az eset jelenleg nyitott státuszú, és a sajtójelentések alapján a többek között szerkezeti és pénzügyi problémákat mutattak ki az érintett intézmények működésében."
-   },
-   {
-    "type": "article-card",
-    "source": "HVG",
-    "headline": "Demeter Szilárd alapítványa 9 milliárd forintot kapott a választás előtt Hankó Balázs minisztériumától",
-    "date": "2026-06-17",
-    "url": "https://hvg.hu/kultura/20260617_kulturalis-es-innovacios-miniszterium-magyar-kulturaert-alapitvany-tamogatas-demeter-szilard",
-    "lead": "Demeter azt állítja, hogy a pénz az alapítványhoz kapcsolódó céghálóban maradt, és készek is visszaadni azt."
    }
   ],
   "attribution": "Forrás: K-Monitor sajtóadatbázis (CC BY-SA 4.0)"

@@ -198,7 +198,10 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     // vidékfejlesztési program visszaéléseiről, nem kifejezetten erről a
     // projektről) hozta a legmagasabb DamageEstimate-et. A user szerint a
     // lombkoronasétányra ténylegesen elköltött, forrásolt összeg 112 millió.
-    scandalKey: 'lombkoronasétány-botrány',
+    // ASCII kulcs kötelező itt — getCaseOverride() sima Array.find()-ot
+    // használ, nincs unaccent()-fallback mint a DB-lekérdezéseknél, úgyhogy
+    // az ékezetes kulcs sosem találna az (ASCII-kanonikus) URL-re.
+    scandalKey: 'lombkoronasetany-botrany',
     hideAutoDamage: true,
     damageText: 'A lombkoronasétányra ténylegesen elköltött, dokumentált összeg 112 millió Ft — az 5 Mrd-os figura egy tágabb, a teljes vidékfejlesztési programot érintő OLAF-vizsgálat száma, nem erre a projektre vonatkozik.',
   },
