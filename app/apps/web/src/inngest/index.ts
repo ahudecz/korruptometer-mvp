@@ -8,6 +8,7 @@ import { detectVerdicts } from './functions/detect-verdicts';
 import { detectAssetRecoveries } from './functions/detect-asset-recoveries';
 import { syncFacebookPosts } from './functions/sync-facebook-posts';
 import { refreshDailyBreaking } from './functions/refresh-daily-breaking';
+import { detectWatchlistRemovals } from './functions/detect-watchlist-removals';
 import { gdprRetentionSweep } from './functions/gdpr-retention-sweep';
 import { kmonitorDiscoverTags } from './functions/kmonitor-discover-tags';
 import { kmonitorTraverseApprovedTags } from './functions/kmonitor-traverse-approved-tags';
@@ -74,4 +75,5 @@ export const functions = [
   detectAssetRecoveries,
   syncFacebookPosts,
   refreshDailyBreaking,
+  detectWatchlistRemovals,
 ];

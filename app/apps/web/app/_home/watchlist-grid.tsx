@@ -77,12 +77,21 @@ export async function WatchlistGrid({ breaking = [] }: { breaking?: BreakingArti
   const db = getDb();
   const since = new Date('2026-04-12');
 
-  const resignations = await db
-    .select({ name: schema.politicalResignations.name, resignationType: schema.politicalResignations.resignationType })
-    .from(schema.politicalResignations)
-    .where(gte(schema.politicalResignations.resignationDate, since));
+  const [resignations, dbRemovals] = await Promise.all([
+    db
+      .select({ name: schema.politicalResignations.name, resignationType: schema.politicalResignations.resignationType })
+      .from(schema.politicalResignations)
+      .where(gte(schema.politicalResignations.resignationDate, since)),
+    // detect-watchlist-removals.ts (2+ független forrás megerősítése) — ez
+    // felülbírálja a WATCH_LIST statikus status mezőjét, ugyanúgy ahogy a
+    // /lemondasok/[id] végoldal is teszi.
+    db.select().from(schema.watchlistRemovals),
+  ]);
+  const removalByPersonId = new Map(dbRemovals.map((r) => [r.personId, r]));
 
   const persons = WATCH_LIST.map(p => {
+    const dbRemoval = removalByPersonId.get(p.id);
+    if (dbRemoval) return { ...p, status: dbRemoval.removalType === 'resigned' ? 'resigned' as const : 'removed' as const };
     const dynamicStatus = resolveStatus(resignations, p.name);
     return dynamicStatus !== 'active' ? { ...p, status: dynamicStatus } : p;
   });

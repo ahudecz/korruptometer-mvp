@@ -28,6 +28,9 @@ export interface WatchlistBreakingBlock {
   headline: string;
   lead?: string;
   url?: string;
+  /** ISO date (YYYY-MM-DD) — the "BREAKING" badge itself hides 7 days after
+   *  this date (the framed card stays); see lemondasok/[id]/page.tsx. */
+  detectedAt?: string;
 }
 
 export interface WatchlistDetailEntry {
@@ -403,6 +406,7 @@ export const WATCHLIST_DETAIL: WatchlistDetailEntry[] = [
       headline: 'Magyar Péter javaslatára felmentette Sulyok Tamás az NMHH elnökét',
       lead: 'Sulyok Tamás köztársasági elnök Magyar Péter miniszterelnök javaslatára felmentette Koltay Andrást a Nemzeti Média- és Hírközlési Hatóság (NMHH) elnöki pozíciójából. Koltay 2021 óta töltötte be a tisztséget.',
       url: 'https://hvg.hu/itthon/20260701_magyar-peter-felmentes-sulyok-tamas-nmhh-elnoke-koltay-andras',
+      detectedAt: '2026-07-01',
     },
     nerRole: 'Koltay médiahatósága NER-barát szelektivitással működik: a Fidesz kampánymanipulációja ellen nem lép, a független médiumokat megbünteti, a bíróság döntéseit figyelmen kívül hagyja — majd a választások után hirtelen tud eljárásokat indítani a volt kormánymédia ellen.',
     keyCases: [

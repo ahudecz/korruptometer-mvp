@@ -1541,5 +1541,32 @@ export const facebookPages = pgTable(
   }),
 );
 
+// ─── Watchlist Removal Detections ──────────────────────────────────────────
+// A WATCH_LIST (watchlist-config.ts) 8 fője kézzel írt statikus configban él
+// (config-as-code, sosem írja a pipeline) — ez a tábla a runtime "eltávolítva"
+// felismerés eredményét tárolja, amit a lemondasok/[id]/page.tsx és a
+// watchlist-grid.tsx a statikus adat FÖLÉ olvas be. Lásd
+// detect-watchlist-removals.ts: csak akkor ír ide, ha legalább 2 független
+// forrású cikk egyértelműen megerősíti, hogy a megbízatás TÉNYLEGESEN (nem
+// csak tervezetten) megszűnt.
+export const watchlistRemovals = pgTable(
+  'WatchlistRemoval',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    personId: text('personId').notNull().unique(), // WATCH_LIST.id
+    removalType: text('removalType').notNull(), // 'removed' | 'resigned'
+    detectedAt: timestamp('detectedAt', { withTimezone: true }).notNull().defaultNow(),
+    sourceHeadline: text('sourceHeadline').notNull(),
+    sourceName: text('sourceName'),
+    sourceUrl: text('sourceUrl').notNull(),
+    sourceDateLabel: text('sourceDateLabel'),
+    lead: text('lead'),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+  },
+);
+
+export type WatchlistRemoval = typeof watchlistRemovals.$inferSelect;
+export type NewWatchlistRemoval = typeof watchlistRemovals.$inferInsert;
+
 export type FacebookPage = typeof facebookPages.$inferSelect;
 export type NewFacebookPage = typeof facebookPages.$inferInsert;

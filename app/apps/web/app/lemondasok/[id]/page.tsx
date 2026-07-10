@@ -41,6 +41,16 @@ function statusColor(status: WatchPerson['status']): string {
   return '#e31937';
 }
 
+const BREAKING_BADGE_DAYS = 7;
+
+/** True while the badge should still say "BREAKING" — undefined detectedAt
+ *  (legacy entries) always shows it, matching the pre-existing behavior. */
+function isStillBreaking(detectedAt: string | undefined): boolean {
+  if (!detectedAt) return true;
+  const ageMs = Date.now() - new Date(detectedAt).getTime();
+  return ageMs <= BREAKING_BADGE_DAYS * 24 * 60 * 60 * 1000;
+}
+
 function photoSrc(url: string): string {
   if (url.startsWith('/')) return url;
   return `/api/img-proxy?url=${encodeURIComponent(url)}`;
@@ -53,12 +63,36 @@ export async function generateStaticParams() {
 export default async function WatchlistPersonPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const person = WATCH_LIST.find((p) => p.id === id);
-  if (!person) notFound();
+  const staticPerson = WATCH_LIST.find((p) => p.id === id);
+  if (!staticPerson) notFound();
 
   const detail = WATCHLIST_DETAIL.find((d) => d.id === id);
 
   const db = getDb();
+
+  // detect-watchlist-removals.ts írhat ide egy sort, ha legalább 2 független
+  // forrás megerősítette, hogy a megbízatás ténylegesen megszűnt — ez felülírja
+  // a statikus configot, amíg valaki kézzel be nem ír egy végleges státuszt.
+  const [dbRemoval] = await db
+    .select()
+    .from(schema.watchlistRemovals)
+    .where(eq(schema.watchlistRemovals.personId, id))
+    .limit(1);
+
+  const person: WatchPerson = dbRemoval
+    ? { ...staticPerson, status: dbRemoval.removalType === 'resigned' ? 'resigned' : 'removed' }
+    : staticPerson;
+
+  const breakingBlock: WatchlistBreakingBlock | undefined = dbRemoval
+    ? {
+        source: dbRemoval.sourceName ?? 'Forrás',
+        date: dbRemoval.sourceDateLabel ?? '',
+        headline: dbRemoval.sourceHeadline,
+        lead: dbRemoval.lead ?? undefined,
+        url: dbRemoval.sourceUrl,
+        detectedAt: dbRemoval.detectedAt.toISOString().slice(0, 10),
+      }
+    : detail?.breakingBlock;
 
   const conditions = [];
   if (detail?.newsKeywords) {
@@ -135,35 +169,37 @@ export default async function WatchlistPersonPage({ params }: { params: Promise<
 
       <div className="person-body">
         {/* Bio + breaking block grouped so they share one gap slot */}
-        {(detail?.bio || detail?.breakingBlock) && (
+        {(detail?.bio || breakingBlock) && (
           <div className="person-bio-section">
             {detail?.bio && (
               <div className="person-bio">
                 <p>{detail.bio}</p>
               </div>
             )}
-            {detail?.breakingBlock && (
+            {breakingBlock && (
               <a
-                href={detail.breakingBlock.url || undefined}
+                href={breakingBlock.url || undefined}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`ugy-block-article-card ugy-block-article-card--breaking${!detail.breakingBlock.url ? ' no-link' : ''}`}
+                className={`ugy-block-article-card ugy-block-article-card--breaking${!breakingBlock.url ? ' no-link' : ''}`}
               >
-                <div className="ugy-block-article-breaking-badge">
-                  <span className="ugy-block-article-breaking-dot" />
-                  BREAKING
-                </div>
+                {isStillBreaking(breakingBlock.detectedAt) && (
+                  <div className="ugy-block-article-breaking-badge">
+                    <span className="ugy-block-article-breaking-dot" />
+                    BREAKING
+                  </div>
+                )}
                 <div className="ugy-block-article-meta">
-                  <span className="ugy-block-article-source">{detail.breakingBlock.source}</span>
-                  {detail.breakingBlock.date && (
-                    <span className="ugy-block-article-date">{detail.breakingBlock.date}</span>
+                  <span className="ugy-block-article-source">{breakingBlock.source}</span>
+                  {breakingBlock.date && (
+                    <span className="ugy-block-article-date">{breakingBlock.date}</span>
                   )}
                 </div>
-                <div className="ugy-block-article-headline">{detail.breakingBlock.headline}</div>
-                {detail.breakingBlock.lead && (
-                  <p className="ugy-block-article-lead">{detail.breakingBlock.lead}</p>
+                <div className="ugy-block-article-headline">{breakingBlock.headline}</div>
+                {breakingBlock.lead && (
+                  <p className="ugy-block-article-lead">{breakingBlock.lead}</p>
                 )}
-                {detail.breakingBlock.url && (
+                {breakingBlock.url && (
                   <span className="ugy-block-article-arrow">Cikk olvasása →</span>
                 )}
               </a>
