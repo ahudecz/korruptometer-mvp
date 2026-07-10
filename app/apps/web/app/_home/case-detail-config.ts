@@ -690,6 +690,11 @@ export const PERSON_PHOTOS: Record<string, { photoUrl: string; photoCredit?: str
   'Horváth Csaba':   { photoUrl: '/images/persons/horvath-csaba-onkormanyzati.tv.png',                    photoCredit: 'Eredeti fotó: onkormanyzati.tv' },
   'Szíjj László':    { photoUrl: '/images/persons/szijj-laszlo-ahang.png',                                photoCredit: 'Eredeti fotó: ahang.hu' },
   'Bige László':     { photoUrl: '/images/persons/bige-laszlo-444.png',                                   photoCredit: 'Eredeti fotó: 444.hu' },
+  'Jászai Gellért':  { photoUrl: '/images/persons/jaszai-gellert-ahang.png',                              photoCredit: 'Eredeti fotó: ahang.hu' },
+  'Csányi Sándor':   { photoUrl: '/images/persons/csanyi-sandor.png',                                     photoCredit: 'Eredeti fotó: nagybajom.hu' },
+  'Barta-Eke Gyula': { photoUrl: '/images/persons/barta-eke-gyula-hvg.png',                                photoCredit: 'Eredeti fotó: hvg.hu' },
+  'Kis-Szölgyémi Ferenc': { photoUrl: '/images/persons/kis-szolgyemi-ferenc-ahang.png',                    photoCredit: 'Eredeti fotó: ahang.hu' },
+  'Tombor András':   { photoUrl: '/images/persons/tombor-andras-hvg.png',                                 photoCredit: 'Eredeti fotó: hvg.hu' },
 };
 
 export function getCaseOverride(scandalKey: string): CaseDetailOverride | null {
