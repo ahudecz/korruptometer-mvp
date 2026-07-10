@@ -90,6 +90,14 @@ export const UGYEK: UgyekConfig[] = [
     crimeTypes: ['Hűtlen kezelés', 'Költségvetési csalás', 'Közbeszerzési szabálysértés'],
     relatedPersonIds: [],
     articleTag: 'NKA',
+    // articleTag='NKA' csak a 2026 tavaszi egyszeri import-nka.ts szkript
+    // kézi tag-jét találja meg — a folyamatos scraper (scrape-news.ts) soha
+    // nem oszt ki ilyen ügy-specifikus tag-et, csak generikus kategóriákat
+    // (korrupció/lemondás/médiaügy stb.), ezért minden azóta érkezett
+    // NKA-cikk kimaradt a "kapcsolódó hírekből". A többi ügy (aranykonvoj,
+    // hatvanpuszta stb.) articleKeywords-szel működik folyamatosan — ugyanezt
+    // pótoljuk itt is.
+    articleKeywords: ['NKA', 'Hankó Balázs', 'Nemzeti Kulturális Alap'],
     moreUrl: '/ugyek/nka-botrany',
     summary: 'Hankó Balázs volt kulturális miniszter a 2026-os választások előtt szabálytalanul osztott ki milliárdos NKA-támogatásokat — közel 394 millió forintnyi egyedi miniszteri keretből. A NAV hűtlen kezelés bűntett gyanújával nyomoz, az ügy 17+ milliárd Ft-ot érint. Tarr Zoltán a kifizetések átvizsgálását rendelte el.',
     videoId: 'NRA-QuItdUA',
