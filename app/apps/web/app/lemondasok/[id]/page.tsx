@@ -73,11 +73,20 @@ export default async function WatchlistPersonPage({ params }: { params: Promise<
   // detect-watchlist-removals.ts írhat ide egy sort, ha legalább 2 független
   // forrás megerősítette, hogy a megbízatás ténylegesen megszűnt — ez felülírja
   // a statikus configot, amíg valaki kézzel be nem ír egy végleges státuszt.
-  const [dbRemoval] = await db
-    .select()
-    .from(schema.watchlistRemovals)
-    .where(eq(schema.watchlistRemovals.personId, id))
-    .limit(1);
+  // Try/catch: a WatchlistRemoval tábla a 0038 migráció lefuttatásáig nem
+  // létezik éles DB-n — enélkül a védelem nélkül egy hiányzó tábla ledöntötte
+  // ezt a végoldalt is (2026-07-10).
+  let dbRemoval: typeof schema.watchlistRemovals.$inferSelect | undefined;
+  try {
+    const rows = await db
+      .select()
+      .from(schema.watchlistRemovals)
+      .where(eq(schema.watchlistRemovals.personId, id))
+      .limit(1);
+    dbRemoval = rows[0];
+  } catch {
+    dbRemoval = undefined;
+  }
 
   const person: WatchPerson = dbRemoval
     ? { ...staticPerson, status: dbRemoval.removalType === 'resigned' ? 'resigned' : 'removed' }

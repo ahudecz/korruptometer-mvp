@@ -77,16 +77,22 @@ export async function WatchlistGrid({ breaking = [] }: { breaking?: BreakingArti
   const db = getDb();
   const since = new Date('2026-04-12');
 
-  const [resignations, dbRemovals] = await Promise.all([
-    db
-      .select({ name: schema.politicalResignations.name, resignationType: schema.politicalResignations.resignationType })
-      .from(schema.politicalResignations)
-      .where(gte(schema.politicalResignations.resignationDate, since)),
-    // detect-watchlist-removals.ts (2+ független forrás megerősítése) — ez
-    // felülbírálja a WATCH_LIST statikus status mezőjét, ugyanúgy ahogy a
-    // /lemondasok/[id] végoldal is teszi.
-    db.select().from(schema.watchlistRemovals),
-  ]);
+  // detect-watchlist-removals.ts (2+ független forrás megerősítése) — ez
+  // felülbírálja a WATCH_LIST statikus status mezőjét, ugyanúgy ahogy a
+  // /lemondasok/[id] végoldal is teszi. Try/catch: a WatchlistRemoval tábla
+  // a 0038 migráció lefuttatásáig nem létezik éles DB-n — enélkül a védelem
+  // nélkül egy hiányzó tábla az EGÉSZ nyitóoldalt ledöntötte (2026-07-10).
+  let dbRemovals: (typeof schema.watchlistRemovals.$inferSelect)[] = [];
+  try {
+    dbRemovals = await db.select().from(schema.watchlistRemovals);
+  } catch {
+    dbRemovals = [];
+  }
+
+  const resignations = await db
+    .select({ name: schema.politicalResignations.name, resignationType: schema.politicalResignations.resignationType })
+    .from(schema.politicalResignations)
+    .where(gte(schema.politicalResignations.resignationDate, since));
   const removalByPersonId = new Map(dbRemovals.map((r) => [r.personId, r]));
 
   const persons = WATCH_LIST.map(p => {
