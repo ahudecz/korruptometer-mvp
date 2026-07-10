@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useRef, useEffect, useState, useTransition, type FormEvent } from 'react';
 
+const SEARCH_DEBOUNCE_MS = 350;
+
 const OPEN_OPTIONS = [
   { value: '', label: 'Mindegyik' },
   { value: 'open', label: 'Folyamatban' },
@@ -45,6 +47,7 @@ export function CaseFilters({ offences, initial }: Props) {
   const offenceRef = useRef<HTMLDivElement>(null);
   const openRef    = useRef<HTMLDivElement>(null);
   const damageRef  = useRef<HTMLDivElement>(null);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     function handle(e: MouseEvent) {
@@ -56,6 +59,8 @@ export function CaseFilters({ offences, initial }: Props) {
     return () => document.removeEventListener('mousedown', handle);
   }, []);
 
+  // scroll: false mindenhol — enélkül minden szűrőváltás (Enter a keresőben
+  // is) a lap tetejére ugrott, elveszítve a felhasználó görgetési pozícióját.
   function pushUrl(overrides: Partial<{ q: string; offence: string; open: string; minDamage: string }>) {
     const merged = { q, offence, open, minDamage, ...overrides };
     const next = new URLSearchParams();
@@ -65,17 +70,33 @@ export function CaseFilters({ offences, initial }: Props) {
     if (merged.minDamage && merged.minDamage !== '0') next.set('minDamage', merged.minDamage);
     const sort = initial.sort ?? 'damage_desc';
     if (sort !== 'damage_desc') next.set('sort', sort);
-    startTransition(() => router.push(`/adatbazis${next.toString() ? `?${next.toString()}` : ''}`));
+    startTransition(() => router.push(`/adatbazis${next.toString() ? `?${next.toString()}` : ''}`, { scroll: false }));
   }
+
+  // Élő szűrés gépelés közben — nincs valódi kliens-oldali adat (szerver
+  // lapoz), ezért debounce-olt szerver-kérés helyettesíti az Entert; ha a
+  // felhasználó mégis Entert üt, azt is elkapja az onSearchSubmit, csak
+  // törli az időzítőt, hogy ne fusson le duplán.
+  function onSearchChange(value: string) {
+    setQ(value);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => pushUrl({ q: value }), SEARCH_DEBOUNCE_MS);
+  }
+
+  useEffect(() => () => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+  }, []);
 
   function onSearchSubmit(e: FormEvent) {
     e.preventDefault();
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     pushUrl({ q });
   }
 
   function clearAll() {
     setQ(''); setOffence(''); setOpen(''); setMinDamage('0');
-    startTransition(() => router.push('/adatbazis'));
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    startTransition(() => router.push('/adatbazis', { scroll: false }));
   }
 
   const hasFilter =
@@ -102,7 +123,7 @@ export function CaseFilters({ offences, initial }: Props) {
             type="search"
             placeholder="Keresés: ügy, személy, intézmény…"
             value={q}
-            onChange={e => setQ(e.target.value)}
+            onChange={e => onSearchChange(e.target.value)}
             autoComplete="off"
             spellCheck={false}
           />
@@ -111,7 +132,7 @@ export function CaseFilters({ offences, initial }: Props) {
               className="verdict-search-clear"
               type="button"
               aria-label="Törlés"
-              onClick={() => { setQ(''); pushUrl({ q: '' }); }}
+              onClick={() => { if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current); setQ(''); pushUrl({ q: '' }); }}
             >
               ✕
             </button>
