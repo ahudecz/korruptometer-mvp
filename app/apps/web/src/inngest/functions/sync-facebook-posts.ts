@@ -12,11 +12,43 @@ const ONLY_POSTS_NEWER_THAN = '1 day';
 const MIN_TEXT_LENGTH = 20;
 const STORAGE_BUCKET = 'social-images';
 
-// Apify-nak nincs natív napi költséglimitje (csak havi plan-cap) — ezért itt,
-// alkalmazás-szinten védekezünk. $0.0053/poszt verifikálva 2026-07-01
-// (specs/005-apify-facebook-scraper/research.md).
-const COST_PER_POST_USD = 0.0053;
-const DAILY_BUDGET_USD = 0.5;
+// Apify-nak nincs natív költséglimitje (csak havi plan-cap), ezért ide,
+// a "ApifyBudget" táblába könyveljük el a tényleges elköltött összeget
+// (Apify run usageTotalUsd mezője), és leállunk, ha eléri a limitUsd-t.
+// Nem resetelődik automatikusan — kézzel kell emelni/nullázni, ha kell.
+const BUDGET_TABLE = 'ApifyBudget';
+const BUDGET_ID = 'global';
+
+interface ApifyBudgetRow {
+  id: string;
+  spentUsd: number;
+  limitUsd: number;
+}
+
+async function getBudget(supabaseUrl: string, supabaseKey: string): Promise<ApifyBudgetRow> {
+  const res = await fetch(
+    `${supabaseUrl}/rest/v1/${BUDGET_TABLE}?id=eq.${BUDGET_ID}&select=id,spentUsd,limitUsd`,
+    { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } },
+  );
+  if (!res.ok) throw new Error(`ApifyBudget lekérés sikertelen: HTTP ${res.status} — futott már a 0036 migráció?`);
+  const rows = (await res.json()) as ApifyBudgetRow[];
+  const row = rows[0];
+  if (!row) throw new Error('ApifyBudget: nincs "global" sor — futott már a 0036 migráció?');
+  return row;
+}
+
+async function addSpend(supabaseUrl: string, supabaseKey: string, deltaUsd: number, newTotal: number): Promise<void> {
+  await fetch(`${supabaseUrl}/rest/v1/${BUDGET_TABLE}?id=eq.${BUDGET_ID}`, {
+    method: 'PATCH',
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    body: JSON.stringify({ spentUsd: newTotal, updatedAt: new Date().toISOString() }),
+  });
+}
 
 interface ApifyPost {
   facebookUrl: string;
@@ -89,7 +121,7 @@ function storageKeyFromPostUrl(postUrl: string): string {
 
 export const syncFacebookPosts = inngest.createFunction(
   { id: 'sync-facebook-posts', name: 'Sync Facebook posts', concurrency: 1 },
-  [{ event: 'facebook.sync' }],
+  [{ event: 'facebook.sync' }, { cron: 'TZ=Europe/Budapest 0 7 * * *' }],
   async ({ step, logger }) => {
     const db = getDb();
     const token = process.env.APIFY_TOKEN;
@@ -110,10 +142,10 @@ export const syncFacebookPosts = inngest.createFunction(
       return { pages: 0, inserted: 0 };
     }
 
-    const estimatedCost = pages.length * RESULTS_PER_PAGE * COST_PER_POST_USD;
-    if (estimatedCost > DAILY_BUDGET_USD) {
-      logger?.warn?.(`sync-facebook-posts: becsült cost ~$${estimatedCost.toFixed(2)} meghaladja a napi $${DAILY_BUDGET_USD} keretet — megszakítva`);
-      return { pages: pages.length, inserted: 0, skipped: 'budget' };
+    const budget = await step.run('check-budget', () => getBudget(supabaseUrl, supabaseKey));
+    if (budget.spentUsd >= budget.limitUsd) {
+      logger?.warn?.(`sync-facebook-posts: Apify budget elfogyott ($${budget.spentUsd}/$${budget.limitUsd}) — megszakítva`);
+      return { pages: pages.length, inserted: 0, skipped: 'budget-exhausted' };
     }
 
     const pageUrlMap = new Map(
@@ -142,6 +174,19 @@ export const syncFacebookPosts = inngest.createFunction(
       }
       const json = (await res.json()) as ApifyRunResponse;
       return { datasetId: json.data.defaultDatasetId, runId: json.data.id, status: json.data.status };
+    });
+
+    await step.run('record-spend', async () => {
+      const runRes = await fetch(`${APIFY_API}/actor-runs/${runId}?token=${token}`);
+      if (!runRes.ok) {
+        logger?.warn?.(`sync-facebook-posts: run cost lekérés sikertelen (HTTP ${runRes.status}), a budget nem frissül ezúttal`);
+        return;
+      }
+      const runJson = (await runRes.json()) as { data: { usageTotalUsd?: number } };
+      const runCost = runJson.data.usageTotalUsd ?? 0;
+      const newTotal = budget.spentUsd + runCost;
+      await addSpend(supabaseUrl, supabaseKey, runCost, newTotal);
+      logger?.info?.(`sync-facebook-posts: futás cost $${runCost.toFixed(3)}, összesen $${newTotal.toFixed(2)}/$${budget.limitUsd}`);
     });
 
     const posts = await step.run('fetch-apify-results', async () => {

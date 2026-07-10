@@ -5,6 +5,8 @@ import { SocialFeedClient } from '../_home/social-feed-client';
 
 const PAGE_SIZE = 20;
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'A legfontosabb hangok',
   description: 'Független oknyomozók, aktivisták és kritikus Facebook-oldalak, amikről a nagy hírportálok nem mindig írnak.',

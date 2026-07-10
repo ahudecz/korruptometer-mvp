@@ -24,11 +24,12 @@ const ONLY_POSTS_NEWER_THAN = '1 day';
 const MIN_TEXT_LENGTH = 20;
 const STORAGE_BUCKET = 'social-images';
 
-// Apify-nak nincs natív napi költséglimitje (csak havi plan-cap) — ezért itt,
-// alkalmazás-szinten védekezünk. $0.0053/poszt verifikálva 2026-07-01
-// (specs/005-apify-facebook-scraper/research.md).
-const COST_PER_POST_USD = 0.0053;
-const DAILY_BUDGET_USD = 0.5;
+// Apify-nak nincs natív költséglimitje (csak havi plan-cap), ezért ide,
+// a "ApifyBudget" táblába könyveljük el a tényleges elköltött összeget
+// (Apify run usageTotalUsd mezője), és leállunk, ha eléri a limitUsd-t.
+// Ugyanezt a táblát használja a sync-facebook-posts.ts Inngest function is.
+const BUDGET_TABLE = 'ApifyBudget';
+const BUDGET_ID = 'global';
 
 const DB_URL = process.env.PROD_DATABASE_URL ?? process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
@@ -122,10 +123,14 @@ async function main() {
   console.log(`\n${pages.length} aktív Facebook oldal\n`);
   if (pages.length === 0) { await conn.end(); return; }
 
-  const estimatedCost = pages.length * RESULTS_PER_PAGE * COST_PER_POST_USD;
-  console.log(`Becsült cost: ~$${estimatedCost.toFixed(2)} (napi keret: $${DAILY_BUDGET_USD})`);
-  if (estimatedCost > DAILY_BUDGET_USD) {
-    console.log('Megszakítva: a becsült cost meghaladja a napi keretet.');
+  const budgetRes = await fetch(`${SUPABASE_URL}/rest/v1/${BUDGET_TABLE}?id=eq.${BUDGET_ID}&select=id,spentUsd,limitUsd`, {
+    headers: { apikey: SUPABASE_KEY!, Authorization: `Bearer ${SUPABASE_KEY}` },
+  });
+  const [budget] = (await budgetRes.json()) as { id: string; spentUsd: number; limitUsd: number }[];
+  if (!budget) throw new Error('ApifyBudget: nincs "global" sor — futott már a 0036 migráció?');
+  console.log(`Apify budget: $${budget.spentUsd}/$${budget.limitUsd}`);
+  if (budget.spentUsd >= budget.limitUsd) {
+    console.log('Megszakítva: az Apify budget elfogyott.');
     await conn.end();
     return;
   }
@@ -171,6 +176,29 @@ async function main() {
       const run = listJson.data.items.find(r => r.id === runId);
       console.log(`Run státusz: ${run?.status ?? 'ismeretlen'}`);
     }
+  }
+
+  // Tényleges futásköltség elkönyvelése
+  try {
+    const runInfoRes = await fetch(`${APIFY_API}/actor-runs/${runId}?token=${APIFY_TOKEN}`);
+    if (runInfoRes.ok) {
+      const runInfo = (await runInfoRes.json()) as { data: { usageTotalUsd?: number } };
+      const runCost = runInfo.data.usageTotalUsd ?? 0;
+      const newTotal = budget.spentUsd + runCost;
+      await fetch(`${SUPABASE_URL}/rest/v1/${BUDGET_TABLE}?id=eq.${BUDGET_ID}`, {
+        method: 'PATCH',
+        headers: {
+          apikey: SUPABASE_KEY!,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({ spentUsd: newTotal, updatedAt: new Date().toISOString() }),
+      });
+      console.log(`Futás cost: $${runCost.toFixed(3)}, összesen: $${newTotal.toFixed(2)}/$${budget.limitUsd}`);
+    }
+  } catch (e) {
+    console.log('Budget frissítés sikertelen:', e instanceof Error ? e.message : e);
   }
 
   console.log('\nDataset lekérése...');
