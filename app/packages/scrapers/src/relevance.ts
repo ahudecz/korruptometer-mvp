@@ -23,6 +23,7 @@ const KEYWORDS = [
   // Intézmények / ügyek
   'nka ', 'nemzeti kulturális alap',
   'mnb ', 'jegybank', 'magyar nemzeti bank',
+  'nemzeti filmintézet', 'nfi ', 'káel csaba',
   // 'ász ' (rövid ÁSZ-alak) szándékosan NINCS itt: substring-illeszkedéssel
   // hamis pozitívot adott a "Hamász" szóra (2026-07-09, egy gázai háborús
   // cikk emiatt jutott át a /kulfold/ URL-szekció-szűrőn is, mert isRelevant()
@@ -91,6 +92,12 @@ const RESIGN_WATCHLIST_NAMES = [
   'hegedűs zsolt',
   'lannert judit',
   'kapitány istván',
+  // Kultúráért felelős államtitkár — rendszeresen jelent be NER-közeli
+  // intézményvezetők (NFI, MCC stb.) menesztését, ezért a saját neve is
+  // trigger, nem csak az intézmény neve (2026-07-10, Káel Csaba/NFI-ügy
+  // csak azért maradt ki a scrape-ből, mert sem az intézmény, sem
+  // Nagy Ervin neve nem volt a kulcsszavak közt).
+  'nagy ervin',
   'vitézy dávid', 'vitézy',
   'ruszin-szendi romulusz',
   'bóna szabolcs',
