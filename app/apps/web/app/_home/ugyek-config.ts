@@ -752,6 +752,11 @@ Intézményes vizsgálat mindeddig nem volt. A 2026-os kormányváltás után el
     crimeTypes: ['Hűtlen kezelés', 'Sikkasztás (gyanú)', 'Közbeszerzési visszaélés'],
     relatedPersonIds: ['matolcsy-gyorgy', 'windisch-laszlo'],
     articleTag: 'MNB',
+    // A régi articleKeywordGroups két szűk AND-párra korlátozódott (mindkét
+    // szó kellett a címben) — sok friss MNB/Matolcsy-cikk kimaradt belőle,
+    // ugyanaz a mintázat, ami az NKA-nál is előfordult. Plusz sima
+    // articleKeywords, ami bármelyik kifejezésre önmagában is illeszkedik.
+    articleKeywords: ['Matolcsy', 'PADME', 'Pallas Athéné', 'MNB-botrány', 'MNB alapítvány'],
     articleKeywordGroups: [
       ['MNB alapítvány', 'Neumann János Egyetem'],
       ['MNB alapítvány', 'vagyonvesztés'],
