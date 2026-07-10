@@ -7,6 +7,7 @@ import { detectMediaClosures } from './functions/detect-media-closures';
 import { detectVerdicts } from './functions/detect-verdicts';
 import { detectAssetRecoveries } from './functions/detect-asset-recoveries';
 import { syncFacebookPosts } from './functions/sync-facebook-posts';
+import { refreshDailyBreaking } from './functions/refresh-daily-breaking';
 import { gdprRetentionSweep } from './functions/gdpr-retention-sweep';
 import { kmonitorDiscoverTags } from './functions/kmonitor-discover-tags';
 import { kmonitorTraverseApprovedTags } from './functions/kmonitor-traverse-approved-tags';
@@ -72,4 +73,5 @@ export const functions = [
   detectVerdicts,
   detectAssetRecoveries,
   syncFacebookPosts,
+  refreshDailyBreaking,
 ];

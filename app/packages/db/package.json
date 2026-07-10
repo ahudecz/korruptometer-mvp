@@ -13,6 +13,7 @@
     "./ai-closures": "./src/media-closure-detect.ts",
     "./ai-verdicts": "./src/court-verdict-detect.ts",
     "./ai-assets": "./src/asset-recovery-detect.ts",
+    "./ai-breaking": "./src/pick-daily-breaking.ts",
     "./llm": "./src/llm.ts"
   },
   "scripts": {

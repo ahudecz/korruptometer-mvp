@@ -142,6 +142,41 @@ const getCachedAllArticles = unstable_cache(
   ['all-articles-raw'],
   { revalidate: 60 },
 );
+// A "04 / Hírfolyam" kártyarács ezt nézi — SZÁNDÉKOSAN nincs WHERE-szűrő
+// (a fenti getCachedAllArticles csak a kiemelt ügyek kulcsszavaira/tag-jeire
+// illeszkedő cikkeket adja vissza, ami a "Legdurvább ügyek" témánkénti
+// blokkjaihoz kell). A nyitói hírfolyamnak minden friss cikk kandidátnak
+// számít; a breaking/featured csak PRIORITÁST kap a lenti featuredBreaking/
+// featuredNormal fallback-láncban, nem feltétele a megjelenésnek — ha egy
+// adott scrape-ben nincs se breaking, se featured, egyszerűen a legfrissebb
+// cikkek jelennek meg.
+const getCachedRecentNews = unstable_cache(
+  async (): Promise<CachedArticle[]> => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { desc: d, eq: eqF } = await import('drizzle-orm');
+    const db = getDb();
+    const rows = await db.select({
+      id: schema.newsArticles.id,
+      headline: schema.newsArticles.headline,
+      excerpt: schema.newsArticles.excerpt,
+      sourceUrl: schema.newsArticles.sourceUrl,
+      publishedAt: schema.newsArticles.publishedAt,
+      tag: schema.newsArticles.tag,
+      featured: schema.newsArticles.featured,
+      imageUrl: schema.newsArticles.imageUrl,
+      isBreakingCandidate: schema.newsArticles.isBreakingCandidate,
+      breakingOverride: schema.newsArticles.breakingOverride,
+      sourceName: schema.sources.name,
+    })
+    .from(schema.newsArticles)
+    .leftJoin(schema.sources, eqF(schema.sources.id, schema.newsArticles.sourceId))
+    .orderBy(d(schema.newsArticles.publishedAt))
+    .limit(15);
+    return rows.map(r => ({ ...r, publishedAt: r.publishedAt.toISOString() }));
+  },
+  ['recent-news-unfiltered'],
+  { revalidate: 60 },
+);
 const getCachedActiveBreaking = unstable_cache(
   async () => {
     const { getActiveBreaking } = await import('@/lib/breaking');
@@ -195,6 +230,7 @@ export default async function HomePage() {
     snapshot,
     topResignations,
     allArticlesRaw,
+    recentNewsRaw,
     resignationCountRaw,
     closureCountRaw,
     verdictCounts,
@@ -216,6 +252,7 @@ export default async function HomePage() {
       .orderBy(desc(schema.politicalResignations.pinned), desc(schema.politicalResignations.resignationDate))
       .limit(20),
     getCachedAllArticles(),
+    getCachedRecentNews(),
     getCachedResignationCount(),
     getCachedClosureCount(),
     // Két külön COUNT(*) helyett egy scan FILTER-ekkel — ugyanaz a
@@ -278,7 +315,7 @@ export default async function HomePage() {
   const latestRecoveries = latestRecoveriesDb;
   const totalRecoveredFt = BigInt(totalRecoveredRaw);
   const offences = offRows.map((o) => ({ code: o.code, label: o.label }));
-  const recentArticles = allArticlesRaw.slice(0, 10).map(a => ({
+  const recentArticles = recentNewsRaw.slice(0, 10).map(a => ({
     ...a,
     isBreaking: (a.breakingOverride ?? a.isBreakingCandidate) === true,
   }));
