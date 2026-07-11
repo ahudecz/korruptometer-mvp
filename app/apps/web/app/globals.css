@@ -10287,9 +10287,16 @@ body:has(.admin-nav) > main {
 
 /* Kapcsolódó ügyrészek — lenyíló cikklista, hogy az "N cikk" felirat és a
    ténylegesen elérhető linkek száma egyezzen (korábban csak 1 cikkre
-   linkelt, félrevezető volt). */
+   linkelt, félrevezető volt). Nyitáskor a kártya a teljes rács-szélességet
+   veszi fel (grid-column: 1/-1), a többi kártya alá kerül — a szűk
+   180px-es oszlopban egy cikksor olvashatatlan lett volna (user report,
+   2026-07-11). A grid-column trükk mobil 2-oszlopos elrendezésnél is
+   automatikusan teljes szélességet ad, külön media query nem kell hozzá. */
 .ugyek-more-card--expandable {
   padding: 0;
+}
+.ugyek-more-grid .ugyek-more-card--expandable[open] {
+  grid-column: 1 / -1;
 }
 .ugyek-more-summary {
   cursor: pointer;
@@ -10317,30 +10324,50 @@ body:has(.admin-nav) > main {
 .ugyek-more-article-list {
   list-style: none;
   margin: 0;
-  padding: 10px 16px 14px;
+  padding: 6px 0 10px;
   display: flex;
   flex-direction: column;
-  gap: 7px;
   border-top: 1px solid rgba(255,255,255,0.1);
 }
-.ugyek-more-article-list li a {
-  display: block;
-  font-size: 12px;
-  color: rgba(255,255,255,0.75);
-  line-height: 1.4;
+.ugyek-more-article-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 16px;
   text-decoration: none;
+  border-radius: 6px;
 }
-.ugyek-more-article-list li a:hover {
+.ugyek-more-article-row:hover {
+  background: rgba(255,255,255,0.05);
+}
+.ugyek-more-article-main {
+  font-size: 13px;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.4;
+  min-width: 0;
+}
+.ugyek-more-article-row:hover .ugyek-more-article-headline {
   color: #ff6b7d;
   text-decoration: underline;
 }
 .ugyek-more-article-source {
   font-weight: 700;
   color: #e31937;
-  margin-right: 4px;
+  margin-right: 6px;
+  white-space: nowrap;
+}
+.ugyek-more-article-headline {
+  color: inherit;
+}
+.ugyek-more-article-date {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  white-space: nowrap;
 }
 .ugyek-more-article-more {
-  padding: 0 16px 12px;
+  padding: 4px 16px 12px;
   font-size: 11px;
   color: rgba(255,255,255,0.4);
 }
@@ -10364,6 +10391,11 @@ body:has(.admin-nav) > main {
   }
   .ugyek-more-grid {
     grid-template-columns: 1fr 1fr;
+  }
+  .ugyek-more-article-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
   }
 }
 

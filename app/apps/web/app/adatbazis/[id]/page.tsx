@@ -681,9 +681,12 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
                     <ul className="ugyek-more-article-list">
                       {arts.map((a, i) => (
                         <li key={i}>
-                          <a href={a.url} target="_blank" rel="noopener noreferrer">
-                            {a.source && <span className="ugyek-more-article-source">{a.source}</span>}
-                            {a.headline ?? a.url}
+                          <a href={a.url} target="_blank" rel="noopener noreferrer" className="ugyek-more-article-row">
+                            <span className="ugyek-more-article-main">
+                              {a.source && <span className="ugyek-more-article-source">{a.source}</span>}
+                              <span className="ugyek-more-article-headline">{a.headline ?? a.url}</span>
+                            </span>
+                            {a.date && <span className="ugyek-more-article-date">{fmtDate(new Date(a.date))}</span>}
                           </a>
                         </li>
                       ))}
