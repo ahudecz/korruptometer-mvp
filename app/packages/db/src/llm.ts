@@ -32,7 +32,13 @@ export type LlmResult<T> = {
 const DEFAULT_LANGDOCK_URL = 'https://api.langdock.com/openai/eu/v1';
 
 function provider(): string {
-  return (process.env.LLM_PROVIDER ?? 'langdock').toLowerCase();
+  // Default changed from 'langdock' to 'anthropic' (2026-07-11) — the
+  // LangDock workspace hit its €0.00 monthly spending limit, silently
+  // failing every LLM call for any environment that doesn't explicitly set
+  // LLM_PROVIDER. Vercel prod already sets LLM_PROVIDER explicitly; this
+  // default just keeps local/dev/scripts consistent with prod instead of
+  // quietly hitting the dead LangDock key.
+  return (process.env.LLM_PROVIDER ?? 'anthropic').toLowerCase();
 }
 
 function defaultModel(): string {
