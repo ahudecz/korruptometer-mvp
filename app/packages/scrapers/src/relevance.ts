@@ -20,6 +20,20 @@ const KEYWORDS = [
   'ligeti miklós', 'ligeti',
   'zsigó róbert', 'zsigó',
   'ruff bálint',
+  // 2026-07-11 audit: a K-Monitor adatbázis (ScandalCatalog) top 40
+  // összegű személye közül ~28 teljesen hiányzott innen — csak akkor
+  // kerültek be, ha véletlenül más kulcsszó (pl. intézménynév) is
+  // illeszkedett a cikkre. Teljes "Vezetéknév Keresztnév" alakban, hogy
+  // elkerüljük a rövid/gyakori vezetéknevek (pl. "Horváth", "Schmidt")
+  // önmagában való substring-ütközését.
+  'kósa lajos', 'habony árpád', 'nagy márton', 'tarsoly csaba',
+  'horváth csaba', 'orbán balázs', 'szíjj lászló', 'bige lászló',
+  'csányi sándor', 'lezsák sándor', 'hernádi zsolt', 'tombor andrás',
+  'garancsi istván', 'jászai gellért', 'matolcsy ádám', 'palkovics lászló',
+  'homlok zsolt', 'kis-szölgyémi ferenc', 'sára botond', 'leisztinger tamás',
+  'paár attila', 'pintér sándor', 'szalay-bobrovniczky kristóf',
+  'schmidt mária', 'barta-eke gyula', 'pataky albert', 'balázs attila',
+  'emőri gábor', 'kocsis máté', 'jellinek dániel',
   // Intézmények / ügyek
   'nka ', 'nemzeti kulturális alap',
   'mnb ', 'jegybank', 'magyar nemzeti bank',
