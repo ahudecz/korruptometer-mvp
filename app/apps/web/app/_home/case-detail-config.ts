@@ -321,6 +321,9 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
   },
   {
     scandalKey: 'lezsaksandor-lakiteleki-nepfoiskola',
+    // 2026-07-11: bare "Népfőiskola ügy" olvashatatlan (két főnév kötőjel
+    // nélkül) — lásd project-ascii-url-canonical memória, "bare ügy" audit.
+    title: 'Lezsák Sándor Lakiteleki Népfőiskola-ügy',
     descriptionBlocks: [
       {
         type: 'article-card',
@@ -409,7 +412,7 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     // vagyonkezelés") is attributed to Mészáros Lőrinc, not Matolcsy — this
     // whole MNB-alapítvány/Pallas Athéné network is fragmented across many
     // scandalKeys and people (mnb-botrany, matolcsy-global-trade-centre,
-    // leszak-neumann-egyetem, kecskemet-neumann-egyetem-alapitvany, …) with a
+    // lezsak-neumann-egyetem, kecskemet-neumann-egyetem-alapitvany, …) with a
     // real cross-scandal double-counting risk that needs a dedicated,
     // fact-checked cleanup — this override only fixes the immediate
     // person/damage mismatch found 2026-07-05 audit.
@@ -445,7 +448,7 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
       'Ugyanaz a PADME/GTC-ügy, mint az mnb-botrany és a matolcsy-global-trade-centre-mnb-vagyonkezeles — nem külön kár. Valós, teljes veszteség ~270 Mrd Ft.',
     video: { id: 'I7-rw1so1p0' },
   },
-  { scandalKey: 'leszak-neumann-egyetem', video: { id: 'I7-rw1so1p0' } },
+  { scandalKey: 'lezsak-neumann-egyetem', video: { id: 'I7-rw1so1p0' } },
   { scandalKey: 'kecskemet-neumann-egyetem-alapitvany', video: { id: 'I7-rw1so1p0' } },
   { scandalKey: 'mnb-matolcsy-alapkezelo', video: { id: 'I7-rw1so1p0' } },
 
@@ -516,13 +519,13 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     // CONFIRMED duplicate, found 2026-07-05 MNB deep-dive: the source article
     // (telex.hu/.../kecskemeti-neumann-janos-egyetemert-alapitvany-...) is
     // about the SAME Kecskemét/Neumann János Egyetemért Alapítvány → Optima
-    // bond investment already counted in full under leszak-neumann-egyetem
+    // bond investment already counted in full under lezsak-neumann-egyetem
     // (127,5 Mrd) — just a later (Nov 2025) article about the board meeting
     // minutes for that same deal, misfiled under a law-firm scandalKey.
     scandalKey: 'matolcsy-dla-piper-127mrd',
     hideAutoDamage: true,
     damageText:
-      'Ez ugyanaz a 127,5 Mrd Ft-os Kecskemét/Optima kötvényügylet, ami a leszak-neumann-egyetem ügy alatt már szerepel — nem külön kár.',
+      'Ez ugyanaz a 127,5 Mrd Ft-os Kecskemét/Optima kötvényügylet, ami a lezsak-neumann-egyetem ügy alatt már szerepel — nem külön kár.',
     video: { id: 'I7-rw1so1p0' },
   },
   { scandalKey: 'matolcsy-nhb-adofizetoi-milliardok', hideVideo: true },
@@ -610,6 +613,68 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     hideAutoDamage: true,
     damageText:
       'A hivatkozott 617 Mrd Ft az összes Fidesz-közeli alapítvány felhalmozott vagyona az Orbán-éra alatt — nem egyetlen ügyhöz köthető kár.',
+  },
+  // 2026-07-11: "bare ügy" cím-nyelvtan audit — lásd project-ascii-url-canonical
+  // memória. Két minta: (a) birtokos jelzős szó + puszta "ügy" -> "ügye";
+  // (b) intézménynévi/köznévi jelző + puszta "ügy" -> kötőjeles "-ügy".
+  // A user két konkrét példát adott (Lezsák Népfőiskola, Orbán Svábhegy);
+  // a többit hasonló minta alapján, biztos esetekre szűkítve javítottam —
+  // a többi, kétértelmű ("Bank ügy", "Zrt. ügy" stb.) eset szándékosan
+  // érintetlen maradt, mert a "melléknév vs. puszta főnév" eldöntése
+  // sok esetben bizonytalan lenne (lásd korábbi MotoGP/HungaroControl
+  // hamis-pozitív tanulság).
+  {
+    scandalKey: 'orban-svabergi-ovoda-korrupcios',
+    title: 'Orbán svábhegyi óvodájának ügye',
+  },
+  {
+    scandalKey: 'nemeth-szilard-mabort',
+    title: 'Németh Szilárd Mabort Bortemploma ügye',
+  },
+  {
+    scandalKey: 'nitrogenmuvek-peti-gyara',
+    title: 'Nitrogénművek péti gyára ügye',
+  },
+  {
+    scandalKey: 'simon-gabor-mszp-millios-szamlak',
+    title: 'Simon Gábor MSZP-számlái ügye',
+  },
+  {
+    scandalKey: 'barany-csaladi-vagyonkezelo-alapitvany',
+    title: 'Bárány Családi Vagyonkezelő Alapítvány-ügy',
+  },
+  {
+    scandalKey: 'batorfi-magyar-triatlon-szovetseg',
+    title: 'Bátorfi-Magyar Triatlon Szövetség-ügy',
+  },
+  {
+    scandalKey: 'balasy-tranzit-fesztival',
+    title: 'Balásy Tranzit Fesztivál-ügy',
+  },
+  {
+    scandalKey: 'matolcsy-adam-padme',
+    title: 'Pallas Athéné Domus Meriti Alapítvány-ügy',
+  },
+  {
+    scandalKey: 'kazari-bolcsode-ugy',
+    title: 'Kazári bölcsőde-ügy',
+  },
+  {
+    scandalKey: 'orban-viktor-erdely-godako',
+    title: 'Erdélyi Godako ökölvívó klub-ügy',
+  },
+  {
+    scandalKey: 'porosenko-penzminstierium-ugy',
+    title: 'Porosenko-Pénzügyminisztérium-ügy',
+  },
+  {
+    scandalKey: 'abyy-kamera-titkosszolgalat',
+    title: 'ABYY kamera-titkosszolgálat-ügy',
+  },
+  {
+    // "egészségügy ügy" — szó szerint duplázott "ügy" a DB-ben, nyilvánvaló hiba.
+    scandalKey: 'meszaros-eszfk-egeszsegugy',
+    title: 'Mészáros ESZFK egészségügyi finanszírozási ügye',
   },
 ];
 

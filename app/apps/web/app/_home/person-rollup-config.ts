@@ -69,9 +69,10 @@ export const PERSON_ROLLUPS: PersonRollupConfig[] = [
     personName: 'Tiborcz István',
     // nagy-marton-napenergia-testvere: fact-checked 2026-07-08 — about Nagy
     // Márton's sibling's solar business, no Tiborcz mention.
-    // orban-rakel-foldvasarlas: about Orbán Ráhel's (Tiborcz's ex-wife) own
+    // orban-rahel-foldvasarlas-ugy (2026-07-11 rename, was typo'd
+    // orban-rakel-foldvasarlas): about Orbán Ráhel's (Tiborcz's ex-wife) own
     // land purchase — no Tiborcz mention in the source article.
-    excludeIds: ['rezsibiznisz-energiaszolgaltatas', 'nagy-marton-napenergia-testvere', 'orban-rakel-foldvasarlas'],
+    excludeIds: ['rezsibiznisz-energiaszolgaltatas', 'nagy-marton-napenergia-testvere', 'orban-rahel-foldvasarlas-ugy'],
   },
   {
     slug: 'orban-viktor',
@@ -86,13 +87,15 @@ export const PERSON_ROLLUPS: PersonRollupConfig[] = [
     // Orbán Viktor; the scandalKey name itself says so.
     // 2026-07-08 top-500 sweep — 6 more, all title-checked to name someone
     // else with zero Orbán mention: alabbar-bm-epulet (Mohamed Alabbar),
-    // leszak-sandor-lakiteleki-nepfoiskola (Lezsák Sándor's own foundation —
-    // duplicates his own lezsaksandor-lakiteleki-nepfoiskola entry),
     // tiborcz-bar-co-adozas / tiborcz-napeleempark-mvm / tiborcz-mav-palota-bge
     // (Tiborcz), schmidt-maria-onkologia-kommunikacio (Schmidt Mária).
+    // 2026-07-11: the 7th (leszak-sandor-lakiteleki-nepfoiskola, Lezsák
+    // Sándor's own foundation misattributed to Orbán) no longer needs
+    // excluding — merged into lezsaksandor-lakiteleki-nepfoiskola (its
+    // correctly-attributed duplicate) at the source, typo'd id retired.
     excludeIds: [
       'orban-eszak-macedonia-500meuro', 'dolomit-meszaros', 'fidesz-kampanyarc-tamogatas',
-      'tiborcz-garancsi-durer-120mrd', 'alabbar-bm-epulet', 'leszak-sandor-lakiteleki-nepfoiskola',
+      'tiborcz-garancsi-durer-120mrd', 'alabbar-bm-epulet',
       'tiborcz-bar-co-adozas', 'tiborcz-napeleempark-mvm', 'tiborcz-mav-palota-bge',
       'schmidt-maria-onkologia-kommunikacio',
     ],
