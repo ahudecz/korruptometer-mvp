@@ -7,6 +7,13 @@ export interface ClassifyResult {
   tag: string | null;
   inputTokens: number;
   outputTokens: number;
+  /** True when the LLM call itself failed (no credit, network, timeout —
+   *  see isTransientLlmFailure) rather than the model genuinely judging the
+   *  article irrelevant. Callers should fail OPEN on this (keep the
+   *  article) for a relevantByDefault source — dropping trusted-source
+   *  content because our own API key ran out of credit is worse than
+   *  keeping a few borderline items. */
+  apiFailed: boolean;
 }
 
 const SYSTEM = `Te egy magyar politikai hírszerkesztő asszisztens vagy egy NER/Fidesz-korrupciót figyelő portál számára. Adott egy cikk headline és excerpt szöveg. Feladatod:
@@ -59,11 +66,15 @@ export async function classifyArticle(
   });
 
   if (!data) {
-    return { relevant: false, excerpt: rawExcerpt, tag: null, inputTokens, outputTokens };
+    // LLM call itself failed (credit exhausted, network, timeout — not the
+    // model judging the article). relevant:true here is the fail-open
+    // default; scrape-news.ts's caller keys off apiFailed, not this value.
+    return { relevant: true, excerpt: rawExcerpt, tag: null, inputTokens, outputTokens, apiFailed: true };
   }
 
   return {
     relevant: Boolean(data.relevant),
+    apiFailed: false,
     excerpt: data.excerpt?.slice(0, 500) || rawExcerpt,
     tag: data.tag || null,
     inputTokens,

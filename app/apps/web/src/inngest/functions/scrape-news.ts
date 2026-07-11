@@ -187,11 +187,23 @@ async function persistArticles(
         totalInputTokens += ai.inputTokens;
         totalOutputTokens += ai.outputTokens;
 
-        if (!ai.relevant) continue; // az AI szerint szemét → eldobjuk
-
-        finalExcerpt = ai.excerpt || a.excerpt;
-        if (ai.tag) finalTag = ai.tag;
-        if (ai.relevant && ai.tag === 'lemondás') finalFeatured = true;
+        // 2026-07-11: ai.apiFailed (pl. kifogyott Anthropic-kredit) korábban
+        // itt is 'nem releváns'-ként jött vissza, mert classifyArticle a
+        // saját hibáját relevant:false-ként adta vissza — emiatt EVERY
+        // maybe-kupacos cikk (minden relevantByDefault forrásból, ha nincs
+        // kemény kulcsszó-találat) csendben kimaradt, amíg az API-kulcs
+        // nem működött. Most explicit: API-hiba esetén megtartjuk
+        // (megbízható forrás, eredeti adatokkal) — csak a TÉNYLEGES "nem
+        // releváns" LLM-döntés dob el.
+        if (ai.apiFailed) {
+          logger?.info?.(`classifyArticle: API hiba, megtartva (fail-open) — "${a.headline}"`);
+        } else if (!ai.relevant) {
+          continue; // az AI szerint szemét → eldobjuk
+        } else {
+          finalExcerpt = ai.excerpt || a.excerpt;
+          if (ai.tag) finalTag = ai.tag;
+          if (ai.tag === 'lemondás') finalFeatured = true;
+        }
       } catch {
         // API hiba esetén megtartjuk (megbízható forrás), eredeti adatokkal
       }
