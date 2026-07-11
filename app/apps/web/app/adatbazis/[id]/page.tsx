@@ -212,7 +212,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
                  JOIN "KmdbArticle" k ON k.news_id::text = l."articleId" AND l."articleSource" = 'kmonitor'
                  WHERE l."investigationId" = i.id)
             ) combined
-            ORDER BY date DESC NULLS LAST LIMIT 10
+            ORDER BY date DESC NULLS LAST
           ) x
         ) AS articles
       FROM "Investigation" i
