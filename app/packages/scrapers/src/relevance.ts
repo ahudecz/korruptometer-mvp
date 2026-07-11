@@ -62,7 +62,13 @@ const KEYWORDS = [
   'vas népe', 'tolnai népújság', 'fejér megyei hírlap',
   'hajdú-bihari napló', 'békés megyei hírlap',
   'kelet-magyarország', 'új néplap', 'új dunántúli napló',
-  'szabad föld', 'vasárnap reggel',
+  'szabad föld',
+  // 'vasárnap reggel' (a KESMA hetilap címe) szándékosan NINCS itt: ugyanaz
+  // a substring-illeszkedési hiba, mint az 'ász'/Hamász esetnél (l. fentebb)
+  // — a hétköznapi "vasárnap reggel" (Sunday morning) időmegjelölés bármelyik
+  // cikkben előfordulhat, pl. egy 2026-07-11-i kínai tájfun-kitelepítésről
+  // szóló, teljesen NER-independens Telex-hír csak ettől a két szótól jutott
+  // át a szűrőn ("...vasárnap reggel csap le az érkező tájfun.").
   // KESMA csoport — digitális
   'origo', 'hír tv', 'hír fm', 'retro rádió',
   'bama.hu', 'baon.hu', 'beol.hu', 'boon.hu',
