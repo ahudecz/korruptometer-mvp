@@ -10285,6 +10285,66 @@ body:has(.admin-nav) > main {
   color: rgba(255,255,255,0.5);
 }
 
+/* Kapcsolódó ügyrészek — lenyíló cikklista, hogy az "N cikk" felirat és a
+   ténylegesen elérhető linkek száma egyezzen (korábban csak 1 cikkre
+   linkelt, félrevezető volt). */
+.ugyek-more-card--expandable {
+  padding: 0;
+}
+.ugyek-more-summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  position: relative;
+}
+.ugyek-more-summary::-webkit-details-marker {
+  display: none;
+}
+.ugyek-more-summary::after {
+  content: '+';
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-size: 15px;
+  color: rgba(255,255,255,0.4);
+}
+.ugyek-more-card--expandable[open] .ugyek-more-summary::after {
+  content: '\2013';
+}
+.ugyek-more-article-list {
+  list-style: none;
+  margin: 0;
+  padding: 10px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.ugyek-more-article-list li a {
+  display: block;
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.4;
+  text-decoration: none;
+}
+.ugyek-more-article-list li a:hover {
+  color: #ff6b7d;
+  text-decoration: underline;
+}
+.ugyek-more-article-source {
+  font-weight: 700;
+  color: #e31937;
+  margin-right: 4px;
+}
+.ugyek-more-article-more {
+  padding: 0 16px 12px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .ugy-charge-row {

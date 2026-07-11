@@ -123,7 +123,8 @@ type ScandalHeader = {
 };
 type DamageRow = { totalHighHuf: string; confidence: string; basis: string | null; components: Array<{ notes?: string }> | null };
 type ProcRow = { proceduralStage: string | null; competentAuthority: string | null };
-type Member = { id: string; caseName: string | null; primaryPersonName: string | null; primaryEntityName: string | null; articleCount: number; article_url: string | null };
+type MemberArticle = { headline: string | null; url: string; date: string | null; source: string | null };
+type Member = { id: string; caseName: string | null; primaryPersonName: string | null; primaryEntityName: string | null; articleCount: number; article_url: string | null; articles: MemberArticle[] | null };
 type CrossRef = { id: string; name: string; person: string | null; institution: string | null; article_count: number; damage_huf: string; offence_labels: string | null };
 type Article = { id: string; headline: string; excerpt: string | null; sourceUrl: string; publishedAt: Date; source_name: string | null };
 type KmdbRow = { news_id: number; title: string; source_url: string; kmdb_url: string; newspaper: string | null; pub_time: string | null; total: number };
@@ -196,7 +197,24 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
           (SELECT COALESCE(k.source_url, k.kmdb_url) FROM "InvestigationArticleLink" l
              JOIN "KmdbArticle" k ON k.news_id::text = l."articleId" AND l."articleSource" = 'kmonitor'
              WHERE l."investigationId" = i.id ORDER BY k.pub_time DESC LIMIT 1)
-        ) AS article_url
+        ) AS article_url,
+        (
+          SELECT json_agg(x) FROM (
+            SELECT headline, url, date, source FROM (
+              (SELECT n.headline AS headline, n."sourceUrl" AS url, n."publishedAt"::text AS date, s.name AS source
+                 FROM "InvestigationArticleLink" l
+                 JOIN "NewsArticle" n ON n.id::text = l."articleId" AND l."articleSource" = 'news'
+                 LEFT JOIN "Source" s ON s.id = n."sourceId"
+                 WHERE l."investigationId" = i.id)
+              UNION ALL
+              (SELECT k.title AS headline, COALESCE(k.source_url, k.kmdb_url) AS url, k.pub_time AS date, k.newspaper AS source
+                 FROM "InvestigationArticleLink" l
+                 JOIN "KmdbArticle" k ON k.news_id::text = l."articleId" AND l."articleSource" = 'kmonitor'
+                 WHERE l."investigationId" = i.id)
+            ) combined
+            ORDER BY date DESC NULLS LAST LIMIT 10
+          ) x
+        ) AS articles
       FROM "Investigation" i
       WHERE i."scandalKey" = ${id} AND i.status NOT IN ('merged','dismissed') AND i."articleCount" > 1
       ORDER BY i."articleCount" DESC NULLS LAST
@@ -630,10 +648,14 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
                 // A member Investigation-nek nincs saját /adatbazis oldala —
                 // korábban egy generikus /adatbazis?q= névkeresésre linkelt,
                 // ami gyakran semmi relevánsat nem talált ("nagy lófasz
-                // oldalra visz sehova" — user report, 2026-07-09). A tényleges
-                // forráscikkre mutat most; ha egyáltalán nincs cikk-URL, nem
-                // klikkelhető (nem linkelünk félrevezetően sehova).
-                const content = (
+                // oldalra visz sehova" — user report, 2026-07-09), majd egy
+                // rövid ideig a legfrissebb forráscikkre linkelt közvetlenül —
+                // de a kártya "N cikk"-et ígért, miközben csak 1-re vitt
+                // ("a 22 cikk akkor mi a tököm itt?" — user report,
+                // 2026-07-11). Most <details> lenyíló listával az ÖSSZES
+                // (max. 10) cikket felsoroljuk, hogy a szám és a tartalom
+                // egyezzen.
+                const header = (
                   <>
                     <div className="ugyek-more-eyebrow">{fmtNumber(m.articleCount)} cikk</div>
                     <div className="ugyek-more-title">{m.caseName ?? '—'}</div>
@@ -645,14 +667,31 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
                     )}
                   </>
                 );
-                return m.article_url ? (
-                  <a key={m.id} href={m.article_url} target="_blank" rel="noopener noreferrer" className="ugyek-more-card">
-                    {content}
-                  </a>
-                ) : (
-                  <div key={m.id} className="ugyek-more-card ugyek-more-card--static">
-                    {content}
-                  </div>
+                const arts = m.articles ?? [];
+                if (arts.length === 0) {
+                  return (
+                    <div key={m.id} className="ugyek-more-card ugyek-more-card--static">
+                      {header}
+                    </div>
+                  );
+                }
+                return (
+                  <details key={m.id} className="ugyek-more-card ugyek-more-card--expandable">
+                    <summary className="ugyek-more-summary">{header}</summary>
+                    <ul className="ugyek-more-article-list">
+                      {arts.map((a, i) => (
+                        <li key={i}>
+                          <a href={a.url} target="_blank" rel="noopener noreferrer">
+                            {a.source && <span className="ugyek-more-article-source">{a.source}</span>}
+                            {a.headline ?? a.url}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                    {m.articleCount > arts.length && (
+                      <div className="ugyek-more-article-more">+{m.articleCount - arts.length} további cikk</div>
+                    )}
+                  </details>
                 );
               })}
             </div>
