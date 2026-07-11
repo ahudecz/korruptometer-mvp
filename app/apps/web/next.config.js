@@ -14,16 +14,24 @@ const ContentSecurityPolicy = [
   // Next.js inlines a small bootstrap script; nonce-based hardening is the
   // T073 follow-up. 'unsafe-eval' is required by Next's React Refresh
   // runtime in dev only. Cloudflare Turnstile injects an iframe + script.
+  // googletagmanager.com serves the gtag.js library (cookie-banner.tsx) —
+  // without it in script-src the browser silently blocks the script load,
+  // so dataLayer.push() calls queue up but nothing ever ships to GA
+  // (found 2026-07-11: GA showed zero traffic despite the consent flow and
+  // inline dataLayer pushes working, because the real gtag.js never loaded).
   isDev
-    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com"
-    : "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
+    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://www.googletagmanager.com"
+    : "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   "frame-src https://challenges.cloudflare.com https://www.youtube.com https://www.youtube-nocookie.com",
+  // google-analytics.com/analytics.google.com: GA4's actual measurement
+  // beacon (gtag.js posts here) — googletagmanager.com is also needed here
+  // since gtag.js itself does a config fetch back to it.
   isDev
-    ? "connect-src 'self' http://127.0.0.1:54421 ws: http: https://*.supabase.co https://*.supabase.in https://challenges.cloudflare.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io"
-    : "connect-src 'self' https://*.supabase.co https://*.supabase.in https://challenges.cloudflare.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io",
-  "img-src 'self' data: https://*.supabase.co",
+    ? "connect-src 'self' http://127.0.0.1:54421 ws: http: https://*.supabase.co https://*.supabase.in https://challenges.cloudflare.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com"
+    : "connect-src 'self' https://*.supabase.co https://*.supabase.in https://challenges.cloudflare.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com",
+  "img-src 'self' data: https://*.supabase.co https://*.google-analytics.com https://*.googletagmanager.com",
   "object-src 'none'",
 ];
 
