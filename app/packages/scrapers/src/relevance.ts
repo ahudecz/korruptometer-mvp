@@ -156,9 +156,18 @@ function isResignWatchlistEvent(headline: string, excerpt: string): boolean {
   return RESIGN_TRIGGERS.some((t) => text.includes(t));
 }
 
-export function isRelevant(headline: string, excerpt: string): boolean {
+/**
+ * extraNames: élő, dinamikusan uniózott névlista (l. apps/web/src/lib/
+ * breaking-monitored.ts getMonitoredScrapeNames()) — WATCH_LIST/GALERIA/
+ * UGYEK configok + ScandalCatalog/PoliticalResignation/CourtVerdict DB
+ * nevek. Enélkül a statikus KEYWORDS tömb sosem tudna egy új galéria-
+ * profilról vagy K-Monitor-személyről, amíg valaki kézzel be nem másolja
+ * ide is — ez volt a visszatérő "X-et miért nem kapta el" hibaosztály.
+ */
+export function isRelevant(headline: string, excerpt: string, extraNames: readonly string[] = []): boolean {
   const text = `${headline} ${excerpt}`.toLowerCase();
   if (KEYWORDS.some((kw) => text.includes(kw))) return true;
+  if (extraNames.some((n) => text.includes(n))) return true;
   if (text.includes('tisztítótűz') && TISZTITOTUZ_CONTEXT.some((ctx) => text.includes(ctx))) return true;
   if (isResignWatchlistEvent(headline, excerpt)) return true;
   return false;
@@ -272,8 +281,9 @@ export function scrapeRelevanceTier(
   excerpt: string,
   url: string,
   relevantByDefault: boolean,
+  extraNames: readonly string[] = [],
 ): ScrapeTier {
-  if (isRelevant(headline, excerpt)) return 'in';
+  if (isRelevant(headline, excerpt, extraNames)) return 'in';
   if (isForeignOrJunk(headline, excerpt, url)) return 'out';
   if (relevantByDefault) return 'maybe';
   return 'out';

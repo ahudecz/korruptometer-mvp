@@ -8,7 +8,7 @@ import { getDb } from '@/lib/db';
 import { postEditorAlert } from '@/lib/slack';
 import { classifyArticle } from '@/lib/ai-classify';
 import { findSameStoryDuplicate } from '@/lib/same-story';
-import { getMonitoredBreakingNames } from '@/lib/breaking-monitored';
+import { getMonitoredNames } from '@/lib/breaking-monitored';
 
 import { inngest } from '../client';
 
@@ -37,6 +37,14 @@ export const scrapeNews = inngest.createFunction(
       db.select().from(schema.sources).where(eq(schema.sources.enabled, true)),
     );
 
+    // Egyszer számoljuk ki futásonként (nem forrásonként) — l.
+    // breaking-monitored.ts getMonitoredNames(): dinamikusan uniózza a
+    // WATCH_LIST/GALERIA/UGYEK configokat a ScandalCatalog/
+    // PoliticalResignation/CourtVerdict DB-nevekkel, hogy a scrape-kapu
+    // (scrapeRelevanceTier) is tudjon minden olyan névről, ami bárhol az
+    // oldalon már szerepel — nem csak a statikus KEYWORDS listáról.
+    const monitoredNames = await step.run('monitored-names', () => getMonitoredNames());
+
     const insertedIds: string[] = [];
 
     for (const source of sources) {
@@ -55,7 +63,7 @@ export const scrapeNews = inngest.createFunction(
 
         try {
           const scraped = await adapter.crawl();
-          const inserted = await persistArticles(source.id, adapter.queryAllowlist, scraped, adapter.relevantByDefault ?? false, logger);
+          const inserted = await persistArticles(source.id, adapter.queryAllowlist, scraped, adapter.relevantByDefault ?? false, monitoredNames, logger);
           const finishedAt = new Date();
           await db
             .update(schema.scraperRuns)
@@ -152,6 +160,7 @@ async function persistArticles(
   allowlist: readonly string[],
   scraped: ScrapedArticle[],
   relevantByDefault: boolean,
+  monitoredNames: readonly string[],
   logger?: { info?: (...a: unknown[]) => void },
 ): Promise<string[]> {
   const db = getDb();
@@ -163,13 +172,12 @@ async function persistArticles(
   // URL alapján dől el INGYEN; az AI CSAK a bizonytalan "maybe" kupacra fut, ha
   // van LLM-kulcs. Így olcsó marad, mégis kiszűri a külföld/szemét híreket.
   const useAi = Boolean(process.env.LLM_API_KEY || process.env.ANTHROPIC_API_KEY);
-  const monitoredNames = getMonitoredBreakingNames();
 
   for (const a of scraped) {
     const canonical = canonicalUrl(a.sourceUrl, allowlist);
 
-    // 1. Ingyenes előszűrés (kulcsszó + URL-szekció).
-    const tier = scrapeRelevanceTier(a.headline, a.excerpt, canonical, relevantByDefault);
+    // 1. Ingyenes előszűrés (kulcsszó + URL-szekció + élő névlista).
+    const tier = scrapeRelevanceTier(a.headline, a.excerpt, canonical, relevantByDefault, monitoredNames);
     if (tier === 'out') continue; // biztos kuka — AI nélkül eldobjuk
 
     const hash = dedupHash(canonical);
