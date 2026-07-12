@@ -122,6 +122,7 @@ export const detectVerdicts = inngest.createFunction(
                 name: result.personName,
                 confidence: result.confidence,
                 articleUrl: article.sourceUrl ?? '',
+                articleId: article.id,
               });
             }
             continue;
@@ -170,6 +171,7 @@ export const detectVerdicts = inngest.createFunction(
             verdictDate = fallbackDate;
           }
 
+          let recordId: string;
           if (existingVerdict) {
             await db.update(schema.courtVerdicts).set({
               verdictType: result.verdictType,
@@ -185,8 +187,9 @@ export const detectVerdicts = inngest.createFunction(
               sourceDates: sql`array_append("sourceDates", ${todayIso})`,
               updatedAt: new Date(),
             }).where(eq(schema.courtVerdicts.id, existingVerdict.id));
+            recordId = existingVerdict.id;
           } else {
-            await db.insert(schema.courtVerdicts).values({
+            const [insertedRow] = await db.insert(schema.courtVerdicts).values({
               personName: result.personName.slice(0, 200),
               position: result.position.slice(0, 200),
               crimes: result.crimes.map((c) => c.slice(0, 200)),
@@ -203,7 +206,8 @@ export const detectVerdicts = inngest.createFunction(
               sourceHeadlines: article.headline ? [article.headline.slice(0, 500)] : [],
               sourceDates: [todayIso],
               reviewStatus,
-            });
+            }).returning({ id: schema.courtVerdicts.id });
+            recordId = insertedRow!.id;
           }
 
           // Egy detektált ítélet/előzetes börtönhöz kötődő esemény → breaking-jelölt,
@@ -228,6 +232,8 @@ export const detectVerdicts = inngest.createFunction(
               name: result.personName,
               confidence: result.confidence,
               articleUrl: article.sourceUrl ?? '',
+              articleId: article.id,
+              recordId,
             });
           }
 

@@ -34,7 +34,7 @@ type ValidClosureEventType = (typeof VALID_CLOSURE_EVENT_TYPES)[number];
  * starving every other queued article. Repair by prefix match; unknown
  * values fall back to 'egyéb' instead of crashing.
  */
-function coerceClosureEventType(value: string): ValidClosureEventType {
+export function coerceClosureEventType(value: string): ValidClosureEventType {
   const normalized = value.normalize('NFC').trim();
   if ((VALID_CLOSURE_EVENT_TYPES as readonly string[]).includes(normalized)) {
     return normalized as ValidClosureEventType;
@@ -125,6 +125,7 @@ export const detectMediaClosures = inngest.createFunction(
                 name: result.name,
                 confidence: result.confidence,
                 articleUrl: article.sourceUrl ?? '',
+                articleId: article.id,
               });
             }
             continue;
@@ -165,7 +166,7 @@ export const detectMediaClosures = inngest.createFunction(
             eventDate = fallbackDate;
           }
 
-          await db.insert(schema.mediaClosures).values({
+          const [insertedRow] = await db.insert(schema.mediaClosures).values({
             name: result.name.slice(0, 200),
             eventType: coerceClosureEventType(result.eventType),
             description: result.description.slice(0, 1000) || null,
@@ -173,7 +174,7 @@ export const detectMediaClosures = inngest.createFunction(
             sourceUrl: article.sourceUrl,
             sourceName: article.sourceName,
             reviewStatus,
-          });
+          }).returning({ id: schema.mediaClosures.id });
 
           await db
             .update(schema.newsArticles)
@@ -195,6 +196,8 @@ export const detectMediaClosures = inngest.createFunction(
               name: result.name,
               confidence: result.confidence,
               articleUrl: article.sourceUrl ?? '',
+              articleId: article.id,
+              recordId: insertedRow!.id,
             });
           }
 

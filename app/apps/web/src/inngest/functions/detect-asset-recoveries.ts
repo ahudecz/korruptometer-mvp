@@ -89,6 +89,7 @@ export const detectAssetRecoveries = inngest.createFunction(
                 name: result.caseLabel,
                 confidence: result.confidence,
                 articleUrl: article.sourceUrl ?? '',
+                articleId: article.id,
               });
             }
             continue;

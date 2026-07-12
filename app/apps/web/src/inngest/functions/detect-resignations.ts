@@ -30,7 +30,7 @@ type ValidResignationType = (typeof VALID_RESIGNATION_TYPES)[number];
  * unprocessed too. Repair obvious truncations by prefix match; anything
  * unrecognisable falls back to 'egyéb' rather than crashing the batch.
  */
-function coerceResignationType(value: string): ValidResignationType {
+export function coerceResignationType(value: string): ValidResignationType {
   const normalized = value.normalize('NFC').trim();
   if ((VALID_RESIGNATION_TYPES as readonly string[]).includes(normalized)) {
     return normalized as ValidResignationType;
@@ -134,6 +134,7 @@ export const detectResignations = inngest.createFunction(
                 name: result.name,
                 confidence: result.confidence,
                 articleUrl: article.sourceUrl ?? '',
+                articleId: article.id,
               });
             }
             continue;
@@ -179,7 +180,7 @@ export const detectResignations = inngest.createFunction(
 
           const pinned = isWatchlistPerson(result.name);
 
-          await db.insert(schema.politicalResignations).values({
+          const [insertedRow] = await db.insert(schema.politicalResignations).values({
             name: result.name.slice(0, 200),
             position: result.position.slice(0, 200),
             institution: result.institution.slice(0, 200),
@@ -190,7 +191,7 @@ export const detectResignations = inngest.createFunction(
             reviewStatus,
             sourceUrls: [article.sourceUrl],
             sourceNames: article.sourceName ? [article.sourceName] : [],
-          });
+          }).returning({ id: schema.politicalResignations.id });
 
           // Tag the source article so it appears in /hirek under the 'Lemondás' filter.
           // Watchlist persons (pinned) and auto-approved detections are marked as
@@ -218,6 +219,8 @@ export const detectResignations = inngest.createFunction(
               name: result.name,
               confidence: result.confidence,
               articleUrl: article.sourceUrl ?? '',
+              articleId: article.id,
+              recordId: insertedRow!.id,
             });
           }
 

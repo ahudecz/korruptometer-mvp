@@ -10,6 +10,8 @@ describe('notifyReviewNeeded (FR-008)', () => {
         name: 'Szöllősi György',
         confidence: 0.82,
         articleUrl: 'https://telex.hu/example',
+        articleId: 'a0000000-0000-0000-0000-000000000000',
+        recordId: 'b0000000-0000-0000-0000-000000000000',
       }),
     ).resolves.toBeUndefined();
   });
@@ -22,6 +24,7 @@ describe('notifyReviewNeeded (FR-008)', () => {
         name: '',
         confidence: 0,
         articleUrl: '',
+        articleId: 'c0000000-0000-0000-0000-000000000000',
       }),
     ).resolves.toBeUndefined();
   });
