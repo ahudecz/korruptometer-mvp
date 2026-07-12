@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { desc, ilike, or, and, eq } from 'drizzle-orm';
+import { desc, ilike, like, or, and, eq, type SQL } from 'drizzle-orm';
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
 import { getDb, schema } from '@/lib/db';
 import { UGYEK, type DescriptionBlock, type BreakingGroupArticle } from '../../_home/ugyek-config';
@@ -10,6 +11,20 @@ import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } fro
 import { truncate } from '../../_home/seo';
 
 export const dynamic = 'force-dynamic';
+
+// Egy csupa-nagybetűs kulcsszó (pl. "NKA", "MNB") kis- és nagybetűre
+// nem érzékeny (ILIKE) substring-illesztéssel véletlen egyezéseket ad —
+// "NKA" pl. beletalál a "munka" vagy "utazásunkat" szavakba, mert a magyar
+// -unk/-ünk birtokos+tárgyeset toldalék-kombináció épp "nka"/"nke"-re végződik
+// (ugyanaz a hibaosztály, mint a korábbi 'ász'→Hamász eset). Egy valódi
+// magyar cikkcím a rövidítést szinte mindig nagybetűvel írja ki
+// ("NKA-botrány", "NKA-pénzekről") — ezért a csupa nagybetűs kulcsszavaknál
+// kis-nagybetű ÉRZÉKENY (LIKE) illesztésre váltunk, ami a véletlen
+// kisbetűs egyezéseket kizárja, a valódi rövidítés-előfordulásokat nem.
+function matchKeyword(column: AnyPgColumn, kw: string): SQL {
+  const isBareAcronym = /^[A-ZÁÉÍÓÖŐÚÜŰ]+$/.test(kw);
+  return isBareAcronym ? like(column, `%${kw}%`) : ilike(column, `%${kw}%`);
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -194,16 +209,16 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
 
   const conditions = [];
   if (entry.articleTag) {
-    conditions.push(ilike(schema.newsArticles.tag, `%${entry.articleTag}%`));
+    conditions.push(matchKeyword(schema.newsArticles.tag, entry.articleTag));
   }
   if (entry.articleKeywords) {
     for (const kw of entry.articleKeywords) {
-      conditions.push(ilike(schema.newsArticles.headline, `%${kw}%`));
+      conditions.push(matchKeyword(schema.newsArticles.headline, kw));
     }
   }
   if (entry.articleKeywordGroups) {
     for (const group of entry.articleKeywordGroups) {
-      conditions.push(and(...group.map((kw) => ilike(schema.newsArticles.headline, `%${kw}%`)))!);
+      conditions.push(and(...group.map((kw) => matchKeyword(schema.newsArticles.headline, kw)))!);
     }
   }
 
