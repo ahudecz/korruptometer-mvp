@@ -14,6 +14,14 @@ import { inngest } from '../client';
 
 const FAILURE_DISABLE_THRESHOLD = 5;
 const ZERO_ARTICLE_ALERT_THRESHOLD = 5;
+// 2026-07-12: az AI-classify fail-open (l. lentebb) egy ÁTMENETI hibára lett
+// kitalálva — ha az Anthropic-kredit napokra kifogy, a fail-open mindent
+// beenged kulcsszó nélkül (pl. Magyar Hang teljes site-feedjéből a
+// magazin-/tárca-cikkeket is), mert minden hívás elhasal. Forrásonként ennyi
+// egymás utáni classifyArticle API-hiba után a kör "kinyit": a maradék
+// bizonytalan cikkeket inkább eldobjuk (fail-closed), és egyszer jelzünk
+// Slacken — nem hívjuk feleslegesen tovább a halott API-t minden cikkre.
+const AI_CIRCUIT_BREAKER_THRESHOLD = 3;
 
 /**
  * scrape.news (T151) — runs every hour on a cron, fans out one
@@ -63,7 +71,7 @@ export const scrapeNews = inngest.createFunction(
 
         try {
           const scraped = await adapter.crawl();
-          const inserted = await persistArticles(source.id, adapter.queryAllowlist, scraped, adapter.relevantByDefault ?? false, monitoredNames, logger);
+          const inserted = await persistArticles(source.id, adapter.queryAllowlist, scraped, adapter.relevantByDefault ?? false, monitoredNames, logger, source.slug);
           const finishedAt = new Date();
           await db
             .update(schema.scraperRuns)
@@ -162,11 +170,14 @@ async function persistArticles(
   relevantByDefault: boolean,
   monitoredNames: readonly string[],
   logger?: { info?: (...a: unknown[]) => void },
+  sourceSlug?: string,
 ): Promise<string[]> {
   const db = getDb();
   const insertedIds: string[] = [];
   let totalInputTokens = 0;
   let totalOutputTokens = 0;
+  let consecutiveAiFailures = 0;
+  let aiCircuitOpen = false;
 
   // Scrape-relevancia 3 kupacban (003): a "biztos jó" és "biztos kuka" kulcsszó/
   // URL alapján dől el INGYEN; az AI CSAK a bizonytalan "maybe" kupacra fut, ha
@@ -190,6 +201,11 @@ async function persistArticles(
 
     // 2. AI CSAK a bizonytalan "maybe" kupacra (és csak ha van kulcs).
     if (tier === 'maybe' && useAi) {
+      // A kör már kinyílt ebben a futásban (3+ egymás utáni API-hiba) — az
+      // AI-t feltételezetten halottnak tekintjük a futás hátralévő
+      // részére, a bizonytalan cikket inkább eldobjuk, nem hívjuk feleslegesen.
+      if (aiCircuitOpen) continue;
+
       try {
         const ai = await classifyArticle(a.headline, a.excerpt);
         totalInputTokens += ai.inputTokens;
@@ -201,19 +217,39 @@ async function persistArticles(
         // maybe-kupacos cikk (minden relevantByDefault forrásból, ha nincs
         // kemény kulcsszó-találat) csendben kimaradt, amíg az API-kulcs
         // nem működött. Most explicit: API-hiba esetén megtartjuk
-        // (megbízható forrás, eredeti adatokkal) — csak a TÉNYLEGES "nem
-        // releváns" LLM-döntés dob el.
+        // (megbízható forrás, eredeti adatokkal) — DE csak addig, amíg a
+        // hiba elszigeteltnek tűnik (l. AI_CIRCUIT_BREAKER_THRESHOLD).
         if (ai.apiFailed) {
-          logger?.info?.(`classifyArticle: API hiba, megtartva (fail-open) — "${a.headline}"`);
+          consecutiveAiFailures += 1;
+          if (consecutiveAiFailures >= AI_CIRCUIT_BREAKER_THRESHOLD) {
+            aiCircuitOpen = true;
+            await postEditorAlert(
+              `AI-classify tartósan hibázik (${consecutiveAiFailures} egymás utáni API-hiba) *${sourceSlug ?? sourceId}* forrásnál — a maradék bizonytalan cikkeket ebben a futásban eldobjuk (fail-closed), amíg az AI vissza nem áll. Ellenőrizd az Anthropic-kredit egyenleget.`,
+            );
+            continue; // ez a cikk is a fail-closed ágra esik, ha épp most nyílt ki a kör
+          }
+          logger?.info?.(`classifyArticle: API hiba (${consecutiveAiFailures}/${AI_CIRCUIT_BREAKER_THRESHOLD}), megtartva (fail-open) — "${a.headline}"`);
         } else if (!ai.relevant) {
+          consecutiveAiFailures = 0;
           continue; // az AI szerint szemét → eldobjuk
         } else {
+          consecutiveAiFailures = 0;
           finalExcerpt = ai.excerpt || a.excerpt;
           if (ai.tag) finalTag = ai.tag;
           if (ai.tag === 'lemondás') finalFeatured = true;
         }
       } catch {
-        // API hiba esetén megtartjuk (megbízható forrás), eredeti adatokkal
+        // Ugyanaz a hiba-számláló, mint az apiFailed ágnál — a try/catch
+        // csak a nem-várt (pl. hálózati kivétel) hibákat fogja el, amiket
+        // classifyArticle maga nem alakít apiFailed-dé.
+        consecutiveAiFailures += 1;
+        if (consecutiveAiFailures >= AI_CIRCUIT_BREAKER_THRESHOLD) {
+          aiCircuitOpen = true;
+          await postEditorAlert(
+            `AI-classify tartósan hibázik (${consecutiveAiFailures} egymás utáni kivétel) *${sourceSlug ?? sourceId}* forrásnál — a maradék bizonytalan cikkeket ebben a futásban eldobjuk (fail-closed), amíg az AI vissza nem áll.`,
+          );
+          continue;
+        }
       }
     }
 
