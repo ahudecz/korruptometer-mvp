@@ -51,6 +51,25 @@ export function parseDate(value: string | null | undefined): Date | null {
   return null;
 }
 
+/**
+ * 2026-07-13 — utolsó esély a publikálási dátumra, mielőtt a hívó new Date()
+ * (=ma) dátumra esne vissza. Sok magyar hírportál (444, telex, index stb.)
+ * az URL útvonalába égeti a dátumot ("/2026/07/13/cikk-cim") — ha az
+ * article:published_time meta és a <time datetime> is hiányzik (gyakori
+ * nem-konfigurált outleteknél), ez még mindig helyes dátumot ad egy
+ * "6 napos cikk mai dátummal került be" hiba helyett.
+ */
+export function parseDateFromUrl(url: string): Date | null {
+  const m = /\/(20\d{2})\/(\d{1,2})\/(\d{1,2})(?:\/|$|[?#-])/.exec(url);
+  if (!m || !m[1] || !m[2] || !m[3]) return null;
+  const year = Number(m[1]);
+  const month = Number(m[2]);
+  const day = Number(m[3]);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 export function metaContent($: cheerio.CheerioAPI, name: string): string | null {
   const v =
     $(`meta[property="${name}"]`).attr('content') ??

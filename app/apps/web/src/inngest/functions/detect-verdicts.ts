@@ -3,6 +3,7 @@ import { eq, sql } from 'drizzle-orm';
 
 import { detectVerdictFromArticle } from '@korr/db/ai-verdicts';
 import {
+  articleDateIso,
   decideStatus,
   findExistingVerdict,
   isTransientLlmFailure,
@@ -52,6 +53,9 @@ export const detectVerdicts = inngest.createFunction(
   { cron: '30 * * * *' },
   async ({ step, logger }) => {
     const db = getDb();
+    // Csak a "mikor rögzítettük ezt a forrásidézetet" (sourceDates) mezőhöz —
+    // ez tényleg a feldolgozás napja, NEM a cikk dátuma. Az LLM-hívásoknál
+    // articleDateIso(article.publishedAt)-ot használunk, l. lentebb.
     const todayIso = new Date().toISOString().slice(0, 10);
 
     const articles = await step.run('load-unchecked-articles', () =>
@@ -76,7 +80,7 @@ export const detectVerdicts = inngest.createFunction(
       const batchInserted = await step.run(`process-batch-${batchNum}`, async () => {
         let count = 0;
         for (const article of batch) {
-          const llmResult = await detectVerdictFromArticle(article.headline, article.excerpt, todayIso);
+          const llmResult = await detectVerdictFromArticle(article.headline, article.excerpt, articleDateIso(article.publishedAt));
 
           if (isTransientLlmFailure(llmResult)) continue;
 

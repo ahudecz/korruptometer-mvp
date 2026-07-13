@@ -27,6 +27,7 @@ import {
   loadHtml,
   metaContent,
   parseDate,
+  parseDateFromUrl,
 } from './parse';
 import type { ScrapedArticle } from './types';
 
@@ -180,6 +181,7 @@ export async function fetchPrimaryArticle(
     parseDate(metaContent($, 'article:published_time')) ??
     parseDate($('time').first().attr('datetime') ?? null) ??
     parseDate(ref.dateText) ??
+    parseDateFromUrl(ref.sourceUrl) ??
     new Date();
   // 2026-07-13 — a kézi (Telegram-tipp) bejelentésekhez kell: ha az URL nem
   // egy konfigurált OutletAdapter-hez tartozik, az og:site_name adja a

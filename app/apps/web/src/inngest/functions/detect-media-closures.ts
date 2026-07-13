@@ -3,6 +3,7 @@ import { eq, sql } from 'drizzle-orm';
 
 import { detectMediaClosureFromArticle } from '@korr/db/ai-closures';
 import {
+  articleDateIso,
   decideStatus,
   isDuplicate,
   isTransientLlmFailure,
@@ -56,7 +57,6 @@ export const detectMediaClosures = inngest.createFunction(
   { cron: '40 * * * *' },
   async ({ step, logger }) => {
     const db = getDb();
-    const todayIso = new Date().toISOString().slice(0, 10);
 
     const articles = await step.run('load-unchecked-articles', () =>
       loadUncheckedArticles(db, DETECTOR_TYPE),
@@ -80,7 +80,7 @@ export const detectMediaClosures = inngest.createFunction(
       const batchInserted = await step.run(`process-batch-${batchNum}`, async () => {
         let count = 0;
         for (const article of batch) {
-          const llmResult = await detectMediaClosureFromArticle(article.headline, article.excerpt, todayIso);
+          const llmResult = await detectMediaClosureFromArticle(article.headline, article.excerpt, articleDateIso(article.publishedAt));
 
           if (isTransientLlmFailure(llmResult)) continue;
 

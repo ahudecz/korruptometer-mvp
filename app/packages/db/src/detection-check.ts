@@ -42,6 +42,22 @@ export function isTransientLlmFailure(result: LlmResult<unknown>): boolean {
   return result.data === null && result.inputTokens === 0 && result.outputTokens === 0;
 }
 
+/**
+ * 2026-07-13 — the LLM detectors' schemas all say "use today's date if only
+ * 'today'/'recently' is mentioned", and every call site used to hand them
+ * the PROCESSING date (new Date()) for that anchor. That's silently wrong
+ * for any article older than the run that processes it (invisible for the
+ * regular same-day scrape, but a manually-submitted Telegram tip for a
+ * 6-day-old article got its relative date phrases — "kedden" — resolved
+ * against today instead of the article's own publish date, landing a
+ * week-old resignation on today's date). Always anchor on the ARTICLE's own
+ * publishedAt, never wall-clock "now".
+ */
+export function articleDateIso(publishedAt: Date | string): string {
+  const d = typeof publishedAt === 'string' ? new Date(publishedAt) : publishedAt;
+  return Number.isNaN(d.getTime()) ? new Date().toISOString().slice(0, 10) : d.toISOString().slice(0, 10);
+}
+
 export type CandidateArticle = {
   id: string;
   headline: string;

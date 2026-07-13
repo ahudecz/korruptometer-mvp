@@ -3,6 +3,7 @@ import { eq, sql } from 'drizzle-orm';
 
 import { detectResignationFromArticle } from '@korr/db/ai';
 import {
+  articleDateIso,
   decideStatus,
   isDuplicate,
   isTransientLlmFailure,
@@ -62,7 +63,6 @@ export const detectResignations = inngest.createFunction(
   { cron: '20 * * * *' },
   async ({ step, logger }) => {
     const db = getDb();
-    const todayIso = new Date().toISOString().slice(0, 10);
 
     const articles = await step.run('load-unchecked-articles', () =>
       loadUncheckedArticles(db, DETECTOR_TYPE),
@@ -86,7 +86,7 @@ export const detectResignations = inngest.createFunction(
       const batchInserted = await step.run(`process-batch-${batchNum}`, async () => {
         let count = 0;
         for (const article of batch) {
-          const llmResult = await detectResignationFromArticle(article.headline, article.excerpt, todayIso);
+          const llmResult = await detectResignationFromArticle(article.headline, article.excerpt, articleDateIso(article.publishedAt));
 
           // Transient (API/network/credit) failure — leave unrecorded so the
           // article stays eligible and is retried on the next hourly run.

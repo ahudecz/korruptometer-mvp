@@ -6,6 +6,7 @@ import { detectMediaClosureFromArticle } from '@korr/db/ai-closures';
 import { detectVerdictFromArticle } from '@korr/db/ai-verdicts';
 import { detectAssetRecoveryFromArticle } from '@korr/db/ai-assets';
 import {
+  articleDateIso,
   decideStatus,
   findExistingVerdict,
   isDuplicate,
@@ -99,7 +100,7 @@ function resolveDate(raw: string | undefined, fallback: Date): Date {
  */
 export async function processResignation(article: ArticleForReprocess, todayIso: string, bypassConfidenceGate: boolean): Promise<ProcessOutcome> {
   const db = getDb();
-  const llmResult = await detectResignationFromArticle(article.headline, article.excerpt, todayIso);
+  const llmResult = await detectResignationFromArticle(article.headline, article.excerpt, articleDateIso(article.publishedAt));
   if (isTransientLlmFailure(llmResult)) return { status: 'error', message: 'Az AI-hívás átmenetileg hibázott, próbáld újra.' };
 
   const result = llmResult.data;
@@ -159,7 +160,7 @@ export async function processResignation(article: ArticleForReprocess, todayIso:
 
 export async function processMediaClosure(article: ArticleForReprocess, todayIso: string, bypassConfidenceGate: boolean): Promise<ProcessOutcome> {
   const db = getDb();
-  const llmResult = await detectMediaClosureFromArticle(article.headline, article.excerpt, todayIso);
+  const llmResult = await detectMediaClosureFromArticle(article.headline, article.excerpt, articleDateIso(article.publishedAt));
   if (isTransientLlmFailure(llmResult)) return { status: 'error', message: 'Az AI-hívás átmenetileg hibázott, próbáld újra.' };
 
   const result = llmResult.data;
@@ -215,7 +216,7 @@ export async function processMediaClosure(article: ArticleForReprocess, todayIso
 
 export async function processCourtVerdict(article: ArticleForReprocess, todayIso: string, bypassConfidenceGate: boolean): Promise<ProcessOutcome> {
   const db = getDb();
-  const llmResult = await detectVerdictFromArticle(article.headline, article.excerpt, todayIso);
+  const llmResult = await detectVerdictFromArticle(article.headline, article.excerpt, articleDateIso(article.publishedAt));
   if (isTransientLlmFailure(llmResult)) return { status: 'error', message: 'Az AI-hívás átmenetileg hibázott, próbáld újra.' };
 
   const result = llmResult.data;
@@ -306,7 +307,7 @@ export async function processCourtVerdict(article: ArticleForReprocess, todayIso
 
 export async function processAssetRecovery(article: ArticleForReprocess, todayIso: string, bypassConfidenceGate: boolean): Promise<ProcessOutcome> {
   const db = getDb();
-  const llmResult = await detectAssetRecoveryFromArticle(article.headline, article.excerpt, todayIso);
+  const llmResult = await detectAssetRecoveryFromArticle(article.headline, article.excerpt, articleDateIso(article.publishedAt));
   if (isTransientLlmFailure(llmResult)) return { status: 'error', message: 'Az AI-hívás átmenetileg hibázott, próbáld újra.' };
 
   const result = llmResult.data;

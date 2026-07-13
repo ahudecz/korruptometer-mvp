@@ -2,7 +2,7 @@ import 'server-only';
 import { and, gte, sql } from 'drizzle-orm';
 
 import { detectAssetRecoveryFromArticle } from '@korr/db/ai-assets';
-import { isTransientLlmFailure, loadUncheckedArticles, markChecked, NEAR_MISS_MIN } from '@korr/db';
+import { articleDateIso, isTransientLlmFailure, loadUncheckedArticles, markChecked, NEAR_MISS_MIN } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
 import { inngest } from '../client';
@@ -33,7 +33,6 @@ export const detectAssetRecoveries = inngest.createFunction(
   { cron: '50 * * * *' },
   async ({ step, logger }) => {
     const db = getDb();
-    const todayIso = new Date().toISOString().slice(0, 10);
 
     const articles = await step.run('load-unchecked-articles', () =>
       loadUncheckedArticles(db, DETECTOR_TYPE),
@@ -57,7 +56,7 @@ export const detectAssetRecoveries = inngest.createFunction(
       const batchInserted = await step.run(`process-batch-${batchNum}`, async () => {
         let count = 0;
         for (const article of batch) {
-          const llmResult = await detectAssetRecoveryFromArticle(article.headline, article.excerpt, todayIso);
+          const llmResult = await detectAssetRecoveryFromArticle(article.headline, article.excerpt, articleDateIso(article.publishedAt));
 
           if (isTransientLlmFailure(llmResult)) continue;
 
