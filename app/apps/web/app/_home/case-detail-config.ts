@@ -159,51 +159,11 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     hidePhoto: true,
     relatedPersonIds: ['tiborcz-istvan', 'meszaros-lorinc'],
   },
-  {
-    // The DB damage (3750 Mrd) is a budget-context number baked into the name —
-    // an artifact, not an alleged corruption damage. Suppress it and link the
-    // canonical Mészáros photo.
-    // 2026-07-13: K-Monitor flagged (via user) that the auto-generated body
-    // text falsely attributed this figure to "a K-Monitor becslése" — K-Monitor
-    // only aggregates press articles, it doesn't produce a HUF estimate; that
-    // number is our own repricing pipeline's output. Replaced with curated
-    // text that doesn't misattribute the figure and matches the damageText
-    // disclaimer below. Source article unchanged (already verified, real URL).
-    scandalKey: 'meszaros-kormany-3750-mrd-pluszkoltseg',
-    title: 'Mészáros-érdekeltségek és a költségvetési többletkiadások',
-    galeriaId: 'meszaros-lorinc',
-    hideAutoDamage: true,
-    damageLabel: 'Becsült közpénz-érintettség',
-    damageText:
-      'A nyilvánosan hivatkozott 3750 Mrd Ft költségvetési tétel — nem azonosított konkrét korrupciós kár. Ellenőrzés alatt; a végleges becslés folyamatban.',
-    crimeTypes: ['Közpénzfelhasználás', 'Költségvetési kérdések'],
-    relatedPersonIds: ['meszaros-lorinc'],
-    descriptionBlocks: [
-      {
-        type: 'text',
-        content:
-          'A 3750 milliárd forintos összeg egy költségvetési kontextusban idézett tétel, nem azonosított korrupciós kár vagy hivatalos becslés. A szám a Kegyencjárat saját, sajtóforrásokból készült durva összesítéséből származik — nem a K-Monitor állítása vagy becslése. A K-Monitor sajtóadatbázisa az üggyel kapcsolatos cikkeket gyűjti, konkrét forintösszeget nem ő állapít meg.',
-      },
-      {
-        type: 'text',
-        content:
-          'A sajtójelentések szerint az ügy az ún. NER-kegyeltjeknek tulajdonított vagyonosodáshoz kapcsolódik. A kormányzat törvényjavaslata a több ezermilliárdnyi közpénzt kezelő tőkealapok befektetőit kívánná nyilvánossá tenni. Az ügy kapcsán más szereplők, például Tiborcz István és Mészáros Lőrinc banki érdekeltsége, illetve a Hungarikum Alkusz állami ügyfelekre irányuló tevékenysége is felmerül a sajtóban.',
-      },
-      {
-        type: 'text',
-        content:
-          'Az ügynek nincs jogerős bírósági ítélete vagy hivatalosan megállapított kára. A fenti összeg ellenőrzés alatt áll, és nem tekinthető végleges vagy pontos becslésnek.',
-      },
-      {
-        type: 'article-card',
-        source: '444.hu',
-        headline: 'Mészáros Lőrinctől Rogánon át Lázár Jánosig: kiket és miket vizsgálhat a Vagyonvisszaszerzési Hivatal?',
-        date: '2026-06-24',
-        url: 'https://444.hu/2026/06/24/meszaros-lorinctol-roganon-at-lazar-janosig-kiket-es-miket-vizsgalhat-a-vagyonvisszaszerzesi-hivatal',
-        lead: 'Magyar Péter hónapok óta emlegeti a vagyonvisszaszerzési hivatalt, amely a NER kegyeltjeinek vagyonosodását is vizsgálná. Összegyűjtöttük, ki érezheti magát ez alapján veszélyben.',
-      },
-    ],
-  },
+  // meszaros-kormany-3750-mrd-pluszkoltseg: retired 2026-07-13, see
+  // RETIRED_REDIRECTS below — the 3750 Mrd figure was never a real,
+  // distinct corruption case (single article, budget-context number), so
+  // curating its own page kept reproducing the same "what is this number"
+  // confusion. Redirects into the real Mészáros case rollup instead.
 
   // ── "Költségvetés/közbeszerzés-érték kárként" — az auto-heurisztika ezeket
   // nem szűri (nincs szám a névben), ezért kézzel jelöljük: a headline szám
@@ -746,6 +706,12 @@ export const RETIRED_REDIRECTS: Record<string, string> = {
   // mondott el külön "projektként" — a cikkek most a fő ügy alá tartoznak.
   'matolcsy-mnb-alapitvany-botrany': '/adatbazis/mnb-botrany',
   'mnb-matolcsy-alapitvany-botrany': '/adatbazis/mnb-botrany',
+  // 3750 Mrd — egyetlen cikkből származó, költségvetési kontextusú szám
+  // (tőkealap-befektetők nyilvánosságra hozataláról szóló törvényjavaslat),
+  // nem önálló, azonosítható korrupciós ügy. K-Monitor jelezte (2026-07-13,
+  // user), hogy a leírás tévesen nekik tulajdonította az összeget — a szöveg
+  // javítása helyett a lapot visszük a valós Mészáros-ügyek gyűjtőoldalára.
+  'meszaros-kormany-3750-mrd-pluszkoltseg': '/adatbazis/meszaros-lorinc-osszes-ugye',
 };
 export const RETIRED_SCANDAL_IDS = Object.keys(RETIRED_REDIRECTS);
 
