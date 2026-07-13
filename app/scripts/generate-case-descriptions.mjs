@@ -121,7 +121,7 @@ NE találj ki cikkeket, dátumokat, idézeteket vagy összegeket amelyeket nem a
 - Név: ${row.name}
 - Felelős személy: ${row.person ?? 'ismeretlen'}
 - Érintett intézmény: ${row.institution ?? 'ismeretlen'}
-- Dokumentált közpénz-érintettség (K-Monitor becslés): ${damageMrd}
+- Dokumentált közpénz-érintettség (saját becslésünk sajtóadatok alapján): ${damageMrd}
 - Cikkek száma: ${row.article_count}
 - Státusz: ${row.is_open ? 'Nyitott ügy' : 'Lezárt ügy'}
 
@@ -136,6 +136,15 @@ közpénz áramlott/volt érintett". CSAK akkor nevezd "kár"-nak, ha a fenti
 cikkek kifejezetten jogerős bírósági ítéletről, ügyészségi vádiratról vagy
 hivatalos állami vizsgálatról (ÁSZ, KEHI) számolnak be konkrét, számszerűsített
 kárral — egyébként maradj a "közpénz-érintettség" megfogalmazásnál.
+
+SOHA ne írd azt, hogy "a K-Monitor becslése/adatbázisa szerint" ez az összeg,
+és ne tulajdonítsd a K-Monitornak ezt a számot. A K-Monitor egy független
+sajtóadatbázis, amely cikkeket aggregál — NEM ő számolja vagy becsüli ezt az
+összeget. Az összeget vagy ne attribuáld szervezethez (pl. "a sajtóban
+szereplő becslés szerint"), vagy — ha mindenképp attribuálsz — a Kegyencjárat
+saját becslésének nevezd. A kapcsolódó cikkek forrása lehet K-Monitor — ezt
+lehet jelezni ("a K-Monitor sajtóadatbázisában szereplő cikkek szerint..."),
+de a konkrét forintösszeget soha ne a K-Monitor állításaként fogalmazd meg.
 
 Az összefoglaló legyen 2-3 önálló bekezdés, kb. 150-250 szó összesen, tömör,
 semleges hangú, ártatlanság vélelmét tiszteletben tartva. Ha kevés az

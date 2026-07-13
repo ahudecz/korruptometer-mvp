@@ -37,10 +37,17 @@ NE találj ki cikkeket, dátumokat, összegeket amelyeket nem adtam meg.
 - Név: ${row.name}
 - Felelős személy: ${row.person ?? 'ismeretlen'}
 - Érintett intézmény: ${row.institution ?? 'ismeretlen'}
-- Becsült kár: ${damageMrd}
+- Becsült kár (saját becslésünk sajtóadatok alapján): ${damageMrd}
 - Cikkek száma: ${row.article_count}
 - Státusz: ${row.is_open ? 'Nyitott ügy' : 'Lezárt ügy'}
 - Meglévő összefoglaló: ${row.summary ?? 'nincs'}
+
+SOHA ne írd azt, hogy "a K-Monitor becslése/adatbázisa szerint" ez az összeg,
+és ne tulajdonítsd a K-Monitornak ezt a számot. A K-Monitor egy független
+sajtóadatbázis, amely cikkeket aggregál — NEM ő számolja vagy becsüli ezt az
+összeget. Az összeget vagy ne attribuáld szervezethez (pl. "a sajtóban
+szereplő becslés szerint"), vagy — ha mindenképp attribuálsz — a Kegyencjárat
+saját becslésének nevezd.
 
 Az összefoglaló legyen 2-3 bekezdés, körülbelül 150-250 szó összesen.
 Tömör, informatív, semleges hangú. Visszaadj CSAK a szöveget, semmi mást, JSON sem.
