@@ -11,7 +11,7 @@ const conn = postgres(process.env.DIRECT_URL ?? process.env.DATABASE_URL!, { pre
 const db = drizzle(conn, { schema });
 
 const PAGES = [
-  { handle: 'panyiszabolcs', name: 'Pányi Szabolcs' },
+  { handle: 'panyiszabolcs', name: 'Panyi Szabolcs' },
   { handle: 'Juhi.JuhaszPeter', name: 'Juhász Péter' },
   { handle: 'kormanyzat', name: 'Kormány.hu' },
   { handle: 'peter.magyar.102', name: 'Magyar Péter' },
