@@ -970,7 +970,7 @@ button {
 .news-card-img {
   margin: -40px -36px 20px;
   overflow: hidden;
-  max-height: 220px;
+  aspect-ratio: 16 / 9;
 }
 .news-card-img img {
   width: 100%;
@@ -978,10 +978,6 @@ button {
   object-fit: cover;
   object-position: top;
   display: block;
-}
-.news-card.feature .news-card-img {
-  height: 480px;
-  max-height: none;
 }
 .news-card.feature .news-headline {
   font-size: clamp(26px, 2.8vw, 40px);
@@ -5818,7 +5814,12 @@ button {
   .news-card.feature {
     grid-column: span 1;
   }
+  .news-card-img {
+    aspect-ratio: auto;
+    max-height: 220px;
+  }
   .news-card.feature .news-card-img {
+    max-height: none;
     height: 260px;
   }
   .db-controls {
