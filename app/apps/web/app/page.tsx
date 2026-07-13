@@ -1,12 +1,10 @@
 import Link from 'next/link';
 import { unstable_cache } from 'next/cache';
-import { and, count, desc, eq, sql } from 'drizzle-orm';
 
 import { fmtNumber } from '@korr/shared/format';
 import { Pie3D, type PieSlice } from '@korr/ui/pie3d';
 import { Mugshot } from '@korr/ui/mugshot';
 
-import { getDb, schema } from '@/lib/db';
 import { CaseFilters } from './adatbazis/case-filters';
 import { ResignationsSection } from './_home/resignations-section';
 import { MediaClosuresSection } from './_home/media-closures-section';
@@ -186,6 +184,162 @@ const getCachedActiveBreaking = unstable_cache(
   { revalidate: 60 },
 );
 
+// 2026-07-13: these 10 queries used to run raw, straight in the homepage
+// Promise.all — same class of bug as the getCachedTotalDamage note above
+// (added later, drifted from the pattern). One of them occasionally hanging
+// on a Postgres statement timeout took down the ENTIRE homepage (Promise.all
+// fails fast on any rejection), confirmed via Vercel runtime logs: 6
+// "canceling statement due to statement timeout" 500s + 20 hard 60s function
+// timeouts on `/` since 2026-06-25. Wrapped in unstable_cache like
+// everything else in this file so a slow/hung query degrades to serving the
+// last good cached value instead of crashing the page.
+const getCachedKpiSnapshot = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { eq: eqF } = await import('drizzle-orm');
+    const db = getDb();
+    // Only the 2 fields HomePage actually reads (activeCases, bySector) —
+    // the row also has a bigint totalDamage column, which unstable_cache's
+    // JSON round-trip can't serialize at all (throws), unlike its Date
+    // columns which just silently degrade to strings.
+    return db.select({ activeCases: schema.kpiSnapshots.activeCases, bySector: schema.kpiSnapshots.bySector })
+      .from(schema.kpiSnapshots)
+      .where(eqF(schema.kpiSnapshots.id, 'singleton'))
+      .limit(1)
+      .then(r => r[0] ?? null);
+  },
+  ['kpi-snapshot'],
+  { revalidate: 300 },
+);
+const getCachedTopResignations = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { desc: d, eq: eqF } = await import('drizzle-orm');
+    const db = getDb();
+    return db.select().from(schema.politicalResignations)
+      .where(eqF(schema.politicalResignations.reviewStatus, 'approved'))
+      .orderBy(d(schema.politicalResignations.pinned), d(schema.politicalResignations.resignationDate))
+      .limit(20);
+  },
+  ['top-resignations'],
+  { revalidate: 300 },
+);
+const getCachedVerdictCounts = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { eq: eqF, sql: s } = await import('drizzle-orm');
+    const db = getDb();
+    return db.select({
+      pretrial: s<number>`count(*) FILTER (WHERE ${schema.courtVerdicts.verdictType} = 'előzetesben')::int`,
+      elitelt: s<number>`count(*) FILTER (WHERE ${schema.courtVerdicts.verdictType} NOT IN ('előzetesben', 'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve'))::int`,
+    }).from(schema.courtVerdicts)
+      .where(eqF(schema.courtVerdicts.reviewStatus, 'approved'))
+      .then(r => r[0] ?? { pretrial: 0, elitelt: 0 });
+  },
+  ['verdict-counts'],
+  { revalidate: 300 },
+);
+const getCachedPretrialByUgy = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { and: andF, eq: eqF, sql: s } = await import('drizzle-orm');
+    const db = getDb();
+    return db.select({ ugyId: schema.courtVerdicts.personUgyId, n: s<number>`count(*)::int` })
+      .from(schema.courtVerdicts)
+      .where(andF(eqF(schema.courtVerdicts.reviewStatus, 'approved'), eqF(schema.courtVerdicts.verdictType, 'előzetesben')))
+      .groupBy(schema.courtVerdicts.personUgyId)
+      .orderBy(s`count(*) desc`);
+  },
+  ['pretrial-by-ugy'],
+  { revalidate: 300 },
+);
+const getCachedLatestVerdict = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { desc: d, eq: eqF } = await import('drizzle-orm');
+    const db = getDb();
+    return db.select({ id: schema.courtVerdicts.id, personName: schema.courtVerdicts.personName, description: schema.courtVerdicts.description, personUgyId: schema.courtVerdicts.personUgyId })
+      .from(schema.courtVerdicts)
+      .where(eqF(schema.courtVerdicts.reviewStatus, 'approved'))
+      .orderBy(d(schema.courtVerdicts.verdictDate))
+      .limit(1)
+      .then(r => r[0] ?? null);
+  },
+  ['latest-verdict'],
+  { revalidate: 60 },
+);
+const getCachedLatestRecoveries = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { desc: d, sql: s } = await import('drizzle-orm');
+    const db = getDb();
+    // amountFt is a bigint column (mode: 'bigint') — cast to text so
+    // unstable_cache's JSON round-trip doesn't throw; converted back to
+    // BigInt right after the Promise.all destructure below.
+    return db.select({
+      id: schema.assetRecoveries.id,
+      caseId: schema.assetRecoveries.caseId,
+      caseLabel: schema.assetRecoveries.caseLabel,
+      description: schema.assetRecoveries.description,
+      amountFt: s<string>`"amountFt"::text`,
+      recoveredAt: schema.assetRecoveries.recoveredAt,
+    }).from(schema.assetRecoveries).orderBy(d(schema.assetRecoveries.recoveredAt)).limit(5);
+  },
+  ['latest-recoveries'],
+  { revalidate: 300 },
+);
+const getCachedTotalRecovered = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { sql: s } = await import('drizzle-orm');
+    const db = getDb();
+    return db.select({ total: s<string>`coalesce(sum("amountFt"::bigint), 0)::text` }).from(schema.assetRecoveries).then(r => r[0]?.total ?? '0');
+  },
+  ['total-recovered'],
+  { revalidate: 300 },
+);
+const getCachedLatestResignations5 = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { desc: d, eq: eqF } = await import('drizzle-orm');
+    const db = getDb();
+    return db.select().from(schema.politicalResignations)
+      .where(eqF(schema.politicalResignations.reviewStatus, 'approved'))
+      .orderBy(d(schema.politicalResignations.resignationDate))
+      .limit(5);
+  },
+  ['latest-resignations-5'],
+  { revalidate: 300 },
+);
+const getCachedLatestClosures = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { desc: d, eq: eqF } = await import('drizzle-orm');
+    const db = getDb();
+    return db.select({ id: schema.mediaClosures.id, name: schema.mediaClosures.name, eventType: schema.mediaClosures.eventType, eventDate: schema.mediaClosures.eventDate, sourceUrl: schema.mediaClosures.sourceUrl, sourceName: schema.mediaClosures.sourceName })
+      .from(schema.mediaClosures)
+      .where(eqF(schema.mediaClosures.reviewStatus, 'approved'))
+      .orderBy(d(schema.mediaClosures.eventDate))
+      .limit(5);
+  },
+  ['latest-closures'],
+  { revalidate: 300 },
+);
+const getCachedPinnedClosures = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { and: andF, desc: d, eq: eqF } = await import('drizzle-orm');
+    const db = getDb();
+    return db.select({ id: schema.mediaClosures.id, name: schema.mediaClosures.name, eventType: schema.mediaClosures.eventType, eventDate: schema.mediaClosures.eventDate, sourceUrl: schema.mediaClosures.sourceUrl, sourceName: schema.mediaClosures.sourceName })
+      .from(schema.mediaClosures)
+      .where(andF(eqF(schema.mediaClosures.reviewStatus, 'approved'), eqF(schema.mediaClosures.pinned, true)))
+      .orderBy(d(schema.mediaClosures.eventDate))
+      .limit(5);
+  },
+  ['pinned-closures'],
+  { revalidate: 300 },
+);
+
 const PALETTE_MONEY = ['#e31937', '#171a20', '#5c5e62', '#9b9da1', '#cccccc', '#e6e6e6'];
 
 
@@ -194,12 +348,16 @@ type SectorEntry = { name: string; value: number };
 
 const HU_MONTHS_SHORT = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
 
-function fmtShortDate(d: Date): string {
-  return `${HU_MONTHS_SHORT[d.getMonth()]} ${d.getDate()}.`;
+// Date | string: unstable_cache round-trips its return value through JSON,
+// so a Date column comes back out as an ISO string, not a revived Date.
+function fmtShortDate(d: Date | string): string {
+  const dt = new Date(d);
+  return `${HU_MONTHS_SHORT[dt.getMonth()]} ${dt.getDate()}.`;
 }
 
-function fmtRecoveryDate(d: Date): string {
-  return `${d.getFullYear()}. ${HU_MONTHS_SHORT[d.getMonth()]}`;
+function fmtRecoveryDate(d: Date | string): string {
+  const dt = new Date(d);
+  return `${dt.getFullYear()}. ${HU_MONTHS_SHORT[dt.getMonth()]}`;
 }
 
 const RESIGNATION_TYPE_COLOR: Record<string, string> = {
@@ -221,8 +379,6 @@ function fmtRelative(d: Date | string): string {
 
 
 export default async function HomePage() {
-  const db = getDb();
-
   // ILIKE/cikk-query egybevonva egyetlen DB-scant jelent tag-szűrő kombinációval.
   // DB-scant jelent tag-szűrő + ILIKE ANY(ARRAY[...]) kombinációval.
   // Az eredményt JS-ben bontjuk szét témánként — 1 tábla-scan vs. 8.
@@ -246,53 +402,23 @@ export default async function HomePage() {
     pinnedClosuresRaw,
     totalDamageRaw,
   ] = await Promise.all([
-    db.query.kpiSnapshots.findFirst({ where: eq(schema.kpiSnapshots.id, 'singleton') }),
-    db.select().from(schema.politicalResignations)
-      .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
-      .orderBy(desc(schema.politicalResignations.pinned), desc(schema.politicalResignations.resignationDate))
-      .limit(20),
+    getCachedKpiSnapshot(),
+    getCachedTopResignations(),
     getCachedAllArticles(),
     getCachedRecentNews(),
     getCachedResignationCount(),
     getCachedClosureCount(),
-    // Két külön COUNT(*) helyett egy scan FILTER-ekkel — ugyanaz a
-    // "reviewStatus='approved'" predikátum futott le kétszer feleslegesen.
-    db.select({
-      pretrial: sql<number>`count(*) FILTER (WHERE ${schema.courtVerdicts.verdictType} = 'előzetesben')::int`,
-      elitelt: sql<number>`count(*) FILTER (WHERE ${schema.courtVerdicts.verdictType} NOT IN ('előzetesben', 'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve'))::int`,
-    }).from(schema.courtVerdicts)
-      .where(eq(schema.courtVerdicts.reviewStatus, 'approved'))
-      .then(r => r[0] ?? { pretrial: 0, elitelt: 0 }),
-    db.select({ ugyId: schema.courtVerdicts.personUgyId, n: sql<number>`count(*)::int` })
-      .from(schema.courtVerdicts)
-      .where(and(eq(schema.courtVerdicts.reviewStatus, 'approved'), eq(schema.courtVerdicts.verdictType, 'előzetesben')))
-      .groupBy(schema.courtVerdicts.personUgyId)
-      .orderBy(sql`count(*) desc`),
-    db.select({ id: schema.courtVerdicts.id, personName: schema.courtVerdicts.personName, description: schema.courtVerdicts.description, personUgyId: schema.courtVerdicts.personUgyId })
-      .from(schema.courtVerdicts)
-      .where(eq(schema.courtVerdicts.reviewStatus, 'approved'))
-      .orderBy(desc(schema.courtVerdicts.verdictDate))
-      .limit(1)
-      .then(r => r[0] ?? null),
-    db.select().from(schema.assetRecoveries).orderBy(desc(schema.assetRecoveries.recoveredAt)).limit(5),
-    db.select({ total: sql<string>`coalesce(sum("amountFt"::bigint), 0)::text` }).from(schema.assetRecoveries).then(r => r[0]?.total ?? '0'),
-    db.select().from(schema.politicalResignations)
-      .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
-      .orderBy(desc(schema.politicalResignations.resignationDate))
-      .limit(5),
+    getCachedVerdictCounts(),
+    getCachedPretrialByUgy(),
+    getCachedLatestVerdict(),
+    getCachedLatestRecoveries(),
+    getCachedTotalRecovered(),
+    getCachedLatestResignations5(),
     getCachedScandalCatalog(),
     getCachedOffenceTypes(),
     getCachedActiveBreaking(),
-    db.select({ id: schema.mediaClosures.id, name: schema.mediaClosures.name, eventType: schema.mediaClosures.eventType, eventDate: schema.mediaClosures.eventDate, sourceUrl: schema.mediaClosures.sourceUrl, sourceName: schema.mediaClosures.sourceName })
-      .from(schema.mediaClosures)
-      .where(eq(schema.mediaClosures.reviewStatus, 'approved'))
-      .orderBy(desc(schema.mediaClosures.eventDate))
-      .limit(5),
-    db.select({ id: schema.mediaClosures.id, name: schema.mediaClosures.name, eventType: schema.mediaClosures.eventType, eventDate: schema.mediaClosures.eventDate, sourceUrl: schema.mediaClosures.sourceUrl, sourceName: schema.mediaClosures.sourceName })
-      .from(schema.mediaClosures)
-      .where(and(eq(schema.mediaClosures.reviewStatus, 'approved'), eq(schema.mediaClosures.pinned, true)))
-      .orderBy(desc(schema.mediaClosures.eventDate))
-      .limit(5),
+    getCachedLatestClosures(),
+    getCachedPinnedClosures(),
     getCachedTotalDamage(),
   ]);
   const { pretrial: pretrialCountDb, elitelt: eliteltCountDb } = verdictCounts;
@@ -312,7 +438,7 @@ export default async function HomePage() {
   const latestClosures = latestClosuresRaw;
   const pinnedClosures = pinnedClosuresRaw;
   const latestVerdict = latestVerdictDb;
-  const latestRecoveries = latestRecoveriesDb;
+  const latestRecoveries = latestRecoveriesDb.map(r => ({ ...r, amountFt: BigInt(r.amountFt) }));
   const totalRecoveredFt = BigInt(totalRecoveredRaw);
   const offences = offRows.map((o) => ({ code: o.code, label: o.label }));
   const recentArticles = recentNewsRaw.slice(0, 10).map(a => ({

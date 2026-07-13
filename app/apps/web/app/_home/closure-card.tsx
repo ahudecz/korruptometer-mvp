@@ -5,8 +5,9 @@ import { findOutletLogo, outletLogoSrc } from './media-config';
 
 const HU_MONTHS_SHORT = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
 
-function fmtShortDate(d: Date): string {
-  return `${HU_MONTHS_SHORT[d.getMonth()]} ${d.getDate()}.`;
+function fmtShortDate(d: Date | string): string {
+  const dt = new Date(d);
+  return `${HU_MONTHS_SHORT[dt.getMonth()]} ${dt.getDate()}.`;
 }
 
 const CLOSURE_STATUS_CLASS: Record<string, string> = {
