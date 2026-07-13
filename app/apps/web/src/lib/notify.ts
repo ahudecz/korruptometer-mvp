@@ -65,6 +65,13 @@ export async function notifyReviewNeeded(event: ReviewNeededEvent): Promise<void
           { text: '✅ Jóváhagyom', callback_data: `a:${code}:${actionId}` },
           { text: '❌ Elutasítom', callback_data: `r:${code}:${actionId}` },
         ],
+        // 2026-07-13: a strukturált beszúrás elutasítása (vagy egy near_miss
+        // sosem-jóváhagyása) eddig azt is jelentette, hogy a cikk a
+        // /hirek-en is jelöletlen/kiemeletlen maradt, pedig maga a hír
+        // gyakran önmagában is közlésre érdemes — l. Tarr Zoltán-eset,
+        // user report. Ez a gomb NEM nyúl a strukturált táblákhoz, csak a
+        // NewsArticle címkéjét/breaking-jelzését állítja be.
+        [{ text: '📰 Csak hírbe', callback_data: `n:${code}:${event.articleId}` }],
       ],
     };
 

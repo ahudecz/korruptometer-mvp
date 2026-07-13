@@ -24,6 +24,17 @@ const DETECTOR_LABELS_HU: Record<DetectorType, string> = {
   asset_recovery: 'Vagyonvisszaszerzés',
 };
 
+// 2026-07-13 — "📰 Csak hírbe" gomb: ugyanazok a rövid címkék, amiket a
+// sikeres strukturált beszúrás is rátenne a cikkre (l. detect-*.ts), hogy
+// a /hirek szűrője/kiemelése konzisztens legyen attól függetlenül, hogy
+// született-e formális CourtVerdict/PoliticalResignation/stb. sor.
+const NEWS_ONLY_TAG: Record<DetectorType, string> = {
+  resignation: 'Lemondás',
+  media_closure: 'Megszűnés',
+  court_verdict: 'Ítélet',
+  asset_recovery: 'Vagyonvisszaszerzés',
+};
+
 type TelegramUpdate = {
   callback_query?: {
     id: string;
@@ -104,6 +115,7 @@ async function loadArticleByUrl(sourceUrl: string): Promise<ArticleForReprocess 
 
 function revalidatePublicPaths() {
   revalidatePath('/');
+  revalidatePath('/hirek');
   revalidatePath('/lemondasok');
   revalidatePath('/megszunt');
   revalidatePath('/birosagi-iteletek');
@@ -156,12 +168,27 @@ export async function POST(req: Request) {
 
   const [action, code, id] = cq.data.split(':');
   const detectorType = code ? DETECTOR_BY_CODE[code] : undefined;
-  if ((action !== 'a' && action !== 'r') || !detectorType || !id) {
+  if ((action !== 'a' && action !== 'r' && action !== 'n') || !detectorType || !id) {
     await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
     return NextResponse.json({ ok: true });
   }
 
   try {
+    if (action === 'n') {
+      // ── "Csak hírbe": nem nyúl semmilyen strukturált táblához, csak a
+      // NewsArticle címkéjét/breaking-jelzését állítja be. `id` itt mindig
+      // articleId (l. notify.ts). ──
+      await getDb()
+        .update(schema.newsArticles)
+        .set({ tag: NEWS_ONLY_TAG[detectorType], isBreakingCandidate: true })
+        .where(eq(schema.newsArticles.id, id));
+      revalidatePublicPaths();
+      await answerCallbackQuery(cq.id, '📰 Hírként kiemelve.');
+      const finalText = [cq.message.text ?? '', '📰 Hírként kiemelve (nem került strukturált táblába).'].filter(Boolean).join('\n\n');
+      await editMessageReplyMarkup(cq.message.chat.id, cq.message.message_id, finalText);
+      return NextResponse.json({ ok: true });
+    }
+
     const pending = await findPendingRecord(detectorType, id);
     let resultText: string;
     let extraNotes: string[] = [];
