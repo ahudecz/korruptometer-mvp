@@ -9,8 +9,12 @@ import { DETECTOR_PROCESSORS, type ArticleForReprocess } from '@/lib/telegram-re
 import type { DetectorType } from '@korr/db';
 import { canonicalUrl, dedupHash, fetchPrimaryArticle, getAdapter, routeOutletByUrl } from '@korr/scrapers';
 
-// Fallback Source (migráció 0039) minden olyan beküldött URL-hez, ami nem
-// esik egyik konfigurált outlet-adapter alá sem (routeOutletByUrl() null).
+// Legvégső fallback-név (csak akkor, ha a beküldött szöveg URL-nek NÉZETT ki
+// a regexben, de a new URL() mégis elhasal rajta — gyakorlatilag sosem fordul
+// elő). A tényleges attribúció findOrCreateAdHocSource()-ból jön: hostname +
+// og:site_name alapján dedikált (enabled:false) Source sort kap minden nem
+// konfigurált outlet is, l. migráció 0039 (ami csak ennek a végső esetnek
+// a statikus párja volt, mielőtt a dinamikus per-domain megoldás megszületett).
 const TELEGRAM_TIP_SOURCE_SLUG = 'telegram-bejelentes';
 
 // 008-telegram-review-bot — one-letter callback_data codes, keeps
@@ -80,6 +84,31 @@ function firstUrl(text: string): string | null {
 
 type ResolveArticleResult = { id: string; headline: string } | { error: string };
 
+/**
+ * Ismeretlen (nem konfigurált outlet-adapterrel rendelkező) domainhez dedikált
+ * Source sort keres/hoz létre — `enabled: false`, hogy a rendes órás
+ * scrape.news cron ne próbálja meg (nincs hozzá adapter, csak logolna egy
+ * figyelmeztetést). A név az og:site_name meta-tagből jön, ha a site megadja
+ * (a legtöbb hírportál igen) — enélkül a bare hostname a fallback.
+ */
+async function findOrCreateAdHocSource(hostname: string, siteName: string | null): Promise<string | { error: string }> {
+  const db = getDb();
+  const slug = `tip-${hostname}`.slice(0, 100);
+  const existing = await db.select({ id: schema.sources.id }).from(schema.sources).where(eq(schema.sources.slug, slug)).limit(1);
+  if (existing[0]) return existing[0].id;
+
+  const rows = await db
+    .insert(schema.sources)
+    .values({ slug, name: siteName ?? hostname, homepage: `https://${hostname}`, tag: 'newsletter', enabled: false })
+    .onConflictDoNothing({ target: schema.sources.slug })
+    .returning({ id: schema.sources.id });
+  if (rows[0]) return rows[0].id;
+
+  const raceRows = await db.select({ id: schema.sources.id }).from(schema.sources).where(eq(schema.sources.slug, slug)).limit(1);
+  if (raceRows[0]) return raceRows[0].id;
+  return { error: `Nem sikerült Source sort létrehozni "${hostname}"-hoz.` };
+}
+
 /** Beküldött URL feloldása/beszúrása NewsArticle-ként (008 kiterjesztés — kézi bejelentés). */
 async function resolveOrCreateArticleFromUrl(rawUrl: string): Promise<ResolveArticleResult> {
   const db = getDb();
@@ -95,11 +124,6 @@ async function resolveOrCreateArticleFromUrl(rawUrl: string): Promise<ResolveArt
     .limit(1);
   if (existing[0]) return { id: existing[0].id, headline: existing[0].headline };
 
-  const sourceSlug = outletSlug ?? TELEGRAM_TIP_SOURCE_SLUG;
-  const sourceRows = await db.select({ id: schema.sources.id }).from(schema.sources).where(eq(schema.sources.slug, sourceSlug)).limit(1);
-  const sourceId = sourceRows[0]?.id;
-  if (!sourceId) return { error: `Nincs "${sourceSlug}" Source sor — fusson le a 0039 migráció.` };
-
   let fetched;
   try {
     fetched = await fetchPrimaryArticle({ sourceUrl: rawUrl, archiveUrl: null, tagSlug: '', dateText: null });
@@ -107,6 +131,23 @@ async function resolveOrCreateArticleFromUrl(rawUrl: string): Promise<ResolveArt
     fetched = null;
   }
   if (!fetched) return { error: 'A cikk nem tölthető be (védett oldal vagy hibás link).' };
+
+  let sourceId: string;
+  if (outletSlug) {
+    const sourceRows = await db.select({ id: schema.sources.id }).from(schema.sources).where(eq(schema.sources.slug, outletSlug)).limit(1);
+    if (!sourceRows[0]) return { error: `Nincs "${outletSlug}" Source sor.` };
+    sourceId = sourceRows[0].id;
+  } else {
+    let hostname: string;
+    try {
+      hostname = new URL(rawUrl).hostname.replace(/^www\./, '');
+    } catch {
+      hostname = TELEGRAM_TIP_SOURCE_SLUG;
+    }
+    const resolved = await findOrCreateAdHocSource(hostname, fetched.siteName);
+    if (typeof resolved !== 'string') return resolved;
+    sourceId = resolved;
+  }
 
   const rows = await db
     .insert(schema.newsArticles)

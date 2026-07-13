@@ -148,7 +148,7 @@ export async function paginateKMonitorTag(
   return all;
 }
 
-export type FetchedPrimaryArticle = ScrapedArticle & { viaArchive: boolean };
+export type FetchedPrimaryArticle = ScrapedArticle & { viaArchive: boolean; siteName: string | null };
 
 /**
  * Fetch the primary-outlet article whose URL was discovered via K-Monitor,
@@ -181,6 +181,10 @@ export async function fetchPrimaryArticle(
     parseDate($('time').first().attr('datetime') ?? null) ??
     parseDate(ref.dateText) ??
     new Date();
+  // 2026-07-13 — a kézi (Telegram-tipp) bejelentésekhez kell: ha az URL nem
+  // egy konfigurált OutletAdapter-hez tartozik, az og:site_name adja a
+  // valódi médium-nevet (attribúcióhoz), nem csak egy generikus fallback-ot.
+  const siteName = metaContent($, 'og:site_name');
   return {
     headline,
     excerpt,
@@ -188,6 +192,7 @@ export async function fetchPrimaryArticle(
     publishedAt,
     tag: ref.tagSlug,
     viaArchive,
+    siteName: siteName ? siteName.trim().slice(0, 100) || null : null,
   };
 }
 

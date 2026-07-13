@@ -21,6 +21,20 @@ import { coerceClosureEventType } from '../inngest/functions/detect-media-closur
 
 const ASSET_CONFIDENCE_FLOOR = 0.7;
 
+// 2026-07-13 — a séma-leírás csak azt mondja, üres string legyen, ha a
+// detektor mezője nem alkalmazandó; azt sehol nem definiálja, mit írjon a
+// modell, ha isResignation/isClosure/stb. true, de a kivonatból nem derül ki
+// a név (pl. az og:description csak egy homályos teaser volt, a tényleges
+// nevek a cikk törzsében voltak). Ilyenkor a modell néha egy placeholder
+// stringet improvizál ("<UNKNOWN>", "ismeretlen" stb.) — ez truthy, tehát a
+// puszta `!result.name` ellenőrzésen átcsúszik, és élesen bekerül egy
+// "<UNKNOWN>" nevű sor. Ezt mindenhol ki kell szűrni, ahol egy LLM-től jövő
+// név-jellegű mezőt validálunk.
+function isPlaceholderName(value: string): boolean {
+  const v = value.trim().toLowerCase().replace(/^<|>$/g, '');
+  return v === '' || v === 'unknown' || v === 'ismeretlen' || v === 'n/a' || v === 'null' || v === 'undefined';
+}
+
 export type ArticleForReprocess = {
   id: string;
   headline: string;
@@ -93,7 +107,7 @@ export async function processResignation(article: ArticleForReprocess, todayIso:
     await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'resignation', outcome: 'discarded', reason: 'not_applicable' });
     return { status: 'discarded', reason: 'not_applicable' };
   }
-  if (!result.name || !result.institution) {
+  if (!result.name || isPlaceholderName(result.name) || !result.institution) {
     await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'resignation', outcome: 'discarded', reason: 'missing_fields', extractedName: result.name || undefined, confidence: result.confidence });
     return { status: 'discarded', reason: 'missing_fields' };
   }
@@ -153,7 +167,7 @@ export async function processMediaClosure(article: ArticleForReprocess, todayIso
     await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'media_closure', outcome: 'discarded', reason: 'not_applicable' });
     return { status: 'discarded', reason: 'not_applicable' };
   }
-  if (!result.name) {
+  if (!result.name || isPlaceholderName(result.name)) {
     await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'media_closure', outcome: 'discarded', reason: 'missing_fields', confidence: result.confidence });
     return { status: 'discarded', reason: 'missing_fields' };
   }
@@ -209,7 +223,7 @@ export async function processCourtVerdict(article: ArticleForReprocess, todayIso
     await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'court_verdict', outcome: 'discarded', reason: 'not_applicable' });
     return { status: 'discarded', reason: 'not_applicable' };
   }
-  if (!result.personName || !result.verdictType) {
+  if (!result.personName || isPlaceholderName(result.personName) || !result.verdictType) {
     await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'court_verdict', outcome: 'discarded', reason: 'missing_fields', extractedName: result.personName || undefined, confidence: result.confidence });
     return { status: 'discarded', reason: 'missing_fields' };
   }
@@ -309,7 +323,7 @@ export async function processAssetRecovery(article: ArticleForReprocess, todayIs
     return { status: 'discarded', reason: 'low_confidence' };
   }
 
-  if (!result.caseLabel || !result.description) {
+  if (!result.caseLabel || isPlaceholderName(result.caseLabel) || !result.description) {
     await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'asset_recovery', outcome: 'discarded', reason: 'missing_fields', confidence: result.confidence });
     return { status: 'discarded', reason: 'missing_fields' };
   }
