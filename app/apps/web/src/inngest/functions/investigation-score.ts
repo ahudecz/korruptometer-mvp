@@ -28,6 +28,16 @@ import { inngest } from '../client';
 export const investigationScore = inngest.createFunction(
   {
     id: 'investigation.score',
+    // Xref fans out per external-data source (~13 adapters), each of which
+    // can independently trigger a re-score both directly and via its own
+    // benchmarks-compute run — same debounce shape (and reasoning) as
+    // investigation-damage-recompute.ts. Without this, one xref pass on one
+    // investigation was firing investigation.score dozens of times back to
+    // back for the exact same data (found 2026-07-13: this + a genuinely
+    // duplicate emit in investigation-benchmarks-compute.ts were the primary
+    // driver of the Inngest Hobby-plan execution quota being blown through
+    // mid-month).
+    debounce: { key: 'event.data.investigationId', period: '30s' },
     concurrency: [{ key: 'event.data.investigationId', limit: 1 }],
     retries: 3,
   },

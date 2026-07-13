@@ -104,12 +104,12 @@ export const investigationBenchmarksCompute = inngest.createFunction(
         outlierCount: 0,
       },
     });
-    // T081 — explicit score re-run trigger so the path is symmetric
-    // with the xref-per-source emit.
-    await step.sendEvent('emit-score', {
-      name: 'investigation.score.requested',
-      data: { investigationId, reason: 'benchmarks.computed' },
-    });
+    // 2026-07-13: dropped the old explicit 'investigation.score.requested'
+    // emit here (T081) — investigation-score already listens directly on
+    // 'investigation.benchmarks.computed' above, so it was triggering the
+    // exact same recompute twice per source. investigation-score now also
+    // debounces per investigationId, so this alone isn't the whole fix, but
+    // it's pure waste to keep sending a second identical trigger.
     // Addendum 2026-05-19 (T113): notify the damage-recompute pipeline.
     await step.sendEvent('emit-damage', {
       name: 'investigation.benchmark.changed',
