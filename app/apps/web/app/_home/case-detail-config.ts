@@ -164,6 +164,49 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
   // distinct corruption case (single article, budget-context number), so
   // curating its own page kept reproducing the same "what is this number"
   // confusion. Redirects into the real Mészáros case rollup instead.
+  {
+    // 2026-07-13: K-Monitor flagged (via user) two unrelated monetary figures
+    // in the auto-generated description — 5 Mrd (this case) and 9,6 Mrd (an
+    // entirely different, unrelated Telex article about the Pro Economica
+    // Alapítvány's Transylvania grants, which never mentions Varga Judit —
+    // verified via KmdbArticle.persons). Root cause: the generator's
+    // article-matching falls back to institution="Fidesz", which is far too
+    // generic and pulled in an unrelated article whose title happened to
+    // share the word "magyar". Replaced with content grounded in the real
+    // 444.hu source (Magyar Péter's Nov-2024 allegations — no article states
+    // a specific forint figure, so the DB's 5 Mrd is an unsourced rough
+    // estimate; hidden and disclaimed below instead of presented as fact).
+    scandalKey: 'varga-judit-magyar-watergate',
+    hideAutoDamage: true,
+    damageLabel: 'Becsült közpénz-érintettség',
+    damageText:
+      'A feltüntetett összeg nem cikkből származó, dokumentált szám — nagyságrendi, forrás nélküli becslés. A rendelkezésre álló sajtóforrás konkrét forintösszeget nem tartalmaz.',
+    descriptionBlocks: [
+      {
+        type: 'text',
+        content:
+          'Magyar Péter ellenzéki politikus 2024 novemberében azt állította, hogy ellene szervezett lejáratókampány zajlik: állítása szerint két korábbi partnere, Vogel Evelin és Varga Judit — akik nyilvánosan kritizálták őt — fideszes körök, konkrétan Kubatov Gábor finanszírozásában részesülnek, a kifizetéseket technikailag Vertán György cégein keresztül bonyolítva.',
+      },
+      {
+        type: 'text',
+        content:
+          'A 444 cikke szerint Vertán György állami informatikai vállalkozó, aki cégét egy főiskolai fénymásoló-üzemeltetésből építette fel jelentős kormányzati IT-beszállítóvá, a 2010-es Fidesz-kormányváltás óta széles hozzáféréssel rendelkezik állami adatbázisokhoz (nyugdíj-, egészségügyi és önkormányzati rendszerek). A cikk arra utal, hogy ez a hozzáférés visszaélésre adhatott lehetőséget, anélkül hogy pontosan részletezné, mi történt.',
+      },
+      {
+        type: 'text',
+        content:
+          'Az ügyben nincs jogerős bírósági ítélet vagy hivatalos vizsgálati megállapítás — a fentiek Magyar Péter állításai, amelyeket a 444 cikke ismertet. Konkrét, cikkben szereplő forintösszeg nem áll rendelkezésre.',
+      },
+      {
+        type: 'article-card',
+        source: '444.hu',
+        headline: 'A jótékonykodó ősfradista, az állami adatbázisok atyaúristene, akit Magyar Péter berántott a "magyar Watergate"-be',
+        date: '2024-11-11',
+        url: 'https://444.hu/2024/11/11/a-jotekonykodo-osfradista-az-allami-adatbazisok-atyauristene-akit-magyar-peter-berantott-a-magyar-watergate-be',
+        lead: 'Magyar Péter szerint Vogel Evelin és Varga Judit fideszes körök finanszírozásában kritizálja őt, a kifizetéseket Vertán György állami IT-vállalkozó cégein keresztül bonyolítva.',
+      },
+    ],
+  },
 
   // ── "Költségvetés/közbeszerzés-érték kárként" — az auto-heurisztika ezeket
   // nem szűri (nincs szám a névben), ezért kézzel jelöljük: a headline szám
