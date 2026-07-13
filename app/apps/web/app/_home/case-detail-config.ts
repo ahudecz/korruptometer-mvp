@@ -207,6 +207,167 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
       },
     ],
   },
+  // 2026-07-13: follow-up audit after the K-Monitor report — checked every
+  // generated case whose DB "person" never appears in its own generated
+  // text. Most were false positives (person genuinely tagged on the real
+  // linked article, just not re-named in every paragraph). These 5 were
+  // confirmed real mismatches — verified against the actual KmdbArticle rows
+  // linked via InvestigationArticleLink, not just the generated prose.
+  {
+    // Stub never got real content ("Rogán Antal ügyéhez kapcsolódó
+    // sajtóhírek szerint:" — the generator's fallback placeholder). Real
+    // linked articles: 64177 (241M net payment) + 64187 (2-day contract).
+    scandalKey: 'balasy-tranzit-fesztival',
+    hideAutoDamage: true,
+    damageLabel: 'Becsült közpénz-érintettség',
+    damageText:
+      'A dokumentált, szerződés szerinti kifizetés 241 millió forint — a fentinél kerekebb összeg forrása nem egyértelmű.',
+    descriptionBlocks: [
+      {
+        type: 'text',
+        content:
+          'Balásy Gyula cége mindössze két nappal a Tranzit Fesztivál kezdete előtt kötött megbízási szerződést a rendezvény megszervezésére — ezt a közzétett szerződés is megerősíti. A cég a két nap alatt végzett munkáért nettó 241 millió forintot kapott.',
+      },
+      {
+        type: 'text',
+        content:
+          'A fesztiválon Orbán Viktor, Lázár János, Orbán Balázs, Rogán Antal és Szijjártó Péter is megjelent — kormányzati/Fidesz-közeli nagyrendezvényről van szó, amelynek szervezését a NER egyik ismert kommunikációs vállalkozója, Balásy Gyula kapta meg.',
+      },
+      {
+        type: 'article-card',
+        source: 'K-Monitor',
+        headline: 'Két nap munkáért nettó 241 milliót zsebelt be Balásy Gyula cége a Tranzit Fesztiválon',
+        date: '2025-09-30',
+        url: 'https://hvg.hu/kkv/20250930_tranzit-fesztival-lounge-event-kft-balasy-gyula-kormanyzati-kommunikacio-fidesz-ner',
+        lead: 'Ennyi idejük volt megszervezni a fesztivált, legalábbis a szerződés alapján.',
+      },
+    ],
+  },
+  {
+    // Stub described the wrong one of the 2 real linked articles (the one
+    // WITHOUT Mészáros Lőrinc). The 250 Mrd damage figure IS accurate — it's
+    // the real, sourced number from the article that matches this scandal's
+    // actual subject (SZH kommunikációs kiadásai), just not tied to a single
+    // named person the way the DB "person" field implies.
+    scandalKey: 'batthyany-szuverenitasvedelem-kommunikacio',
+    descriptionBlocks: [
+      {
+        type: 'text',
+        content:
+          'A Szuverenitásvédelmi Hivatal (SZH) kommunikációs keretéből 250 millió forintot fizetett ki egy magazinnak (Hype&Hyper), amely mások mellett egy Orbán Ráhel bababoltjáról szóló cikket is közölt. A magazint működtető céget 2023 augusztusáig egyik tulajdonosként Szablics János is birtokolta — ő az SZH elnökhelyettese.',
+      },
+      {
+        type: 'text',
+        content:
+          'Az SZH egyéb kiadásai is felmerültek a sajtóban: irodabérletre bruttó egymilliárd, kommunikációra összesen 1,6 milliárd forintot költött, egy karácsonyi rendezvényre pedig közel 14 millió forintot.',
+      },
+      {
+        type: 'text',
+        content:
+          'A dokumentált kifizetések elsősorban az SZH intézményéhez köthetők, nem egyetlen konkrét személyhez — az adatbázisban feltüntetett felelős személy megjelölése ezért tájékoztató jellegű.',
+      },
+      {
+        type: 'article-card',
+        source: 'K-Monitor',
+        headline: 'A Szuverenitásvédelmi Hivatal kommunikációjából negyedmilliárdot húzott a lap, amely cikket közölt Orbán Ráhellel a bababoltjáról',
+        date: '2026-03-27',
+        url: 'https://hvg.hu/kkv/20260327_szuverenitasvedelmi-hivatal-balasy-gyula-hype-hyper',
+        lead: 'A Hype&Hyper webshopját működtető cégben 2023 augusztusáig tulajdonos volt Szablics János, a Szuverenitásvédelmi Hivatal elnökhelyettese.',
+      },
+    ],
+  },
+  {
+    // Stub described the wrong one of 5 real linked articles — and those 5
+    // are genuinely 5 UNRELATED procurement stories (Nyírkarász tender fine,
+    // centralized-procurement analysis, Strabag/M5 highway, közvilágítási
+    // mutyi, a PPP think-piece), bundled under one scandalKey only because
+    // they all loosely relate to "közbeszerzés". Content now covers only the
+    // one story that actually matches the DB person (Kovács Sándor), and
+    // says plainly that the others aren't the same case.
+    scandalKey: 'kozpenzmilliardok-kozbeszerzes',
+    hideAutoDamage: true,
+    damageLabel: 'Becsült közpénz-érintettség',
+    damageText: 'A pontos, cikkben szereplő bírságösszeg ennél kisebb — "többmilliós" nagyságrendű, nem félmilliárdos.',
+    descriptionBlocks: [
+      {
+        type: 'text',
+        content:
+          'A Nyírkarász önkormányzatához köthető korrupciógyanús közbeszerzési eljárások kapcsán az Átlátszó cikke nyomán a Közbeszerzési Döntőbizottság többmilliós bírságot szabott ki. A helyi, korábban fideszes polgármester korábban azt állította, hogy senki nem tehet semmit az ügyben — a döntés ezt megcáfolta.',
+      },
+      {
+        type: 'text',
+        content:
+          'Az adatbázisban ehhez a kulcshoz technikailag több, valójában egymástól független közbeszerzési sajtóhír is kapcsolódik (pl. az M5-ös autópálya kezelése, közvilágítási közbeszerzések) — ezek külön történetek, nem ugyanannak az ügynek a részei.',
+      },
+      {
+        type: 'article-card',
+        source: 'Átlátszó',
+        headline: 'Cikkünk nyomán többmilliós bírságot szabott ki a Közbeszerzési Döntőbizottság',
+        date: '2024-12-06',
+        url: 'https://atlatszo.hu/impakt/2024/12/06/cikkunk-nyoman-tobbmillios-birsagot-szabott-ki-a-kozbeszerzesi-dontobizottsag',
+        lead: 'A korrupciógyanús tenderek kapcsán Nyírkarász volt fideszes polgármestere azt nyilatkozta, hogy senki nem tehet semmit — bebizonyítottuk az ellenkezőjét.',
+      },
+    ],
+  },
+  {
+    // Full name-confusion mismatch (same pattern as Varga Judit): the
+    // generated text was entirely about "Szöllősi György" (sports
+    // journalists' association funding) — a different, unrelated person
+    // whose surname just sounds like "Szólláth". The DB person (Szólláth
+    // Tibor) and institution (Medop-General Kft.) are real and correctly
+    // documented by 2 separate linked articles, now used instead.
+    scandalKey: 'szolloesi-nemzeti-sport-kesma',
+    title: 'Szólláth Medop-mutyija',
+    descriptionBlocks: [
+      {
+        type: 'text',
+        content:
+          'Szólláth Tibor korábbi hajdúnánási fideszes vezető nevéhez köthető közbeszerzési visszaélés ügyében a polgármester a bírósági eljárás során azt nyilatkozta, hogy nem tudja, ki döntött arról, mely vállalkozókat hívják meg a tenderre — az elsőrendű vádlott cégvezetőt ugyanakkor a barátjának nevezte.',
+      },
+      {
+        type: 'text',
+        content:
+          'A hajdúnánási közbeszerzési ügyben egy helyi vállalkozó, a Medop-General Kft. mutyizhatta le, hogy az ő cége nyerje el egy ipari park kivitelezésére kiírt tendert — a büntetőeljárás jelenleg a végéhez közeledik.',
+      },
+      {
+        type: 'article-card',
+        source: 'K-Monitor',
+        headline: 'Az óvatlan cimbora kisvárosi mutyija',
+        date: '2025-06-01',
+        url: 'https://hang.hu/magyar-hang-plusz/hajdunanas-az-ovatlan-cimbora-kisvarosi-mutyija-179052',
+        lead: 'A végéhez közeledik a büntetőeljárás a hajdúnánási közbeszerzési ügyben, amelyben egy helyi vállalkozó mutyizhatta le, hogy az ő cége nyerje az ipari park kivitelezésére kiírt tendert.',
+      },
+    ],
+  },
+  {
+    // Generated text centered on the wrong one of 3 real linked articles —
+    // a different funding stream (Nimród Vadászújság / Semjén Zsolt) instead
+    // of the one that actually matches the DB person+institution (Balásy
+    // Gyula / Egy a Természettel Nonprofit Kft.). The 750 Mrd damage figure
+    // is accurate — it's the real, sourced loss figure from the matching
+    // article, kept as-is.
+    scandalKey: 'egy-a-termeszettel-balasy-vadaszati-kiallitas',
+    descriptionBlocks: [
+      {
+        type: 'text',
+        content:
+          'Az "Egy a Természettel" Nonprofit Kft.-t — amely a 2021-es vadászati világkiállítást szervezte — tavaly még mindig 17 fő foglalkoztatta, személyi jellegű kifizetésekre 355 millió forintot költött. A cég éves beszámolója szerint 750 milliós veszteséget termelt, és már a mérleg készítésekor jelezték: újabb állami támogatásra lesz szükség.',
+      },
+      {
+        type: 'text',
+        content:
+          'Korábban Rogán Antal döntése nyomán 560 millió forint tőkét vontak ki a cégből — ez az összeg a cégnek korábban juttatott, összesen 27 milliárd forintos költségvetési támogatáshoz képest elenyésző.',
+      },
+      {
+        type: 'article-card',
+        source: 'K-Monitor',
+        headline: 'Még mindig működik a vadászati kiállítást szervező cég, sőt: 750 milliós buktát hozott össze',
+        date: '2024-07-01',
+        url: 'https://rtl.hu/belfold/2024/07/01/vadaszati-kiallitas-ceg-veszteseg-rendezvenyszervezes',
+        lead: 'Tavaly még mindig 17 embert foglalkoztatott a 2021-es vadászati kiállítás szervezésére létrehozott cég, személyi jellegű kifizetésekre 355 millió forint ment el.',
+      },
+    ],
+  },
 
   // ── "Költségvetés/közbeszerzés-érték kárként" — az auto-heurisztika ezeket
   // nem szűri (nincs szám a névben), ezért kézzel jelöljük: a headline szám
