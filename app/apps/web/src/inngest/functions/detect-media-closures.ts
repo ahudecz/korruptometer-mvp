@@ -1,5 +1,5 @@
 import 'server-only';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 import { detectMediaClosureFromArticle } from '@korr/db/ai-closures';
 import {
@@ -141,6 +141,25 @@ export const detectMediaClosures = inngest.createFunction(
               confidence: result.confidence,
             });
             continue;
+          }
+
+          // Same-URL dedup, independent of name matching — see the identical
+          // comment in detect-resignations.ts (2026-07-13, Káel Csaba dupe).
+          if (article.sourceUrl) {
+            const sameUrlExisting = await db.execute(sql`
+              SELECT 1 FROM "MediaClosure" WHERE "sourceUrl" = ${article.sourceUrl} LIMIT 1
+            `) as unknown as { length: number };
+            if (sameUrlExisting.length > 0) {
+              await markChecked(db, {
+                articleId: article.id,
+                detectorType: DETECTOR_TYPE,
+                outcome: 'discarded',
+                reason: 'duplicate',
+                extractedName: result.name,
+                confidence: result.confidence,
+              });
+              continue;
+            }
           }
 
           // A public entry MUST always be traceable to a source article —

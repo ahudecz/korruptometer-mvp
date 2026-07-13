@@ -42,13 +42,30 @@ export async function getActiveBreaking(): Promise<BreakingArticle[]> {
       .limit(50);
 
     // breakingOverride = szerkesztői döntés → mindig megjelenik.
-    // isBreakingCandidate = automatikus jelölés → újraellenőrizzük a jelenlegi
-    // logikával, hogy kiszűrjük a régi, hibás DB-bejegyzéseket (pl. Newscast
-    // körkép, ahol az excerpt más hírekből véletlenül tartalmaz trigger-szót
-    // + figyelt nevet, de a CÍMBEN nem szerepel a figyelt entitás).
+    // isBreakingCandidate = automatikus jelölés → a legtöbb esetben
+    // újraellenőrizzük a jelenlegi logikával, hogy kiszűrjük a régi, hibás
+    // DB-bejegyzéseket (pl. Newscast körkép, ahol az excerpt más hírekből
+    // véletlenül tartalmaz trigger-szót + figyelt nevet, de a CÍMBEN nem
+    // szerepel a figyelt entitás). DE az isBreaking() (relevance.ts,
+    // BREAKING_TRIGGERS) kifejezetten a 007-es (letartóztatás/vádemelés)
+    // detektorra lett hangolva — egy "lemond" szót SOSEM ismer fel
+    // trigger-ként. Emiatt egy magas megbízhatósággal jóváhagyott
+    // lemondás/megszűnés/ítélet/vagyonvisszaszerzés (a 4 saját LLM-
+    // detektorunk, amik CSAK 'approved' vagy manuálisan jóváhagyott
+    // near_miss esetén teszik rá a tag-et és az isBreakingCandidate-et —
+    // l. detect-*.ts és a notify.ts "Csak hírbe" gombja) sosem jutott át
+    // ezen az újraellenőrzésen, pedig önmagában is megbízható forrásból,
+    // LLM-jóváhagyással jött (2026-07-13, user report: Gulyás Gergely
+    // lemondása nem jelent meg a breaking csíkban). Ezekre a saját
+    // tag-jeinkre bízunk, nem futtatjuk újra az arrest-fókuszú ellenőrzést.
+    const TRUSTED_DETECTOR_TAGS = new Set(['Lemondás', 'Megszűnés', 'Ítélet', 'Vagyonvisszaszerzés']);
     const monitoredNames = await getMonitoredNames();
     return rows
-      .filter(r => r.breakingOverride === true || isBreaking(r.headline, r.excerpt ?? '', monitoredNames))
+      .filter(r =>
+        r.breakingOverride === true ||
+        (r.tag && TRUSTED_DETECTOR_TAGS.has(r.tag)) ||
+        isBreaking(r.headline, r.excerpt ?? '', monitoredNames),
+      )
       .map(({ breakingOverride: _, ...rest }) => rest);
   } catch {
     return [];

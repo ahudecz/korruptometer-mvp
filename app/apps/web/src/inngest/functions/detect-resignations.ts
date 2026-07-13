@@ -1,5 +1,5 @@
 import 'server-only';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 import { detectResignationFromArticle } from '@korr/db/ai';
 import {
@@ -152,6 +152,34 @@ export const detectResignations = inngest.createFunction(
               confidence: result.confidence,
             });
             continue;
+          }
+
+          // Same-URL dedup, independent of name matching. Catches the case a
+          // pure name-match can't: a row for this exact article already
+          // exists under a DIFFERENT extracted name (e.g. a manual insert
+          // named "Káel Csaba és a teljes igazgatóság", this run extracts
+          // just "Káel Csaba" from the identical article — normalized names
+          // don't match, but it's obviously the same event). This is what
+          // let a real duplicate through on 2026-07-13 — a manual DB insert
+          // hadn't written a DetectionCheck row either, so the article was
+          // also re-scanned days later; that half is fixed by always
+          // backfilling DetectionCheck on manual inserts, this half closes
+          // the gap even if that discipline slips again.
+          if (article.sourceUrl) {
+            const sameUrlExisting = await db.execute(sql`
+              SELECT 1 FROM "PoliticalResignation" WHERE ${article.sourceUrl} = ANY("sourceUrls") LIMIT 1
+            `) as unknown as { length: number };
+            if (sameUrlExisting.length > 0) {
+              await markChecked(db, {
+                articleId: article.id,
+                detectorType: DETECTOR_TYPE,
+                outcome: 'discarded',
+                reason: 'duplicate',
+                extractedName: result.name,
+                confidence: result.confidence,
+              });
+              continue;
+            }
           }
 
           // A public entry MUST always be traceable to a source article —
