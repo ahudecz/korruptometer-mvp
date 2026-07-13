@@ -41,8 +41,12 @@ body {
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  overflow-x: hidden;
-  max-width: 100vw;
+  /* NEM overflow-x:hidden itt — a body overflow-x beállítása a böngészőt
+     overflow-y:auto-ra kényszeríti (CSS Overflow spec), ami a body-t
+     önálló scroll-konténerré teszi, és eltöri a .nav position:sticky-jét
+     (2026-07-13, user report: "eltűnt a sticky header" — valójában ez a
+     2026-07-12-i mobil-túlcsordulás fix mellékhatása volt). A html-en lévő
+     overflow-x:hidden önmagában elég a vízszintes húzás ellen. */
 }
 
 ::selection {
