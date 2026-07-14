@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 import { NewsCardImage } from './news-card-image';
 import { toAsciiId } from '../_home/case-detail-config';
+import { pickBreakingArticle } from '@/lib/breaking-pick';
 
 type Article = {
   id: string;
@@ -16,6 +17,7 @@ type Article = {
   imageUrl: string | null;
   featured: boolean;
   isBreaking: boolean;
+  breakingOverride?: boolean | null;
   relatedCaseId: string | null;
   sourceSlug: string | null;
   sourceName: string | null;
@@ -128,11 +130,10 @@ export function NewsGrid({
     });
   }
 
-  // Breaking > featured — a legfrissebb breaking kerül a kiemelt helyre
-  const featuredBreaking =
-    articles.filter((a) => a.isBreaking).sort(
-      (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-    )[0] ?? null;
+  // Breaking > featured — a kiemelt helyre a legfontosabb breaking kerül:
+  // egy editori/LLM-pick (breakingOverride) mindig előzi a nyers auto-tagelt
+  // találatot, a dátum csak azonos szinten belül dönt (lásd breaking-pick.ts).
+  const featuredBreaking = pickBreakingArticle(articles);
   const featuredNormal =
     articles.find((a) => a.featured && a.imageUrl) ??
     articles.find((a) => a.featured) ??

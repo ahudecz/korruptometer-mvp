@@ -96,6 +96,7 @@ export type Events = {
   };
   'resignation.detect': { data: Record<string, never> };
   'facebook.sync': { data: Record<string, never> };
+  'breaking.recompute': { data: { reason: string } };
 };
 
 export const inngest = new Inngest({

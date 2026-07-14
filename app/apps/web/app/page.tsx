@@ -19,6 +19,7 @@ import { GALERIA, type GaleriaDetention, type GaleriaHair } from './_home/galeri
 import { UGYEK } from './_home/ugyek-config';
 import { autoDisplayTitle, getCaseDisplayTitle, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS, toAsciiId } from './_home/case-detail-config';
 import { NewsCardImage } from './hirek/news-card-image';
+import { pickBreakingArticle } from '@/lib/breaking-pick';
 
 // force-dynamic. ISR (revalidate) was tried instead on 2026-07-08, on the
 // mistaken assumption that per-visit query volume was blowing through the
@@ -461,7 +462,7 @@ export default async function HomePage() {
     .sort((a, b) => b.value - a.value);
 
 
-  const featuredBreaking = recentArticles.filter(a => a.isBreaking).sort((a, b) => b.publishedAt > a.publishedAt ? 1 : -1)[0] ?? null;
+  const featuredBreaking = pickBreakingArticle(recentArticles);
   const featuredNormal = recentArticles.find(a => a.featured) ?? recentArticles[0];
   const featured = featuredBreaking ?? featuredNormal;
   const restArticles = recentArticles.filter((a) => a.id !== featured?.id).slice(0, 4);

@@ -56,8 +56,9 @@ export async function GET(req: Request) {
     .offset(offset);
 
   const items = rows.map((r) => {
+    const breakingOverride = r.breakingOverride === true;
     const isBreaking = (r.breakingOverride ?? r.isBreakingCandidate) === true;
-    return { ...r, isBreaking, featured: isBreaking ? true : r.featured };
+    return { ...r, isBreaking, breakingOverride, featured: isBreaking ? true : r.featured };
   });
 
   return NextResponse.json(

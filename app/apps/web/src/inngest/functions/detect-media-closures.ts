@@ -72,13 +72,15 @@ export const detectMediaClosures = inngest.createFunction(
     if (candidates.length === 0) return { scanned: articles.length, inserted: 0 };
 
     let inserted = 0;
+    let approvedInserted = 0;
 
     for (let i = 0; i < candidates.length; i += BATCH_SIZE) {
       const batch = candidates.slice(i, i + BATCH_SIZE);
       const batchNum = Math.floor(i / BATCH_SIZE);
 
-      const batchInserted = await step.run(`process-batch-${batchNum}`, async () => {
+      const batchResult = await step.run(`process-batch-${batchNum}`, async () => {
         let count = 0;
+        let approvedCount = 0;
         for (const article of batch) {
           const llmResult = await detectMediaClosureFromArticle(article.headline, article.excerpt, articleDateIso(article.publishedAt));
 
@@ -218,14 +220,24 @@ export const detectMediaClosures = inngest.createFunction(
               articleId: article.id,
               recordId: insertedRow!.id,
             });
+          } else {
+            approvedCount++;
           }
 
           count++;
         }
-        return count;
+        return { count, approvedCount };
       });
 
-      inserted += batchInserted;
+      inserted += batchResult.count;
+      approvedInserted += batchResult.approvedCount;
+    }
+
+    if (approvedInserted > 0) {
+      await step.sendEvent('emit-breaking-recompute', {
+        name: 'breaking.recompute',
+        data: { reason: 'media_closure' },
+      });
     }
 
     logger?.info?.(`closure.detect: scanned=${articles.length} candidates=${candidates.length} inserted=${inserted}`);

@@ -17,6 +17,7 @@ import {
 } from '@korr/db';
 import { getDb, schema } from './db';
 import { notifyReviewNeeded } from './notify';
+import { inngest } from '../inngest/client';
 import { coerceResignationType } from '../inngest/functions/detect-resignations';
 import { coerceClosureEventType } from '../inngest/functions/detect-media-closures';
 
@@ -155,6 +156,7 @@ export async function processResignation(article: ArticleForReprocess, todayIso:
     await notifyReviewNeeded({ type: 'pending', detectorType: 'resignation', name: result.name, confidence: result.confidence, articleUrl: article.sourceUrl ?? '', articleId: article.id, recordId: row!.id });
     return { status: 'pending_notified' };
   }
+  await inngest.send({ name: 'breaking.recompute', data: { reason: 'resignation:telegram-approve' } });
   return { status: 'inserted', recordId: row!.id };
 }
 
@@ -211,6 +213,7 @@ export async function processMediaClosure(article: ArticleForReprocess, todayIso
     await notifyReviewNeeded({ type: 'pending', detectorType: 'media_closure', name: result.name, confidence: result.confidence, articleUrl: article.sourceUrl ?? '', articleId: article.id, recordId: row!.id });
     return { status: 'pending_notified' };
   }
+  await inngest.send({ name: 'breaking.recompute', data: { reason: 'media_closure:telegram-approve' } });
   return { status: 'inserted', recordId: row!.id };
 }
 
@@ -302,6 +305,7 @@ export async function processCourtVerdict(article: ArticleForReprocess, todayIso
     await notifyReviewNeeded({ type: 'pending', detectorType: 'court_verdict', name: result.personName, confidence: result.confidence, articleUrl: article.sourceUrl ?? '', articleId: article.id, recordId });
     return { status: 'pending_notified' };
   }
+  await inngest.send({ name: 'breaking.recompute', data: { reason: 'court_verdict:telegram-approve' } });
   return { status: outcomeStatus, recordId };
 }
 
@@ -356,6 +360,7 @@ export async function processAssetRecovery(article: ArticleForReprocess, todayIs
   }).returning({ id: schema.assetRecoveries.id });
 
   await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'asset_recovery', outcome: 'inserted', extractedName: result.caseLabel, confidence: result.confidence });
+  await inngest.send({ name: 'breaking.recompute', data: { reason: 'asset_recovery:telegram-approve' } });
   return { status: 'inserted', recordId: row!.id };
 }
 

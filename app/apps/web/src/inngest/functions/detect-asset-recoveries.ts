@@ -198,6 +198,15 @@ export const detectAssetRecoveries = inngest.createFunction(
       inserted += batchInserted;
     }
 
+    // No reviewStatus/pending concept here (see file header) — every insert
+    // is already public, so a plain inserted>0 check is the right gate.
+    if (inserted > 0) {
+      await step.sendEvent('emit-breaking-recompute', {
+        name: 'breaking.recompute',
+        data: { reason: 'asset_recovery' },
+      });
+    }
+
     logger?.info?.(`asset.detect: scanned=${articles.length} candidates=${candidates.length} inserted=${inserted}`);
     return { scanned: articles.length, candidates: candidates.length, inserted };
   },

@@ -27,7 +27,12 @@ const CANDIDATE_LIMIT = 25;
  */
 export const refreshDailyBreaking = inngest.createFunction(
   { id: 'refresh-daily-breaking', name: 'Pick the most important recent article for the BREAKING banner', concurrency: 1 },
-  { cron: '0 */6 * * *' },
+  // Event-driven — fires right after a detector (or a Telegram-approved
+  // review) actually inserts something, instead of waiting up to 6h for the
+  // next tick. The cron stays as a safety net (catches anything the event
+  // path missed, e.g. a manual DB insert) but is now rarely the one that
+  // actually changes the pick. See project-breaking-priority memory.
+  [{ event: 'breaking.recompute' }, { cron: '0 */6 * * *' }],
   async ({ step, logger }) => {
     const db = getDb();
 
