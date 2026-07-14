@@ -29,9 +29,10 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 export default async function LemondasokPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
   const teruletParam = Array.isArray(sp.terulet) ? sp.terulet[0] : sp.terulet;
-  const sector = teruletParam && (schema.resignationSectorEnum.enumValues as readonly string[]).includes(teruletParam)
-    ? teruletParam
-    : '';
+  const validSectors = schema.resignationSectorEnum.enumValues as readonly string[];
+  const initialSectors = teruletParam
+    ? teruletParam.split(',').filter(s => validSectors.includes(s))
+    : [];
 
   const db = getDb();
   const [rows, mediaLeepites, breakingArticles] = await Promise.all([
@@ -292,7 +293,7 @@ export default async function LemondasokPage({ searchParams }: { searchParams: S
               </div>
             </div>
             <Suspense fallback={null}>
-              <ResignationList rows={serializedRest} initialSector={sector} />
+              <ResignationList rows={serializedRest} initialSectors={initialSectors} />
             </Suspense>
           </>
         )}

@@ -2,7 +2,7 @@ import 'server-only';
 import { and, gte, sql } from 'drizzle-orm';
 
 import { detectAssetRecoveryFromArticle } from '@korr/db/ai-assets';
-import { articleDateIso, isTransientLlmFailure, loadUncheckedArticles, markChecked, NEAR_MISS_MIN } from '@korr/db';
+import { articleDateIso, isPlaceholderName, isTransientLlmFailure, loadUncheckedArticles, markChecked, NEAR_MISS_MIN } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
 import { notifyAutoPublished } from '@/lib/notify-auto-publish';
@@ -95,7 +95,7 @@ export const detectAssetRecoveries = inngest.createFunction(
             continue;
           }
 
-          if (!result.caseLabel || !result.description) {
+          if (!result.caseLabel || isPlaceholderName(result.caseLabel) || !result.description) {
             await markChecked(db, {
               articleId: article.id,
               detectorType: DETECTOR_TYPE,

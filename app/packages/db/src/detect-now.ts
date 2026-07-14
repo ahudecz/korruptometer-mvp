@@ -94,79 +94,92 @@ async function main() {
       todayIso,
     );
 
-    if (!result || !result.isResignation || result.confidence < 0.7) {
-      console.log(`nem politikai lemondás (confidence: ${result?.confidence ?? 0})`);
+    if (!result || result.resignations.length === 0) {
+      console.log(`nem politikai lemondás`);
       filtered++;
       continue;
     }
 
-    if (!result.name || !result.institution) {
-      console.log(`hiányzó adat, kihagyva`);
-      filtered++;
-      continue;
+    let articleHadInsert = false;
+
+    for (const person of result.resignations) {
+      if (person.confidence < 0.7) {
+        console.log(`  ↳ ${person.name || '(névtelen)'}: alacsony bizonyosság (${person.confidence})`);
+        filtered++;
+        continue;
+      }
+
+      if (!person.name || !person.institution) {
+        console.log(`  ↳ hiányzó adat, kihagyva`);
+        filtered++;
+        continue;
+      }
+
+      // Dedup: ugyanaz a személy+intézmény 30 napon belül
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const existing = await db
+        .select({ id: schema.politicalResignations.id })
+        .from(schema.politicalResignations)
+        .where(
+          and(
+            sql`lower(${schema.politicalResignations.name}) = lower(${person.name})`,
+            sql`lower(${schema.politicalResignations.institution}) = lower(${person.institution})`,
+            gte(schema.politicalResignations.createdAt, thirtyDaysAgo),
+          ),
+        )
+        .limit(1);
+
+      if (existing.length > 0) {
+        console.log(`  ↳ már létezik: ${person.name}`);
+        skipped++;
+        continue;
+      }
+
+      let resignationDate: Date;
+      try {
+        resignationDate = new Date(person.resignationDate);
+        if (isNaN(resignationDate.getTime())) resignationDate = new Date(article.publishedAt);
+      } catch {
+        resignationDate = new Date(article.publishedAt);
+      }
+
+      const VALID_TYPES = ['lemondás', 'kirúgás', 'felmentés', 'egyéb'] as const;
+      type ResignationType = typeof VALID_TYPES[number];
+      const typeMap: Record<string, ResignationType> = {
+        lemond: 'lemondás', lemondas: 'lemondás',
+        kirúg: 'kirúgás', kirugas: 'kirúgás',
+        felment: 'felmentés', felmentas: 'felmentés', felmentés: 'felmentés',
+      };
+      const rawType = person.resignationType as string;
+      const resignationType: ResignationType =
+        VALID_TYPES.includes(rawType as ResignationType)
+          ? (rawType as ResignationType)
+          : (typeMap[rawType.toLowerCase()] ?? 'egyéb');
+
+      await db.insert(schema.politicalResignations).values({
+        name: person.name.slice(0, 200),
+        position: person.position.slice(0, 200),
+        institution: person.institution.slice(0, 200),
+        resignationType,
+        resignationDate,
+        description: person.description.slice(0, 1000) || null,
+        sourceUrls: [article.sourceUrl],
+        sourceNames: article.sourceName ? [article.sourceName] : [],
+      });
+
+      console.log(`  ↳ ✅ beírva: ${person.name} (${person.resignationType}, ${person.confidence.toFixed(2)})`);
+      inserted++;
+      articleHadInsert = true;
     }
 
-    // Dedup: ugyanaz a személy+intézmény 30 napon belül
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const existing = await db
-      .select({ id: schema.politicalResignations.id })
-      .from(schema.politicalResignations)
-      .where(
-        and(
-          sql`lower(${schema.politicalResignations.name}) = lower(${result.name})`,
-          sql`lower(${schema.politicalResignations.institution}) = lower(${result.institution})`,
-          gte(schema.politicalResignations.createdAt, thirtyDaysAgo),
-        ),
-      )
-      .limit(1);
-
-    if (existing.length > 0) {
-      console.log(`már létezik: ${result.name}`);
-      skipped++;
-      continue;
+    if (articleHadInsert) {
+      // Cikk megjelölése a /hirek Lemondás szűrőhöz, watchlist személyeknél breaking candidate
+      const pinned = result.resignations.some((p) => isWatchlistPerson(p.name));
+      await db
+        .update(schema.newsArticles)
+        .set({ tag: 'Lemondás', isBreakingCandidate: pinned })
+        .where(eq(schema.newsArticles.id, article.id));
     }
-
-    let resignationDate: Date;
-    try {
-      resignationDate = new Date(result.resignationDate);
-      if (isNaN(resignationDate.getTime())) resignationDate = new Date(article.publishedAt);
-    } catch {
-      resignationDate = new Date(article.publishedAt);
-    }
-
-    const VALID_TYPES = ['lemondás', 'kirúgás', 'felmentés', 'egyéb'] as const;
-    type ResignationType = typeof VALID_TYPES[number];
-    const typeMap: Record<string, ResignationType> = {
-      lemond: 'lemondás', lemondas: 'lemondás',
-      kirúg: 'kirúgás', kirugas: 'kirúgás',
-      felment: 'felmentés', felmentas: 'felmentés', felmentés: 'felmentés',
-    };
-    const rawType = result.resignationType as string;
-    const resignationType: ResignationType =
-      VALID_TYPES.includes(rawType as ResignationType)
-        ? (rawType as ResignationType)
-        : (typeMap[rawType.toLowerCase()] ?? 'egyéb');
-
-    await db.insert(schema.politicalResignations).values({
-      name: result.name.slice(0, 200),
-      position: result.position.slice(0, 200),
-      institution: result.institution.slice(0, 200),
-      resignationType,
-      resignationDate,
-      description: result.description.slice(0, 1000) || null,
-      sourceUrls: [article.sourceUrl],
-      sourceNames: article.sourceName ? [article.sourceName] : [],
-    });
-
-    // Cikk megjelölése a /hirek Lemondás szűrőhöz, watchlist személyeknél breaking candidate
-    const pinned = isWatchlistPerson(result.name);
-    await db
-      .update(schema.newsArticles)
-      .set({ tag: 'Lemondás', isBreakingCandidate: pinned })
-      .where(eq(schema.newsArticles.id, article.id));
-
-    console.log(`✅ beírva: ${result.name} (${result.resignationType}, ${result.confidence.toFixed(2)})`);
-    inserted++;
   }
 
   console.log(`\n✅ Kész: ${inserted} új lemondás beírva, ${skipped} duplikált, ${filtered} kiszűrve`);

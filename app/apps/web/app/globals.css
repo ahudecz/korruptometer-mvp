@@ -11418,6 +11418,41 @@ body:has(.admin-nav) > main {
 }
 .verdict-clear-all:hover { background: #fff0f0; }
 
+/* Terület szűrő — lapos checkbox-rács (2026-07-14, /lemondasok): a user
+   kifejezetten nem kért lenyíló menüt, minden opció egyszerre látszik,
+   tetszőlegesen sok jelölhető ki egyszerre. */
+.res-sector-desc {
+  font-size: 12px;
+  color: #888;
+  margin: 0 0 12px;
+}
+.res-sector-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.res-sector-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 20px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+  cursor: pointer;
+  transition: border-color .12s, background .12s, color .12s;
+}
+.res-sector-item:hover { border-color: #aaa; }
+.res-sector-item input { cursor: pointer; }
+.res-sector-item--active {
+  background: var(--ink, #1a1a1a);
+  border-color: var(--ink, #1a1a1a);
+  color: #fff;
+}
+
 /* Találatok száma — a footer sávban */
 .verdict-result-meta {
   font-size: 12px;

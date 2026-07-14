@@ -21,6 +21,24 @@ export type CheckReason = 'low_confidence' | 'not_applicable' | 'duplicate' | 'm
 export const BACKLOG_DAYS = 7;
 
 /**
+ * 2026-07-14 — a schema-required name/label field being non-empty doesn't
+ * mean the LLM actually found one: when the source excerpt is too vague, it
+ * sometimes improvises a placeholder ("<UNKNOWN>", "ismeretlen" stb.) that
+ * passes a plain truthiness check and gets inserted as if it were real data.
+ * Originally only guarded in the Telegram manual-approve path
+ * (telegram-review-actions.ts) — NOT in the hourly cron detectors, which let
+ * a placeholder-named duplicate ("Polt Péter felesége") slip into
+ * PoliticalResignation from a second source article about an event a
+ * correctly-named row already covered. Shared here so both paths use the
+ * same guard and can't drift apart again (see project-detector-drift-pattern
+ * in the assistant's memory for this exact class of bug).
+ */
+export function isPlaceholderName(value: string): boolean {
+  const v = value.trim().toLowerCase().replace(/^<|>$/g, '');
+  return v === '' || v === 'unknown' || v === 'ismeretlen' || v === 'n/a' || v === 'null' || v === 'undefined';
+}
+
+/**
  * "Near miss" confidence band surfaced in the monthly digest — below the
  * review.ts REVIEW_FLOOR (0.70) so these were correctly discarded per the
  * existing 003 rules, but close enough to be worth a second human look.

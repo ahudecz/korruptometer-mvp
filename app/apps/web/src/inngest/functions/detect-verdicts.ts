@@ -6,6 +6,7 @@ import {
   articleDateIso,
   decideStatus,
   findExistingVerdict,
+  isPlaceholderName,
   isTransientLlmFailure,
   isWatchlistPerson,
   loadUncheckedArticles,
@@ -99,7 +100,7 @@ export const detectVerdicts = inngest.createFunction(
             continue;
           }
 
-          if (!result.personName || !result.verdictType) {
+          if (!result.personName || isPlaceholderName(result.personName) || !result.verdictType) {
             await markChecked(db, {
               articleId: article.id,
               detectorType: DETECTOR_TYPE,

@@ -1,6 +1,10 @@
 import * as cheerio from 'cheerio';
 
-export const EXCERPT_MAX = 280;
+// 2026-07-14 — raised from 280: detectors were too often starved of the
+// paragraph that names a SECOND/THIRD person in a multi-person article
+// (og:description teasers get cut well before that point). Cost impact
+// measured at ~$0.02-0.03/day across ~132 affected LLM calls — negligible.
+export const EXCERPT_MAX = 900;
 
 export function loadHtml(html: string) {
   return cheerio.load(html);

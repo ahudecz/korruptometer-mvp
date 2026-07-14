@@ -4,8 +4,10 @@ import { eq, sql } from 'drizzle-orm';
 import { detectResignationFromArticle } from '@korr/db/ai';
 import {
   articleDateIso,
+  type CheckReason,
   decideStatus,
   isDuplicate,
+  isPlaceholderName,
   isTransientLlmFailure,
   isWatchlistPerson,
   loadUncheckedArticles,
@@ -96,7 +98,7 @@ export const detectResignations = inngest.createFunction(
 
           const result = llmResult.data;
 
-          if (!result || !result.isResignation) {
+          if (!result || result.resignations.length === 0) {
             await markChecked(db, {
               articleId: article.id,
               detectorType: DETECTOR_TYPE,
@@ -106,157 +108,143 @@ export const detectResignations = inngest.createFunction(
             continue;
           }
 
-          if (!result.name || !result.institution) {
-            await markChecked(db, {
-              articleId: article.id,
-              detectorType: DETECTOR_TYPE,
-              outcome: 'discarded',
-              reason: 'missing_fields',
-              extractedName: result.name || undefined,
-              confidence: result.confidence,
-            });
-            continue;
-          }
+          // 2026-07-14 — an article can name several distinct people leaving
+          // positions at once (e.g. an MÁV board reshuffle). Every entry runs
+          // the FULL per-item pipeline below; DetectionCheck is still keyed
+          // (articleId, detectorType) so only ONE summary row is written per
+          // article once the whole array has been processed.
+          let anyInserted = false;
+          let anyApproved = false;
+          let anyPinnedInserted = false;
+          const insertedNames: string[] = [];
+          let lastDiscardReason: CheckReason = 'not_applicable';
+          let lastName: string | undefined;
+          let lastConfidence: number | undefined;
 
-          // 003-review: route by confidence + watchlist; discard below the floor.
-          const reviewStatus = decideStatus(result.confidence, isWatchlistPerson(result.name));
-          if (reviewStatus === 'discard') {
-            await markChecked(db, {
-              articleId: article.id,
-              detectorType: DETECTOR_TYPE,
-              outcome: 'discarded',
-              reason: 'low_confidence',
-              extractedName: result.name,
-              confidence: result.confidence,
-            });
-            if (result.confidence >= NEAR_MISS_MIN) {
-              await notifyReviewNeeded({
-                type: 'near_miss',
-                detectorType: DETECTOR_TYPE,
-                name: result.name,
-                confidence: result.confidence,
-                articleUrl: article.sourceUrl ?? '',
-                articleId: article.id,
-              });
-            }
-            continue;
-          }
+          for (const person of result.resignations) {
+            lastName = person.name || lastName;
+            lastConfidence = person.confidence;
 
-          // Dedup by normalized name across ALL statuses within the window, so a
-          // rejected detection is not re-created (FR-009, FR-011).
-          if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, result.name)) {
-            await markChecked(db, {
-              articleId: article.id,
-              detectorType: DETECTOR_TYPE,
-              outcome: 'discarded',
-              reason: 'duplicate',
-              extractedName: result.name,
-              confidence: result.confidence,
-            });
-            continue;
-          }
-
-          // Same-URL dedup, independent of name matching. Catches the case a
-          // pure name-match can't: a row for this exact article already
-          // exists under a DIFFERENT extracted name (e.g. a manual insert
-          // named "Káel Csaba és a teljes igazgatóság", this run extracts
-          // just "Káel Csaba" from the identical article — normalized names
-          // don't match, but it's obviously the same event). This is what
-          // let a real duplicate through on 2026-07-13 — a manual DB insert
-          // hadn't written a DetectionCheck row either, so the article was
-          // also re-scanned days later; that half is fixed by always
-          // backfilling DetectionCheck on manual inserts, this half closes
-          // the gap even if that discipline slips again.
-          if (article.sourceUrl) {
-            const sameUrlExisting = await db.execute(sql`
-              SELECT 1 FROM "PoliticalResignation" WHERE ${article.sourceUrl} = ANY("sourceUrls") LIMIT 1
-            `) as unknown as { length: number };
-            if (sameUrlExisting.length > 0) {
-              await markChecked(db, {
-                articleId: article.id,
-                detectorType: DETECTOR_TYPE,
-                outcome: 'discarded',
-                reason: 'duplicate',
-                extractedName: result.name,
-                confidence: result.confidence,
-              });
+            if (!person.name || isPlaceholderName(person.name) || !person.institution) {
+              lastDiscardReason = 'missing_fields';
               continue;
             }
+
+            // 003-review: route by confidence + watchlist; discard below the floor.
+            const reviewStatus = decideStatus(person.confidence, isWatchlistPerson(person.name));
+            if (reviewStatus === 'discard') {
+              lastDiscardReason = 'low_confidence';
+              if (person.confidence >= NEAR_MISS_MIN) {
+                await notifyReviewNeeded({
+                  type: 'near_miss',
+                  detectorType: DETECTOR_TYPE,
+                  name: person.name,
+                  confidence: person.confidence,
+                  articleUrl: article.sourceUrl ?? '',
+                  articleId: article.id,
+                });
+              }
+              continue;
+            }
+
+            // Dedup by normalized name across ALL statuses within the window, so a
+            // rejected detection is not re-created (FR-009, FR-011).
+            if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, person.name)) {
+              lastDiscardReason = 'duplicate';
+              continue;
+            }
+
+            // Same-URL + same-name dedup. Scoped to THIS person (unlike the old
+            // any-row-with-this-URL check) so a second/third genuinely distinct
+            // person from the SAME multi-person article doesn't get wrongly
+            // blocked as a duplicate of the sibling just inserted a moment ago.
+            if (article.sourceUrl) {
+              const sameUrlExisting = await db.execute(sql`
+                SELECT 1 FROM "PoliticalResignation"
+                WHERE ${article.sourceUrl} = ANY("sourceUrls") AND lower("name") = lower(${person.name})
+                LIMIT 1
+              `) as unknown as { length: number };
+              if (sameUrlExisting.length > 0) {
+                lastDiscardReason = 'duplicate';
+                continue;
+              }
+            }
+
+            // A public entry MUST always be traceable to a source article —
+            // never publish an unsourced claim.
+            if (!article.sourceUrl) {
+              lastDiscardReason = 'missing_source';
+              continue;
+            }
+
+            // article.publishedAt is serialized as string by Inngest JSON
+            const fallbackDate = new Date(article.publishedAt as unknown as string);
+            let resignationDate: Date;
+            try {
+              resignationDate = new Date(person.resignationDate);
+              if (isNaN(resignationDate.getTime())) resignationDate = fallbackDate;
+            } catch {
+              resignationDate = fallbackDate;
+            }
+
+            const pinned = isWatchlistPerson(person.name);
+
+            const [insertedRow] = await db.insert(schema.politicalResignations).values({
+              name: person.name.slice(0, 200),
+              position: person.position.slice(0, 200),
+              institution: person.institution.slice(0, 200),
+              resignationType: coerceResignationType(person.resignationType),
+              resignationDate,
+              description: person.description.slice(0, 1000) || null,
+              pinned,
+              reviewStatus,
+              sourceUrls: [article.sourceUrl],
+              sourceNames: article.sourceName ? [article.sourceName] : [],
+            }).returning({ id: schema.politicalResignations.id });
+
+            anyInserted = true;
+            insertedNames.push(person.name);
+            if (pinned) anyPinnedInserted = true;
+
+            if (reviewStatus === 'pending') {
+              await notifyReviewNeeded({
+                type: 'pending',
+                detectorType: DETECTOR_TYPE,
+                name: person.name,
+                confidence: person.confidence,
+                articleUrl: article.sourceUrl ?? '',
+                articleId: article.id,
+                recordId: insertedRow!.id,
+              });
+            } else {
+              anyApproved = true;
+            }
           }
 
-          // A public entry MUST always be traceable to a source article —
-          // never publish an unsourced claim.
-          if (!article.sourceUrl) {
-            await markChecked(db, {
-              articleId: article.id,
-              detectorType: DETECTOR_TYPE,
-              outcome: 'discarded',
-              reason: 'missing_source',
-              extractedName: result.name,
-              confidence: result.confidence,
-            });
-            continue;
+          if (anyInserted) {
+            // Tag the source article so it appears in /hirek under the 'Lemondás' filter.
+            // Watchlist persons (pinned) and auto-approved detections are marked as
+            // breaking candidates so the BreakingBanner fires without manual override.
+            await db
+              .update(schema.newsArticles)
+              .set({
+                tag: 'Lemondás',
+                isBreakingCandidate: anyPinnedInserted || anyApproved,
+              })
+              .where(eq(schema.newsArticles.id, article.id));
           }
-
-          // article.publishedAt is serialized as string by Inngest JSON
-          const fallbackDate = new Date(article.publishedAt as unknown as string);
-          let resignationDate: Date;
-          try {
-            resignationDate = new Date(result.resignationDate);
-            if (isNaN(resignationDate.getTime())) resignationDate = fallbackDate;
-          } catch {
-            resignationDate = fallbackDate;
-          }
-
-          const pinned = isWatchlistPerson(result.name);
-
-          const [insertedRow] = await db.insert(schema.politicalResignations).values({
-            name: result.name.slice(0, 200),
-            position: result.position.slice(0, 200),
-            institution: result.institution.slice(0, 200),
-            resignationType: coerceResignationType(result.resignationType),
-            resignationDate,
-            description: result.description.slice(0, 1000) || null,
-            pinned,
-            reviewStatus,
-            sourceUrls: [article.sourceUrl],
-            sourceNames: article.sourceName ? [article.sourceName] : [],
-          }).returning({ id: schema.politicalResignations.id });
-
-          // Tag the source article so it appears in /hirek under the 'Lemondás' filter.
-          // Watchlist persons (pinned) and auto-approved detections are marked as
-          // breaking candidates so the BreakingBanner fires without manual override.
-          await db
-            .update(schema.newsArticles)
-            .set({
-              tag: 'Lemondás',
-              isBreakingCandidate: pinned || reviewStatus === 'approved',
-            })
-            .where(eq(schema.newsArticles.id, article.id));
 
           await markChecked(db, {
             articleId: article.id,
             detectorType: DETECTOR_TYPE,
-            outcome: 'inserted',
-            extractedName: result.name,
-            confidence: result.confidence,
+            outcome: anyInserted ? 'inserted' : 'discarded',
+            reason: anyInserted ? undefined : lastDiscardReason,
+            extractedName: (insertedNames.length > 0 ? insertedNames.join(', ') : lastName)?.slice(0, 200),
+            confidence: lastConfidence,
           });
 
-          if (reviewStatus === 'pending') {
-            await notifyReviewNeeded({
-              type: 'pending',
-              detectorType: DETECTOR_TYPE,
-              name: result.name,
-              confidence: result.confidence,
-              articleUrl: article.sourceUrl ?? '',
-              articleId: article.id,
-              recordId: insertedRow!.id,
-            });
-          } else {
-            approvedCount++;
-          }
-
-          count++;
+          if (anyInserted) count++;
+          if (anyApproved) approvedCount++;
         }
         return { count, approvedCount };
       });

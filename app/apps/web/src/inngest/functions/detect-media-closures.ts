@@ -6,6 +6,7 @@ import {
   articleDateIso,
   decideStatus,
   isDuplicate,
+  isPlaceholderName,
   isTransientLlmFailure,
   loadUncheckedArticles,
   markChecked,
@@ -98,7 +99,7 @@ export const detectMediaClosures = inngest.createFunction(
             continue;
           }
 
-          if (!result.name) {
+          if (!result.name || isPlaceholderName(result.name)) {
             await markChecked(db, {
               articleId: article.id,
               detectorType: DETECTOR_TYPE,

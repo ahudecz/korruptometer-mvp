@@ -304,6 +304,8 @@ async function crossCheckOtherCategories(article: ArticleForReprocess, handledTy
     const outcome = await DETECTOR_PROCESSORS[type](article, todayIso, false);
     if (outcome.status === 'inserted' || outcome.status === 'updated') {
       notes.push(`✅ Automatikusan felvéve: ${DETECTOR_LABELS_HU[type]}`);
+    } else if (outcome.status === 'inserted_multi') {
+      notes.push(`✅ Automatikusan felvéve (${outcome.recordIds.length}/${outcome.total} fő): ${DETECTOR_LABELS_HU[type]}`);
     } else if (outcome.status === 'pending_notified') {
       notes.push(`🔔 Jelezve (jóváhagyásra vár): ${DETECTOR_LABELS_HU[type]}`);
     }
@@ -456,6 +458,10 @@ export async function POST(req: Request) {
       if (outcome.status === 'inserted' || outcome.status === 'updated') {
         revalidatePublicPaths();
         resultText = '✅ Jóváhagyva és felvéve.';
+        extraNotes = await crossCheckOtherCategories(article, detectorType);
+      } else if (outcome.status === 'inserted_multi') {
+        revalidatePublicPaths();
+        resultText = `✅ Jóváhagyva — ${outcome.recordIds.length}/${outcome.total} fő felvéve.`;
         extraNotes = await crossCheckOtherCategories(article, detectorType);
       } else if (outcome.status === 'error') {
         await answerCallbackQuery(cq.id, outcome.message);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const SECTOR_OPTIONS = [
   { value: 'nemzetbiztonság', label: 'Nemzetbiztonság' },
@@ -110,56 +110,49 @@ const tableHead = (
   </thead>
 );
 
-export function ResignationList({ rows, initialSector = '' }: { rows: SerializedResignation[]; initialSector?: string }) {
+export function ResignationList({ rows, initialSectors = [] }: { rows: SerializedResignation[]; initialSectors?: string[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const [search, setSearch] = useState('');
-  const [sector, setSector] = useState(initialSector);
-  const [showSector, setShowSector] = useState(false);
-  const sectorRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handle(e: MouseEvent) {
-      if (sectorRef.current && !sectorRef.current.contains(e.target as Node)) setShowSector(false);
-    }
-    document.addEventListener('mousedown', handle);
-    return () => document.removeEventListener('mousedown', handle);
-  }, []);
+  const [sectors, setSectors] = useState<string[]>(initialSectors);
 
   // Csak az URL-t szinkronizáljuk (megosztható link kedvéért) — a lista
   // maga kliens-oldalon, a már betöltött rows tömbön szűr, nincs
   // oldalújratöltés/navigáció, ezért nincs felugrás a tetejére sem.
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
-    if (sector === '') params.delete('terulet'); else params.set('terulet', sector);
+    if (sectors.length === 0) params.delete('terulet'); else params.set('terulet', sectors.join(','));
     const next = params.toString();
     const current = searchParams.toString();
     if (next !== current) {
       router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- csak sector váltásra fusson
-  }, [sector]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- csak sectors váltásra fusson
+  }, [sectors]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return rows.filter(r => {
-      if (sector && r.sector !== sector) return false;
+      if (sectors.length > 0 && (!r.sector || !sectors.includes(r.sector))) return false;
       if (q) {
         const haystack = `${r.name} ${r.position} ${r.institution}`.toLowerCase();
         if (!haystack.includes(q)) return false;
       }
       return true;
     });
-  }, [rows, search, sector]);
+  }, [rows, search, sectors]);
 
-  const activeLabel = SECTOR_OPTIONS.find(o => o.value === sector)?.label;
-  const hasFilter = search !== '' || sector !== '';
+  const hasFilter = search !== '' || sectors.length > 0;
+
+  function toggleSector(value: string) {
+    setSectors(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]);
+  }
 
   function clearAll() {
     setSearch('');
-    setSector('');
+    setSectors([]);
   }
 
   return (
@@ -189,45 +182,25 @@ export function ResignationList({ rows, initialSector = '' }: { rows: Serialized
         <div className="verdict-filters-blocks">
           <div className="verdict-filter-block verdict-filter-block--dropdowns">
             <span className="verdict-filter-block-label">Terület</span>
-            <div className="verdict-filter-dropdowns">
-              <div className="verdict-dropdown-wrap" ref={sectorRef}>
-                <button
-                  type="button"
-                  className={`verdict-dropdown-btn${sector ? ' verdict-dropdown-btn--active' : ''}`}
-                  onClick={() => setShowSector(v => !v)}
-                >
-                  {sector ? activeLabel : 'Terület'}
-                  {sector && <span className="verdict-dropdown-badge">1</span>}
-                  <span className="verdict-dropdown-arrow">{showSector ? '▲' : '▼'}</span>
-                </button>
-                {showSector && (
-                  <div className="verdict-dropdown-panel">
-                    <label className="verdict-checkbox-item">
-                      <input
-                        type="radio" name="sector" checked={sector === ''}
-                        onChange={() => { setSector(''); setShowSector(false); }}
-                      />
-                      <span>Összes terület</span>
-                    </label>
-                    {SECTOR_OPTIONS.map(o => (
-                      <label key={o.value} className="verdict-checkbox-item">
-                        <input
-                          type="radio" name="sector" checked={sector === o.value}
-                          onChange={() => { setSector(o.value); setShowSector(false); }}
-                        />
-                        <span>{o.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {hasFilter && (
-                <button type="button" className="verdict-clear-all" onClick={clearAll}>
-                  × Szűrők törlése
-                </button>
-              )}
+            <p className="res-sector-desc">Itt szűrhetsz azokra a területekre, amik konkrétan érdekelnek.</p>
+            <div className="res-sector-grid">
+              {SECTOR_OPTIONS.map(o => (
+                <label key={o.value} className={`res-sector-item${sectors.includes(o.value) ? ' res-sector-item--active' : ''}`}>
+                  <input
+                    type="checkbox"
+                    checked={sectors.includes(o.value)}
+                    onChange={() => toggleSector(o.value)}
+                  />
+                  <span>{o.label}</span>
+                </label>
+              ))}
             </div>
+
+            {sectors.length > 0 && (
+              <button type="button" className="verdict-clear-all" style={{ marginTop: 12 }} onClick={clearAll}>
+                × Szűrők törlése
+              </button>
+            )}
           </div>
         </div>
 

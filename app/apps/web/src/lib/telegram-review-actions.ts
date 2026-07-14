@@ -10,6 +10,7 @@ import {
   decideStatus,
   findExistingVerdict,
   isDuplicate,
+  isPlaceholderName,
   isTransientLlmFailure,
   isWatchlistPerson,
   NEAR_MISS_MIN,
@@ -23,20 +24,6 @@ import { coerceClosureEventType } from '../inngest/functions/detect-media-closur
 
 const ASSET_CONFIDENCE_FLOOR = 0.7;
 
-// 2026-07-13 — a séma-leírás csak azt mondja, üres string legyen, ha a
-// detektor mezője nem alkalmazandó; azt sehol nem definiálja, mit írjon a
-// modell, ha isResignation/isClosure/stb. true, de a kivonatból nem derül ki
-// a név (pl. az og:description csak egy homályos teaser volt, a tényleges
-// nevek a cikk törzsében voltak). Ilyenkor a modell néha egy placeholder
-// stringet improvizál ("<UNKNOWN>", "ismeretlen" stb.) — ez truthy, tehát a
-// puszta `!result.name` ellenőrzésen átcsúszik, és élesen bekerül egy
-// "<UNKNOWN>" nevű sor. Ezt mindenhol ki kell szűrni, ahol egy LLM-től jövő
-// név-jellegű mezőt validálunk.
-function isPlaceholderName(value: string): boolean {
-  const v = value.trim().toLowerCase().replace(/^<|>$/g, '');
-  return v === '' || v === 'unknown' || v === 'ismeretlen' || v === 'n/a' || v === 'null' || v === 'undefined';
-}
-
 export type ArticleForReprocess = {
   id: string;
   headline: string;
@@ -48,6 +35,9 @@ export type ArticleForReprocess = {
 
 export type ProcessOutcome =
   | { status: 'inserted' | 'updated'; recordId: string }
+  // 2026-07-14 — a multi-person resignation article (see processResignation)
+  // can auto-approve more than one row from a single button press.
+  | { status: 'inserted_multi'; recordIds: string[]; total: number }
   | { status: 'pending_notified' }
   | { status: 'discarded'; reason: string }
   | { status: 'error'; message: string };
@@ -99,65 +89,110 @@ function resolveDate(raw: string | undefined, fallback: Date): Date {
  * the SAME thresholds/routing as the hourly cron, including a fresh
  * near_miss/pending notification if that's what the confidence warrants.
  */
+/**
+ * 2026-07-14 — an article can name several distinct people leaving positions
+ * at once (see resignation-detect.ts). Every entry in result.resignations
+ * runs the full per-item pipeline; the single DetectionCheck row and the
+ * returned ProcessOutcome summarize what happened across all of them.
+ */
 export async function processResignation(article: ArticleForReprocess, todayIso: string, bypassConfidenceGate: boolean): Promise<ProcessOutcome> {
   const db = getDb();
   const llmResult = await detectResignationFromArticle(article.headline, article.excerpt, articleDateIso(article.publishedAt));
   if (isTransientLlmFailure(llmResult)) return { status: 'error', message: 'Az AI-hívás átmenetileg hibázott, próbáld újra.' };
 
   const result = llmResult.data;
-  if (!result || !result.isResignation) {
+  if (!result || result.resignations.length === 0) {
     await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'resignation', outcome: 'discarded', reason: 'not_applicable' });
     return { status: 'discarded', reason: 'not_applicable' };
   }
-  if (!result.name || isPlaceholderName(result.name) || !result.institution) {
-    await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'resignation', outcome: 'discarded', reason: 'missing_fields', extractedName: result.name || undefined, confidence: result.confidence });
-    return { status: 'discarded', reason: 'missing_fields' };
-  }
 
-  let reviewStatus: 'approved' | 'pending' | 'discard' = 'approved';
-  if (!bypassConfidenceGate) {
-    reviewStatus = decideStatus(result.confidence, isWatchlistPerson(result.name));
-    if (reviewStatus === 'discard') {
-      await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'resignation', outcome: 'discarded', reason: 'low_confidence', extractedName: result.name, confidence: result.confidence });
-      if (result.confidence >= NEAR_MISS_MIN) {
-        await notifyReviewNeeded({ type: 'near_miss', detectorType: 'resignation', name: result.name, confidence: result.confidence, articleUrl: article.sourceUrl ?? '', articleId: article.id });
+  const approvedIds: string[] = [];
+  const pendingIds: string[] = [];
+  let pinnedInserted = false;
+  let lastDiscardReason = 'not_applicable';
+  let lastName: string | undefined;
+  let lastConfidence: number | undefined;
+
+  for (const person of result.resignations) {
+    lastName = person.name || lastName;
+    lastConfidence = person.confidence;
+
+    if (!person.name || isPlaceholderName(person.name) || !person.institution) {
+      lastDiscardReason = 'missing_fields';
+      continue;
+    }
+
+    let reviewStatus: 'approved' | 'pending' | 'discard' = 'approved';
+    if (!bypassConfidenceGate) {
+      reviewStatus = decideStatus(person.confidence, isWatchlistPerson(person.name));
+      if (reviewStatus === 'discard') {
+        lastDiscardReason = 'low_confidence';
+        if (person.confidence >= NEAR_MISS_MIN) {
+          await notifyReviewNeeded({ type: 'near_miss', detectorType: 'resignation', name: person.name, confidence: person.confidence, articleUrl: article.sourceUrl ?? '', articleId: article.id });
+        }
+        continue;
       }
-      return { status: 'discarded', reason: 'low_confidence' };
+    }
+
+    if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, person.name)) {
+      lastDiscardReason = 'duplicate';
+      continue;
+    }
+    if (!article.sourceUrl) {
+      lastDiscardReason = 'missing_source';
+      continue;
+    }
+
+    const pinned = isWatchlistPerson(person.name);
+    const [row] = await db.insert(schema.politicalResignations).values({
+      name: person.name.slice(0, 200),
+      position: person.position.slice(0, 200),
+      institution: person.institution.slice(0, 200),
+      resignationType: coerceResignationType(person.resignationType),
+      resignationDate: resolveDate(person.resignationDate, article.publishedAt),
+      description: person.description.slice(0, 1000) || null,
+      pinned,
+      reviewStatus: reviewStatus === 'approved' ? 'approved' : 'pending',
+      sourceUrls: [article.sourceUrl],
+      sourceNames: article.sourceName ? [article.sourceName] : [],
+    }).returning({ id: schema.politicalResignations.id });
+
+    if (pinned) pinnedInserted = true;
+
+    if (reviewStatus === 'pending') {
+      pendingIds.push(row!.id);
+      await notifyReviewNeeded({ type: 'pending', detectorType: 'resignation', name: person.name, confidence: person.confidence, articleUrl: article.sourceUrl ?? '', articleId: article.id, recordId: row!.id });
+    } else {
+      approvedIds.push(row!.id);
     }
   }
 
-  if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, result.name)) {
-    await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'resignation', outcome: 'discarded', reason: 'duplicate', extractedName: result.name, confidence: result.confidence });
-    return { status: 'discarded', reason: 'duplicate' };
+  const totalInserted = approvedIds.length + pendingIds.length;
+  if (totalInserted > 0) {
+    await db.update(schema.newsArticles).set({ tag: 'Lemondás', isBreakingCandidate: pinnedInserted || approvedIds.length > 0 }).where(eq(schema.newsArticles.id, article.id));
   }
-  if (!article.sourceUrl) {
-    await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'resignation', outcome: 'discarded', reason: 'missing_source', extractedName: result.name, confidence: result.confidence });
-    return { status: 'discarded', reason: 'missing_source' };
+  await upsertDetectionCheckOverride(db, {
+    articleId: article.id,
+    detectorType: 'resignation',
+    outcome: totalInserted > 0 ? 'inserted' : 'discarded',
+    reason: totalInserted > 0 ? undefined : lastDiscardReason,
+    extractedName: lastName,
+    confidence: lastConfidence,
+  });
+
+  if (totalInserted === 0) {
+    return { status: 'discarded', reason: lastDiscardReason };
   }
-
-  const pinned = isWatchlistPerson(result.name);
-  const [row] = await db.insert(schema.politicalResignations).values({
-    name: result.name.slice(0, 200),
-    position: result.position.slice(0, 200),
-    institution: result.institution.slice(0, 200),
-    resignationType: coerceResignationType(result.resignationType),
-    resignationDate: resolveDate(result.resignationDate, article.publishedAt),
-    description: result.description.slice(0, 1000) || null,
-    pinned,
-    reviewStatus: reviewStatus === 'approved' ? 'approved' : 'pending',
-    sourceUrls: [article.sourceUrl],
-    sourceNames: article.sourceName ? [article.sourceName] : [],
-  }).returning({ id: schema.politicalResignations.id });
-
-  await db.update(schema.newsArticles).set({ tag: 'Lemondás', isBreakingCandidate: pinned || reviewStatus === 'approved' }).where(eq(schema.newsArticles.id, article.id));
-  await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'resignation', outcome: 'inserted', extractedName: result.name, confidence: result.confidence });
-
-  if (reviewStatus === 'pending') {
-    await notifyReviewNeeded({ type: 'pending', detectorType: 'resignation', name: result.name, confidence: result.confidence, articleUrl: article.sourceUrl ?? '', articleId: article.id, recordId: row!.id });
-    return { status: 'pending_notified' };
+  if (approvedIds.length > 0) {
+    await inngest.send({ name: 'breaking.recompute', data: { reason: 'resignation:telegram-approve' } });
   }
-  await inngest.send({ name: 'breaking.recompute', data: { reason: 'resignation:telegram-approve' } });
-  return { status: 'inserted', recordId: row!.id };
+  if (approvedIds.length === 1 && pendingIds.length === 0) {
+    return { status: 'inserted', recordId: approvedIds[0]! };
+  }
+  if (approvedIds.length > 0) {
+    return { status: 'inserted_multi', recordIds: approvedIds, total: result.resignations.length };
+  }
+  return { status: 'pending_notified' };
 }
 
 export async function processMediaClosure(article: ArticleForReprocess, todayIso: string, bypassConfidenceGate: boolean): Promise<ProcessOutcome> {
