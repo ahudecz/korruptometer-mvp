@@ -5,6 +5,7 @@ import { detectAssetRecoveryFromArticle } from '@korr/db/ai-assets';
 import { articleDateIso, isTransientLlmFailure, loadUncheckedArticles, markChecked, NEAR_MISS_MIN } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
+import { notifyAutoPublished } from '@/lib/notify-auto-publish';
 import { inngest } from '../client';
 
 const BATCH_SIZE = 20;
@@ -160,7 +161,7 @@ export const detectAssetRecoveries = inngest.createFunction(
             .replace(/^-+|-+$/g, '')
             .slice(0, 80);
 
-          await db.insert(schema.assetRecoveries).values({
+          const [insertedRow] = await db.insert(schema.assetRecoveries).values({
             caseId,
             caseLabel: result.caseLabel.slice(0, 200),
             description: result.description.slice(0, 1000),
@@ -168,7 +169,7 @@ export const detectAssetRecoveries = inngest.createFunction(
             recoveredAt,
             sourceUrl: article.sourceUrl,
             sourceName: article.sourceName,
-          });
+          }).returning({ id: schema.assetRecoveries.id });
 
           await markChecked(db, {
             articleId: article.id,
@@ -176,6 +177,17 @@ export const detectAssetRecoveries = inngest.createFunction(
             outcome: 'inserted',
             extractedName: result.caseLabel,
             confidence: result.confidence,
+          });
+
+          // 2026-07-14 — this detector has no reviewStatus/pending concept at
+          // all (see file header), every insert is already a zero-review
+          // auto-publish — so every insert gets the revert-notification.
+          await notifyAutoPublished({
+            target: 'asset_recovery',
+            recordId: insertedRow!.id,
+            name: result.caseLabel,
+            detail: `~${(Number(result.amountFt) / 1_000_000_000).toFixed(2)} Mrd Ft`,
+            articleUrl: article.sourceUrl ?? '',
           });
 
           count++;

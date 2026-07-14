@@ -9,12 +9,16 @@ describe('decideStatus', () => {
     expect(decideStatus(0.0, false)).toBe('discard');
   });
 
-  it('auto-publishes >= 0.77 regardless of watchlist', () => {
+  it('auto-publishes a non-watchlist person >= 0.77', () => {
     expect(decideStatus(0.77, false)).toBe('approved');
     expect(decideStatus(0.93, false)).toBe('approved');
     expect(decideStatus(1.0, false)).toBe('approved');
-    expect(decideStatus(0.95, true)).toBe('approved');
-    expect(decideStatus(0.77, true)).toBe('approved');
+  });
+
+  it('a watchlist person NEVER auto-publishes, no matter the confidence (2026-07-14 fix)', () => {
+    expect(decideStatus(0.95, true)).toBe('pending');
+    expect(decideStatus(0.77, true)).toBe('pending');
+    expect(decideStatus(1.0, true)).toBe('pending');
   });
 
   it('queues 0.70–0.7699 for review', () => {
@@ -64,8 +68,8 @@ describe('US2 auto-publish vs watchlist (combined)', () => {
   it('auto-publishes a confident, non-watchlist person', () => {
     expect(decideStatus(0.93, isWatchlistPerson('Kovács Zoltán'))).toBe('approved');
   });
-  it('auto-publishes a confident watchlist person too', () => {
-    expect(decideStatus(0.95, isWatchlistPerson('Polt Péter'))).toBe('approved');
+  it('queues a confident watchlist person for review instead of auto-publishing (2026-07-14 fix)', () => {
+    expect(decideStatus(0.95, isWatchlistPerson('Polt Péter'))).toBe('pending');
   });
 });
 

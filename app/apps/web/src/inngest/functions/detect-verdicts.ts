@@ -14,6 +14,7 @@ import {
 } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
+import { notifyAutoPublished } from '@/lib/notify-auto-publish';
 import { inngest } from '../client';
 
 const BATCH_SIZE = 20;
@@ -238,6 +239,18 @@ export const detectVerdicts = inngest.createFunction(
               articleUrl: article.sourceUrl ?? '',
               articleId: article.id,
               recordId,
+            });
+          } else if (!existingVerdict) {
+            // 2026-07-14 — auto-published straight to 'approved' with zero
+            // human review. Only for a fresh INSERT: reverting an UPDATE to
+            // an ongoing case would need to roll back to the prior state,
+            // not delete the whole row, which is out of scope for now.
+            await notifyAutoPublished({
+              target: 'court_verdict',
+              recordId,
+              name: result.personName,
+              detail: `${result.verdictType}${result.sentenceLabel ? ` — ${result.sentenceLabel}` : ''}`,
+              articleUrl: article.sourceUrl ?? '',
             });
           }
 

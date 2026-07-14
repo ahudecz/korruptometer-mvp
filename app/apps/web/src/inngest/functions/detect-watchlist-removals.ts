@@ -6,6 +6,7 @@ import { checkRemoval, type RemovalCandidateArticle } from '@korr/db/ai-watchlis
 import { WATCH_LIST } from '@app/_home/watchlist-config';
 import { WATCHLIST_DETAIL } from '@app/_home/watchlist-detail-config';
 import { getDb, schema } from '@/lib/db';
+import { notifyAutoPublished } from '@/lib/notify-auto-publish';
 import { inngest } from '../client';
 
 const CANDIDATE_WINDOW_DAYS = 30;
@@ -118,7 +119,7 @@ export const detectWatchlistRemovals = inngest.createFunction(
       const primary = confirmedById.get(verdict.primarySourceArticleId) ?? confirmedArticles[0];
       if (!primary) continue;
 
-      await step.run(`write-${person.id}`, () =>
+      const [insertedRow] = await step.run(`write-${person.id}`, () =>
         db.insert(schema.watchlistRemovals).values({
           personId: person.id,
           removalType: verdict.removalType,
@@ -127,8 +128,22 @@ export const detectWatchlistRemovals = inngest.createFunction(
           sourceUrl: primary.sourceUrl,
           sourceDateLabel: fmtDate(new Date(primary.publishedAt as unknown as string)),
           lead: verdict.lead.slice(0, 1000) || null,
-        }).onConflictDoNothing({ target: schema.watchlistRemovals.personId }),
+        }).onConflictDoNothing({ target: schema.watchlistRemovals.personId })
+          .returning({ id: schema.watchlistRemovals.id }),
       );
+
+      // 2026-07-14 — this is the exact "Sulyok Tamás" surface: no human sees
+      // this before it goes live on the WATCH_LIST card. Always notify (all
+      // 8 WATCH_LIST people are "kiemelt" by definition, no extra gate).
+      if (insertedRow) {
+        await notifyAutoPublished({
+          target: 'watchlist_removal',
+          recordId: insertedRow.id,
+          name: person.name,
+          detail: `${verdict.removalType === 'removed' ? 'Eltávolítva' : 'Lemondott'} — ${verdict.reason}`,
+          articleUrl: primary.sourceUrl,
+        });
+      }
 
       logger?.info?.(`detect-watchlist-removals: ${person.id} confirmed removed/resigned (${distinctSources.size} sources) — ${verdict.reason}`);
       detected++;

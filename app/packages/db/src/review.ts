@@ -17,13 +17,25 @@ export const DEDUP_WINDOW_DAYS = 30; // FR-009
  * Decide what to do with a detection.
  *
  *   confidence < 0.70           → 'discard'   (FR-005, universal floor)
+ *   isWatchlist && >= 0.70      → 'pending'   (2026-07-14 fix — see below)
  *   confidence >= 0.77          → 'approved'  (lowered from 0.90 — false
  *                                  positives get deleted after the fact
  *                                  instead of sitting in the review queue)
  *   0.70 <= confidence < 0.77   → 'pending'
+ *
+ * 2026-07-14 — `isWatchlist` used to be accepted but never read (the
+ * `_isWatchlist` naming was the tell): watchlist.ts's own doc comment says
+ * these ~36 people (8 "lemondásra felszólított" + 10 Galéria + 18
+ * miniszter) "MUST always go to editorial review... regardless of
+ * confidence", but nothing enforced it — a high-confidence wrong call
+ * (Sulyok Tamás, an alaptörvény-módosítás megszavazása félreértve tényleges
+ * távozásként) sailed straight to auto-publish with zero human review. Now
+ * a watchlist person can never skip the pending queue, no matter how
+ * confident the model is.
  */
-export function decideStatus(confidence: number, _isWatchlist: boolean): ReviewDecision {
+export function decideStatus(confidence: number, isWatchlist: boolean): ReviewDecision {
   if (confidence < REVIEW_FLOOR) return 'discard';
+  if (isWatchlist) return 'pending';
   if (confidence >= AUTO_PUBLISH_THRESHOLD) return 'approved';
   return 'pending';
 }

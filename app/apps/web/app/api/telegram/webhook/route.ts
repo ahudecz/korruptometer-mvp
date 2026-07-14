@@ -26,6 +26,17 @@ const DETECTOR_BY_CODE: Record<string, DetectorType> = {
   x: 'asset_recovery',
 };
 
+// 2026-07-14 — codes for the "auto-published, revertible" notification
+// (notify-auto-publish.ts). Deliberately excludes 'resignation': watchlist
+// people now always go through the pending-review flow (decideStatus fix),
+// and non-watchlist resignations are exactly the noise the user doesn't
+// want a Telegram ping for (e.g. a small-town spa director resigning).
+const AUTO_PUBLISH_CODE_TABLE: Record<string, 'court_verdict' | 'asset_recovery' | 'watchlist_removal'> = {
+  c: 'court_verdict',
+  x: 'asset_recovery',
+  w: 'watchlist_removal',
+};
+
 const DETECTOR_LABELS_HU: Record<DetectorType, string> = {
   resignation: 'Lemondás/kirúgás',
   media_closure: 'Médium megszűnés',
@@ -197,13 +208,32 @@ async function findPendingRecord(detectorType: DetectorType, id: string): Promis
   return null; // asset_recovery has no reviewStatus/pending concept
 }
 
+/**
+ * 2026-07-14 — rejecting used to set reviewStatus='rejected', but a rejected
+ * row still counts as a "duplicate" for 30 days (isDuplicate, FR-009/FR-011)
+ * — a genuinely new, later article about the same person would be silently
+ * swallowed as a dupe with no notification. Deleting the row instead means
+ * there's nothing left to match: a real future event gets a fully fresh run
+ * through the normal threshold logic (and a fresh review/revert prompt if it
+ * auto-publishes again).
+ */
 async function setPendingStatus(detectorType: DetectorType, id: string, status: 'approved' | 'rejected'): Promise<void> {
+  if (status === 'rejected') {
+    if (detectorType === 'resignation') {
+      await getDb().delete(schema.politicalResignations).where(eq(schema.politicalResignations.id, id));
+    } else if (detectorType === 'media_closure') {
+      await getDb().delete(schema.mediaClosures).where(eq(schema.mediaClosures.id, id));
+    } else if (detectorType === 'court_verdict') {
+      await getDb().delete(schema.courtVerdicts).where(eq(schema.courtVerdicts.id, id));
+    }
+    return;
+  }
   if (detectorType === 'resignation') {
-    await getDb().update(schema.politicalResignations).set({ reviewStatus: status, updatedAt: new Date() }).where(eq(schema.politicalResignations.id, id));
+    await getDb().update(schema.politicalResignations).set({ reviewStatus: 'approved', updatedAt: new Date() }).where(eq(schema.politicalResignations.id, id));
   } else if (detectorType === 'media_closure') {
-    await getDb().update(schema.mediaClosures).set({ reviewStatus: status, updatedAt: new Date() }).where(eq(schema.mediaClosures.id, id));
+    await getDb().update(schema.mediaClosures).set({ reviewStatus: 'approved', updatedAt: new Date() }).where(eq(schema.mediaClosures.id, id));
   } else if (detectorType === 'court_verdict') {
-    await getDb().update(schema.courtVerdicts).set({ reviewStatus: status, updatedAt: new Date() }).where(eq(schema.courtVerdicts.id, id));
+    await getDb().update(schema.courtVerdicts).set({ reviewStatus: 'approved', updatedAt: new Date() }).where(eq(schema.courtVerdicts.id, id));
   }
 }
 
@@ -327,6 +357,44 @@ export async function POST(req: Request) {
   }
 
   const [action, code, id] = cq.data.split(':');
+
+  // ── 2026-07-14 — "auto-publikálva, visszavonható" gombok (CourtVerdict /
+  // AssetRecovery / WatchlistRemoval automata beszúrásaihoz, l.
+  // notify-auto-publish.ts). Külön ág az 'a'/'r'/'n' review-gomboktól, mert
+  // itt a sor MÁR élő — "Visszavonás" törli (nem reviewStatus='rejected',
+  // l. setPendingStatus komment: a törlés nem blokkolja 30 napig a valódi
+  // jövőbeli újradetektálást), "OK, marad" csak nyugtáz. ──
+  if (action === 'v' || action === 'k') {
+    const target = code ? AUTO_PUBLISH_CODE_TABLE[code] : undefined;
+    if (!target || !id) {
+      await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
+      return NextResponse.json({ ok: true });
+    }
+    try {
+      let resultText: string;
+      if (action === 'k') {
+        resultText = '✅ OK, marad.';
+      } else {
+        if (target === 'court_verdict') {
+          await getDb().delete(schema.courtVerdicts).where(eq(schema.courtVerdicts.id, id));
+        } else if (target === 'asset_recovery') {
+          await getDb().delete(schema.assetRecoveries).where(eq(schema.assetRecoveries.id, id));
+        } else {
+          await getDb().delete(schema.watchlistRemovals).where(eq(schema.watchlistRemovals.id, id));
+        }
+        revalidatePublicPaths();
+        resultText = '↩️ Visszavonva.';
+      }
+      await answerCallbackQuery(cq.id, resultText);
+      const finalText = [cq.message.text ?? '', resultText].filter(Boolean).join('\n\n');
+      await editMessageReplyMarkup(cq.message.chat.id, cq.message.message_id, finalText);
+    } catch (err) {
+      await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
+      console.error('[telegram-webhook] auto-publish action error', err);
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   const isGeneralNews = action === 'n' && code === 'g';
   const detectorType = code ? DETECTOR_BY_CODE[code] : undefined;
   if ((action !== 'a' && action !== 'r' && action !== 'n') || (!detectorType && !isGeneralNews) || !id) {
