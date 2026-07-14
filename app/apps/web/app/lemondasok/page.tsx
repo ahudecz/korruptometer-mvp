@@ -75,7 +75,7 @@ export default async function LemondasokPage({ searchParams }: { searchParams: S
           Versenyhivatal elnökét, a Médiahatóság elnökét és az Országos Bírói Hivatal elnökét.
         </p>
 
-        <WatchlistGrid breaking={breakingArticles} />
+        <WatchlistGrid />
 
         {/* Tisztítótűz összefoglaló blokk */}
         <div style={{

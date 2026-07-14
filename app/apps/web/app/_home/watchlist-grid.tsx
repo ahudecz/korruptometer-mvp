@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { gte } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
-import { findBreakingForName, type BreakingArticle } from '@/lib/breaking';
 import { WATCH_LIST, type WatchPerson } from './watchlist-config';
 
 const STATUS_LABEL: Record<string, string> = {
@@ -34,16 +33,19 @@ function resolveStatus(
   return match.resignationType === 'lemondás' ? 'resigned' : 'removed';
 }
 
-function WatchCard({ person, breakingArticle }: { person: WatchPerson; breakingArticle?: BreakingArticle | null }) {
+// 2026-07-14 — used to also show a BREAKING tag (name-matched against the
+// active breaking pool) on 'active' (still-in-office) cards. Removed:
+// while someone is still 'active' by definition their whole story is an
+// unresolved, ongoing saga (that's why they're on this list) — any
+// matching article is just the latest chapter of the same thing, so a
+// keyword-based "is this really new" filter kept losing to the next day's
+// headline (Sulyok Tamás case). The /lemondasok TABLE's own breaking
+// indicator (resignation-list.tsx) is unaffected — that's tied to an
+// actual PoliticalResignation row, not a name-match against any story.
+function WatchCard({ person }: { person: WatchPerson }) {
   const isGone = person.status !== 'active';
   return (
     <Link href={`/lemondasok/${person.id}`} className={`watchlist-card ${isGone ? 'watchlist-card--gone' : ''}`}>
-      {breakingArticle && (
-        <span className="watchlist-breaking-tag">
-          <span className="watchlist-breaking-dot" />
-          BREAKING
-        </span>
-      )}
       <div className="watchlist-photo">
         {person.photoUrl ? (
           <img
@@ -73,7 +75,7 @@ function WatchCard({ person, breakingArticle }: { person: WatchPerson; breakingA
   );
 }
 
-export async function WatchlistGrid({ breaking = [] }: { breaking?: BreakingArticle[] }) {
+export async function WatchlistGrid() {
   const db = getDb();
   const since = new Date('2026-04-12');
 
@@ -105,7 +107,7 @@ export async function WatchlistGrid({ breaking = [] }: { breaking?: BreakingArti
   return (
     <div className="watchlist-grid">
       {persons.map(p => (
-        <WatchCard key={p.id} person={p} breakingArticle={findBreakingForName(p.name, breaking)} />
+        <WatchCard key={p.id} person={p} />
       ))}
     </div>
   );

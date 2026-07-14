@@ -106,9 +106,28 @@ export async function getActiveBreaking(): Promise<BreakingArticle[]> {
   }
 }
 
+// 2026-07-14 — a per-person BREAKING tag (WatchlistGrid card, a case's
+// breakingAlert box) reads as "something just happened to THIS person",
+// which is misleading for a story about a law/vote that hasn't taken
+// effect yet (e.g. "Megszavazták a Sulyok Tamást eltávolító alaptörvény-
+// módosítást" — he's still in office; the main BREAKING banner can still
+// show this headline verbatim, it's the person-specific "flagged" framing
+// that's wrong here). Same category as the resignation-detect.ts prompt
+// fix — see project-resignation-premature-law-vote memory.
+const PENDING_PROCESS_KEYWORDS = [
+  'megszavaz', 'törvényjavaslat', 'el kell fogad', 'hatályba lép',
+  'aláírásra vár', 'kihirdetés', 'alaptörvény-módosítás', 'alaptörvénymódosítás',
+];
+
+function isPendingProcessHeadline(headline: string): boolean {
+  const h = headline.toLowerCase();
+  return PENDING_PROCESS_KEYWORDS.some((kw) => h.includes(kw));
+}
+
 export function findBreakingForName(name: string, breaking: BreakingArticle[]): BreakingArticle | null {
   const parts = name.toLowerCase().split(' ').filter(p => p.length > 2);
   return breaking.find(b => {
+    if (isPendingProcessHeadline(b.headline)) return false;
     const text = `${b.headline} ${b.excerpt ?? ''}`.toLowerCase();
     return parts.every(part => text.includes(part));
   }) ?? null;

@@ -80,7 +80,7 @@ export function ResignationsSection({ resignations, breaking = [] }: Props) {
         Versenyhivatal elnökét, a Médiahatóság elnökét és az Országos Bírói Hivatal elnökét.
       </p>
 
-      <WatchlistGrid breaking={breaking} />
+      <WatchlistGrid />
 
       {rest.length > 0 && (
         <>
