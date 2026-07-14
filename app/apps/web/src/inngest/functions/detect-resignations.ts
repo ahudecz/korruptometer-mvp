@@ -6,6 +6,8 @@ import {
   articleDateIso,
   type CheckReason,
   decideStatus,
+  hasIndividualResignationForInstitution,
+  isCollectiveEntityName,
   isDuplicate,
   isPlaceholderName,
   isTransientLlmFailure,
@@ -40,6 +42,35 @@ export function coerceResignationType(value: string): ValidResignationType {
   }
   const match = VALID_RESIGNATION_TYPES.find((v) => v.startsWith(normalized) || normalized.startsWith(v.slice(0, 5)));
   return match ?? 'egyéb';
+}
+
+const VALID_SECTORS = [
+  'nemzetbiztonság',
+  'fegyveres és rendvédelmi szervek',
+  'ügyészség',
+  'honvédség',
+  'hatóságok, hivatalok, állami cégek',
+  'egészségügy',
+  'média',
+  'sport és civil szervezetek',
+  'kultúra',
+  'közigazgatás',
+  'egyéb',
+] as const;
+type ValidSector = (typeof VALID_SECTORS)[number];
+
+/**
+ * 2026-07-14 — sector is a brand-new field on the LLM schema (see
+ * resignation-detect.ts); same truncation/mangling risk as
+ * coerceResignationType, so it gets the same guarded fallback instead of a
+ * raw enum insert that could crash the whole batch step.
+ */
+export function coerceSector(value: string): ValidSector {
+  const normalized = value.normalize('NFC').trim();
+  if ((VALID_SECTORS as readonly string[]).includes(normalized)) {
+    return normalized as ValidSector;
+  }
+  return 'egyéb';
 }
 
 // Quick keyword pre-filter — avoids burning LLM tokens on irrelevant articles.
@@ -154,6 +185,15 @@ export const detectResignations = inngest.createFunction(
               continue;
             }
 
+            // A collective/testületi name ("MÁV igazgatósága") is redundant
+            // noise if the same institution's members were already named
+            // individually — the by-name dedup above can't catch this since
+            // "MÁV igazgatósága" doesn't match any individual's name.
+            if (isCollectiveEntityName(person.name) && await hasIndividualResignationForInstitution(db, person.institution)) {
+              lastDiscardReason = 'duplicate';
+              continue;
+            }
+
             // Same-URL + same-name dedup. Scoped to THIS person (unlike the old
             // any-row-with-this-URL check) so a second/third genuinely distinct
             // person from the SAME multi-person article doesn't get wrongly
@@ -196,6 +236,7 @@ export const detectResignations = inngest.createFunction(
               resignationType: coerceResignationType(person.resignationType),
               resignationDate,
               description: person.description.slice(0, 1000) || null,
+              sector: coerceSector(person.sector),
               pinned,
               reviewStatus,
               sourceUrls: [article.sourceUrl],

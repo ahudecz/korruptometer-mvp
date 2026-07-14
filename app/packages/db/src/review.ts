@@ -80,6 +80,39 @@ export async function isDuplicate(
   return rows.length > 0;
 }
 
+// 2026-07-14 — the resignation extractor is instructed to use a collective
+// name (e.g. "Pesti Srácok szerkesztőség") ONLY when an article names no
+// individuals at all. In practice it sometimes still produces one anyway
+// (e.g. "MÁV igazgatósága") even when a SIBLING article about the same
+// event already named the actual board members individually — creating a
+// redundant entry on top of the real ones (2026-07-14, user report).
+const COLLECTIVE_NAME_RE = /\s(igazgatósága|igazgatótanácsa|vezetősége|testülete|elnöksége|vezetése)$/i;
+
+export function isCollectiveEntityName(name: string): boolean {
+  return COLLECTIVE_NAME_RE.test(name.trim());
+}
+
+/**
+ * True if `institution` already has at least one PoliticalResignation row
+ * (any reviewStatus) within the window — paired with isCollectiveEntityName()
+ * to reject a collective/testületi entry when the same body's members were
+ * already extracted by name from a sibling article about the same reshuffle.
+ */
+export async function hasIndividualResignationForInstitution(
+  db: Executable,
+  institution: string,
+  withinDays: number = 7,
+): Promise<boolean> {
+  if (!institution.trim()) return false;
+  const rows = (await db.execute(sql`
+    SELECT 1 FROM "PoliticalResignation"
+    WHERE lower(institution) = lower(${institution})
+      AND "createdAt" >= now() - make_interval(days => ${withinDays})
+    LIMIT 1
+  `)) as unknown as { length: number };
+  return rows.length > 0;
+}
+
 export type ExistingVerdict = { id: string; verdictType: string };
 
 /**

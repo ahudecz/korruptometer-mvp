@@ -5,6 +5,19 @@
  */
 import { llmExtract, type LlmResult, type LlmToolSpec } from './llm';
 
+export type ResignationSector =
+  | 'nemzetbiztonság'
+  | 'fegyveres és rendvédelmi szervek'
+  | 'ügyészség'
+  | 'honvédség'
+  | 'hatóságok, hivatalok, állami cégek'
+  | 'egészségügy'
+  | 'média'
+  | 'sport és civil szervezetek'
+  | 'kultúra'
+  | 'közigazgatás'
+  | 'egyéb';
+
 export type ResignationEvent = {
   name: string;
   position: string;
@@ -12,6 +25,7 @@ export type ResignationEvent = {
   resignationType: 'lemondás' | 'kirúgás' | 'felmentés' | 'egyéb';
   resignationDate: string;
   description: string;
+  sector: ResignationSector;
   confidence: number;
 };
 
@@ -71,13 +85,31 @@ const TOOL: LlmToolSpec = {
               description:
                 'Maximum 4-6 word Hungarian label for what happened — shown in a chart, must be very short. E.g. "MCC kuratóriumi elnökről lemondott", "Kulturális Minisztériumból kirúgták".',
             },
+            sector: {
+              type: 'string',
+              enum: [
+                'nemzetbiztonság',
+                'fegyveres és rendvédelmi szervek',
+                'ügyészség',
+                'honvédség',
+                'hatóságok, hivatalok, állami cégek',
+                'egészségügy',
+                'média',
+                'sport és civil szervezetek',
+                'kultúra',
+                'közigazgatás',
+                'egyéb',
+              ],
+              description:
+                'Which sector the LEAVING institution belongs to. nemzetbiztonság = national security services; fegyveres és rendvédelmi szervek = police/disaster relief/prison service; ügyészség = prosecution service; honvédség = the armed forces; hatóságok, hivatalok, állami cégek = ministries\' subordinate offices and state/municipal-owned companies (e.g. MÁV, MVM, Szerencsejáték Zrt.); egészségügy = hospitals/healthcare institutions; média = press/TV/radio/online outlets; sport és civil szervezetek = sports federations, foundations, civil organisations; kultúra = cultural/educational/scientific institutions (theatres, film institute, museums, universities); közigazgatás = government/parliamentary/party positions (ministers, state secretaries, factions, municipalities); egyéb = none of the above fit.',
+            },
             confidence: {
               type: 'number',
               description:
                 'Confidence score 0–1 that THIS SPECIFIC entry is a real political resignation/firing/dismissal.',
             },
           },
-          required: ['name', 'position', 'institution', 'resignationType', 'resignationDate', 'description', 'confidence'],
+          required: ['name', 'position', 'institution', 'resignationType', 'resignationDate', 'description', 'sector', 'confidence'],
         },
       },
     },
@@ -97,7 +129,9 @@ Politikai személynek vagy szervezetnek minősül:
 - NER-közeli médiumok (Pesti Srácok, Világgazdaság, Magyar Nemzet, Origó, KESMA-médiumok) szerkesztői, újságírói — tömeges kirúgás esetén is
 - Kulturális, oktatási, tudományos intézmények politikailag kinevezett vezetői
 
-Tömeges elbocsátásnál (pl. "kirúgják az összes Pesti Srácok-munkatársat") a "name" mezőbe a szerkesztőség/outlet neve kerüljön (pl. "Pesti Srácok szerkesztőség"), a "position" mezőbe "újságíró, szerkesztő", az "institution" mezőbe a médium neve.
+Tömeges elbocsátásnál a "name" mezőbe a szerkesztőség/testület/outlet neve CSAK akkor kerüljön (pl. "Pesti Srácok szerkesztőség"), ha a cikk TÉNYLEG nem nevez meg egyetlen konkrét személyt sem (pl. "kirúgják az összes Pesti Srácok-munkatársat" — nincs név). A "position" mezőbe ilyenkor "újságíró, szerkesztő", az "institution" mezőbe a médium neve kerül.
+
+KRITIKUS — TESTÜLETI/GYŰJTŐNÉV vs. KONKRÉT SZEMÉLYEK: ha a cikk akár csak EGY konkrét nevet is megad az érintettek közül (pl. "az igazgatóság — Barna Zsolt, Waberer György és mások — lemondott"), MINDEN névvel rendelkező személyt külön bejegyzésként vegyél fel a nevükön (l. a TÖBB SZEMÉLY szabályt lent) — SOHA ne adj hozzá EZEN FELÜL egy összevont, testületi nevű bejegyzést is (pl. "MÁV igazgatósága") ugyanarról az eseményről. Egy gyűjtőnév ("X igazgatósága", "X vezetősége", "X testülete") csak akkor lehet a "name" mező értéke, ha a cikkben SZÓ SZERINT egyetlen tagnak sincs neve megadva.
 
 KRITIKUS — TÖBB SZEMÉLY EGY CIKKBEN: ha a cikk több különböző embert/szervezetet is megnevez, akik/amik elhagyják a pozíciójukat (akár csak felsorolásszerűen, egyetlen mondatban, pl. "X, Y és Z lemondott, W-t pedig felmentették"), MINDEGYIKÜKET vedd fel a resignations tömbbe, külön-külön bejegyzésként. Ne csak az elsőként említettet vagy a legfontosabbat emeld ki — egy tömör felsorolásban szereplő minden név külön esemény.
 

@@ -9,6 +9,8 @@ import {
   articleDateIso,
   decideStatus,
   findExistingVerdict,
+  hasIndividualResignationForInstitution,
+  isCollectiveEntityName,
   isDuplicate,
   isPlaceholderName,
   isTransientLlmFailure,
@@ -19,7 +21,7 @@ import {
 import { getDb, schema } from './db';
 import { notifyReviewNeeded } from './notify';
 import { inngest } from '../inngest/client';
-import { coerceResignationType } from '../inngest/functions/detect-resignations';
+import { coerceResignationType, coerceSector } from '../inngest/functions/detect-resignations';
 import { coerceClosureEventType } from '../inngest/functions/detect-media-closures';
 
 const ASSET_CONFIDENCE_FLOOR = 0.7;
@@ -138,6 +140,10 @@ export async function processResignation(article: ArticleForReprocess, todayIso:
       lastDiscardReason = 'duplicate';
       continue;
     }
+    if (isCollectiveEntityName(person.name) && await hasIndividualResignationForInstitution(db, person.institution)) {
+      lastDiscardReason = 'duplicate';
+      continue;
+    }
     if (!article.sourceUrl) {
       lastDiscardReason = 'missing_source';
       continue;
@@ -151,6 +157,7 @@ export async function processResignation(article: ArticleForReprocess, todayIso:
       resignationType: coerceResignationType(person.resignationType),
       resignationDate: resolveDate(person.resignationDate, article.publishedAt),
       description: person.description.slice(0, 1000) || null,
+      sector: coerceSector(person.sector),
       pinned,
       reviewStatus: reviewStatus === 'approved' ? 'approved' : 'pending',
       sourceUrls: [article.sourceUrl],
