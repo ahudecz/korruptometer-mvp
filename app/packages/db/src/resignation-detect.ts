@@ -97,6 +97,7 @@ NE jelöld isResignation=true-val, ha:
 - Csak terv, szándék, spekuláció, követelés ("intézi el", "le kell váltani", "leváltják majd", "kérték a lemondását", "nem áll távol a lemondás", "belengette")
 - Más ország politikusáról van szó
 - Az ige jövő idejű vagy feltételes ("el fogja távolítani", "leválthatják")
+- Csak egy törvényt/alaptörvény-módosítást/rendeletet SZAVAZTAK MEG vagy FOGADTAK EL, amely majd — további lépés (elnöki/miniszterelnöki aláírás, kihirdetés, meghatározott hatálybalépési határidő) UTÁN — megszünteti a pozíciót. A jogszabály elfogadása MÉG NEM egyenlő a tényleges távozással: ha a cikk azt írja, hogy a mandátum "a hatálybalépést követő napon szűnik meg", vagy aláírásra/kihirdetésre vár, akkor az érintett MÉG hivatalban van — ez isResignation=false, még akkor is, ha a szavazás/elfogadás múlt idejű.
 
 KRITIKUS — ki hagyja el a pozíciót vs. ki hozza a döntést:
 - A "felmentette X az Y-t" mondatban Y hagyja el a pozícióját (nem X)
