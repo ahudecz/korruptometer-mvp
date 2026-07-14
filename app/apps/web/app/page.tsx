@@ -889,20 +889,6 @@ export default async function HomePage() {
             articles: mnbArticles.map(a => ({ ...a })),
           },
           {
-            id: 'zsolt-bacsi',
-            eyebrow: 'Parlamenti vizsgálóbizottság alakult',
-            title: 'Ki az a Zsolt bácsi?',
-            videoId: 'QXW84vh1hV8',
-            summary: '"Zsolt bácsi" a NER egyházi szárnyának feje — ő koordinálta az egyházi ingatlan-visszaadások, az aránytalanul magas egyházi normatívák és a KDNP mint Fidesz-mellékvállalkozás egész rendszerét. Az Országgyűlés 2026-ban vizsgálóbizottságot alakított az egyházi finanszírozási rendszer átvilágítására.',
-            statusItems: [
-              { icon: '🏛️', label: 'Parlamenti vizsgálóbizottság', value: 'Az Országgyűlés vizsgálóbizottságot alakított az egyházi finanszírozási rendszer átvilágítására' },
-              { icon: '⛪', label: 'Egyházi normatíva-különbözet', value: '30–40%-kal több, mint állami iskoláknak · évente több tízmilliárd Ft' },
-              { icon: '🏠', label: 'Ingatlanvisszaadás', value: 'Milliárd négyzetméternyi állami ingatlan egyházaknak — sokszor bizonyítatlan igény alapján' },
-            ],
-            moreUrl: '/ugyek/zsolt-bacsi',
-            articles: [],
-          },
-          {
             id: 'pecsi-volvo-gate',
             eyebrow: 'Aktív · Újabb nyomozás indult',
             title: 'Pécsi Volvo-gate',
