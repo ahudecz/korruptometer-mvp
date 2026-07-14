@@ -45,6 +45,17 @@ export async function answerCallbackQuery(callbackQueryId: string, text?: string
   });
 }
 
+export async function pinChatMessage(messageId: number): Promise<void> {
+  const base = apiBase();
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!base || !chatId) return;
+  await fetch(`${base}/pinChatMessage`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, message_id: messageId, disable_notification: true }),
+  });
+}
+
 export async function editMessageReplyMarkup(
   chatId: string | number,
   messageId: number,

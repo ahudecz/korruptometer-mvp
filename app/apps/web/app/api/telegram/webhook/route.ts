@@ -1,13 +1,14 @@
 import 'server-only';
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
-import { eq, sql } from 'drizzle-orm';
+import { desc, eq, ilike, inArray, sql } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 import { answerCallbackQuery, editMessageReplyMarkup, sendTelegramMessage, type InlineKeyboardMarkup } from '@/lib/telegram';
 import { DETECTOR_PROCESSORS, type ArticleForReprocess } from '@/lib/telegram-review-actions';
 import type { DetectorType } from '@korr/db';
 import { canonicalUrl, dedupHash, fetchPrimaryArticle, getAdapter, routeOutletByUrl } from '@korr/scrapers';
+import { WATCH_LIST } from '@app/_home/watchlist-config';
 
 // Legvégső fallback-név (csak akkor, ha a beküldött szöveg URL-nek NÉZETT ki
 // a regexben, de a new URL() mégis elhasal rajta — gyakorlatilag sosem fordul
@@ -54,6 +55,131 @@ const NEWS_ONLY_TAG: Record<DetectorType, string> = {
   court_verdict: 'Ítélet',
   asset_recovery: 'Vagyonvisszaszerzés',
 };
+
+// ── 2026-07-14 — "Név - kategória - visszavonás" kézi visszavonó parancs.
+// A user gépközel nélkül is elé tudja állítani a törlést, ha bármi miatt
+// (pl. deploy-lag, gate-hiba) nem jött normál review/auto-publish üzenet.
+// Sosem töröl szöveg alapján közvetlenül — mindig egy jelölt-listát küld
+// vissza gombokkal ("d:{kód}:{id}"), a tényleges törlés csak gombnyomásra
+// történik. Ugyanazt a "töröl, nem reviewStatus='rejected'" logikát
+// használja, mint a meglévő Visszavonás gombok (l. setPendingStatus komment).
+const REVOKE_TRIGGER = /visszavon/i;
+
+const CATEGORY_HINTS: Array<{ keywords: string[]; code: string }> = [
+  { keywords: ['lemond', 'kirúg', 'kirug', 'felment'], code: 'r' },
+  { keywords: ['megszűn', 'megszun', 'médium', 'medium'], code: 'm' },
+  { keywords: ['ítélet', 'itelet', 'bírósági', 'birosagi', 'verdikt'], code: 'c' },
+  { keywords: ['vagyon'], code: 'x' },
+  { keywords: ['watchlist', 'kiemelt', 'eltávolít', 'eltavolit'], code: 'w' },
+];
+
+const DELETE_CODE_TABLE: Record<string, DetectorType | 'watchlist_removal'> = {
+  r: 'resignation',
+  m: 'media_closure',
+  c: 'court_verdict',
+  x: 'asset_recovery',
+  w: 'watchlist_removal',
+};
+
+function matchCategoryHint(text: string): string | null {
+  const t = text.toLowerCase();
+  for (const h of CATEGORY_HINTS) {
+    if (h.keywords.some((k) => t.includes(k))) return h.code;
+  }
+  return null;
+}
+
+function parseRevokeCommand(text: string): { nameQuery: string; categoryCode: string | null } | null {
+  if (!REVOKE_TRIGGER.test(text)) return null;
+  const parts = text.split(/[-–—]/).map((p) => p.trim()).filter(Boolean);
+  const withoutTrigger = parts.filter((p) => !REVOKE_TRIGGER.test(p));
+  const nameQuery = withoutTrigger[0];
+  if (!nameQuery) return null;
+  const categoryCode = matchCategoryHint(withoutTrigger.slice(1).join(' '));
+  return { nameQuery, categoryCode };
+}
+
+function fmtDateShort(d: Date | string): string {
+  const date = typeof d === 'string' ? new Date(d) : d;
+  return date.toLocaleDateString('hu-HU');
+}
+
+type RevokeCandidate = { code: string; id: string; label: string };
+
+async function searchResignations(q: string): Promise<RevokeCandidate[]> {
+  const rows = await getDb()
+    .select({ id: schema.politicalResignations.id, name: schema.politicalResignations.name, institution: schema.politicalResignations.institution, resignationDate: schema.politicalResignations.resignationDate })
+    .from(schema.politicalResignations)
+    .where(ilike(schema.politicalResignations.name, `%${q}%`))
+    .orderBy(desc(schema.politicalResignations.createdAt))
+    .limit(5);
+  return rows.map((r) => ({ code: 'r', id: r.id, label: `${r.name} — ${r.institution} (${fmtDateShort(r.resignationDate)})` }));
+}
+
+async function searchMediaClosures(q: string): Promise<RevokeCandidate[]> {
+  const rows = await getDb()
+    .select({ id: schema.mediaClosures.id, name: schema.mediaClosures.name, eventDate: schema.mediaClosures.eventDate })
+    .from(schema.mediaClosures)
+    .where(ilike(schema.mediaClosures.name, `%${q}%`))
+    .orderBy(desc(schema.mediaClosures.createdAt))
+    .limit(5);
+  return rows.map((r) => ({ code: 'm', id: r.id, label: `${r.name} (${fmtDateShort(r.eventDate)})` }));
+}
+
+async function searchCourtVerdicts(q: string): Promise<RevokeCandidate[]> {
+  const rows = await getDb()
+    .select({ id: schema.courtVerdicts.id, personName: schema.courtVerdicts.personName, verdictType: schema.courtVerdicts.verdictType, verdictDate: schema.courtVerdicts.verdictDate })
+    .from(schema.courtVerdicts)
+    .where(ilike(schema.courtVerdicts.personName, `%${q}%`))
+    .orderBy(desc(schema.courtVerdicts.createdAt))
+    .limit(5);
+  return rows.map((r) => ({ code: 'c', id: r.id, label: `${r.personName} — ${r.verdictType} (${fmtDateShort(r.verdictDate)})` }));
+}
+
+async function searchAssetRecoveries(q: string): Promise<RevokeCandidate[]> {
+  const rows = await getDb()
+    .select({ id: schema.assetRecoveries.id, caseLabel: schema.assetRecoveries.caseLabel, recoveredAt: schema.assetRecoveries.recoveredAt })
+    .from(schema.assetRecoveries)
+    .where(ilike(schema.assetRecoveries.caseLabel, `%${q}%`))
+    .orderBy(desc(schema.assetRecoveries.createdAt))
+    .limit(5);
+  return rows.map((r) => ({ code: 'x', id: r.id, label: `${r.caseLabel} (${fmtDateShort(r.recoveredAt)})` }));
+}
+
+async function searchWatchlistRemovals(q: string): Promise<RevokeCandidate[]> {
+  const matchedPersons = WATCH_LIST.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()));
+  if (matchedPersons.length === 0) return [];
+  const rows = await getDb()
+    .select({ id: schema.watchlistRemovals.id, personId: schema.watchlistRemovals.personId, removalType: schema.watchlistRemovals.removalType, sourceDateLabel: schema.watchlistRemovals.sourceDateLabel })
+    .from(schema.watchlistRemovals)
+    .where(inArray(schema.watchlistRemovals.personId, matchedPersons.map((p) => p.id)));
+  return rows.map((r) => {
+    const person = matchedPersons.find((p) => p.id === r.personId);
+    return { code: 'w', id: r.id, label: `${person?.name ?? r.personId} — ${r.removalType} (${r.sourceDateLabel ?? '?'})` };
+  });
+}
+
+async function searchRevokeCandidates(nameQuery: string, categoryCode: string | null): Promise<RevokeCandidate[]> {
+  const searchers: Record<string, () => Promise<RevokeCandidate[]>> = {
+    r: () => searchResignations(nameQuery),
+    m: () => searchMediaClosures(nameQuery),
+    c: () => searchCourtVerdicts(nameQuery),
+    x: () => searchAssetRecoveries(nameQuery),
+    w: () => searchWatchlistRemovals(nameQuery),
+  };
+  if (categoryCode && searchers[categoryCode]) return searchers[categoryCode]();
+  const all = await Promise.all(Object.values(searchers).map((fn) => fn()));
+  return all.flat().slice(0, 8);
+}
+
+async function deleteByCode(target: DetectorType | 'watchlist_removal', id: string): Promise<void> {
+  const db = getDb();
+  if (target === 'resignation') await db.delete(schema.politicalResignations).where(eq(schema.politicalResignations.id, id));
+  else if (target === 'media_closure') await db.delete(schema.mediaClosures).where(eq(schema.mediaClosures.id, id));
+  else if (target === 'court_verdict') await db.delete(schema.courtVerdicts).where(eq(schema.courtVerdicts.id, id));
+  else if (target === 'asset_recovery') await db.delete(schema.assetRecoveries).where(eq(schema.assetRecoveries.id, id));
+  else await db.delete(schema.watchlistRemovals).where(eq(schema.watchlistRemovals.id, id));
+}
 
 type TelegramUpdate = {
   callback_query?: {
@@ -335,6 +461,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true }); // ismeretlen chat — csendben eldobva
     }
 
+    const revoke = msg.text ? parseRevokeCommand(msg.text) : null;
+    if (revoke) {
+      const candidates = await searchRevokeCandidates(revoke.nameQuery, revoke.categoryCode);
+      if (candidates.length === 0) {
+        await sendTelegramMessage(`Nem találtam egyezést erre: "${revoke.nameQuery}".`);
+      } else {
+        const keyboard: InlineKeyboardMarkup = {
+          inline_keyboard: candidates.map((c) => [{ text: `🗑️ ${c.label}`, callback_data: `d:${c.code}:${c.id}` }]),
+        };
+        await sendTelegramMessage(`Találatok "${revoke.nameQuery}"-ra — válaszd ki, mit töröljek:`, keyboard);
+      }
+      return NextResponse.json({ ok: true });
+    }
+
     const url = msg.text ? firstUrl(msg.text) : null;
     if (!url) {
       return NextResponse.json({ ok: true }); // nincs URL a szövegben — nem érdekel minket
@@ -393,6 +533,28 @@ export async function POST(req: Request) {
     } catch (err) {
       await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
       console.error('[telegram-webhook] auto-publish action error', err);
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  // ── 2026-07-14 — "Név - kategória - visszavonás" keresés eredményéből
+  // választott törlés-gomb. Mindig törli a sort (nem reviewStatus='rejected',
+  // ua. indok mint a fenti 'v' ágnál). ──
+  if (action === 'd') {
+    const target = code ? DELETE_CODE_TABLE[code] : undefined;
+    if (!target || !id) {
+      await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
+      return NextResponse.json({ ok: true });
+    }
+    try {
+      await deleteByCode(target, id);
+      revalidatePublicPaths();
+      await answerCallbackQuery(cq.id, '🗑️ Törölve.');
+      const finalText = [cq.message.text ?? '', '🗑️ Törölve.'].filter(Boolean).join('\n\n');
+      await editMessageReplyMarkup(cq.message.chat.id, cq.message.message_id, finalText);
+    } catch (err) {
+      await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
+      console.error('[telegram-webhook] delete-by-search error', err);
     }
     return NextResponse.json({ ok: true });
   }
