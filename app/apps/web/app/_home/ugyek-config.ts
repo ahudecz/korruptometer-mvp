@@ -8,6 +8,8 @@ export interface BigCaseVideo {
   id: string;
   label: string;
   title: string;
+  featured?: boolean;
+  summary?: string;
 }
 
 export interface BigCaseRef {
@@ -111,7 +113,13 @@ export const UGYEK: UgyekConfig[] = [
       { id: 'vdNQGR9kzYk', label: 'ATV', title: 'NKA-botrány: Magyar Péter is megszólalt az ügyben' },
       { id: 'zAx4e6GhVQQ', label: 'ATV', title: '"Nagyon sok minden van, amiről nem tudunk" – Az NKA-botrány csak a jéghegy csúcsa?' },
       { id: 'lkFb77t0h-w', label: 'ATV', title: 'NKA-botrány: Tóth Gabi, Muri Enikő és Pataky Attila is komoly pénzeket kaphatott' },
-      { id: 'wKZSqY6168E', label: 'ATV', title: 'Megkérdeztük Fásy Ádámtól, kapott-e 101 millió forintot Fásy Zsüliett az NKA-tól' },
+      {
+        id: 'wKZSqY6168E',
+        label: 'ATV',
+        title: 'Megkérdeztük Fásy Ádámtól, kapott-e 101 millió forintot Fásy Zsüliett az NKA-tól',
+        featured: true,
+        summary: 'Az ATV Fásy Ádámot kereste meg azzal a felvetéssel, hogy lánya, Fásy Zsüliett cége összesen 101 millió forintnyi NKA-támogatást kapott — a kifizetés így az NKA-botrány egyre bővülő érintetti listájára került.',
+      },
     ],
     statusItems: [
       { icon: '🔴', label: 'Őrizetbe vétel', value: '6 személy előzetesben — köztük Bús Balázs volt óbudai polgármester (jún. 23.)' },

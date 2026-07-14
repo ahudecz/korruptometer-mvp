@@ -9750,6 +9750,60 @@ body:has(.admin-nav) > main {
   line-height: 1.35;
 }
 
+/* Featured video row — large, paired tiles above the regular grid so a
+   lone featured video never sits next to a mismatched empty gap */
+.ugy-extra-videos-featured-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px 20px;
+  margin-bottom: 24px;
+}
+.ugy-extra-video--hero {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+.ugy-extra-video--companion {
+  grid-column: 2;
+}
+.ugy-extra-video--hero .ugy-extra-video-title {
+  font-size: clamp(19px, 2.4vw, 23px);
+  line-height: 1.25;
+}
+.ugy-extra-video-summary {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 6px 0 0;
+}
+.ugy-extra-video-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--accent, #e31937);
+  padding: 3px 8px;
+  border-radius: 999px;
+  margin-bottom: 2px;
+}
+.ugy-extra-video--featured .ugy-extra-video-wrap {
+  border: 2px solid var(--accent, #e31937);
+}
+@media (max-width: 640px) {
+  .ugy-extra-videos-featured-grid {
+    grid-template-columns: 1fr;
+  }
+  .ugy-extra-video--hero,
+  .ugy-extra-video--companion {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
 /* Description */
 .ugy-description {
 }

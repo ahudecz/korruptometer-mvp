@@ -4,7 +4,7 @@ import { desc, ilike, like, or, and, eq, type SQL } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
 import { getDb, schema } from '@/lib/db';
-import { UGYEK, type DescriptionBlock, type BreakingGroupArticle } from '../../_home/ugyek-config';
+import { UGYEK, type DescriptionBlock, type BreakingGroupArticle, type BigCaseVideo } from '../../_home/ugyek-config';
 import { GALERIA } from '../../_home/galeria-config';
 import { WATCH_LIST } from '../../_home/watchlist-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../_home/cross-promo';
@@ -178,6 +178,28 @@ function DescBlock({ block }: { block: DescriptionBlock }) {
   }
 }
 
+function ExtraVideoTile({ video, variant }: { video: BigCaseVideo; variant?: 'hero' | 'companion' }) {
+  const variantClass = variant === 'hero' ? ' ugy-extra-video--hero' : variant === 'companion' ? ' ugy-extra-video--companion' : '';
+  return (
+    <div className={`ugy-extra-video${variantClass}${video.featured ? ' ugy-extra-video--featured' : ''}`}>
+      <div className="ugy-extra-video-meta">
+        {video.featured && <span className="ugy-extra-video-badge">⭐ Kiemelt</span>}
+        <span className="ugy-extra-video-label">{video.label}</span>
+        <span className="ugy-extra-video-title">{video.title}</span>
+        {video.summary && <p className="ugy-extra-video-summary">{video.summary}</p>}
+      </div>
+      <div className="ugy-extra-video-wrap">
+        <iframe
+          src={`https://www.youtube.com/embed/${video.id}`}
+          title={video.title}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    </div>
+  );
+}
+
 function imgSrc(url: string): string {
   if (url.startsWith('/') || url.includes('wikimedia.org')) return url;
   return `/api/img-proxy?url=${encodeURIComponent(url)}`;
@@ -240,6 +262,16 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
     : [];
 
   const descParagraphs = entry.descriptionBlocks ? [] : entry.description.split('\n\n').filter(Boolean);
+
+  // The first featured video becomes a large "hero" tile; the next two
+  // videos (whatever they are) fill in beside it at their normal size,
+  // stacked, so the hero's height isn't left with dead space next to it.
+  const allVideos = entry.additionalVideos ?? [];
+  const heroIndex = allVideos.findIndex(v => v.featured);
+  const heroVideo = heroIndex !== -1 ? allVideos[heroIndex] : null;
+  const nonHeroVideos = heroIndex !== -1 ? allVideos.filter((_, i) => i !== heroIndex) : allVideos;
+  const companionVideos = heroVideo ? nonHeroVideos.slice(0, 2) : [];
+  const restVideos = heroVideo ? nonHeroVideos.slice(2) : nonHeroVideos;
 
   // Build related persons list: match relatedPersonIds against galeria + watchlist
   const relatedPersons = (entry.relatedPersonIds ?? []).map(pid => {
@@ -349,24 +381,21 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
         {entry.additionalVideos && entry.additionalVideos.length > 0 && (
           <div className="ugy-extra-videos">
             <h2 className="person-section-title">Kapcsolódó videók</h2>
-            <div className="ugy-extra-videos-grid">
-              {entry.additionalVideos.map(v => (
-                <div key={v.id} className="ugy-extra-video">
-                  <div className="ugy-extra-video-meta">
-                    <span className="ugy-extra-video-label">{v.label}</span>
-                    <span className="ugy-extra-video-title">{v.title}</span>
-                  </div>
-                  <div className="ugy-extra-video-wrap">
-                    <iframe
-                      src={`https://www.youtube.com/embed/${v.id}`}
-                      title={v.title}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+            {heroVideo && (
+              <div className="ugy-extra-videos-featured-grid">
+                <ExtraVideoTile video={heroVideo} variant="hero" />
+                {companionVideos.map(v => (
+                  <ExtraVideoTile key={v.id} video={v} variant="companion" />
+                ))}
+              </div>
+            )}
+            {restVideos.length > 0 && (
+              <div className="ugy-extra-videos-grid">
+                {restVideos.map(v => (
+                  <ExtraVideoTile key={v.id} video={v} />
+                ))}
+              </div>
+            )}
           </div>
         )}
 
