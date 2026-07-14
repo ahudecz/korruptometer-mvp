@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { desc, ilike, like, or, and, eq, type SQL } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
 import { getDb, schema } from '@/lib/db';
-import { UGYEK, type DescriptionBlock, type BreakingGroupArticle, type BigCaseVideo } from '../../_home/ugyek-config';
+import { UGYEK, UGYEK_REDIRECTS, type DescriptionBlock, type BreakingGroupArticle, type BigCaseVideo } from '../../_home/ugyek-config';
 import { GALERIA } from '../../_home/galeria-config';
 import { WATCH_LIST } from '../../_home/watchlist-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../_home/cross-promo';
@@ -211,6 +211,7 @@ export async function generateStaticParams() {
 
 export default async function UgyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  if (UGYEK_REDIRECTS[id]) redirect(`/ugyek/${UGYEK_REDIRECTS[id]}`);
   const entry = UGYEK.find((e) => e.id === id);
   if (!entry) notFound();
 
@@ -221,7 +222,7 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
   const photoUrl = galeriaEntry?.photoUrl ?? entry.photo;
   const photoCredit = galeriaEntry?.photoCredit ?? entry.photoCredit;
   const photoPosition = entry.photoPosition;
-  const isZsoltBacsi = entry.id === 'zsolt-bacsi';
+  const isZsoltBacsi = entry.id === 'ki-az-a-zsolt-bacsi';
   const initials = entry.responsible?.split(' ').slice(0, 2).map(w => w[0]).join('') ?? '?';
   const badgeColor = entry.eyebrow.toLowerCase().includes('aktív') ? '#e31937'
     : entry.eyebrow.toLowerCase().includes('vizsgálóbizottság') ? '#1d4ed8'

@@ -18,7 +18,7 @@ function UgyekDetail({ entry }: { entry: typeof UGYEK[number] }) {
 
   const photoUrl = galeriaEntry?.photoUrl ?? entry.photo;
   const photoCredit = galeriaEntry?.photoCredit ?? entry.photoCredit;
-  const isZsoltBacsi = entry.id === 'zsolt-bacsi';
+  const isZsoltBacsi = entry.id === 'ki-az-a-zsolt-bacsi';
   const initials = entry.responsible?.split(' ').slice(0, 2).map((w: string) => w[0]).join('') ?? '?';
   const badgeColor = entry.eyebrow.toLowerCase().includes('aktív') ? '#e31937'
     : entry.eyebrow.toLowerCase().includes('vizsgálóbizottság') ? '#1d4ed8'

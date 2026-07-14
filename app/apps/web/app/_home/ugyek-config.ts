@@ -78,6 +78,13 @@ export interface UgyekConfig {
 // A „Zsolti bácsi" egy különálló személy egy gyermekvédelmi botránnyal összefüggésben.
 const _ZSOLT_BACSI_SEMJEN_GUARD = null; // intentionally unused — marker comment only
 
+// Old /ugyek/<id> slugs that now redirect to a renamed canonical id — e.g.
+// 2026-07-14: 'zsolt-bacsi' -> 'ki-az-a-zsolt-bacsi' for SEO (matches the
+// actual search phrase people use). See [id]/page.tsx for the redirect().
+export const UGYEK_REDIRECTS: Record<string, string> = {
+  'zsolt-bacsi': 'ki-az-a-zsolt-bacsi',
+};
+
 export const UGYEK: UgyekConfig[] = [
   {
     id: 'nka-botrany',
@@ -985,7 +992,7 @@ Az MNB-botrány különlegessége, hogy egy törvényileg autonóm intézmény �
     // JOGI FIGYELMEZTETÉS: Ez az ügy NEM Semjén Zsolt személyéről szól.
     // „Zsolti bácsi" egy gyermekvédelmi intézménnyel kapcsolatos külön személy.
     // Semjén Zsolt neve TILOS ebben a bejegyzésben szerepelni bármilyen formában.
-    id: 'zsolt-bacsi',
+    id: 'ki-az-a-zsolt-bacsi',
     eyebrow: 'Aktív · Nyomozás folyamatban',
     title: 'Ki az a Zsolti bácsi?',
     responsible: 'Ismeretlen személy',
@@ -1002,7 +1009,7 @@ Az MNB-botrány különlegessége, hogy egy törvényileg autonóm intézmény �
     ],
     relatedPersonIds: [],
     articleKeywords: ['zsolti bácsi', 'zsolt bácsi', 'szőlő utca', 'szőlő utcai'],
-    moreUrl: '/ugyek/zsolt-bacsi',
+    moreUrl: '/ugyek/ki-az-a-zsolt-bacsi',
     summary: 'A „Zsolti bácsi"-ügy egy gyermekvédelmi intézménnyel összefüggő bántalmazási botrány, amelynek koronatanúja vallomást tett a Szőlő utcai ügy eljárása során. A kormány — miután az ügy nyilvánosságra került — ellentámadásba lendült. Az eljárás folyamatban van.',
     videoId: 'oa5h1wi3FSo',
     videoChannel: '',
