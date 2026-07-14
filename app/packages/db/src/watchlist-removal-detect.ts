@@ -80,6 +80,20 @@ KRITIKUS IDŐSÍK-MEGKÜLÖNBÖZTETÉS:
 - Ha bizonytalan vagy vegyes a megfogalmazás, NE fogadd el — inkább hagyd ki, mint hogy
   téves riasztást adj.
 
+KRITIKUS SZEMÉLY-AZONOSÍTÁS (ki mondott le, nem csak kinek a neve szerepel a cikkben):
+- A cikk-kereső kulcsszavas előszűrés (pl. "Polt Péter") CSAK azt garantálja, hogy a név
+  valahol SZEREPEL a cikkben — azt NEM, hogy a vizsgált személy ÖNMAGA veszítette el a
+  pozícióját. Magyar birtokos szerkezetek miatt egy cím tartalmazhatja a nevet úgy is, hogy
+  valójában egy HOZZÁTARTOZÓJÁRÓL (felesége/férje/lánya/fia/testvére stb.) szól — pl.
+  "Polt Péter FELESÉGE mondott le", "X ÉDESAPJÁT mentették fel" — ezek NEM számítanak a
+  vizsgált személy távozásának, akkor sem, ha a vizsgált személy neve szó szerint benne van
+  a címben.
+- Mielőtt bármely cikket elfogadsz, ellenőrizd: a cikk kifejezetten azt állítja-e, hogy MAGA
+  a lent megadott "Vizsgált személy" (nem egy hozzátartozója, nem egy vele egy intézményben
+  dolgozó más személy) veszítette el a pozícióját. Ha a cikk egy családtagról vagy más
+  személyről szól, és a vizsgált személy csak említésként/kontextusként szerepel, EXCLUDE-old
+  — ezt írd is a reason mezőbe.
+
 Csak a ténylegesen megerősítő cikkek id-jét told a confirmedArticleIds listába.`;
 
 export async function checkRemoval(
