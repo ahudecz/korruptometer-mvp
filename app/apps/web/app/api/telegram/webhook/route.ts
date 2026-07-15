@@ -403,6 +403,7 @@ function revalidatePublicPaths() {
   revalidatePath('/lemondasok');
   revalidatePath('/megszunt');
   revalidatePath('/birosagi-iteletek');
+  revalidatePath('/podcastok');
 }
 
 /**
@@ -562,6 +563,64 @@ export async function POST(req: Request) {
     } catch (err) {
       await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
       console.error('[telegram-webhook] delete-by-search error', err);
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  // ── 2026-07-15 — "legfrissebb podcastok" (YouTube-videó) jóváhagyás. Külön
+  // ág a DETECTOR_BY_CODE gépezettől: a PodcastVideo nem NewsArticle-ből
+  // származtatott struktúra (nincs findPendingRecord/near_miss fogalom — a
+  // sor már véglegesen be van szúrva a scrape-youtube.ts jobban belül,
+  // KÉTFÉLE állapotban: 'pending' — AI-bizonytalan, tényleges jóváhagyásra
+  // vár; vagy MÁR 'approved' — topikailag rendben van, csak a nézettségi
+  // küszöböt nem érte el, de "breaking"-nek tűnik (l. notify.ts
+  // notifyPodcastBreakingBelowThreshold). A két eset "Elutasítom" gombja nem
+  // ugyanazt jelenti — ezért a jelenlegi reviewStatus-t előbb ki kell
+  // olvasni: ha már 'approved', az elutasítás csak nyugtázás (nem vonja
+  // vissza egy már legitim jóváhagyást), csak a 'pending' esetben tényleges
+  // elutasítás. Elutasításkor SZÁNDÉKOSAN nem töröljük a sort (ellentétben a
+  // többi detektorral, l. setPendingStatus komment) — a videoId UNIQUE
+  // constraint az egyetlen dedup-mechanizmus az RSS-újrafelfedezés ellen;
+  // törléskor a csatorna RSS-je minden óránkénti pollnál újra felfedezné és
+  // újra Telegramra küldené ugyanazt a videót.
+  if (code === 'y') {
+    if ((action !== 'a' && action !== 'r') || !id) {
+      await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
+      return NextResponse.json({ ok: true });
+    }
+    try {
+      let resultText: string;
+      if (action === 'a') {
+        await getDb()
+          .update(schema.podcastVideos)
+          .set({ reviewStatus: 'approved', viewThresholdMet: true, updatedAt: new Date() })
+          .where(eq(schema.podcastVideos.id, id));
+        resultText = '✅ Jóváhagyva.';
+      } else {
+        const rows = await getDb()
+          .select({ reviewStatus: schema.podcastVideos.reviewStatus })
+          .from(schema.podcastVideos)
+          .where(eq(schema.podcastVideos.id, id))
+          .limit(1);
+        if (rows[0]?.reviewStatus === 'approved') {
+          // Már topikailag jóváhagyott (breaking-below-threshold eset) —
+          // az "Elutasítom" itt csak nyugtázás, nem von vissza semmit.
+          resultText = '👍 Nyugtázva — várunk a nézettségi küszöbre.';
+        } else {
+          await getDb()
+            .update(schema.podcastVideos)
+            .set({ reviewStatus: 'rejected', updatedAt: new Date() })
+            .where(eq(schema.podcastVideos.id, id));
+          resultText = '❌ Elutasítva.';
+        }
+      }
+      revalidatePublicPaths();
+      await answerCallbackQuery(cq.id, resultText);
+      const finalText = [cq.message.text ?? '', resultText].filter(Boolean).join('\n\n');
+      await editMessageReplyMarkup(cq.message.chat.id, cq.message.message_id, finalText);
+    } catch (err) {
+      await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
+      console.error('[telegram-webhook] podcast-video action error', err);
     }
     return NextResponse.json({ ok: true });
   }

@@ -1048,6 +1048,179 @@ button {
   transform: translateX(4px);
 }
 
+/* ── Podcasts (YouTube) ── */
+.podcast-section-wrap {
+  background: var(--surface);
+  position: relative;
+  border-top: 1px solid var(--line);
+}
+.podcast-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.podcast-card {
+  display: flex;
+  flex-direction: column;
+}
+.podcast-video-wrap {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  background: #111;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.podcast-video-wrap iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+.podcast-play-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: #111;
+}
+.podcast-thumb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+}
+.podcast-play-overlay:hover .podcast-thumb {
+  opacity: 1;
+}
+.podcast-play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+.podcast-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  margin-bottom: 6px;
+}
+.podcast-channel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.podcast-time {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+.podcast-title {
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0;
+  /* Rögzített, PONTOSAN 2 soros magasság (nem a tényleges cím-hossztól
+     függő) — ez teszi lehetővé, hogy a hero videó alja pixelre pontosan a
+     kísérő-oszlop aljához igazodjon (l. .podcast-card.podcast-hero
+     .podcast-video-wrap lentebb): a szöveg-zóna magassága determinisztikus,
+     ugyanaz hero és companion kártyán is. A line-clamp önmagában csak
+     MAXIMUM 2 sort enged, de egy rövidebb (1 sorba beférő) cím esetén a
+     doboz összezsugorodna — a min-height em-ben (nem px-ben) kényszeríti ki
+     mindig a teljes 2 sornyi helyet, a helyi (akár nagyobb, kiemelt-rácsos)
+     betűmérethez igazodva is. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.6em;
+}
+/* Kiemelt videó + kísérők — ugyanaz a hero/companion rács-minta, mint a
+   /ugyek/[id] "Kapcsolódó videók" szekciója (.ugy-extra-videos-featured-grid),
+   hogy a kiemelt videó ne legyen full-width, hanem mellette kisebb
+   méretben álljanak további videók. */
+.podcast-featured-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px 20px;
+  margin-bottom: 28px;
+}
+.podcast-card.podcast-hero {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+.podcast-card.podcast-companion {
+  grid-column: 2;
+}
+/* A hero cím és a kísérők címe SZÁNDÉKOSAN ugyanazt a betűméretet kapja itt
+   — nem azért, mert egyformán kicsik, hanem mert az igazítás (l. lentebb a
+   .podcast-video-wrap flex-szabályt) attól működik, hogy a két szöveg-zóna
+   magassága EGYEZIK, nem attól, hogy KICSI. Ha csak a hero címét
+   növelnénk, a szöveg-zónája nagyobb lenne, mint egy kísérőé, és a videó
+   alja elcsúszna a kísérő-oszlop aljától. Mivel mindkettő ugyanezt a
+   szabályt örökli, bármekkora méretre állítjuk, az igazítás magától
+   megmarad — nem kell 2x-es szorzóval kompenzálni a hero oldalán. */
+.podcast-featured-grid .podcast-title {
+  font-size: 19px;
+  line-height: 1.3;
+}
+.podcast-featured-grid .podcast-channel {
+  font-size: 11px;
+}
+.podcast-featured-grid .podcast-time {
+  font-size: 12px;
+}
+
+/* A grid a kártya TELJES magasságát már egyezteti (stretch), de a videó-kép
+   alja korábban nem esett egybe a két kísérő aljával — a hero videója a
+   saját szélessége alapján számolt fix 16:9 magasságot vett fel
+   (padding-bottom trükk), a kísérő-oszlop pedig ennél kicsit magasabbra jött
+   ki (2 videó + 2 feliratsor). Itt a hero videója rugalmasan tölti ki a
+   kártyán belül a cím/csatorna-sor FÖLÖTT maradó teljes helyet — pontosan a
+   kísérő-oszlop aljáig ér, nem csak a kártya-keret aljáig. */
+.podcast-card.podcast-hero .podcast-video-wrap {
+  flex: 1 1 auto;
+  padding-bottom: 0;
+}
+@media (max-width: 640px) {
+  .podcast-featured-grid {
+    grid-template-columns: 1fr;
+  }
+  .podcast-card.podcast-hero,
+  .podcast-card.podcast-companion {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  /* Mobilon a hero már nem osztozik magasságban a kísérőkkel (egymás alatt
+     görgetve jelennek meg) — vissza a normál 16:9 arányra. */
+  .podcast-card.podcast-hero .podcast-video-wrap {
+    flex: none;
+    padding-bottom: 56.25%;
+  }
+}
+
 /* ============ MOBILE PREVIEW ============ */
 .mobile-section {
   background: var(--ink);
@@ -5759,6 +5932,9 @@ button {
     grid-row: span 1;
     grid-column: span 2;
   }
+  .podcast-grid {
+    grid-template-columns: 1fr 1fr;
+  }
   .db-controls {
     grid-template-columns: 1fr 1fr;
   }
@@ -5877,6 +6053,9 @@ button {
   }
   .news-card.feature {
     grid-column: span 1;
+  }
+  .podcast-grid {
+    grid-template-columns: 1fr;
   }
   .news-card-img {
     aspect-ratio: auto;

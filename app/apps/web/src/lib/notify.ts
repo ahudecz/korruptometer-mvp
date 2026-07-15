@@ -80,3 +80,70 @@ export async function notifyReviewNeeded(event: ReviewNeededEvent): Promise<void
     // Never let a notification-delivery problem affect the caller.
   }
 }
+
+/**
+ * 2026-07-15 — a videó topikailag MÁR jóváhagyott (reviewStatus='approved'),
+ * csak a csatorna nézettségi küszöbét nem érte még el, DE a rendszer
+ * "breaking"-nek ítéli (l. scrape-youtube.ts isBreaking-ellenőrzés). Ugyanazt
+ * az 'y' kódot/gombkészletet használja, mint notifyPodcastReviewNeeded, de a
+ * webhook "Elutasítom" gombja itt csak nyugtáz (nem töröl/utasít el egy már
+ * legitim jóváhagyást) — l. telegram/webhook/route.ts 'y' ág komment.
+ */
+export async function notifyPodcastBreakingBelowThreshold(video: {
+  id: string;
+  videoId: string;
+  title: string;
+  channelName: string;
+}): Promise<void> {
+  try {
+    const url = `https://www.youtube.com/watch?v=${video.videoId}`;
+    const message = [
+      `⚡ BREAKING, DE KÜSZÖB ALATT — Podcast/videó`,
+      `${video.channelName}: ${video.title}`,
+      `Nem érte el a csatorna nézettségi küszöbét, de fontosnak tűnik — kézzel korábban is publikálható.`,
+    ].join('\n');
+    const replyMarkup: InlineKeyboardMarkup = {
+      inline_keyboard: [
+        [{ text: '▶️ Megnézem', url }],
+        [
+          { text: '✅ Publikálom most', callback_data: `a:y:${video.id}` },
+          { text: '👍 Várunk a küszöbre', callback_data: `r:y:${video.id}` },
+        ],
+      ],
+    };
+    await sendTelegramMessage(message, replyMarkup);
+  } catch {
+    // Never let a notification-delivery problem affect the caller.
+  }
+}
+
+/**
+ * "legfrissebb podcastok" (YouTube-videó) review — külön, egyszerűbb ág a
+ * fenti notifyReviewNeeded-től: a PodcastVideo sor mindig már véglegesen be
+ * van szúrva reviewStatus='pending'-ként (nincs "near_miss": nem NewsArticle-
+ * ből származtatott struktúra, nincs mit újra-extraktálni), ezért csak egy
+ * approve/reject gomb kell, 'y' kód-betűvel (l. telegram/webhook/route.ts).
+ */
+export async function notifyPodcastReviewNeeded(video: {
+  id: string;
+  videoId: string;
+  title: string;
+  channelName: string;
+}): Promise<void> {
+  try {
+    const url = `https://www.youtube.com/watch?v=${video.videoId}`;
+    const message = [`🔔 ÁTNÉZENDŐ — Podcast/videó`, `${video.channelName}: ${video.title}`].join('\n');
+    const replyMarkup: InlineKeyboardMarkup = {
+      inline_keyboard: [
+        [{ text: '▶️ Megnézem', url }],
+        [
+          { text: '✅ Jóváhagyom', callback_data: `a:y:${video.id}` },
+          { text: '❌ Elutasítom', callback_data: `r:y:${video.id}` },
+        ],
+      ],
+    };
+    await sendTelegramMessage(message, replyMarkup);
+  } catch {
+    // Never let a notification-delivery problem affect the caller.
+  }
+}

@@ -14,6 +14,7 @@ import { kmonitorDiscoverTags } from './functions/kmonitor-discover-tags';
 import { kmonitorTraverseApprovedTags } from './functions/kmonitor-traverse-approved-tags';
 import { kmonitorTraverseTag } from './functions/kmonitor-traverse-tag';
 import { scrapeNews } from './functions/scrape-news';
+import { scrapeYoutube } from './functions/scrape-youtube';
 import { sealedBoxRotation } from './functions/sealed-box-rotation';
 import { submissionIntake } from './functions/submission-intake';
 import { submissionPublish } from './functions/submission-publish';
@@ -43,6 +44,7 @@ export { inngest } from './client';
  */
 export const functions = [
   scrapeNews,
+  scrapeYoutube,
   aggregateLinkArticles,
   aggregateKpiRollup,
   workerHeartbeat,

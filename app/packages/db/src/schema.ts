@@ -1522,6 +1522,39 @@ export const socialPosts = pgTable(
 export type SocialPost = typeof socialPosts.$inferSelect;
 export type NewSocialPost = typeof socialPosts.$inferInsert;
 
+// ─── Podcast Videos (YouTube) ─────────────────────────────────────────────────
+
+export const podcastVideos = pgTable(
+  'PodcastVideo',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    videoId: text('videoId').notNull().unique(),
+    channelSlug: text('channelSlug').notNull(),
+    channelName: text('channelName').notNull(),
+    title: text('title').notNull(),
+    description: text('description').notNull().default(''),
+    publishedAt: timestamp('publishedAt', { withTimezone: true }).notNull(),
+    viewCount: integer('viewCount'),
+    viewThresholdMet: boolean('viewThresholdMet').notNull().default(false),
+    lastViewCheckAt: timestamp('lastViewCheckAt', { withTimezone: true }),
+    reviewStatus: reviewStatusEnum('reviewStatus').notNull().default('pending'),
+    // Kézzel kitűzött "kiemelt" videó, időkorláttal (pl. "ez legyen a hero 1
+    // hétig") — a lekérdezés ezt részesíti előnyben a legfrissebb helyett,
+    // amíg a jövőben van; utána automatikusan visszaáll a normál sorrend.
+    pinnedUntil: timestamp('pinnedUntil', { withTimezone: true }),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    publishedAtIdx: index('PodcastVideo_publishedAt_idx').on(t.publishedAt),
+    reviewStatusIdx: index('PodcastVideo_reviewStatus_idx').on(t.reviewStatus),
+    pinnedUntilIdx: index('PodcastVideo_pinnedUntil_idx').on(t.pinnedUntil),
+  }),
+);
+
+export type PodcastVideo = typeof podcastVideos.$inferSelect;
+export type NewPodcastVideo = typeof podcastVideos.$inferInsert;
+
 // ─── Facebook Pages (sync target list) ───────────────────────────────────────
 
 export const facebookPages = pgTable(

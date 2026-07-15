@@ -31,7 +31,11 @@ const ContentSecurityPolicy = [
   isDev
     ? "connect-src 'self' http://127.0.0.1:54421 ws: http: https://*.supabase.co https://*.supabase.in https://challenges.cloudflare.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com"
     : "connect-src 'self' https://*.supabase.co https://*.supabase.in https://challenges.cloudflare.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com",
-  "img-src 'self' data: https://*.supabase.co https://*.google-analytics.com https://*.googletagmanager.com",
+  // i.ytimg.com: YouTube videó-thumbnailok a "legfrissebb podcastok" rács-
+  // kártyáin (podcast-video-card.tsx) — a lejátszás maga frame-src alá esik
+  // (fentebb, már engedélyezve), de a kattintás-előtti thumbnail-kép saját
+  // img-src szabályt igényel, különben a böngésző csendben blokkolja.
+  "img-src 'self' data: https://*.supabase.co https://*.google-analytics.com https://*.googletagmanager.com https://i.ytimg.com",
   "object-src 'none'",
 ];
 

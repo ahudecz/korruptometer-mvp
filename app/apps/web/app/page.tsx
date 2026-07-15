@@ -19,6 +19,7 @@ import { GALERIA, type GaleriaDetention, type GaleriaHair } from './_home/galeri
 import { UGYEK } from './_home/ugyek-config';
 import { autoDisplayTitle, getCaseDisplayTitle, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS, toAsciiId } from './_home/case-detail-config';
 import { NewsCardImage } from './hirek/news-card-image';
+import { PodcastVideoCard } from './_home/podcast-video-card';
 import { pickBreakingArticle } from '@/lib/breaking-pick';
 
 // force-dynamic. ISR (revalidate) was tried instead on 2026-07-08, on the
@@ -174,6 +175,33 @@ const getCachedRecentNews = unstable_cache(
     return rows.map(r => ({ ...r, publishedAt: r.publishedAt.toISOString() }));
   },
   ['recent-news-unfiltered'],
+  { revalidate: 60 },
+);
+// A "05 / Podcastok" blokk — csak a topikailag jóváhagyott ÉS a csatorna
+// nézettségi küszöbét elért videók (viewThresholdMet), l. scrape-youtube.ts.
+// Egy kézzel kitűzött (pinnedUntil a jövőben) videó mindig elöl áll,
+// függetlenül a saját publishedAt-jétől — utána a többi a szokásos
+// legfrissebb-elöl sorrendben. 1 hero + 2 companion + 6-os rács (2×3) = 9.
+const getCachedRecentPodcasts = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { and: andF, eq: eqF, desc: d, sql: s } = await import('drizzle-orm');
+    const db = getDb();
+    const rows = await db
+      .select({
+        id: schema.podcastVideos.id,
+        videoId: schema.podcastVideos.videoId,
+        title: schema.podcastVideos.title,
+        channelName: schema.podcastVideos.channelName,
+        publishedAt: schema.podcastVideos.publishedAt,
+      })
+      .from(schema.podcastVideos)
+      .where(andF(eqF(schema.podcastVideos.reviewStatus, 'approved'), eqF(schema.podcastVideos.viewThresholdMet, true)))
+      .orderBy(d(s`(${schema.podcastVideos.pinnedUntil} IS NOT NULL AND ${schema.podcastVideos.pinnedUntil} > now())`), d(schema.podcastVideos.publishedAt))
+      .limit(9);
+    return rows.map((r) => ({ ...r, publishedAt: r.publishedAt.toISOString() }));
+  },
+  ['recent-podcasts'],
   { revalidate: 60 },
 );
 const getCachedActiveBreaking = unstable_cache(
@@ -429,6 +457,7 @@ export default async function HomePage() {
     topResignations,
     allArticlesRaw,
     recentNewsRaw,
+    recentPodcastsRaw,
     resignationCountRaw,
     closureCountRaw,
     verdictCounts,
@@ -449,6 +478,7 @@ export default async function HomePage() {
     getCachedTopResignations(),
     getCachedAllArticles(),
     getCachedRecentNews(),
+    getCachedRecentPodcasts(),
     getCachedResignationCount(),
     getCachedClosureCount(),
     getCachedVerdictCounts(),
@@ -762,6 +792,54 @@ export default async function HomePage() {
           <Link href="/megszunt" className="btn-red">Összes megszűnt médium →</Link>
         </div>
       </section>
+
+      {/* ───── PODCASTS ───── */}
+      {recentPodcastsRaw.length > 0 && (
+        <div className="podcast-section-wrap">
+          <section className="section" id="podcastok">
+            <div className="section-head">
+              <div className="section-num">05 / Videóriportok és podcastok</div>
+              <h2 className="section-title">Amiről beszélni kell.</h2>
+            </div>
+            <div className="podcast-featured-grid">
+              <PodcastVideoCard
+                key={recentPodcastsRaw[0]!.id}
+                videoId={recentPodcastsRaw[0]!.videoId}
+                title={recentPodcastsRaw[0]!.title}
+                channelName={recentPodcastsRaw[0]!.channelName}
+                publishedAtLabel={fmtRelative(recentPodcastsRaw[0]!.publishedAt)}
+                variant="hero"
+              />
+              {recentPodcastsRaw.slice(1, 3).map((v) => (
+                <PodcastVideoCard
+                  key={v.id}
+                  videoId={v.videoId}
+                  title={v.title}
+                  channelName={v.channelName}
+                  publishedAtLabel={fmtRelative(v.publishedAt)}
+                  variant="companion"
+                />
+              ))}
+            </div>
+            {recentPodcastsRaw.length > 3 && (
+              <div className="podcast-grid">
+                {recentPodcastsRaw.slice(3).map((v) => (
+                  <PodcastVideoCard
+                    key={v.id}
+                    videoId={v.videoId}
+                    title={v.title}
+                    channelName={v.channelName}
+                    publishedAtLabel={fmtRelative(v.publishedAt)}
+                  />
+                ))}
+              </div>
+            )}
+            <div className="news-more-wrap">
+              <Link href="/podcastok" className="news-more-btn">Tovább az összes videóra →</Link>
+            </div>
+          </section>
+        </div>
+      )}
 
       {/* ───── ROGUES GALLERY ───── */}
       <section className="rogues" id="rogues">
