@@ -3,6 +3,7 @@ import { desc } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { UGYEK } from '../_home/ugyek-config';
 import { FtValue } from '../_home/ft-value';
+import { RecoveryRow, stopRowClick, type RecoveryRowTarget } from './recovery-row';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,16 +64,6 @@ export default async function VisszaszerzettVagyonPage({
   // A csík maga a valós %-ot mutatja, de kap egy minimális látható szélességet
   // (0,6%) is, hogy ne tűnjön el teljesen a sáv elején egy kis összegnél.
   const recoveryBarWidth = totalAll > 0n ? Math.min(100, Math.max(recoveryPct, 0.6)) : 0;
-
-  const thStyle = {
-    textAlign: 'left' as const,
-    padding: '10px 12px',
-    fontWeight: 700,
-    color: 'var(--ink)',
-    fontSize: 12,
-    letterSpacing: '0.08em',
-    textTransform: 'uppercase' as const,
-  };
 
   return (
     <div className="news-section-wrap">
@@ -202,34 +193,53 @@ export default async function VisszaszerzettVagyonPage({
           <div className="empty-state">Még nincs rögzített visszaszerzés.</div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', fontSize: '14px', lineHeight: '1.6', borderCollapse: 'collapse' }}>
+            <table className="db-table">
               <thead>
-                <tr style={{ borderBottom: '2px solid var(--line)' }}>
-                  <th style={thStyle}>Dátum</th>
-                  <th style={thStyle}>Ügy</th>
-                  <th style={thStyle}>Leírás</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Összeg</th>
-                  <th style={thStyle}>Forrás</th>
+                <tr>
+                  <th>Dátum</th>
+                  <th>Ügy</th>
+                  <th>Leírás</th>
+                  <th className="num">Összeg</th>
+                  <th>Forrás</th>
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r, i) => (
-                  <tr key={r.id} style={{ borderBottom: '1px solid var(--line)', background: i % 2 === 0 ? '#fff' : 'var(--surface)' }}>
-                    <td style={{ padding: '12px', color: 'var(--muted)', whiteSpace: 'nowrap' }}>{fmtDate(r.recoveredAt)}</td>
-                    <td style={{ padding: '12px', fontWeight: 600, color: 'var(--ink)' }}>{r.caseLabel}</td>
-                    <td style={{ padding: '12px', color: 'var(--muted)', maxWidth: 340 }}>{r.description}</td>
-                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 800, color: 'var(--accent)', whiteSpace: 'nowrap' }}><FtValue n={r.amountFt} /></td>
-                    <td style={{ padding: '12px' }}>
-                      {r.sourceUrl ? (
-                        <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--muted)', fontSize: 12 }}>
-                          {r.sourceName ?? 'Forrás'} →
-                        </a>
-                      ) : (
-                        <span style={{ color: 'var(--muted)', fontSize: 12 }}>—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                {rows.map((r) => {
+                  const ugy = UGYEK.find((u) => u.id === r.caseId);
+                  // Ha van ügy-végoldal, a sor oda visz — a forrás-cella
+                  // ilyenkor a kivétel, ami mégis a cikkre megy. Ha nincs
+                  // ügy-végoldal, a sor maga a cikkre visz (ha van forrás-URL).
+                  const target: RecoveryRowTarget = ugy
+                    ? { type: 'internal', href: `/ugyek/${r.caseId}` }
+                    : r.sourceUrl
+                      ? { type: 'external', href: r.sourceUrl }
+                      : { type: 'none' };
+                  return (
+                    <RecoveryRow key={r.id} target={target}>
+                      <td data-label="Dátum" style={{ color: 'var(--muted)', whiteSpace: 'nowrap' }}>{fmtDate(r.recoveredAt)}</td>
+                      <td data-label="Ügy">
+                        {ugy ? (
+                          <Link href={`/ugyek/${r.caseId}`} className="case-name" onClick={stopRowClick}>
+                            {r.caseLabel}
+                          </Link>
+                        ) : (
+                          <span className="case-name">{r.caseLabel}</span>
+                        )}
+                      </td>
+                      <td data-label="Leírás" style={{ color: 'var(--muted)', maxWidth: 340 }}>{r.description}</td>
+                      <td className="num db-damage-cell" data-label="Összeg"><FtValue n={r.amountFt} /></td>
+                      <td data-label="Forrás">
+                        {r.sourceUrl ? (
+                          <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer" onClick={stopRowClick} style={{ color: 'var(--muted)', fontSize: 12 }}>
+                            {r.sourceName ?? 'Forrás'} →
+                          </a>
+                        ) : (
+                          <span style={{ color: 'var(--muted)', fontSize: 12 }}>—</span>
+                        )}
+                      </td>
+                    </RecoveryRow>
+                  );
+                })}
               </tbody>
             </table>
           </div>
