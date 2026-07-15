@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 
 const HU_GIVEN_NAMES = new Set([
   'gyula', 'máté', 'andrás', 'gábor', 'józsef', 'zsolt', 'bálint',
@@ -54,6 +54,18 @@ const FIELD_STYLE: React.CSSProperties = {
   flexDirection: 'column',
 };
 
+const SEARCH_INPUT_STYLE: React.CSSProperties = {
+  border: '1px solid #d0d0d0',
+  borderRadius: 6,
+  color: '#111',
+  fontSize: 13,
+  fontFamily: 'inherit',
+  padding: '8px 12px',
+  minWidth: 220,
+  outline: 'none',
+  transition: 'border-color 0.15s',
+};
+
 export function NewsFilters({
   tags,
   outlets,
@@ -69,6 +81,10 @@ export function NewsFilters({
   const currentTag = sp.get('tag') ?? '';
   const currentOutlet = sp.get('outlet') ?? '';
   const currentFeatured = sp.get('featured') === '1';
+  const currentQ = sp.get('q') ?? '';
+
+  const [qInput, setQInput] = useState(currentQ);
+  useEffect(() => setQInput(currentQ), [currentQ]);
 
   function update(next: Record<string, string | undefined>) {
     const params = new URLSearchParams(sp.toString());
@@ -81,11 +97,21 @@ export function NewsFilters({
     });
   }
 
+  // Gépelés közben csak lokálisan tartjuk az állapotot, és 400ms csend után
+  // toljuk fel az URL-be — így nem indul kérés minden billentyűleütésre.
+  useEffect(() => {
+    if (qInput === currentQ) return;
+    const t = setTimeout(() => update({ q: qInput.trim() || undefined }), 400);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qInput]);
+
   function clearAll() {
+    setQInput('');
     startTransition(() => router.replace(pathname));
   }
 
-  const hasFilter = !!(currentTag || currentOutlet || currentFeatured);
+  const hasFilter = !!(currentTag || currentOutlet || currentFeatured || currentQ);
 
   return (
     <div
@@ -101,6 +127,18 @@ export function NewsFilters({
       role="region"
       aria-label="Hírszűrők"
     >
+      <div style={FIELD_STYLE}>
+        <label htmlFor="news-search" style={LABEL_STYLE}>Keresés</label>
+        <input
+          id="news-search"
+          type="search"
+          value={qInput}
+          onChange={(e) => setQInput(e.target.value)}
+          placeholder="Cím vagy szöveg…"
+          style={SEARCH_INPUT_STYLE}
+        />
+      </div>
+
       <div style={FIELD_STYLE}>
         <label htmlFor="news-outlet" style={LABEL_STYLE}>Forrás</label>
         <select

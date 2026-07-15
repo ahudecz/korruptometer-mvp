@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, ilike, or, sql, type SQL } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 
@@ -35,10 +35,19 @@ export default async function HirekPage({
   const sp = await searchParams;
   const db = getDb();
 
-  const filters = [] as ReturnType<typeof eq>[];
+  const filters: SQL[] = [];
   if (sp.tag) filters.push(eq(schema.newsArticles.tag, sp.tag));
   if (sp.featured === '1') filters.push(eq(schema.newsArticles.featured, true));
   if (sp.outlet) filters.push(eq(schema.sources.slug, sp.outlet));
+  if (sp.q) {
+    const needle = `%${sp.q.trim()}%`;
+    filters.push(
+      or(
+        ilike(schema.newsArticles.headline, needle),
+        ilike(schema.newsArticles.excerpt, needle),
+      )!,
+    );
+  }
 
   const where =
     filters.length === 0
@@ -108,15 +117,20 @@ export default async function HirekPage({
     .map((r) => r.tag)
     .filter((t): t is string => !!t && !EXCLUDED_TAGS.has(t.toLowerCase()));
 
-  const outletRows = await db
-    .select({ slug: schema.sources.slug, name: schema.sources.name })
-    .from(schema.sources)
-    .where(eq(schema.sources.enabled, true));
+  // A Telegram-bejelentés forrás nem böngészhető hírforrás — a user-tippek
+  // beérkezési csatornája, nem szűrhető rá a hírek oldalon.
+  const outletRows = (
+    await db
+      .select({ slug: schema.sources.slug, name: schema.sources.name })
+      .from(schema.sources)
+      .where(eq(schema.sources.enabled, true))
+  ).filter((o) => o.slug !== 'telegram-bejelentes');
 
   const activeFilters = {
     tag: sp.tag,
     outlet: sp.outlet,
     featured: sp.featured,
+    q: sp.q,
   };
 
   return (
@@ -130,7 +144,7 @@ export default async function HirekPage({
         <NewsFilters tags={tags} outlets={outletRows} />
 
         <NewsGrid
-          key={`${sp.tag ?? ''}-${sp.outlet ?? ''}-${sp.featured ?? ''}`}
+          key={`${sp.tag ?? ''}-${sp.outlet ?? ''}-${sp.featured ?? ''}-${sp.q ?? ''}`}
           initialArticles={initialArticles}
           initialHasMore={initialHasMore}
           filters={activeFilters}

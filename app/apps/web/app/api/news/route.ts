@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, ilike, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 import { getDb, schema } from '@/lib/db';
@@ -9,6 +9,7 @@ const querySchema = z.object({
   tag: z.string().trim().max(80).optional(),
   outlet: z.string().trim().max(40).optional(),
   caseId: z.string().trim().max(20).optional(),
+  q: z.string().trim().max(120).optional(),
   offset: z.coerce.number().int().min(0).default(0),
   limit: z.coerce.number().int().min(1).max(60).default(60),
 });
@@ -21,7 +22,7 @@ export async function GET(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: 'érvénytelen lekérdezés' }, { status: 400 });
   }
-  const { featured, tag, outlet, caseId, offset, limit } = parsed.data;
+  const { featured, tag, outlet, caseId, q, offset, limit } = parsed.data;
   const db = getDb();
 
   const conditions = [];
@@ -29,6 +30,15 @@ export async function GET(req: Request) {
   if (tag) conditions.push(eq(schema.newsArticles.tag, tag));
   if (caseId) conditions.push(eq(schema.newsArticles.relatedCaseId, caseId));
   if (outlet) conditions.push(eq(schema.sources.slug, outlet));
+  if (q) {
+    const needle = `%${q}%`;
+    conditions.push(
+      or(
+        ilike(schema.newsArticles.headline, needle),
+        ilike(schema.newsArticles.excerpt, needle),
+      ),
+    );
+  }
 
   const where = conditions.length ? and(...conditions) : undefined;
 

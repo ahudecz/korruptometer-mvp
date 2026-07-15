@@ -99,7 +99,7 @@ export function NewsGrid({
 }: {
   initialArticles: Article[];
   initialHasMore: boolean;
-  filters: { tag?: string; outlet?: string; featured?: string };
+  filters: { tag?: string; outlet?: string; featured?: string; q?: string };
 }) {
   const [articles, setArticles] = useState<Article[]>(initialArticles);
   const [offset, setOffset] = useState(BATCH);
@@ -113,6 +113,7 @@ export function NewsGrid({
       if (filters.tag) params.set('tag', filters.tag);
       if (filters.outlet) params.set('outlet', filters.outlet);
       if (filters.featured) params.set('featured', filters.featured);
+      if (filters.q) params.set('q', filters.q);
 
       const res = await fetch(`/api/news?${params}`);
       const data: { items: Article[]; hasMore: boolean } = await res.json();
