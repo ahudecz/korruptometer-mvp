@@ -710,19 +710,9 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
   // ── hideVideo: the per-person video (case-video-registry.ts) makes a
   // specific claim about a DIFFERENT scandal than the one on this page —
   // showing it here reads as if it illustrates this case. Found in the same audit. ──
-  {
-    // CONFIRMED duplicate, found 2026-07-05 MNB deep-dive: the source article
-    // (telex.hu/.../kecskemeti-neumann-janos-egyetemert-alapitvany-...) is
-    // about the SAME Kecskemét/Neumann János Egyetemért Alapítvány → Optima
-    // bond investment already counted in full under lezsak-neumann-egyetem
-    // (127,5 Mrd) — just a later (Nov 2025) article about the board meeting
-    // minutes for that same deal, misfiled under a law-firm scandalKey.
-    scandalKey: 'matolcsy-dla-piper-127mrd',
-    hideAutoDamage: true,
-    damageText:
-      'Ez ugyanaz a 127,5 Mrd Ft-os Kecskemét/Optima kötvényügylet, ami a lezsak-neumann-egyetem ügy alatt már szerepel — nem külön kár.',
-    video: { id: 'I7-rw1so1p0' },
-  },
+  // matolcsy-dla-piper-127mrd: retired 2026-07-15 (DLA Piper legal notice) —
+  // see RETIRED_REDIRECTS above. Was already a CONFIRMED duplicate of
+  // lezsak-neumann-egyetem; the Investigation row is now merged into it.
   { scandalKey: 'matolcsy-nhb-adofizetoi-milliardok', hideVideo: true },
   { scandalKey: 'matolcsy-metu-penzlopas', hideVideo: true },
   { scandalKey: 'matolcsy-raw-development-szekhazbontasa', hideVideo: true },
@@ -917,6 +907,16 @@ export const RETIRED_REDIRECTS: Record<string, string> = {
   // javítása helyett a lapot visszük a valós Mészáros-ügyek gyűjtőoldalára.
   'meszaros-kormany-3750-mrd-pluszkoltseg': '/adatbazis/meszaros-lorinc-osszes-ugye',
 };
+
+// 2026-07-15: 'matolcsy-dla-piper-127mrd' — DLA Piper Posztl, Nemescsói,
+// Győrfi-Tóth és Társai Ügyvédi Iroda jogi felszólítására törölve. A leírás
+// alaptalanul állította, hogy az iroda jogi hátteret biztosított a
+// tranzakcióhoz; az iroda megerősítette, hogy sosem volt megbízása az
+// ügyben. Az ügy amúgy is korábban CONFIRMED duplicate volt (ua. a 127,5
+// Mrd-os Kecskemét/Optima ügylet, mint lezsak-neumann-egyetem) — az
+// Investigation-sor mergelve (status='merged'), a ScandalCatalog frissítve,
+// a /adatbazis/matolcsy-dla-piper-127mrd URL szándékosan 404-et ad
+// (nincs redirect — a user kifejezett kérésére, ne vigyen sehova).
 export const RETIRED_SCANDAL_IDS = Object.keys(RETIRED_REDIRECTS);
 
 /**
