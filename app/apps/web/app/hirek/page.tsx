@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { and, desc, eq, ilike, or, sql, type SQL } from 'drizzle-orm';
+import { and, desc, eq, or, sql, type SQL } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 
@@ -41,10 +41,13 @@ export default async function HirekPage({
   if (sp.outlet) filters.push(eq(schema.sources.slug, sp.outlet));
   if (sp.q) {
     const needle = `%${sp.q.trim()}%`;
+    // unaccent() mindkét oldalon — a magyar ékezetek eltérése (pl. "szíjjártó"
+    // vs "Szijjártó") nélkül is találjon, az ILIKE önmagában csak a
+    // kis/nagybetűt hagyja figyelmen kívül, az ékezetet nem.
     filters.push(
       or(
-        ilike(schema.newsArticles.headline, needle),
-        ilike(schema.newsArticles.excerpt, needle),
+        sql`unaccent(${schema.newsArticles.headline}) ILIKE unaccent(${needle})`,
+        sql`unaccent(${schema.newsArticles.excerpt}) ILIKE unaccent(${needle})`,
       )!,
     );
   }

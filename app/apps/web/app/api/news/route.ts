@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { and, desc, eq, ilike, or, sql } from 'drizzle-orm';
+import { and, desc, eq, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 import { getDb, schema } from '@/lib/db';
@@ -34,8 +34,8 @@ export async function GET(req: Request) {
     const needle = `%${q}%`;
     conditions.push(
       or(
-        ilike(schema.newsArticles.headline, needle),
-        ilike(schema.newsArticles.excerpt, needle),
+        sql`unaccent(${schema.newsArticles.headline}) ILIKE unaccent(${needle})`,
+        sql`unaccent(${schema.newsArticles.excerpt}) ILIKE unaccent(${needle})`,
       ),
     );
   }
