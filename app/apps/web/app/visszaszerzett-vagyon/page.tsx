@@ -66,7 +66,7 @@ export default async function VisszaszerzettVagyonPage({
   const recoveryBarWidth = totalAll > 0n ? Math.min(100, Math.max(recoveryPct, 0.6)) : 0;
 
   return (
-    <div className="news-section-wrap">
+    <>
       <section className="section" id="visszaszerzett-vagyon">
         <div className="section-head">
           <div className="section-num">/ Elszámoltatás</div>
@@ -250,6 +250,6 @@ export default async function VisszaszerzettVagyonPage({
           A visszaszerzett összegek az eljárások előrehaladásával változhatnak.
         </div>
       </section>
-    </div>
+    </>
   );
 }
