@@ -986,3 +986,20 @@ export function outletLogoSrc(entry: MediaOutletEntry): string | null {
   if (entry.logoUrl.startsWith('/')) return entry.logoUrl;
   return `/api/img-proxy?url=${encodeURIComponent(entry.logoUrl)}`;
 }
+
+/**
+ * True if a free-text source/newspaper name (KmdbArticle.newspaper,
+ * Source.name, ...) matches any MEDIA_OUTLETS entry — i.e. it's a NER/KESMA
+ * propaganda outlet tracked on the "Megszűnt-e már?" page, regardless of its
+ * current status (active/closed/fired-staff). These are never cited as a
+ * source anywhere on the site: 2026-07-15, user — "neres lapok cikkei ...
+ * nem listázhatsz, mind hazudik".
+ */
+export function isNerOutlet(name: string | null | undefined): boolean {
+  if (!name) return false;
+  const target = normalizeOutletName(name);
+  return MEDIA_OUTLETS.some((o) => {
+    const oName = normalizeOutletName(o.name);
+    return target.includes(oName) || oName.includes(target);
+  });
+}

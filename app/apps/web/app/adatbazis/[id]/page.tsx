@@ -19,6 +19,7 @@ import { truncate } from '../../_home/seo';
 import { PERSON_ROLLUPS } from '../../_home/person-rollup-config';
 import { getPersonStats } from '../../_home/featured-persons';
 import { PersonGaleriaPromo, CrossAdatbazisSzemelyek, CrossUgyek, CrossBirosag } from '../../_home/cross-promo';
+import { isNerOutlet } from '../../_home/media-config';
 
 export const dynamic = 'force-dynamic';
 
@@ -264,6 +265,13 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
     ) as unknown as Promise<KmdbRow[]>).catch(() => [] as KmdbRow[]),
   ]);
 
+  // NER/KESMA-propaganda kiadványok (a "Megszűnt-e már?" oldal listája) soha
+  // nem szerepelhetnek forrásként — sem kapcsolódó hírként, sem
+  // auto-beillesztett article-cardként. 2026-07-15, user: "mind hazudik".
+  const articlesFiltered = articles.filter((a) => !isNerOutlet(a.source_name));
+  const kmdbArticlesFiltered = kmdbArticles.filter((a) => !isNerOutlet(a.newspaper));
+  const linkedKmdbArticlesFiltered = linkedKmdbArticles.filter((a) => !isNerOutlet(a.newspaper));
+
   const damage = BigInt(scandal.damage_huf);
   const dmg = damageRows[0];
   const proc = procRows[0];
@@ -330,20 +338,20 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
   const newsList: { source: string; date: string | null; headline: string; url: string }[] = [
     ...(usingGenNews
       ? gen!.relatedNews!.map((a) => ({ source: a.source, date: a.date, headline: a.headline, url: a.url }))
-      : kmdbArticles.map((a) => ({ source: a.newspaper ?? 'Forrás', date: a.pub_time, headline: a.title, url: a.source_url }))),
-    ...articles.map((a) => ({ source: a.source_name ?? 'Forrás', date: a.publishedAt.toISOString(), headline: a.headline, url: a.sourceUrl })),
+      : kmdbArticlesFiltered.map((a) => ({ source: a.newspaper ?? 'Forrás', date: a.pub_time, headline: a.title, url: a.source_url }))),
+    ...articlesFiltered.map((a) => ({ source: a.source_name ?? 'Forrás', date: a.publishedAt.toISOString(), headline: a.headline, url: a.sourceUrl })),
   ];
   // linkedKmdbArticles only otherwise feeds injectedCard below — without this,
   // a singleton investigation's K-Monitor-sourced article (now excluded from
   // "Kapcsolódó ügyrészek", see the members query above) would disappear
   // from the page entirely instead of surfacing here.
   const seenNewsUrls = new Set(newsList.map((n) => n.url));
-  for (const a of linkedKmdbArticles) {
+  for (const a of linkedKmdbArticlesFiltered) {
     if (seenNewsUrls.has(a.source_url)) continue;
     newsList.push({ source: a.newspaper ?? 'K-Monitor', date: a.pub_time, headline: a.title, url: a.source_url });
     seenNewsUrls.add(a.source_url);
   }
-  const kmdbTotal = kmdbArticles[0]?.total ?? 0;
+  const kmdbTotal = kmdbArticlesFiltered[0]?.total ?? 0;
 
   // Ha a leírásban nincs article-card, injektálunk egyet — csak ügy-specifikus forrásból.
   // Prioritás: 1) filesKey-szűrt K-Monitor, 2) legjobb cím-egyezésű linked KmdbArticle,
@@ -351,12 +359,12 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
   const hasArticleCard = richBlocks?.some(b => b.type === 'article-card') ?? false;
   let injectedCard: DescriptionBlock | null = null;
   if (!hasArticleCard) {
-    const byFilesKey = gen?.filesKey && kmdbArticles.length > 0 ? kmdbArticles[0] : null;
-    const linked = linkedKmdbArticles.length > 0
-      ? [...linkedKmdbArticles].sort((a, b) => scoreTitle(b.title, id) - scoreTitle(a.title, id)).find(a => scoreTitle(a.title, id) > 0) ?? null
+    const byFilesKey = gen?.filesKey && kmdbArticlesFiltered.length > 0 ? kmdbArticlesFiltered[0] : null;
+    const linked = linkedKmdbArticlesFiltered.length > 0
+      ? [...linkedKmdbArticlesFiltered].sort((a, b) => scoreTitle(b.title, id) - scoreTitle(a.title, id)).find(a => scoreTitle(a.title, id) > 0) ?? null
       : null;
-    const scraped = articles.length > 0
-      ? [...articles].sort((a, b) => scoreTitle(b.headline, id) - scoreTitle(a.headline, id)).find(a => scoreTitle(a.headline, id) > 0) ?? null
+    const scraped = articlesFiltered.length > 0
+      ? [...articlesFiltered].sort((a, b) => scoreTitle(b.headline, id) - scoreTitle(a.headline, id)).find(a => scoreTitle(a.headline, id) > 0) ?? null
       : null;
     const src = byFilesKey ?? linked ?? scraped ?? null;
     if (src) {
@@ -395,7 +403,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
   // coverage. A lone default 'reported' on a 1-article case is noise, not fact.
   const procWeak =
     !proc?.proceduralStage ||
-    (proc.proceduralStage === 'reported' && articles.length === 0 && (scandal.article_count ?? 0) <= 1);
+    (proc.proceduralStage === 'reported' && articlesFiltered.length === 0 && (scandal.article_count ?? 0) <= 1);
 
   // ── Related persons: editorial override ids ∪ auto-derived galeria persons
   // who appear in this scandal's member investigations or cross-referenced
