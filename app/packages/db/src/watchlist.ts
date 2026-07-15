@@ -22,7 +22,7 @@ export function normalizeName(name: string): string {
 }
 
 // 8 "lemondásra felszólított" — NER key office holders.
-const CALLED_TO_RESIGN = [
+export const CALLED_TO_RESIGN = [
   'Sulyok Tamás',
   'Polt Péter',
   'Nagy Gábor Bálint',

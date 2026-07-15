@@ -284,6 +284,7 @@ const getCachedLatestRecoveries = unstable_cache(
       description: schema.assetRecoveries.description,
       amountFt: s<string>`"amountFt"::text`,
       recoveredAt: schema.assetRecoveries.recoveredAt,
+      sourceUrl: schema.assetRecoveries.sourceUrl,
     }).from(schema.assetRecoveries).orderBy(d(schema.assetRecoveries.recoveredAt)).limit(5);
   },
   ['latest-recoveries'],
@@ -299,7 +300,47 @@ const getCachedTotalRecovered = unstable_cache(
   ['total-recovered'],
   { revalidate: 300, tags: ['asset-recoveries'] },
 );
-const getCachedLatestResignations5 = unstable_cache(
+/**
+ * "Top lemondások" homepage KPI-04 kártya — kézzel válogatott PRIORITÁSI
+ * sorrend, nem időrend. Legfelül a CALLED_TO_RESIGN (Magyar Péter által
+ * lemondásra felszólított 8 tisztségviselő, @korr/db watchlist.ts), utána két
+ * másik országosan jelentős név, legalul két "kitöltő" név — csak azért
+ * kerülnek be, mert egyelőre nincs 5 fentebbi valódi találat. A lista nem
+ * dátum szerint válogat: ha a jövőben a felsoroltak közül valaki ténylegesen
+ * lemond/távozik, a saját helyén automatikusan bekerül és kiszorítja a lista
+ * VÉGÉN álló kitöltő nevet (2026-07-15, user kérés — l. project memory).
+ */
+const TOP_RESIGNATION_PRIORITY = [
+  'Sulyok Tamás', 'Polt Péter', 'Nagy Gábor Bálint', 'Varga Zs. András',
+  'Windisch László', 'Rigó Csaba Balázs', 'Koltay András', 'Senyei György',
+  'Szíjjártó Péter', 'Gulyás Gergely',
+  'Orbán Balázs', 'Németh Zsolt',
+];
+const getCachedFeaturedResignations = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { and: andF, eq: eqF, sql: s } = await import('drizzle-orm');
+    const { normalizeName } = await import('@korr/db');
+    const db = getDb();
+    // drizzle's sql`` tag does NOT auto-cast a JS array to a Postgres ARRAY
+    // literal the way the raw `postgres` client does — `= ANY(${array})`
+    // throws "op ANY/ALL (array) requires array on right side" here. An
+    // OR-chain of parameterized equalities sidesteps that entirely; the list
+    // is tiny (~12 names) so this is in no way a performance concern.
+    const nameMatch = s.join(
+      TOP_RESIGNATION_PRIORITY.map((n) => s`trim(regexp_replace(lower(unaccent(trim(name))), '[^a-z0-9]+', ' ', 'g')) = ${normalizeName(n)}`),
+      s` OR `,
+    );
+    return db.select().from(schema.politicalResignations)
+      .where(andF(
+        eqF(schema.politicalResignations.reviewStatus, 'approved'),
+        nameMatch,
+      ));
+  },
+  ['featured-resignations'],
+  { revalidate: 300 },
+);
+const getCachedLatestResignations30 = unstable_cache(
   async () => {
     const { getDb, schema } = await import('@/lib/db');
     const { desc: d, eq: eqF } = await import('drizzle-orm');
@@ -307,9 +348,9 @@ const getCachedLatestResignations5 = unstable_cache(
     return db.select().from(schema.politicalResignations)
       .where(eqF(schema.politicalResignations.reviewStatus, 'approved'))
       .orderBy(d(schema.politicalResignations.resignationDate))
-      .limit(5);
+      .limit(30);
   },
-  ['latest-resignations-5'],
+  ['latest-resignations-30'],
   { revalidate: 300 },
 );
 const getCachedLatestClosures = unstable_cache(
@@ -395,7 +436,8 @@ export default async function HomePage() {
     latestVerdictDb,
     latestRecoveriesDb,
     totalRecoveredRaw,
-    latestResignations5,
+    featuredResignationsRaw,
+    latestResignations30,
     recentScandals,
     offRows,
     breakingArticles,
@@ -414,7 +456,8 @@ export default async function HomePage() {
     getCachedLatestVerdict(),
     getCachedLatestRecoveries(),
     getCachedTotalRecovered(),
-    getCachedLatestResignations5(),
+    getCachedFeaturedResignations(),
+    getCachedLatestResignations30(),
     getCachedScandalCatalog(),
     getCachedOffenceTypes(),
     getCachedActiveBreaking(),
@@ -423,6 +466,50 @@ export default async function HomePage() {
     getCachedTotalDamage(),
   ]);
   const { pretrial: pretrialCountDb, elitelt: eliteltCountDb } = verdictCounts;
+
+  // "Top lemondások" — a TOP_RESIGNATION_PRIORITY sorrendjében az első 5,
+  // aminek van valós (approved) sora; "További lemondások" — a legfrissebbek
+  // ezek közül kihagyva, hogy ne legyen duplikáció a két lista között.
+  const normalizeForMatch = (v: string) =>
+    v.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const featuredByName = new Map(featuredResignationsRaw.map(r => [normalizeForMatch(r.name), r]));
+  const featuredResignations = TOP_RESIGNATION_PRIORITY
+    .map(name => featuredByName.get(normalizeForMatch(name)))
+    .filter((r): r is NonNullable<typeof r> => r != null)
+    .slice(0, 5);
+  const featuredIds = new Set(featuredResignations.map(r => r.id));
+  const additionalResignations = latestResignations30
+    .filter(r => !featuredIds.has(r.id))
+    .slice(0, 5);
+
+  function renderResignedItem(r: typeof latestResignations30[number]) {
+    const sourceUrl = r.sourceUrls?.[0];
+    const inner = (
+      <>
+        <span
+          className="stat-resigned-dot"
+          style={{ background: RESIGNATION_TYPE_COLOR[r.resignationType] ?? '#888' }}
+        />
+        <div className="stat-resigned-body">
+          <span className="stat-resigned-name">{r.name}</span>
+          <span className="stat-resigned-pos">{r.position}</span>
+        </div>
+        {r.description && (
+          <span className="stat-resigned-desc">{r.description}</span>
+        )}
+        <span className="stat-resigned-date">{fmtShortDate(r.resignationDate)}</span>
+      </>
+    );
+    return sourceUrl ? (
+      <a key={r.id} href={sourceUrl} target="_blank" rel="noopener noreferrer" className="stat-resigned-item stat-resigned-item--link">
+        {inner}
+      </a>
+    ) : (
+      <div key={r.id} className="stat-resigned-item">
+        {inner}
+      </div>
+    );
+  }
 
   // allArticlesRaw → per-topic szétválasztás JS-ben (nincs extra DB-hívás)
   const hl = (a: { headline: string }) => a.headline.toLowerCase();
@@ -585,16 +672,29 @@ export default async function HomePage() {
             </div>
             <h3 className="stat-card-list-title">Legfrissebb visszaszerzések</h3>
             <div className="stat-recovered-list">
-              {latestRecoveries.map((r) => (
-                <Link key={r.id} href={`/ugyek/${r.caseId}`} className="stat-recovered-item stat-recovered-item--link">
-                  <div className="stat-recovered-bar" />
-                  <div className="stat-recovered-body">
-                    <span className="stat-recovered-case">{r.caseLabel}</span>
-                    <span className="stat-recovered-amt"><FtValue n={r.amountFt} /></span>
-                  </div>
-                  <div className="stat-recovered-note">{r.description} · {fmtRecoveryDate(r.recoveredAt)}</div>
-                </Link>
-              ))}
+              {latestRecoveries.map((r) => {
+                // Csak akkor linkeljünk a /ugyek/ oldalra, ha tényleg létezik
+                // curált ügyoldal hozzá — egyébként (friss, még nem curált
+                // eset) a forráscikkre mutasson, ne törött linkre.
+                const hasUgy = UGYEK.some(u => u.id === r.caseId);
+                const href = hasUgy ? `/ugyek/${r.caseId}` : (r.sourceUrl ?? '/visszaszerzett-vagyon');
+                const external = !hasUgy && !!r.sourceUrl;
+                return (
+                  <Link
+                    key={r.id}
+                    href={href}
+                    className="stat-recovered-item stat-recovered-item--link"
+                    {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  >
+                    <div className="stat-recovered-bar" />
+                    <div className="stat-recovered-body">
+                      <span className="stat-recovered-case">{r.caseLabel}</span>
+                      <span className="stat-recovered-amt"><FtValue n={r.amountFt} /></span>
+                    </div>
+                    <div className="stat-recovered-note">{r.description} · {fmtRecoveryDate(r.recoveredAt)}</div>
+                  </Link>
+                );
+              })}
               {latestRecoveries.length === 0 && (
                 <div className="stat-recovered-more">Még nincs rögzített visszaszerzés.</div>
               )}
@@ -611,40 +711,21 @@ export default async function HomePage() {
             <div className="stat-unit stat-unit-fresh">
               2026. április 12. óta
             </div>
-            <h3 className="stat-card-list-title">Legfrissebb személyi változások</h3>
-            {latestResignations5.length > 0 ? (
+            <h3 className="stat-card-list-title">Top lemondások</h3>
+            {featuredResignations.length > 0 ? (
               <div className="stat-resigned-list">
-                {latestResignations5.map((r) => {
-                  const sourceUrl = r.sourceUrls?.[0];
-                  const inner = (
-                    <>
-                      <span
-                        className="stat-resigned-dot"
-                        style={{ background: RESIGNATION_TYPE_COLOR[r.resignationType] ?? '#888' }}
-                      />
-                      <div className="stat-resigned-body">
-                        <span className="stat-resigned-name">{r.name}</span>
-                        <span className="stat-resigned-pos">{r.position}</span>
-                      </div>
-                      {r.description && (
-                        <span className="stat-resigned-desc">{r.description}</span>
-                      )}
-                      <span className="stat-resigned-date">{fmtShortDate(r.resignationDate)}</span>
-                    </>
-                  );
-                  return sourceUrl ? (
-                    <a key={r.id} href={sourceUrl} target="_blank" rel="noopener noreferrer" className="stat-resigned-item stat-resigned-item--link">
-                      {inner}
-                    </a>
-                  ) : (
-                    <div key={r.id} className="stat-resigned-item">
-                      {inner}
-                    </div>
-                  );
-                })}
+                {featuredResignations.map((r) => renderResignedItem(r))}
               </div>
             ) : (
               <div className="stat-unit" style={{ marginTop: 24 }}>Még nem érkezett adat.</div>
+            )}
+            {additionalResignations.length > 0 && (
+              <>
+                <h3 className="stat-card-list-title" style={{ marginTop: 20 }}>További lemondások</h3>
+                <div className="stat-resigned-list">
+                  {additionalResignations.map((r) => renderResignedItem(r))}
+                </div>
+              </>
             )}
             <Link href="/lemondasok" className="stat-card-list-link stat-card-corner-link">Teljes lista →</Link>
           </div>

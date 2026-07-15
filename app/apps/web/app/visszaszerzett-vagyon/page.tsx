@@ -45,10 +45,10 @@ export default async function VisszaszerzettVagyonPage({
     );
 
   // Group by caseId for the top section
-  const caseMap = new Map<string, { caseId: string; caseLabel: string; totalFt: bigint; count: number }>();
+  const caseMap = new Map<string, { caseId: string; caseLabel: string; description: string; sourceUrl: string | null; totalFt: bigint; count: number }>();
   for (const r of rows) {
     if (!caseMap.has(r.caseId)) {
-      caseMap.set(r.caseId, { caseId: r.caseId, caseLabel: r.caseLabel, totalFt: 0n, count: 0 });
+      caseMap.set(r.caseId, { caseId: r.caseId, caseLabel: r.caseLabel, description: r.description, sourceUrl: r.sourceUrl, totalFt: 0n, count: 0 });
     }
     const g = caseMap.get(r.caseId)!;
     g.totalFt += r.amountFt;
@@ -91,7 +91,7 @@ export default async function VisszaszerzettVagyonPage({
         <div className="recovery-tracker">
           <div className="recovery-tracker-head">
             <div className="recovery-tracker-label">Visszaszerzett vagyon számláló</div>
-            <div className="recovery-tracker-goal">Jelképes cél: <FtValue n={RECOVERY_GOAL_FT} mode="short" /></div>
+            <div className="recovery-tracker-goal">Jelképes cél: <FtValue n={RECOVERY_GOAL_FT} mode="long" /></div>
           </div>
           <div className="recovery-tracker-track">
             <div className="recovery-tracker-fill" style={{ width: `${recoveryBarWidth}%` }} />
@@ -115,7 +115,10 @@ export default async function VisszaszerzettVagyonPage({
               // slugifyCaseLabel) — drop that part here too, so the card
               // title reads like a case name ("NKA botrány"), not a sentence.
               const title = ugy?.title ?? (g.caseLabel.split(/[-·]/)[0] ?? g.caseLabel).trim();
-              const oneLiner = ugy ? firstSentence(ugy.summary) : '';
+              // Mindig legyen rövid leírás a kártyán: a curált /ugyek/ oldal
+              // saját összefoglalója, vagy ennek hiányában az AssetRecovery
+              // sor description mezője (kötelező, sose üres — l. schema.ts).
+              const oneLiner = firstSentence(ugy ? ugy.summary : g.description);
               const crimes = ugy?.crimeTypes?.slice(0, 2) ?? [];
               const cardBody = (
                 <>
@@ -140,10 +143,19 @@ export default async function VisszaszerzettVagyonPage({
                   </div>
                 </>
               );
-              return ugy ? (
-                <Link key={g.caseId} href={`/ugyek/${g.caseId}`} className="visszaszerzett-case-card">
+              if (ugy) {
+                return (
+                  <Link key={g.caseId} href={`/ugyek/${g.caseId}`} className="visszaszerzett-case-card">
+                    {cardBody}
+                  </Link>
+                );
+              }
+              // No curated /ugyek/ page yet — link out to the source article
+              // instead of a would-be-404 /ugyek/ route.
+              return g.sourceUrl ? (
+                <a key={g.caseId} href={g.sourceUrl} target="_blank" rel="noopener noreferrer" className="visszaszerzett-case-card">
                   {cardBody}
-                </Link>
+                </a>
               ) : (
                 <div key={g.caseId} className="visszaszerzett-case-card">
                   {cardBody}
