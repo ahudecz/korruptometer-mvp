@@ -375,13 +375,7 @@ export async function processAssetRecovery(article: ArticleForReprocess, todayIs
     return { status: 'discarded', reason: 'missing_fields' };
   }
 
-  const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-  const existing = await db
-    .select({ id: schema.assetRecoveries.id })
-    .from(schema.assetRecoveries)
-    .where(sql`lower(${schema.assetRecoveries.caseLabel}) = lower(${result.caseLabel}) AND ${schema.assetRecoveries.createdAt} >= ${fourteenDaysAgo}`)
-    .limit(1);
-  if (existing.length > 0) {
+  if (await isDuplicate(db, { table: 'AssetRecovery', nameColumn: 'caseLabel' }, result.caseLabel, 14)) {
     await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'asset_recovery', outcome: 'discarded', reason: 'duplicate', extractedName: result.caseLabel, confidence: result.confidence });
     return { status: 'discarded', reason: 'duplicate' };
   }

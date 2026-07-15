@@ -44,7 +44,8 @@ export function decideStatus(confidence: number, isWatchlist: boolean): ReviewDe
 export type DedupTable =
   | { table: 'PoliticalResignation'; nameColumn: 'name' }
   | { table: 'MediaClosure'; nameColumn: 'name' }
-  | { table: 'CourtVerdict'; nameColumn: 'personName' };
+  | { table: 'CourtVerdict'; nameColumn: 'personName' }
+  | { table: 'AssetRecovery'; nameColumn: 'caseLabel' };
 
 type Executable = { execute: (query: ReturnType<typeof sql>) => Promise<unknown> };
 
