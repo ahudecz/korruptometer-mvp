@@ -187,18 +187,30 @@ const getCachedRecentPodcasts = unstable_cache(
     const { getDb, schema } = await import('@/lib/db');
     const { and: andF, eq: eqF, desc: d, sql: s } = await import('drizzle-orm');
     const db = getDb();
-    const rows = await db
+    // Nagyobb jelölt-készlet (nem csak a végleges 9), hogy a csatornánkénti
+    // max-1-videó szűrés után is legyen elég sor a 9-es limit kitöltéséhez —
+    // egy nagyon aktív csatorna különben minden helyet elvinne a nyitóoldalon.
+    const candidates = await db
       .select({
         id: schema.podcastVideos.id,
         videoId: schema.podcastVideos.videoId,
         title: schema.podcastVideos.title,
+        channelSlug: schema.podcastVideos.channelSlug,
         channelName: schema.podcastVideos.channelName,
         publishedAt: schema.podcastVideos.publishedAt,
       })
       .from(schema.podcastVideos)
       .where(andF(eqF(schema.podcastVideos.reviewStatus, 'approved'), eqF(schema.podcastVideos.viewThresholdMet, true)))
       .orderBy(d(s`(${schema.podcastVideos.pinnedUntil} IS NOT NULL AND ${schema.podcastVideos.pinnedUntil} > now())`), d(schema.podcastVideos.publishedAt))
-      .limit(9);
+      .limit(50);
+    const seenChannels = new Set<string>();
+    const rows = [];
+    for (const c of candidates) {
+      if (seenChannels.has(c.channelSlug)) continue;
+      seenChannels.add(c.channelSlug);
+      rows.push(c);
+      if (rows.length === 9) break;
+    }
     return rows.map((r) => ({ ...r, publishedAt: r.publishedAt.toISOString() }));
   },
   ['recent-podcasts'],
