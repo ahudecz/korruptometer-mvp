@@ -140,6 +140,11 @@ const RESIGN_WATCHLIST_NAMES = [
   'bkk ', 'budapesti közlekedési',
   'nhkv ',
   'mti ', 'magyar távirati iroda',
+  // Egészségügyi intézményvezetés — az OKFŐ rendszeresen cserél kórházi
+  // vezetőket, akiknek a neve előre nem ismerhető, ezért az intézmény maga
+  // a trigger (2026-07-13, Somogyi Aliz/Révai Róbert-eset: az érintett
+  // középvezetők neve sosem lett volna felvehető előre, csak az OKFŐ-é).
+  'okfő', 'országos kórházi főigazgatóság',
 ] as const;
 
 const RESIGN_TRIGGERS = [
@@ -148,6 +153,13 @@ const RESIGN_TRIGGERS = [
   'felmentette', 'felmentés', 'felmentették',
   'leváltotta', 'leváltás', 'menesztette', 'menesztés',
   'visszahívták', 'visszahívás',
+  // 'visszavon' (fuzionált alak: visszavonta/visszavonás/visszavonták) NEM
+  // fedi a magyar igekötő-hátravetést ("megbízásokat vont vissza" — a tárgy
+  // kiemelése miatt az igekötő a ige mögé kerül). 2026-07-13, hvg.hu
+  // Hegedűs Zsolt/OKFŐ-cikk címe pont ebben a szórendben volt, ezért a puszta
+  // 'visszavon' substring sem kapta volna el — mindkét szórendet fel kell
+  // venni.
+  'visszavon', 'vont vissza', 'vonta vissza', 'vonják vissza',
 ] as const;
 
 function isResignWatchlistEvent(headline: string, excerpt: string): boolean {

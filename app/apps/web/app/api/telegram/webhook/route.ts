@@ -461,6 +461,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true }); // ismeretlen chat — csendben eldobva
     }
 
+    // Az URL-detektálás MINDIG előbb fut, mint a revoke-parancs parseolása:
+    // a REVOKE_TRIGGER (/visszavon/i) a nyers szövegre illeszkedik, és egy
+    // beküldött URL slugja (pl. ".../hegedus-zsolt-...-visszavonas-okfo")
+    // tartalmazhatja a "visszavon" szót, ami false-positive revoke-parancsként
+    // értelmezné a linket ahelyett hogy hírként dolgozná fel (2026-07-13,
+    // hvg.hu URL-lel reprodukálva — a bot "Nem találtam egyezést erre:
+    // https://hvg.hu/itthon/20260713_hegedus"-t válaszolt, mert a szöveget
+    // kötőjelek mentén feldarabolta).
+    const url = msg.text ? firstUrl(msg.text) : null;
+    if (url) {
+      const resolved = await resolveOrCreateArticleFromUrl(url);
+      if ('error' in resolved) {
+        await sendTelegramMessage(`⚠️ ${resolved.error}\n\n${url}`);
+        return NextResponse.json({ ok: true });
+      }
+      await sendTelegramMessage(
+        `📥 Beküldött hír:\n${resolved.headline}\n\n${url}\n\nMelyik kategóriába tegyem?`,
+        tipCategoryKeyboard(resolved.id),
+      );
+      return NextResponse.json({ ok: true });
+    }
+
     const revoke = msg.text ? parseRevokeCommand(msg.text) : null;
     if (revoke) {
       const candidates = await searchRevokeCandidates(revoke.nameQuery, revoke.categoryCode);
@@ -475,22 +497,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true });
     }
 
-    const url = msg.text ? firstUrl(msg.text) : null;
-    if (!url) {
-      return NextResponse.json({ ok: true }); // nincs URL a szövegben — nem érdekel minket
-    }
-
-    const resolved = await resolveOrCreateArticleFromUrl(url);
-    if ('error' in resolved) {
-      await sendTelegramMessage(`⚠️ ${resolved.error}\n\n${url}`);
-      return NextResponse.json({ ok: true });
-    }
-
-    await sendTelegramMessage(
-      `📥 Beküldött hír:\n${resolved.headline}\n\n${url}\n\nMelyik kategóriába tegyem?`,
-      tipCategoryKeyboard(resolved.id),
-    );
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true }); // se URL, se revoke-parancs — nem érdekel minket
   }
 
   const cq = update?.callback_query;

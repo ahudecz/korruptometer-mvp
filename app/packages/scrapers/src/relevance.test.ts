@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { scrapeRelevanceTier, isForeignOrJunk, isBreaking } from './relevance';
+import { isRelevant, scrapeRelevanceTier, isForeignOrJunk, isBreaking } from './relevance';
 
 describe('scrapeRelevanceTier', () => {
   it('"in" for a strong Hungarian-political keyword (free, no AI)', () => {
@@ -20,6 +20,29 @@ describe('scrapeRelevanceTier', () => {
 
   it('"out" for a non-default outlet without any keyword (unchanged behavior)', () => {
     expect(scrapeRelevanceTier('Időjárás: jön a kánikula', '', 'https://example.hu/belfold/idojaras', false)).toBe('out');
+  });
+});
+
+describe('isRelevant — resign-watchlist trigger words', () => {
+  // 2026-07-13, hvg.hu: "Hegedűs Zsolt: Kórházvezetői megbízásokat vont
+  // vissza az OKFŐ" — az igekötő-hátravetés miatt ("vont vissza", nem
+  // "visszavonta") a puszta 'visszavon' substring nem lett volna elég.
+  it('catches split-preverb "vont vissza" wording for a watchlisted name', () => {
+    expect(
+      isRelevant(
+        'Hegedűs Zsolt: Kórházvezetői megbízásokat vont vissza az OKFŐ',
+        'Kórházvezetői megbízásokat vont vissza az Országos Kórházi Főigazgatóság (OKFŐ) – közölte Hegedűs Zsolt egészségügyi miniszter.',
+      ),
+    ).toBe(true);
+  });
+
+  it('catches the fused "visszavonta" wording via the OKFŐ institution keyword alone', () => {
+    expect(
+      isRelevant(
+        'Két kórházi vezető megbízását is visszavonta az OKFŐ',
+        'Az újonnan kinevezett főigazgató visszavonta a gazdasági igazgató megbízását.',
+      ),
+    ).toBe(true);
   });
 });
 
