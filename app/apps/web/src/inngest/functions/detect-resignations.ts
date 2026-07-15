@@ -79,14 +79,23 @@ export function coerceSector(value: string): ValidSector {
 // Pósfai Gábor belügyminiszter" (Töreki Sándor's kinevezés-visszavonása)
 // never reached the LLM because none of the old keywords matched "cserélt
 // le" / "visszavonta a kinevezését" — user report. Added 'cserél' and
-// 'visszavon' to close this specific gap. This is a pre-filter only (the
-// LLM still makes the real lemondás/kirúgás/felmentés/nincs-ilyen call), so
-// a broader keyword list only costs a few extra LLM calls, not precision.
+// 'visszavon', then (same day, user-supplied full kirúgás-szinonima lista)
+// the rest below. Stems are used instead of full words wherever safe so
+// inflected forms match too (e.g. 'levált' catches "leváltás", "leváltotta",
+// "leváltják", "leváltásra" — consolidated the old separate entries for
+// this reason; 'távoz' the same way now also catches "távozás", which the
+// old 'távozik'/'távozott'-only pair missed). 'megválás' is kept as a full
+// word, not the shorter 'megvál' stem, because that stem would also match
+// "megválasztás" (election) — an unrelated false-positive class not worth
+// the extra LLM calls. This is a pre-filter only (the LLM still makes the
+// real lemondás/kirúgás/felmentés/nincs-ilyen call), so a broader list only
+// costs a few extra LLM calls, not precision.
 const RESIGNATION_KEYWORDS = [
-  'lemond', 'kirúg', 'felment', 'leváltott', 'leváltják', 'lemondott',
-  'kirúgták', 'felmentették', 'távozik', 'távozott', 'mond le',
-  'leváltás', 'menesztés', 'menesztette', 'menesztik', 'visszahív',
-  'cserél', 'visszavon',
+  'lemond', 'kirúg', 'felment', 'levált', 'mond le', 'menesz',
+  'visszahív', 'cserél', 'visszavon', 'távoz',
+  // kirúgás szinonimái (2026-07-16, user által megadott teljes lista):
+  'elbocsát', 'felmond', 'megválás', 'megszüntet', 'állásveszt',
+  'eltanácsol', 'hivatalveszt', 'eltávolít',
 ];
 
 /**
