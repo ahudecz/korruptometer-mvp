@@ -74,10 +74,19 @@ export function coerceSector(value: string): ValidSector {
 }
 
 // Quick keyword pre-filter — avoids burning LLM tokens on irrelevant articles.
+//
+// 2026-07-16 — a real miss slipped through: "Rendészeti vezetőket cserélt le
+// Pósfai Gábor belügyminiszter" (Töreki Sándor's kinevezés-visszavonása)
+// never reached the LLM because none of the old keywords matched "cserélt
+// le" / "visszavonta a kinevezését" — user report. Added 'cserél' and
+// 'visszavon' to close this specific gap. This is a pre-filter only (the
+// LLM still makes the real lemondás/kirúgás/felmentés/nincs-ilyen call), so
+// a broader keyword list only costs a few extra LLM calls, not precision.
 const RESIGNATION_KEYWORDS = [
   'lemond', 'kirúg', 'felment', 'leváltott', 'leváltják', 'lemondott',
   'kirúgták', 'felmentették', 'távozik', 'távozott', 'mond le',
   'leváltás', 'menesztés', 'menesztette', 'menesztik', 'visszahív',
+  'cserél', 'visszavon',
 ];
 
 /**
