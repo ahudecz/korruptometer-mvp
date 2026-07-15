@@ -9303,11 +9303,11 @@
     "blocks": [
       {
         "type": "text",
-        "content": "A Lipótmezői NER elit iskola közpénz-ügye nyitott ügyként kezelendő, amely Kiss-Rigó László személyéhez és a Giró-Szász és Társai Ügyvédi Iroda tevékenységéhez köthető. A Népszava 2026. január 6-i közlése szerint az intézmény építése még el sem kezdődött, amikor már mintegy 1 milliárd forint közpénz volt érintett az ügyletekben. Az eset számos közérdeklődésre számot tartó sajtóközlemény tárgyát képezte."
+        "content": "A Lipótmezői NER elit iskola közpénz-ügye a Közép-európai Oktatási Alapítvány (KEOA) által épített elit bentlakásos iskolaprojekthez köthető, amelynek kuratóriumában Kiss-Rigó László szeged-csanádi katolikus megyéspüspök is helyet kap. A Népszava 2026. január 6-i közlése szerint az intézmény építése még el sem kezdődött, amikor az alapítvány már 2021 és 2024 között cirka 1,3 milliárd forintot fizetett ki — többek között vagyonellenőri szolgáltatásra, jogi tanácsadásra, könyvelésre, irodabérletre és munkabérekre."
       },
       {
         "type": "text",
-        "content": "Az ügy a szélesebb kontextusban olyan tendenciákat mutat, amelyek a közpénzek felhasználása és az intézményhálózat finanszírozása terén merülnek fel. A sajtójelentések szerint hasonló, NER-hez köthető szervezetekhez és alapítványokhoz szignifikáns közpénzek áramlottak, amely kérdéseket vet fel a transzparenciával és a közpénzek ésszerű felhasználásával kapcsolatban."
+        "content": "A cikk szerint a KEOA 2021 óta a Giró-Szász és Társai Ügyvédi Iroda vagyonellenőri szolgáltatásait is igénybe veszi, havi egymillió forintért — ez az alapítvány több szolgáltatója közül csak az egyik, nem a projekt felelőse vagy fő szereplője."
       },
       {
         "type": "text",
@@ -10158,35 +10158,6 @@
         "url": "https://telex.hu/belfold/2025/07/08/polner-eors-allas-szte-szegedi-fideszes-kepviselo-mnb-alapitvany-padme",
         "lead": "Kapcsolatépítés a feladata a Szegedi Tudományegyetemen Polner Eörsnek, a szegedi Fidesz frakcióvezetőjének, legalábbis a Szegeder által kikért dokumentumok szerint. Az egyetem azután kezdte alkalmazni a politikust, hogy az távozott a Magyar Nemzeti Bank alapítványából a több százmilliárdos botrány k",
         "headline": "Havi félmillióért kapott állást az SZTE-n a szegedi fideszes képviselő, miután otthagyta az MNB alapítványát"
-      }
-    ],
-    "attribution": "A cikkek forrása: K-Monitor sajtóadatbázis (CC BY-SA 4.0). Az összefoglalót AI generálta."
-  },
-  "matolcsy-uszotusolas": {
-    "blocks": [
-      {
-        "type": "text",
-        "content": "# A Matolcsy-ügy eltussolása"
-      },
-      {
-        "type": "text",
-        "content": "A Matolcsy-ügy eltussolásáról szóló korrupciós gyanú Mészáros Lőrinc személyéhez kötődik, érintett intézményként pedig a Dentons Réczicza Ügyvédi Iroda szerepel. A sajtó szerint körülbelül 10 milliárd forint közpénz-érintettség áll az ügy hátterében. Az eset jelenleg nyitott ügyként kezelendő."
-      },
-      {
-        "type": "text",
-        "content": "Az üggyel kapcsolatban szóló sajtóbeszerzésben Mészáros Lőrinc neve többek között a Vagyonvisszaszerzési Hivatal potenciális vizsgálati köréhez kötődik, amely a nem megfelelően szabályozott közpénz-felhasználást kutathatná. Sajtójelentések szerint az üzletember Hungarikum Alkusz cégén keresztül állami megbízásokat is nyert korábban."
-      },
-      {
-        "type": "text",
-        "content": "Az ügy jelenleg nyitott státuszú, konkrét jogerős bírósági ítéletek vagy ügyészségi váddá emelésről a rendelkezésre álló adatokból nincs információ. Az eltussolás gyanújára vonatkozó részletes körülmények a felhasznált sajtócikkek alapján nem részletezhetők."
-      },
-      {
-        "type": "article-card",
-        "source": "444.hu",
-        "headline": "Mészáros Lőrinctől Rogánon át Lázár Jánosig: kiket és miket vizsgálhat a Vagyonvisszaszerzési Hivatal?",
-        "date": "2026-06-24",
-        "url": "https://444.hu/2026/06/24/meszaros-lorinctol-roganon-at-lazar-janosig-kiket-es-miket-vizsgalhat-a-vagyonvisszaszerzesi-hivatal",
-        "lead": "Magyar Péter hónapok óta emlegeti a vagyonvisszaszerzési hivatalt, amely a NER kegyeltjeinek vagyonosodását is vizsgálná. Összegyűjtöttük, ki érezheti magát ez alapján veszélyben."
       }
     ],
     "attribution": "A cikkek forrása: K-Monitor sajtóadatbázis (CC BY-SA 4.0). Az összefoglalót AI generálta."
