@@ -1,4 +1,5 @@
 import 'server-only';
+import { revalidateTag } from 'next/cache';
 import { eq, sql } from 'drizzle-orm';
 
 import { detectResignationFromArticle } from '@korr/db/ai';
@@ -16,6 +17,7 @@ import {
   isTransientLlmFailure,
   isWatchlistPerson,
   NEAR_MISS_MIN,
+  slugifyCaseLabel,
   type DetectorType,
 } from '@korr/db';
 import { getDb, schema } from './db';
@@ -384,7 +386,7 @@ export async function processAssetRecovery(article: ArticleForReprocess, todayIs
     return { status: 'discarded', reason: 'missing_source' };
   }
 
-  const caseId = result.caseLabel.toLowerCase().replace(/[^a-záéíóöőúüű0-9]+/gi, '-').replace(/^-+|-+$/g, '').slice(0, 80);
+  const caseId = slugifyCaseLabel(result.caseLabel);
   const [row] = await db.insert(schema.assetRecoveries).values({
     caseId,
     caseLabel: result.caseLabel.slice(0, 200),
@@ -396,6 +398,12 @@ export async function processAssetRecovery(article: ArticleForReprocess, todayIs
   }).returning({ id: schema.assetRecoveries.id });
 
   await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'asset_recovery', outcome: 'inserted', extractedName: result.caseLabel, confidence: result.confidence });
+  // The homepage's latest-recoveries/total-recovered blocks are unstable_cache'd
+  // with a 5-minute TTL, independent of the page's own force-dynamic rendering —
+  // revalidatePublicPaths()'s revalidatePath('/') does NOT bust that data cache,
+  // so without this a fresh insert silently sat there for up to 5 minutes
+  // (2026-07-15 user report: "a nyitóoldali blokk nem frissült").
+  revalidateTag('asset-recoveries');
   await inngest.send({ name: 'breaking.recompute', data: { reason: 'asset_recovery:telegram-approve' } });
   return { status: 'inserted', recordId: row!.id };
 }

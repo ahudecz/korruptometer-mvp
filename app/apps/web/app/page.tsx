@@ -287,7 +287,7 @@ const getCachedLatestRecoveries = unstable_cache(
     }).from(schema.assetRecoveries).orderBy(d(schema.assetRecoveries.recoveredAt)).limit(5);
   },
   ['latest-recoveries'],
-  { revalidate: 300 },
+  { revalidate: 300, tags: ['asset-recoveries'] },
 );
 const getCachedTotalRecovered = unstable_cache(
   async () => {
@@ -297,7 +297,7 @@ const getCachedTotalRecovered = unstable_cache(
     return db.select({ total: s<string>`coalesce(sum("amountFt"::bigint), 0)::text` }).from(schema.assetRecoveries).then(r => r[0]?.total ?? '0');
   },
   ['total-recovered'],
-  { revalidate: 300 },
+  { revalidate: 300, tags: ['asset-recoveries'] },
 );
 const getCachedLatestResignations5 = unstable_cache(
   async () => {

@@ -1,8 +1,9 @@
 import 'server-only';
+import { revalidateTag } from 'next/cache';
 import { and, gte, sql } from 'drizzle-orm';
 
 import { detectAssetRecoveryFromArticle } from '@korr/db/ai-assets';
-import { articleDateIso, isPlaceholderName, isTransientLlmFailure, loadUncheckedArticles, markChecked, NEAR_MISS_MIN } from '@korr/db';
+import { articleDateIso, isPlaceholderName, isTransientLlmFailure, loadUncheckedArticles, markChecked, NEAR_MISS_MIN, slugifyCaseLabel } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
 import { notifyAutoPublished } from '@/lib/notify-auto-publish';
@@ -154,12 +155,7 @@ export const detectAssetRecoveries = inngest.createFunction(
             recoveredAt = fallbackDate;
           }
 
-          // Generate a deterministic caseId from the label + date.
-          const caseId = result.caseLabel
-            .toLowerCase()
-            .replace(/[^a-záéíóöőúüű0-9]+/gi, '-')
-            .replace(/^-+|-+$/g, '')
-            .slice(0, 80);
+          const caseId = slugifyCaseLabel(result.caseLabel);
 
           const [insertedRow] = await db.insert(schema.assetRecoveries).values({
             caseId,
@@ -201,6 +197,10 @@ export const detectAssetRecoveries = inngest.createFunction(
     // No reviewStatus/pending concept here (see file header) — every insert
     // is already public, so a plain inserted>0 check is the right gate.
     if (inserted > 0) {
+      // Homepage latest-recoveries/total-recovered blocks are unstable_cache'd
+      // (5min TTL) independent of any revalidatePath — bust them explicitly so
+      // a cron-detected recovery shows up immediately, not up to 5min later.
+      revalidateTag('asset-recoveries');
       await step.sendEvent('emit-breaking-recompute', {
         name: 'breaking.recompute',
         data: { reason: 'asset_recovery' },

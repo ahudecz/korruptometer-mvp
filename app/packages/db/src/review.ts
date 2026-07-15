@@ -94,6 +94,25 @@ export function isCollectiveEntityName(name: string): boolean {
 }
 
 /**
+ * AssetRecovery.caseId slug generator. The LLM's caseLabel often bakes the
+ * recovered amount into the same string after a "-" or "·" separator (e.g.
+ * "Orbán János Dénes jogdíjak ügye - 1,3 milliárd forint visszaszerzés",
+ * "NKA · újabb visszafizetés") — slugifying the WHOLE label produced long,
+ * ugly URLs and, since the amount changes per article, meant near-identical
+ * stories about the same case never shared a caseId. Only the part before
+ * the first separator is used, so caseId stays a short, stable case name.
+ */
+export function slugifyCaseLabel(label: string): string {
+  const primary = (label.split(/[-·]/)[0] ?? label).trim();
+  const slug = primary
+    .toLowerCase()
+    .replace(/[^a-záéíóöőúüű0-9]+/gi, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+  return slug || 'vagyonvisszaszerzes';
+}
+
+/**
  * True if `institution` already has at least one PoliticalResignation row
  * (any reviewStatus) within the window — paired with isCollectiveEntityName()
  * to reject a collective/testületi entry when the same body's members were

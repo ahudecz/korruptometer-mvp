@@ -13,6 +13,10 @@ export const metadata = {
 
 const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
 
+// Kerek, jelképes cél — nem mérés, hanem viszonyítási pont ahhoz, mekkora
+// része térült meg a NER-korszak becsült közvagyon-károkozásának.
+const RECOVERY_GOAL_FT = 1_000_000_000_000n; // 1000 milliárd Ft
+
 function fmtDate(d: Date): string {
   return `${d.getFullYear()}. ${HU_MONTHS[d.getMonth()]} ${d.getDate()}.`;
 }
@@ -41,10 +45,10 @@ export default async function VisszaszerzettVagyonPage({
     );
 
   // Group by caseId for the top section
-  const caseMap = new Map<string, { caseId: string; totalFt: bigint; count: number }>();
+  const caseMap = new Map<string, { caseId: string; caseLabel: string; totalFt: bigint; count: number }>();
   for (const r of rows) {
     if (!caseMap.has(r.caseId)) {
-      caseMap.set(r.caseId, { caseId: r.caseId, totalFt: 0n, count: 0 });
+      caseMap.set(r.caseId, { caseId: r.caseId, caseLabel: r.caseLabel, totalFt: 0n, count: 0 });
     }
     const g = caseMap.get(r.caseId)!;
     g.totalFt += r.amountFt;
@@ -55,6 +59,10 @@ export default async function VisszaszerzettVagyonPage({
     .slice(0, 8);
 
   const totalAll = rows.reduce((s, r) => s + r.amountFt, 0n);
+  const recoveryPct = Number(totalAll) / Number(RECOVERY_GOAL_FT) * 100;
+  // A csík maga a valós %-ot mutatja, de kap egy minimális látható szélességet
+  // (0,6%) is, hogy ne tűnjön el teljesen a sáv elején egy kis összegnél.
+  const recoveryBarWidth = totalAll > 0n ? Math.min(100, Math.max(recoveryPct, 0.6)) : 0;
 
   const thStyle = {
     textAlign: 'left' as const,
@@ -80,21 +88,37 @@ export default async function VisszaszerzettVagyonPage({
           az ügyek előrehaladásával.
         </p>
 
+        <div className="recovery-tracker">
+          <div className="recovery-tracker-head">
+            <div className="recovery-tracker-label">Visszaszerzett vagyon számláló</div>
+            <div className="recovery-tracker-goal">Jelképes cél: <FtValue n={RECOVERY_GOAL_FT} mode="short" /></div>
+          </div>
+          <div className="recovery-tracker-track">
+            <div className="recovery-tracker-fill" style={{ width: `${recoveryBarWidth}%` }} />
+          </div>
+          <div className="recovery-tracker-stats">
+            <span className="recovery-tracker-current"><FtValue n={totalAll} /></span>
+            <span className="recovery-tracker-pct">{recoveryPct.toFixed(2)}% a célból</span>
+          </div>
+        </div>
+
         {/* Top cases by recovered amount */}
         {topCases.length > 0 && (
           <div className="visszaszerzett-cases">
             {topCases.map((g, i) => {
               const ugy = UGYEK.find(u => u.id === g.caseId);
               const eyebrow = ugy ? (ugy.eyebrow.split('·')[0] ?? '').trim() : 'Ügy';
-              const title = ugy?.title ?? g.caseId;
+              // No curated /ugyek/ page for this case yet — show the case's
+              // own name instead of the raw caseId slug, and don't link
+              // anywhere (the route would 404). The LLM's caseLabel often
+              // bakes the amount in after a "-"/"·" separator (see
+              // slugifyCaseLabel) — drop that part here too, so the card
+              // title reads like a case name ("NKA botrány"), not a sentence.
+              const title = ugy?.title ?? (g.caseLabel.split(/[-·]/)[0] ?? g.caseLabel).trim();
               const oneLiner = ugy ? firstSentence(ugy.summary) : '';
               const crimes = ugy?.crimeTypes?.slice(0, 2) ?? [];
-              return (
-                <Link
-                  key={g.caseId}
-                  href={`/ugyek/${g.caseId}`}
-                  className="visszaszerzett-case-card"
-                >
+              const cardBody = (
+                <>
                   <div className="visszaszerzett-card-top">
                     <span className="visszaszerzett-rank">№ {String(i + 1).padStart(2, '0')}</span>
                     <span className="visszaszerzett-eyebrow">{eyebrow}</span>
@@ -114,7 +138,16 @@ export default async function VisszaszerzettVagyonPage({
                     <div className="visszaszerzett-case-footer-lbl">Visszaszerzett vagyon összesen</div>
                     <div className="visszaszerzett-case-total"><FtValue n={g.totalFt} /></div>
                   </div>
+                </>
+              );
+              return ugy ? (
+                <Link key={g.caseId} href={`/ugyek/${g.caseId}`} className="visszaszerzett-case-card">
+                  {cardBody}
                 </Link>
+              ) : (
+                <div key={g.caseId} className="visszaszerzett-case-card">
+                  {cardBody}
+                </div>
               );
             })}
           </div>
@@ -127,6 +160,7 @@ export default async function VisszaszerzettVagyonPage({
           </h3>
           <Link
             href="/visszaszerzett-vagyon"
+            scroll={false}
             style={{
               fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 4,
               border: '1px solid var(--line)',
@@ -139,6 +173,7 @@ export default async function VisszaszerzettVagyonPage({
           </Link>
           <Link
             href="/visszaszerzett-vagyon?sort=amount"
+            scroll={false}
             style={{
               fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 4,
               border: '1px solid var(--line)',
