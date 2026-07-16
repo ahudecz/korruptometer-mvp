@@ -8,7 +8,7 @@ export const metadata = {
 import { UGYEK } from '../_home/ugyek-config';
 import { GALERIA } from '../_home/galeria-config';
 import { VerdictList, type SerializedVerdict } from './VerdictList';
-import { ComplaintList, type SerializedComplaint } from './ComplaintList';
+import type { SerializedComplaint } from './ComplaintList';
 import { CrossLemondosok, CrossUgyek, CrossGaleria, CrossMegszunt } from '../_home/cross-promo';
 
 export const revalidate = 120;
@@ -127,27 +127,12 @@ export default async function BirosagPage({
           első fokú és jogerős ítélet. Tényeket és forrásokat közlünk, nem kommentárt.
         </p>
 
-        {serializedComplaints.length > 0 && (
-          <div style={{ marginBottom: 40 }}>
-            <div style={{ marginBottom: 16 }}>
-              <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
-                Feljelentések
-              </h3>
-              <p style={{ fontSize: 13, color: '#888', margin: 0 }}>
-                NER-hez, államigazgatáshoz vagy NER-hez kapcsolódó gazdasági szereplőkhöz köthető
-                feljelentések — a megelőző stádium, mielőtt bírósági eljárás indulna.
-              </p>
-            </div>
-            <ComplaintList rows={serializedComplaints} />
-          </div>
-        )}
-
         {rows.length === 0 ? (
           <div style={{ marginTop: 32, padding: '40px 24px', textAlign: 'center', color: '#888', border: '1px dashed #e0e0e0', borderRadius: 12 }}>
             Még nincs rögzített ítélet — az első jogerős ítélettel frissül az oldal.
           </div>
         ) : (
-          <VerdictList rows={serialized} initialUgyFilter={ugy ?? 'all'} complaintCount={serializedComplaints.length} />
+          <VerdictList rows={serialized} initialUgyFilter={ugy ?? 'all'} complaints={serializedComplaints} />
         )}
       </section>
 

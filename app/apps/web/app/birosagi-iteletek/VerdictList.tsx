@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState, useRef, useEffect, useMemo } from 'react';
+import { ComplaintList, type SerializedComplaint } from './ComplaintList';
 
 export type SerializedVerdict = {
   id: string;
@@ -223,7 +224,7 @@ function VerdictRow({ r }: { r: SerializedVerdict }) {
   );
 }
 
-export function VerdictList({ rows, initialUgyFilter = 'all', complaintCount = 0 }: { rows: SerializedVerdict[]; initialUgyFilter?: string; complaintCount?: number }) {
+export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }: { rows: SerializedVerdict[]; initialUgyFilter?: string; complaints?: SerializedComplaint[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -231,6 +232,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaintCount = 0
   const [search, setSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [verdictTypeFilter, setVerdictTypeFilter] = useState('all');
+  const [complaintStatusFilter, setComplaintStatusFilter] = useState('all');
   const [crimeFilter, setCrimeFilter] = useState<string[]>([]);
   const [yearRange, setYearRange] = useState('all');
   const [courtFilter, setCourtFilter] = useState('all');
@@ -275,11 +277,20 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaintCount = 0
     return [...seen.entries()].sort((a, b) => a[1].localeCompare(b[1], 'hu'));
   }, [rows]);
 
+  // A kereső mindhárom blokkban keres (ítéletek — aktív és kiengedett/lezárt
+  // szekció is a `rows`-ból származik —, valamint a feljelentések listája),
+  // ezért a javaslatlista is mindkét adathalmazból merít.
   const suggestions = useMemo(() => {
     if (search.length < 3) return [];
     const q = search.toLowerCase();
-    return [...new Set(rows.map(r => r.personName))].filter(n => n.toLowerCase().includes(q));
-  }, [search, rows]);
+    const names = new Set<string>();
+    for (const r of rows) if (r.personName.toLowerCase().includes(q)) names.add(r.personName);
+    for (const c of complaints) {
+      if (c.targetName.toLowerCase().includes(q)) names.add(c.targetName);
+      if (c.filerName.toLowerCase().includes(q)) names.add(c.filerName);
+    }
+    return [...names];
+  }, [search, rows, complaints]);
 
   useEffect(() => {
     function handle(e: MouseEvent) {
@@ -307,12 +318,25 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaintCount = 0
     return true;
   }), [rows, search, verdictTypeFilter, crimeFilter, yearRange, courtFilter, ugyFilter]);
 
+  // A feljelentések a kereső (mindhárom blokkra érvényes) ÉS a saját
+  // feljelentés-státusz pill-sor szerint szűrődnek — a "Típus"/"Bűncselekmény"/
+  // "Bíróság"/"Ügy" szűrők verdict-specifikusak, azok nem vonatkoznak rájuk.
+  const filteredComplaints = useMemo(() => complaints.filter(c => {
+    if (complaintStatusFilter !== 'all' && c.status !== complaintStatusFilter) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      const hay = `${c.targetName} ${c.filerName} ${c.description ?? ''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  }), [complaints, search, complaintStatusFilter]);
+
   const hasYears = useMemo(
     () => rows.some(r => r.sentenceYears > 0 && !isReleased(r.verdictType) && r.verdictType !== 'előzetesben'),
     [rows],
   );
 
-  const hasFilter = search || verdictTypeFilter !== 'all' || crimeFilter.length > 0 || yearRange !== 'all' || courtFilter !== 'all' || ugyFilter !== 'all';
+  const hasFilter = search || verdictTypeFilter !== 'all' || complaintStatusFilter !== 'all' || crimeFilter.length > 0 || yearRange !== 'all' || courtFilter !== 'all' || ugyFilter !== 'all';
   const activeFiltered   = filtered.filter(r => !isReleased(r.verdictType));
   const releasedFiltered = filtered.filter(r => isReleased(r.verdictType));
   const nonPretrial   = activeFiltered.filter(r => r.verdictType !== 'előzetesben');
@@ -321,7 +345,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaintCount = 0
   const pretrialCount = activeFiltered.filter(r => r.verdictType === 'előzetesben').length;
 
   function clearAll() {
-    setSearch(''); setVerdictTypeFilter('all'); setCrimeFilter([]); setYearRange('all'); setCourtFilter('all'); setUgyFilter('all');
+    setSearch(''); setVerdictTypeFilter('all'); setComplaintStatusFilter('all'); setCrimeFilter([]); setYearRange('all'); setCourtFilter('all'); setUgyFilter('all');
   }
 
   return (
@@ -329,7 +353,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaintCount = 0
       {/* Stats */}
       <div className="megszunt-stats megszunt-stats--5">
         <div className="megszunt-stat">
-          <div className="megszunt-stat-value">{complaintCount}</div>
+          <div className="megszunt-stat-value">{filteredComplaints.length}</div>
           <div className="megszunt-stat-label">Feljelentések száma</div>
         </div>
         <div className="megszunt-stat">
@@ -360,7 +384,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaintCount = 0
           <input
             className="verdict-search-input"
             type="text"
-            placeholder="Keresés neve alapján… (min. 3 karakter)"
+            placeholder="Keresés név/ügy alapján — ítéletek és feljelentések között is… (min. 3 karakter)"
             value={search}
             onChange={e => { setSearch(e.target.value); setShowSuggestions(true); }}
             onFocus={() => setShowSuggestions(true)}
@@ -393,9 +417,9 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaintCount = 0
       <div className="verdict-filters">
         <div className="verdict-filters-blocks">
 
-          {/* Blokk 1: Típus */}
+          {/* Blokk 1: Típus (bírósági szakasz) */}
           <div className="verdict-filter-block">
-            <span className="verdict-filter-block-label">Típus</span>
+            <span className="verdict-filter-block-label">Típus (bírósági eljárás)</span>
             <div className="verdict-pills">
               {[
                 { val: 'all',                  label: 'Összes' },
@@ -420,6 +444,35 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaintCount = 0
               ))}
             </div>
           </div>
+
+          {/* Blokk 1b: Feljelentés-státusz — a Feljelentések táblát szűri,
+              külön az ítéletek "Típus" pilljeitől (más adathalmaz, más
+              életciklus-fázisok). */}
+          {complaints.length > 0 && (
+            <div className="verdict-filter-block">
+              <span className="verdict-filter-block-label">Feljelentés-státusz</span>
+              <div className="verdict-pills">
+                {[
+                  { val: 'all',          label: 'Mind' },
+                  { val: 'feljelentés',  label: 'Feljelentés' },
+                  { val: 'nyomozás',     label: 'Nyomozás' },
+                  { val: 'vádemelés',    label: 'Vádemelve' },
+                  { val: 'ítélet',       label: 'Ítélet' },
+                  { val: 'elutasítva',   label: 'Elutasítva' },
+                ].filter(({ val }) => val === 'all' || complaints.some(c => c.status === val))
+                .map(({ val, label }) => (
+                  <button
+                    key={val}
+                    type="button"
+                    className={`verdict-pill${complaintStatusFilter === val ? ' verdict-pill--active' : ''}`}
+                    onClick={() => setComplaintStatusFilter(val)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Blokk 2: Kiszabott évek — csak ha vannak letöltendő ítéletek */}
           {hasYears && (
@@ -448,7 +501,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaintCount = 0
 
           {/* Blokk 3: Részletes szűrők (dropdownok) */}
           <div className="verdict-filter-block verdict-filter-block--dropdowns">
-            <span className="verdict-filter-block-label">Részletes szűrő</span>
+            <span className="verdict-filter-block-label">Részletes szűrő (bírósági eljárás)</span>
             <div className="verdict-filter-dropdowns">
               {/* Bűncselekmény */}
               <div className="verdict-dropdown-wrap" ref={crimeRef}>
@@ -534,12 +587,12 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaintCount = 0
 
         </div>
 
-        {/* Footer sor: találatok + szűrők törlése */}
+        {/* Footer sor: találatok (ítéletek + feljelentések együtt) + szűrők törlése */}
         <div className="verdict-filters-footer">
           <span className="verdict-result-meta">
             {hasFilter
-              ? `${filtered.length} találat (${rows.length} bejegyzésből)`
-              : `${rows.length} bejegyzés összesen`}
+              ? `${filtered.length} ítélet (${rows.length}-ból)${complaints.length > 0 ? ` · ${filteredComplaints.length} feljelentés (${complaints.length}-ból)` : ''}`
+              : `${rows.length} ítélet${complaints.length > 0 ? ` · ${complaints.length} feljelentés` : ''} összesen`}
           </span>
           {hasFilter && (
             <button type="button" className="verdict-clear-all" onClick={clearAll}>
@@ -548,6 +601,27 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaintCount = 0
           )}
         </div>
       </div>
+
+      {complaints.length > 0 && (
+        <div style={{ marginBottom: 40 }}>
+          <div style={{ marginBottom: 16 }}>
+            <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
+              Feljelentések
+            </h3>
+            <p style={{ fontSize: 13, color: '#888', margin: 0 }}>
+              NER-hez, államigazgatáshoz vagy NER-hez kapcsolódó gazdasági szereplőkhöz köthető
+              feljelentések — a megelőző stádium, mielőtt bírósági eljárás indulna.
+            </p>
+          </div>
+          {filteredComplaints.length === 0 ? (
+            <div style={{ padding: '24px 0', color: '#888', fontSize: 13 }}>
+              Nincs a feltételeknek megfelelő feljelentés.
+            </div>
+          ) : (
+            <ComplaintList rows={filteredComplaints} />
+          )}
+        </div>
+      )}
 
       {/* Sorok — aktív. A "nincs találat" üzenet csak akkor jelenik meg, ha
           SEHOL (sem itt, sem a lezárt/kiengedett szekcióban) nincs találat —

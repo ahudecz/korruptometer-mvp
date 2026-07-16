@@ -12055,6 +12055,25 @@ body:has(.admin-nav) > main {
   text-overflow: ellipsis;
 }
 
+/* 009-criminal-complaint-tracking — a vrow-name/vrow-position mellett
+   (avatar nélküli sor) a leírás és a forráslink is közvetlenül, kinyitás
+   nélkül látszik. */
+.complaint-row-description {
+  font-size: 13px;
+  color: #555;
+  margin: 6px 0 0;
+  line-height: 1.4;
+}
+.complaint-row-source-link {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+.complaint-row-source-link:hover { text-decoration: underline; }
+
 .vrow-crimes { display: flex; flex-wrap: wrap; gap: 4px; flex-shrink: 0; max-width: 220px; }
 .vrow-crime-tag {
   background: #fff0f0;
@@ -12090,18 +12109,23 @@ body:has(.admin-nav) > main {
 .vrow-badge-unit { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; }
 .vrow-badge-months { font-size: 10px; opacity: 0.85; }
 
-/* 009-criminal-complaint-tracking — feljelentés-státusz színkód (WCAG-AA
-   kontraszt: a narancs (vádemelés) sötét szöveggel, a többi fehérrel). */
-.vrow-badge--complaint-filed { background: #5c5e62; color: #fff; }
-.vrow-badge--complaint-filed span { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; }
-.vrow-badge--complaint-investigation { background: #4B7AFF; color: #fff; }
-.vrow-badge--complaint-investigation span { font-size: 10px; font-weight: 900; letter-spacing: 0.1em; }
-.vrow-badge--complaint-indictment { background: #FF9D00; color: #171a20; }
-.vrow-badge--complaint-indictment span { font-size: 10px; font-weight: 900; letter-spacing: 0.1em; }
-.vrow-badge--complaint-verdict { background: #E31937; color: #fff; }
-.vrow-badge--complaint-verdict span { font-size: 10px; font-weight: 900; letter-spacing: 0.1em; }
-.vrow-badge--complaint-rejected { background: #e0e0e0; color: #5c5e62; }
-.vrow-badge--complaint-rejected span { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-decoration: line-through; }
+/* 009-criminal-complaint-tracking — feljelentés-státusz színkód, kompakt
+   pill a ComplaintList kártyasor jobb szélén (WCAG-AA kontraszt: a narancs
+   (vádemelés) sötét szöveggel, a többi fehérrel). */
+.complaint-status-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.complaint-status-pill--filed { background: #5c5e62; color: #fff; }
+.complaint-status-pill--investigation { background: #4B7AFF; color: #fff; }
+.complaint-status-pill--indictment { background: #FF9D00; color: #171a20; }
+.complaint-status-pill--verdict { background: #E31937; color: #fff; }
+.complaint-status-pill--rejected { background: #e0e0e0; color: #5c5e62; text-decoration: line-through; }
 
 .vrow-detail {
   padding: 20px 24px 24px;

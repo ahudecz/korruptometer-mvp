@@ -17,72 +17,92 @@ export type SerializedComplaint = {
 };
 
 function statusLabel(s: SerializedComplaint['status']): string {
-  if (s === 'feljelentés') return 'FELJELENTÉS MEGTÖRTÉNT';
-  if (s === 'nyomozás') return 'NYOMOZÁS ALATT';
-  if (s === 'vádemelés') return 'VÁDEMELVE';
-  if (s === 'ítélet') return 'ÍTÉLET SZÜLETETT';
-  return 'ELUTASÍTVA';
+  if (s === 'feljelentés') return 'Feljelentés megtörtént';
+  if (s === 'nyomozás') return 'Nyomozás alatt';
+  if (s === 'vádemelés') return 'Vádemelve';
+  if (s === 'ítélet') return 'Ítélet született';
+  return 'Elutasítva';
 }
 
 function statusModifier(s: SerializedComplaint['status']): string {
-  if (s === 'feljelentés') return 'vrow-badge--complaint-filed';
-  if (s === 'nyomozás') return 'vrow-badge--complaint-investigation';
-  if (s === 'vádemelés') return 'vrow-badge--complaint-indictment';
-  if (s === 'ítélet') return 'vrow-badge--complaint-verdict';
-  return 'vrow-badge--complaint-rejected';
+  if (s === 'feljelentés') return 'complaint-status-pill--filed';
+  if (s === 'nyomozás') return 'complaint-status-pill--investigation';
+  if (s === 'vádemelés') return 'complaint-status-pill--indictment';
+  if (s === 'ítélet') return 'complaint-status-pill--verdict';
+  return 'complaint-status-pill--rejected';
 }
 
 function ComplaintDetail({ c }: { c: SerializedComplaint }) {
+  if (c.sourceUrls.length <= 1) return null;
   return (
     <div className="vrow-detail">
-      {c.description && <p className="verdict-summary">{c.description}</p>}
-
-      {c.sourceUrls.length > 0 && (
-        <div className="verdict-sources-section">
-          <div className="verdict-sources-heading">Sajtóforrások</div>
-          <div className="verdict-source-cards">
-            {c.sourceUrls.map((url, i) => (
-              <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="person-news-item verdict-source-card">
-                <span className="person-news-source">{c.sourceNames[i] ?? 'Forrás'}</span>
-                {c.sourceDates[i] && <span className="person-news-date">{c.sourceDates[i]}</span>}
-                <span className="person-news-headline">{c.sourceHeadlines[i] ?? url}</span>
-              </a>
-            ))}
-          </div>
+      <div className="verdict-sources-section">
+        <div className="verdict-sources-heading">További forrásaink ebben az ügyben</div>
+        <div className="verdict-source-cards">
+          {c.sourceUrls.slice(1).map((url, i) => (
+            <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="person-news-item verdict-source-card">
+              <span className="person-news-source">{c.sourceNames[i + 1] ?? 'Forrás'}</span>
+              {c.sourceDates[i + 1] && <span className="person-news-date">{c.sourceDates[i + 1]}</span>}
+              <span className="person-news-headline">{c.sourceHeadlines[i + 1] ?? url}</span>
+            </a>
+          ))}
         </div>
-      )}
+      </div>
     </div>
   );
 }
 
 function ComplaintRow({ c }: { c: SerializedComplaint }) {
   const [open, setOpen] = useState(false);
-  const initials = c.targetName.split(' ').slice(0, 2).map((w) => w[0]).join('');
+  const hasExtraSources = c.sourceUrls.length > 1;
 
   return (
     <div className={`vrow-card${open ? ' vrow-card--open' : ''}`}>
-      <button type="button" className="vrow-header" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
-        <span className="vrow-chevron" aria-hidden="true">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </span>
-
-        <div className="vrow-avatar">
-          <div className="vrow-avatar-placeholder">{initials}</div>
-        </div>
+      <div
+        className="vrow-header"
+        style={{ cursor: hasExtraSources ? 'pointer' : 'default' }}
+        onClick={() => hasExtraSources && setOpen((v) => !v)}
+        role={hasExtraSources ? 'button' : undefined}
+        tabIndex={hasExtraSources ? 0 : undefined}
+        aria-expanded={hasExtraSources ? open : undefined}
+        onKeyDown={(e) => {
+          if (hasExtraSources && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            setOpen((v) => !v);
+          }
+        }}
+      >
+        {hasExtraSources && (
+          <span className="vrow-chevron" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+        )}
 
         <div className="vrow-identity">
           <div className="vrow-name">{c.targetName}</div>
           <div className="vrow-position">Feljelentő: {c.filerName}</div>
+          {c.description && <p className="complaint-row-description">{c.description}</p>}
+          {c.sourceUrls[0] && (
+            <a
+              href={c.sourceUrls[0]}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="complaint-row-source-link"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {c.sourceNames[0] ?? 'Forrás'} →
+            </a>
+          )}
         </div>
 
         <div className="vrow-court">{c.eventDateFormatted}</div>
 
-        <div className={`vrow-badge ${statusModifier(c.status)}`}>
-          <span>{statusLabel(c.status)}</span>
-        </div>
-      </button>
+        <span className={`complaint-status-pill ${statusModifier(c.status)}`} style={{ flexShrink: 0 }}>
+          {statusLabel(c.status)}
+        </span>
+      </div>
 
       {open && <ComplaintDetail c={c} />}
     </div>
