@@ -12161,15 +12161,21 @@ body:has(.admin-nav) > main {
      "a nyíl ne külön sorban legyen"). */
   .complaint-card-header { flex-wrap: wrap; padding: 12px 14px; gap: 10px; }
   /* Kompaktabb elrendezés: az Összeg + Státusz a fejlécben marad, kicsit
-     nagyobb betűvel (user report); a Dátum elég a kinyitott részben. A
-     Státusz-gomb mindig jobbra zárt (justify-content: space-between), így
-     minden kártyán ugyanott van, függetlenül az Összeg hosszától. */
+     nagyobb betűvel (user report); a Dátum elég a kinyitott részben.
+     A Státusz-gomb "jobbra zárt" MARGIN-LEFT: AUTO-val, NEM
+     justify-content: space-between-nel — utóbbi egy keskeny kijelzőn
+     (pl. iPhone 12 mini, 375px) az Összeg+hosszú státuszszöveg együtt
+     kilógott, mert a sor sosem törhetett; flex-wrap + auto-margin esetén
+     a gomb szükség esetén saját sorra kerül, de ott is jobbra igazítva
+     marad — SOSEM lóg ki vízszintesen (2026-07-16, user report: "kilóg
+     mindegyik gomb iPhone 12 mininin"). */
   .complaint-meta {
     flex-basis: 100%;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+    row-gap: 6px;
+    column-gap: 10px;
     margin-top: 8px;
     margin-left: 24px; /* a nyíl szélessége alá igazítva */
   }
@@ -12178,14 +12184,20 @@ body:has(.admin-nav) > main {
     align-items: baseline;
     gap: 6px;
     width: auto;
+    min-width: 0;
   }
   .complaint-meta-item--date { display: none; }
   /* Az "Összeg" felirat mobilon feleslegesen foglalja a helyet a
      Státusz-gomb elől (user report: "kilóg") — az érték önmagában is
      érthető ebben a kontextusban. */
   .complaint-meta-item--amount .complaint-meta-label { display: none; }
-  .complaint-meta-value--amount { font-size: 15px; }
-  .complaint-status-pill--meta { font-size: 12px; padding: 5px 12px; flex-shrink: 0; }
+  .complaint-meta-value--amount { font-size: 15px; white-space: normal; }
+  .complaint-status-pill--meta {
+    font-size: 11px;
+    padding: 5px 10px;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
   .complaint-detail-date { display: block; font-size: 13px; color: #888; margin: 0 0 10px; }
 }
 
