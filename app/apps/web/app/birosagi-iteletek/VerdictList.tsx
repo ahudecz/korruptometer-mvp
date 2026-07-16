@@ -637,8 +637,18 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
       ) : (
         <>
           {activeFiltered.length > 0 && (
-            <div className="vlist" style={{ marginTop: 20 }}>
-              {activeFiltered.map(r => <VerdictRow key={r.id} r={r} />)}
+            <div style={{ marginTop: 20 }}>
+              <div style={{ marginBottom: 16 }}>
+                <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
+                  {hasFilter ? `Találat — ${activeFiltered.length} db` : 'Előzetesben / Eljárás alatt'}
+                </h3>
+                <p style={{ fontSize: 13, color: '#888', margin: 0 }}>
+                  Az alábbi személyek ellen jelenleg is folyamatban van az eljárás — előzetes letartóztatásban vannak, vagy vádemelés/ítélet történt, de az ügy még nem zárult le.
+                </p>
+              </div>
+              <div className="vlist">
+                {activeFiltered.map(r => <VerdictRow key={r.id} r={r} />)}
+              </div>
             </div>
           )}
 

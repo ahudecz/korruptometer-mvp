@@ -60,29 +60,30 @@ function ComplaintRow({ c }: { c: SerializedComplaint }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className={`vrow-card${open ? ' vrow-card--open' : ''}`}>
-      <button type="button" className="vrow-header" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
-        <span className="vrow-chevron" aria-hidden="true">
+    <div className={`complaint-card${open ? ' complaint-card--open' : ''}`}>
+      <button type="button" className="complaint-card-header" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+        <span className="complaint-chevron" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </span>
 
-        <div className="vrow-identity">
-          <div className="vrow-name">{c.targetName}</div>
-          <div className="vrow-position">Feljelentő: {c.filerName}</div>
+        <div className="complaint-identity">
+          <div className="complaint-title">{c.targetName}</div>
+          <div className="complaint-filer">Feljelentő: {c.filerName}</div>
         </div>
 
-        <div className="vrow-amount">
-          <span className="vrow-amount-label">Összeg</span>
-          <span className="vrow-amount-value">{c.amountLabel ?? '–'}</span>
+        <div className="complaint-meta">
+          <div className="complaint-meta-item">
+            <span className="complaint-meta-label">Összeg</span>
+            <span className="complaint-meta-value complaint-meta-value--amount">{c.amountLabel ?? '–'}</span>
+          </div>
+          <div className="complaint-meta-item">
+            <span className="complaint-meta-label">Dátum</span>
+            <span className="complaint-meta-value">{c.eventDateFormatted}</span>
+          </div>
+          <span className={`complaint-status-pill ${statusModifier(c.status)}`}>{statusLabel(c.status)}</span>
         </div>
-
-        <div className="vrow-court">{c.eventDateFormatted}</div>
-
-        <span className={`complaint-status-pill ${statusModifier(c.status)}`} style={{ flexShrink: 0 }}>
-          {statusLabel(c.status)}
-        </span>
       </button>
 
       {open && <ComplaintDetail c={c} />}
