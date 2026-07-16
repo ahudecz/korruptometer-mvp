@@ -12223,10 +12223,10 @@ body:has(.admin-nav) > main {
 .vrow-detail-sentence { font-size: 13px; color: #555; margin-top: 6px; }
 
 .vrow-detail-position { display: none; font-size: 13px; font-weight: 600; color: #555; margin: 0 0 10px; }
+.vrow-detail-crimes { display: none; flex-wrap: wrap; gap: 4px; margin: 0 0 10px; }
 
 @media (max-width: 700px) {
   .vrow-header { gap: 8px; padding: 10px 12px; flex-wrap: wrap; }
-  .vrow-crimes { max-width: 100%; order: 4; flex-basis: 100%; margin-top: 2px; }
   .vrow-court { display: none; }
   .vrow-detail { padding: 16px; }
   .vrow-detail-top { flex-direction: column; }
@@ -12238,10 +12238,13 @@ body:has(.admin-nav) > main {
     overflow: visible;
     text-overflow: clip;
   }
-  /* A titulus mobilon túlzsúfolttá tette a fejlécet (user report) — csak
-     kinyitva jelenik meg, a vrow-detail-position mutatja. */
+  /* A titulus és a bűncselekmény-tagek mobilon túlzsúfolttá tették a
+     fejlécet (user report) — csak kinyitva jelennek meg, a
+     vrow-detail-position / vrow-detail-crimes mutatja őket. */
   .vrow-position { display: none; }
+  .vrow-crimes { display: none; }
   .vrow-detail-position { display: block; }
+  .vrow-detail-crimes { display: flex; }
 }
 
 /* ─── Inline code ─────────────────────────────────────────────────── */

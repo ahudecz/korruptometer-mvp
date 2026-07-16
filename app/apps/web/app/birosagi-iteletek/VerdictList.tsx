@@ -109,10 +109,16 @@ function StatusBadge({ r }: { r: SerializedVerdict }) {
 function VerdictDetail({ r }: { r: SerializedVerdict }) {
   return (
     <div className="vrow-detail">
-      {/* Mobilon a fejlécből elrejtett titulus itt jelenik meg — l.
-          .vrow-position mobil display:none szabálya (túlzsúfoltság,
-          user report). Desktopon rejtve, ott a fejléc már mutatja. */}
+      {/* Mobilon a fejlécből elrejtett titulus és bűncselekmény-tagek itt
+          jelennek meg — l. .vrow-position / .vrow-crimes mobil
+          display:none szabálya (túlzsúfoltság, user report). Desktopon
+          rejtve, ott a fejléc már mutatja mindkettőt. */}
       {r.position && <p className="vrow-detail-position">{r.position}</p>}
+      {r.crimes.length > 0 && (
+        <div className="vrow-detail-crimes">
+          {r.crimes.map((c, i) => <span key={i} className="vrow-crime-tag">{c}</span>)}
+        </div>
+      )}
       <p className="verdict-summary">{r.summary}</p>
 
       {r.reactionQuote && (
