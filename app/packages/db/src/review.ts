@@ -174,3 +174,64 @@ export async function findExistingVerdict(
   `)) as unknown as ExistingVerdict[];
   return rows[0] ?? null;
 }
+
+// ─── 009-criminal-complaint-tracking ──────────────────────────────────────
+
+export type ComplaintStatus = 'feljelentés' | 'nyomozás' | 'vádemelés' | 'ítélet' | 'elutasítva';
+
+export type ExistingComplaint = { id: string; status: ComplaintStatus };
+
+/** 180 days, not the usual 30 (DEDUP_WINDOW_DAYS) — a complaint can take
+ *  months to reach an indictment or verdict (spec Assumptions). */
+export const COMPLAINT_DEDUP_WINDOW_DAYS = 180;
+
+/**
+ * Finds the most recent CriminalComplaint row for a target/case within the
+ * dedup window, if any. Matches on `targetName` (the case/target), NOT
+ * `filerName` — a follow-up article about the same case ("a rendőrség
+ * nyomozást indított") often doesn't re-name the original filer, but the
+ * target/case name stays stable. Mirrors findExistingVerdict()'s
+ * personName-based matching, applied to the complaint's target instead of
+ * the defendant, since here there's no single "accused" until an indictment
+ * exists.
+ */
+export async function findExistingComplaint(
+  db: Executable,
+  targetName: string,
+  withinDays: number = COMPLAINT_DEDUP_WINDOW_DAYS,
+): Promise<ExistingComplaint | null> {
+  const key = normalizeName(targetName);
+  if (!key) return null;
+  const rows = (await db.execute(sql`
+    SELECT id, "status" FROM "CriminalComplaint"
+    WHERE trim(regexp_replace(lower(unaccent(trim("targetName"))), '[^a-z0-9]+', ' ', 'g')) = ${key}
+      AND "createdAt" >= now() - make_interval(days => ${withinDays})
+    ORDER BY "eventDate" DESC
+    LIMIT 1
+  `)) as unknown as ExistingComplaint[];
+  return rows[0] ?? null;
+}
+
+const COMPLAINT_STATUS_ORDER: Record<Exclude<ComplaintStatus, 'elutasítva'>, number> = {
+  'feljelentés': 0,
+  'nyomozás': 1,
+  'vádemelés': 2,
+  'ítélet': 3,
+};
+
+/**
+ * Monotonic state-machine rule for an existing CriminalComplaint row: a
+ * later-processed but chronologically OLDER article must never write the
+ * status backwards (e.g. a recap article mentioning the original feljelentés
+ * must not downgrade an already-recorded vádemelés back to feljelentés).
+ *
+ * 'elutasítva' (rejected/dropped) is a special terminal state: reachable
+ * from any status (a case can be dropped at any stage), and a case can also
+ * be reopened FROM 'elutasítva' into any other status — both are real status
+ * changes, not "stale" reprocessing.
+ */
+export function decideComplaintTransition(current: ComplaintStatus, next: ComplaintStatus): 'update' | 'stale' {
+  if (next === 'elutasítva') return current === 'elutasítva' ? 'stale' : 'update';
+  if (current === 'elutasítva') return 'update';
+  return COMPLAINT_STATUS_ORDER[next] > COMPLAINT_STATUS_ORDER[current] ? 'update' : 'stale';
+}

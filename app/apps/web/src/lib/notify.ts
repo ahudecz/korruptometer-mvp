@@ -17,7 +17,7 @@ export type ReviewNeededEvent = {
   /** 'pending' = a 0.70–0.8999 confidence detection awaiting editor review (003).
    *  'near_miss' = a 0.50–0.6999 discard worth a second human look (006). */
   type: 'pending' | 'near_miss';
-  detectorType: 'resignation' | 'media_closure' | 'court_verdict' | 'asset_recovery';
+  detectorType: 'resignation' | 'media_closure' | 'court_verdict' | 'asset_recovery' | 'criminal_complaint';
   name: string;
   confidence: number;
   articleUrl: string;
@@ -36,6 +36,7 @@ const DETECTOR_LABELS_HU: Record<ReviewNeededEvent['detectorType'], string> = {
   media_closure: 'Médium megszűnés',
   court_verdict: 'Bírósági ítélet',
   asset_recovery: 'Vagyonvisszaszerzés',
+  criminal_complaint: 'Feljelentés',
 };
 
 // callback_data detector shorthand — keeps "{action}:{code}:{id}" well
@@ -45,6 +46,7 @@ const DETECTOR_CODES: Record<ReviewNeededEvent['detectorType'], string> = {
   media_closure: 'm',
   court_verdict: 'c',
   asset_recovery: 'x',
+  criminal_complaint: 'f',
 };
 
 export async function notifyReviewNeeded(event: ReviewNeededEvent): Promise<void> {

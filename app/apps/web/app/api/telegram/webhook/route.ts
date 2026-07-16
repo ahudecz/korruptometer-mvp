@@ -25,6 +25,7 @@ const DETECTOR_BY_CODE: Record<string, DetectorType> = {
   m: 'media_closure',
   c: 'court_verdict',
   x: 'asset_recovery',
+  f: 'criminal_complaint',
 };
 
 // 2026-07-14 — codes for the "auto-published, revertible" notification
@@ -43,6 +44,7 @@ const DETECTOR_LABELS_HU: Record<DetectorType, string> = {
   media_closure: 'Médium megszűnés',
   court_verdict: 'Bírósági ítélet',
   asset_recovery: 'Vagyonvisszaszerzés',
+  criminal_complaint: 'Feljelentés',
 };
 
 // 2026-07-13 — "📰 Csak hírbe" gomb: ugyanazok a rövid címkék, amiket a
@@ -54,6 +56,7 @@ const NEWS_ONLY_TAG: Record<DetectorType, string> = {
   media_closure: 'Megszűnés',
   court_verdict: 'Ítélet',
   asset_recovery: 'Vagyonvisszaszerzés',
+  criminal_complaint: 'Feljelentés',
 };
 
 // ── 2026-07-14 — "Név - kategória - visszavonás" kézi visszavonó parancs.
@@ -71,6 +74,7 @@ const CATEGORY_HINTS: Array<{ keywords: string[]; code: string }> = [
   { keywords: ['ítélet', 'itelet', 'bírósági', 'birosagi', 'verdikt'], code: 'c' },
   { keywords: ['vagyon'], code: 'x' },
   { keywords: ['watchlist', 'kiemelt', 'eltávolít', 'eltavolit'], code: 'w' },
+  { keywords: ['feljelent'], code: 'f' },
 ];
 
 const DELETE_CODE_TABLE: Record<string, DetectorType | 'watchlist_removal'> = {
@@ -79,6 +83,7 @@ const DELETE_CODE_TABLE: Record<string, DetectorType | 'watchlist_removal'> = {
   c: 'court_verdict',
   x: 'asset_recovery',
   w: 'watchlist_removal',
+  f: 'criminal_complaint',
 };
 
 function matchCategoryHint(text: string): string | null {
@@ -146,6 +151,16 @@ async function searchAssetRecoveries(q: string): Promise<RevokeCandidate[]> {
   return rows.map((r) => ({ code: 'x', id: r.id, label: `${r.caseLabel} (${fmtDateShort(r.recoveredAt)})` }));
 }
 
+async function searchCriminalComplaints(q: string): Promise<RevokeCandidate[]> {
+  const rows = await getDb()
+    .select({ id: schema.criminalComplaints.id, targetName: schema.criminalComplaints.targetName, status: schema.criminalComplaints.status, eventDate: schema.criminalComplaints.eventDate })
+    .from(schema.criminalComplaints)
+    .where(ilike(schema.criminalComplaints.targetName, `%${q}%`))
+    .orderBy(desc(schema.criminalComplaints.createdAt))
+    .limit(5);
+  return rows.map((r) => ({ code: 'f', id: r.id, label: `${r.targetName} — ${r.status} (${fmtDateShort(r.eventDate)})` }));
+}
+
 async function searchWatchlistRemovals(q: string): Promise<RevokeCandidate[]> {
   const matchedPersons = WATCH_LIST.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()));
   if (matchedPersons.length === 0) return [];
@@ -166,6 +181,7 @@ async function searchRevokeCandidates(nameQuery: string, categoryCode: string | 
     c: () => searchCourtVerdicts(nameQuery),
     x: () => searchAssetRecoveries(nameQuery),
     w: () => searchWatchlistRemovals(nameQuery),
+    f: () => searchCriminalComplaints(nameQuery),
   };
   if (categoryCode && searchers[categoryCode]) return searchers[categoryCode]();
   const all = await Promise.all(Object.values(searchers).map((fn) => fn()));
@@ -178,6 +194,7 @@ async function deleteByCode(target: DetectorType | 'watchlist_removal', id: stri
   else if (target === 'media_closure') await db.delete(schema.mediaClosures).where(eq(schema.mediaClosures.id, id));
   else if (target === 'court_verdict') await db.delete(schema.courtVerdicts).where(eq(schema.courtVerdicts.id, id));
   else if (target === 'asset_recovery') await db.delete(schema.assetRecoveries).where(eq(schema.assetRecoveries.id, id));
+  else if (target === 'criminal_complaint') await db.delete(schema.criminalComplaints).where(eq(schema.criminalComplaints.id, id));
   else await db.delete(schema.watchlistRemovals).where(eq(schema.watchlistRemovals.id, id));
 }
 
@@ -207,6 +224,7 @@ const TIP_CATEGORY_BUTTONS: Array<{ label: string; callbackData: (id: string) =>
   { label: '📴 Megszűnés', callbackData: (id) => `a:m:${id}` },
   { label: '⚖️ Bírósági ítélet', callbackData: (id) => `a:c:${id}` },
   { label: '💰 Vagyonvisszaszerzés', callbackData: (id) => `a:x:${id}` },
+  { label: '📝 Feljelentés', callbackData: (id) => `a:f:${id}` },
   { label: '📰 Csak hír', callbackData: (id) => `n:g:${id}` },
 ];
 
@@ -331,6 +349,12 @@ async function findPendingRecord(detectorType: DetectorType, id: string): Promis
     const row = rows[0];
     return row ? { id: row.id, sourceUrl: row.sourceUrls[0] ?? null } : null;
   }
+  if (detectorType === 'criminal_complaint') {
+    const rows = await getDb().select({ id: schema.criminalComplaints.id, sourceUrls: schema.criminalComplaints.sourceUrls })
+      .from(schema.criminalComplaints).where(eq(schema.criminalComplaints.id, id)).limit(1);
+    const row = rows[0];
+    return row ? { id: row.id, sourceUrl: row.sourceUrls[0] ?? null } : null;
+  }
   return null; // asset_recovery has no reviewStatus/pending concept
 }
 
@@ -351,6 +375,8 @@ async function setPendingStatus(detectorType: DetectorType, id: string, status: 
       await getDb().delete(schema.mediaClosures).where(eq(schema.mediaClosures.id, id));
     } else if (detectorType === 'court_verdict') {
       await getDb().delete(schema.courtVerdicts).where(eq(schema.courtVerdicts.id, id));
+    } else if (detectorType === 'criminal_complaint') {
+      await getDb().delete(schema.criminalComplaints).where(eq(schema.criminalComplaints.id, id));
     }
     return;
   }
@@ -360,6 +386,8 @@ async function setPendingStatus(detectorType: DetectorType, id: string, status: 
     await getDb().update(schema.mediaClosures).set({ reviewStatus: 'approved', updatedAt: new Date() }).where(eq(schema.mediaClosures.id, id));
   } else if (detectorType === 'court_verdict') {
     await getDb().update(schema.courtVerdicts).set({ reviewStatus: 'approved', updatedAt: new Date() }).where(eq(schema.courtVerdicts.id, id));
+  } else if (detectorType === 'criminal_complaint') {
+    await getDb().update(schema.criminalComplaints).set({ reviewStatus: 'approved', updatedAt: new Date() }).where(eq(schema.criminalComplaints.id, id));
   }
 }
 

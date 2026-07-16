@@ -6,6 +6,7 @@ import { detectResignations } from './functions/detect-resignations';
 import { detectMediaClosures } from './functions/detect-media-closures';
 import { detectVerdicts } from './functions/detect-verdicts';
 import { detectAssetRecoveries } from './functions/detect-asset-recoveries';
+import { detectCriminalComplaints } from './functions/detect-criminal-complaints';
 import { syncFacebookPosts } from './functions/sync-facebook-posts';
 import { refreshDailyBreaking } from './functions/refresh-daily-breaking';
 import { detectWatchlistRemovals } from './functions/detect-watchlist-removals';
@@ -75,6 +76,11 @@ export const functions = [
   detectMediaClosures,
   detectVerdicts,
   detectAssetRecoveries,
+  // 009-criminal-complaint-tracking — regisztrálva, de az Inngest-fiók
+  // jelenleg havi kvótán túl van (2026-07-16 óta, ~2 hétig); addig a
+  // packages/db/src/detect-criminal-complaints-now.ts bypass-script pótolja
+  // kézi futtatással (l. project-facebook-sync.md / -youtube mintája).
+  detectCriminalComplaints,
   syncFacebookPosts,
   refreshDailyBreaking,
   detectWatchlistRemovals,

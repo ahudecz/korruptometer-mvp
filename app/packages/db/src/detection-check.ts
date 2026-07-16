@@ -13,9 +13,9 @@
 import { sql } from 'drizzle-orm';
 import type { LlmResult } from './llm';
 
-export type DetectorType = 'resignation' | 'media_closure' | 'court_verdict' | 'asset_recovery';
+export type DetectorType = 'resignation' | 'media_closure' | 'court_verdict' | 'asset_recovery' | 'criminal_complaint';
 export type CheckOutcome = 'inserted' | 'discarded';
-export type CheckReason = 'low_confidence' | 'not_applicable' | 'duplicate' | 'missing_fields' | 'missing_source';
+export type CheckReason = 'low_confidence' | 'not_applicable' | 'duplicate' | 'missing_fields' | 'missing_source' | 'stale_status';
 
 /** How many days back an unchecked article stays eligible for processing. */
 export const BACKLOG_DAYS = 7;

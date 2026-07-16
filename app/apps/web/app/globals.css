@@ -11175,6 +11175,10 @@ body:has(.admin-nav) > main {
   grid-template-columns: repeat(4, 1fr);
 }
 
+.megszunt-stats--5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
 .megszunt-stat {
   background: #fff;
   padding: 32px 28px;
@@ -11210,6 +11214,9 @@ body:has(.admin-nav) > main {
     grid-template-columns: repeat(1, 1fr);
   }
   .megszunt-stats--4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .megszunt-stats--5 {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -12082,6 +12089,19 @@ body:has(.admin-nav) > main {
 .vrow-badge-years { font-size: 22px; font-weight: 900; line-height: 1; }
 .vrow-badge-unit { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; }
 .vrow-badge-months { font-size: 10px; opacity: 0.85; }
+
+/* 009-criminal-complaint-tracking — feljelentés-státusz színkód (WCAG-AA
+   kontraszt: a narancs (vádemelés) sötét szöveggel, a többi fehérrel). */
+.vrow-badge--complaint-filed { background: #5c5e62; color: #fff; }
+.vrow-badge--complaint-filed span { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; }
+.vrow-badge--complaint-investigation { background: #4B7AFF; color: #fff; }
+.vrow-badge--complaint-investigation span { font-size: 10px; font-weight: 900; letter-spacing: 0.1em; }
+.vrow-badge--complaint-indictment { background: #FF9D00; color: #171a20; }
+.vrow-badge--complaint-indictment span { font-size: 10px; font-weight: 900; letter-spacing: 0.1em; }
+.vrow-badge--complaint-verdict { background: #E31937; color: #fff; }
+.vrow-badge--complaint-verdict span { font-size: 10px; font-weight: 900; letter-spacing: 0.1em; }
+.vrow-badge--complaint-rejected { background: #e0e0e0; color: #5c5e62; }
+.vrow-badge--complaint-rejected span { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-decoration: line-through; }
 
 .vrow-detail {
   padding: 20px 24px 24px;

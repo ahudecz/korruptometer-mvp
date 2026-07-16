@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decideStatus, isDuplicate } from './review';
+import { decideComplaintTransition, decideStatus, findExistingComplaint, isDuplicate } from './review';
 import { isWatchlistPerson, normalizeName } from './watchlist';
 
 describe('decideStatus', () => {
@@ -87,6 +87,57 @@ describe('isDuplicate', () => {
     let queried = false;
     const db = { execute: async () => { queried = true; return []; } };
     expect(await isDuplicate(db, { table: 'CourtVerdict', nameColumn: 'personName' }, '   ')).toBe(false);
+    expect(queried).toBe(false);
+  });
+});
+
+// 009 US2 — monotonic state-machine rule for CriminalComplaint status updates.
+describe('decideComplaintTransition', () => {
+  it('advances forward through the normal lifecycle', () => {
+    expect(decideComplaintTransition('feljelentés', 'nyomozás')).toBe('update');
+    expect(decideComplaintTransition('nyomozás', 'vádemelés')).toBe('update');
+    expect(decideComplaintTransition('vádemelés', 'ítélet')).toBe('update');
+    expect(decideComplaintTransition('feljelentés', 'ítélet')).toBe('update');
+  });
+
+  it('marks an equal or backward status as stale (does not regress the row)', () => {
+    expect(decideComplaintTransition('nyomozás', 'feljelentés')).toBe('stale');
+    expect(decideComplaintTransition('ítélet', 'vádemelés')).toBe('stale');
+    expect(decideComplaintTransition('feljelentés', 'feljelentés')).toBe('stale');
+    expect(decideComplaintTransition('ítélet', 'ítélet')).toBe('stale');
+  });
+
+  it('"elutasítva" is reachable from any non-terminal status', () => {
+    expect(decideComplaintTransition('feljelentés', 'elutasítva')).toBe('update');
+    expect(decideComplaintTransition('nyomozás', 'elutasítva')).toBe('update');
+    expect(decideComplaintTransition('ítélet', 'elutasítva')).toBe('update');
+  });
+
+  it('a case can be reopened FROM "elutasítva" into any other status', () => {
+    expect(decideComplaintTransition('elutasítva', 'feljelentés')).toBe('update');
+    expect(decideComplaintTransition('elutasítva', 'nyomozás')).toBe('update');
+  });
+
+  it('re-reporting "elutasítva" again is stale', () => {
+    expect(decideComplaintTransition('elutasítva', 'elutasítva')).toBe('stale');
+  });
+});
+
+describe('findExistingComplaint', () => {
+  it('is null when no row exists', async () => {
+    const db = { execute: async () => [] };
+    expect(await findExistingComplaint(db, 'Orbán-kori gyanús közbeszerzések')).toBeNull();
+  });
+
+  it('returns the matched row', async () => {
+    const db = { execute: async () => [{ id: 'abc', status: 'nyomozás' }] };
+    expect(await findExistingComplaint(db, 'Orbán-kori gyanús közbeszerzések')).toEqual({ id: 'abc', status: 'nyomozás' });
+  });
+
+  it('short-circuits on an empty target name without querying', async () => {
+    let queried = false;
+    const db = { execute: async () => { queried = true; return []; } };
+    expect(await findExistingComplaint(db, '   ')).toBeNull();
     expect(queried).toBe(false);
   });
 });

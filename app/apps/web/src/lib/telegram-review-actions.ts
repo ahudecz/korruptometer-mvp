@@ -6,9 +6,12 @@ import { detectResignationFromArticle } from '@korr/db/ai';
 import { detectMediaClosureFromArticle } from '@korr/db/ai-closures';
 import { detectVerdictFromArticle } from '@korr/db/ai-verdicts';
 import { detectAssetRecoveryFromArticle } from '@korr/db/ai-assets';
+import { detectCriminalComplaintFromArticle } from '@korr/db/ai-complaints';
 import {
   articleDateIso,
+  decideComplaintTransition,
   decideStatus,
+  findExistingComplaint,
   findExistingVerdict,
   hasIndividualResignationForInstitution,
   isCollectiveEntityName,
@@ -18,6 +21,7 @@ import {
   isWatchlistPerson,
   NEAR_MISS_MIN,
   slugifyCaseLabel,
+  type ComplaintStatus,
   type DetectorType,
 } from '@korr/db';
 import { getDb, schema } from './db';
@@ -408,9 +412,146 @@ export async function processAssetRecovery(article: ArticleForReprocess, todayIs
   return { status: 'inserted', recordId: row!.id };
 }
 
+/**
+ * 009-criminal-complaint-tracking — a resignation loop's multi-item
+ * extraction (one article can describe several unrelated complaints) crossed
+ * with the court_verdict branch's insert-vs-update matching, except matching
+ * is on `targetName` (the case) via findExistingComplaint(), and "is this a
+ * real status change" is decided by decideComplaintTransition()'s monotonic
+ * state machine instead of a simple type-equality check — a stale/backward
+ * status never overwrites the row (see review.ts for why).
+ */
+export async function processCriminalComplaint(article: ArticleForReprocess, todayIso: string, bypassConfidenceGate: boolean): Promise<ProcessOutcome> {
+  const db = getDb();
+  const llmResult = await detectCriminalComplaintFromArticle(article.headline, article.excerpt, articleDateIso(article.publishedAt));
+  if (isTransientLlmFailure(llmResult)) return { status: 'error', message: 'Az AI-hívás átmenetileg hibázott, próbáld újra.' };
+
+  const result = llmResult.data;
+  if (!result || result.complaints.length === 0) {
+    await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'criminal_complaint', outcome: 'discarded', reason: 'not_applicable' });
+    return { status: 'discarded', reason: 'not_applicable' };
+  }
+
+  const insertedIds: string[] = [];
+  const updatedIds: string[] = [];
+  const pendingIds: string[] = [];
+  let lastDiscardReason = 'not_applicable';
+  let lastName: string | undefined;
+  let lastConfidence: number | undefined;
+
+  for (const complaint of result.complaints) {
+    lastName = complaint.targetName || lastName;
+    lastConfidence = complaint.confidence;
+
+    if (!complaint.targetName || isPlaceholderName(complaint.targetName) || !complaint.filerName) {
+      lastDiscardReason = 'missing_fields';
+      continue;
+    }
+
+    let reviewStatus: 'approved' | 'pending' | 'discard' = 'approved';
+    if (!bypassConfidenceGate) {
+      const isWatchlist = isWatchlistPerson(complaint.filerName) || isWatchlistPerson(complaint.targetName);
+      reviewStatus = decideStatus(complaint.confidence, isWatchlist);
+      if (reviewStatus === 'discard') {
+        lastDiscardReason = 'low_confidence';
+        if (complaint.confidence >= NEAR_MISS_MIN) {
+          await notifyReviewNeeded({ type: 'near_miss', detectorType: 'criminal_complaint', name: complaint.targetName, confidence: complaint.confidence, articleUrl: article.sourceUrl ?? '', articleId: article.id });
+        }
+        continue;
+      }
+    }
+
+    if (!article.sourceUrl) {
+      lastDiscardReason = 'missing_source';
+      continue;
+    }
+
+    const status = complaint.status as ComplaintStatus;
+    const existing = await findExistingComplaint(db, complaint.targetName);
+    const eventDate = resolveDate(undefined, article.publishedAt);
+
+    if (existing) {
+      const transition = decideComplaintTransition(existing.status, status);
+      if (transition === 'stale') {
+        lastDiscardReason = 'stale_status';
+        continue;
+      }
+      await db.update(schema.criminalComplaints).set({
+        status,
+        eventDate,
+        sourceUrls: sql`array_append("sourceUrls", ${article.sourceUrl})`,
+        sourceNames: sql`array_append("sourceNames", ${article.sourceName ?? ''})`,
+        sourceHeadlines: sql`array_append("sourceHeadlines", ${article.headline.slice(0, 500)})`,
+        sourceDates: sql`array_append("sourceDates", ${todayIso})`,
+        updatedAt: new Date(),
+      }).where(eq(schema.criminalComplaints.id, existing.id));
+
+      if (reviewStatus === 'pending') {
+        pendingIds.push(existing.id);
+        await notifyReviewNeeded({ type: 'pending', detectorType: 'criminal_complaint', name: complaint.targetName, confidence: complaint.confidence, articleUrl: article.sourceUrl ?? '', articleId: article.id, recordId: existing.id });
+      } else {
+        updatedIds.push(existing.id);
+      }
+      continue;
+    }
+
+    const [row] = await db.insert(schema.criminalComplaints).values({
+      targetName: complaint.targetName.slice(0, 200),
+      filerName: complaint.filerName.slice(0, 200),
+      description: complaint.description.slice(0, 1000) || null,
+      status,
+      eventDate,
+      filedAt: status === 'feljelentés' ? eventDate : null,
+      sourceUrls: [article.sourceUrl],
+      sourceNames: article.sourceName ? [article.sourceName] : [],
+      sourceHeadlines: article.headline ? [article.headline.slice(0, 500)] : [],
+      sourceDates: [todayIso],
+      reviewStatus: reviewStatus === 'approved' ? 'approved' : 'pending',
+    }).returning({ id: schema.criminalComplaints.id });
+
+    if (reviewStatus === 'pending') {
+      pendingIds.push(row!.id);
+      await notifyReviewNeeded({ type: 'pending', detectorType: 'criminal_complaint', name: complaint.targetName, confidence: complaint.confidence, articleUrl: article.sourceUrl ?? '', articleId: article.id, recordId: row!.id });
+    } else {
+      insertedIds.push(row!.id);
+    }
+  }
+
+  const totalHandled = insertedIds.length + updatedIds.length + pendingIds.length;
+  if (totalHandled > 0) {
+    await db.update(schema.newsArticles).set({ tag: 'Feljelentés' }).where(eq(schema.newsArticles.id, article.id));
+  }
+  await upsertDetectionCheckOverride(db, {
+    articleId: article.id,
+    detectorType: 'criminal_complaint',
+    outcome: totalHandled > 0 ? 'inserted' : 'discarded',
+    reason: totalHandled > 0 ? undefined : lastDiscardReason,
+    extractedName: lastName,
+    confidence: lastConfidence,
+  });
+
+  if (totalHandled === 0) {
+    return { status: 'discarded', reason: lastDiscardReason };
+  }
+  if (insertedIds.length > 0 || updatedIds.length > 0) {
+    await inngest.send({ name: 'breaking.recompute', data: { reason: 'criminal_complaint:telegram-approve' } });
+  }
+  if (insertedIds.length === 1 && updatedIds.length === 0 && pendingIds.length === 0) {
+    return { status: 'inserted', recordId: insertedIds[0]! };
+  }
+  if (updatedIds.length === 1 && insertedIds.length === 0 && pendingIds.length === 0) {
+    return { status: 'updated', recordId: updatedIds[0]! };
+  }
+  if (insertedIds.length + updatedIds.length > 0) {
+    return { status: 'inserted_multi', recordIds: [...insertedIds, ...updatedIds], total: result.complaints.length };
+  }
+  return { status: 'pending_notified' };
+}
+
 export const DETECTOR_PROCESSORS: Record<DetectorType, typeof processResignation> = {
   resignation: processResignation,
   media_closure: processMediaClosure,
   court_verdict: processCourtVerdict,
   asset_recovery: processAssetRecovery,
+  criminal_complaint: processCriminalComplaint,
 };

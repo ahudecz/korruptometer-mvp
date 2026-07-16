@@ -223,7 +223,7 @@ function VerdictRow({ r }: { r: SerializedVerdict }) {
   );
 }
 
-export function VerdictList({ rows, initialUgyFilter = 'all' }: { rows: SerializedVerdict[]; initialUgyFilter?: string }) {
+export function VerdictList({ rows, initialUgyFilter = 'all', complaintCount = 0 }: { rows: SerializedVerdict[]; initialUgyFilter?: string; complaintCount?: number }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -327,7 +327,11 @@ export function VerdictList({ rows, initialUgyFilter = 'all' }: { rows: Serializ
   return (
     <>
       {/* Stats */}
-      <div className="megszunt-stats megszunt-stats--4">
+      <div className="megszunt-stats megszunt-stats--5">
+        <div className="megszunt-stat">
+          <div className="megszunt-stat-value">{complaintCount}</div>
+          <div className="megszunt-stat-label">Feljelentések száma</div>
+        </div>
         <div className="megszunt-stat">
           <div className="megszunt-stat-value megszunt-stat-value--red">{pretrialCount}</div>
           <div className="megszunt-stat-label">Előzetesben van</div>

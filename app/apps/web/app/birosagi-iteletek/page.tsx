@@ -8,6 +8,7 @@ export const metadata = {
 import { UGYEK } from '../_home/ugyek-config';
 import { GALERIA } from '../_home/galeria-config';
 import { VerdictList, type SerializedVerdict } from './VerdictList';
+import { ComplaintList, type SerializedComplaint } from './ComplaintList';
 import { CrossLemondosok, CrossUgyek, CrossGaleria, CrossMegszunt } from '../_home/cross-promo';
 
 export const revalidate = 120;
@@ -51,6 +52,25 @@ export default async function BirosagPage({
     .from(schema.courtVerdicts)
     .where(eq(schema.courtVerdicts.reviewStatus, 'approved'))
     .orderBy(desc(schema.courtVerdicts.verdictDate));
+
+  const complaintRows = await db
+    .select()
+    .from(schema.criminalComplaints)
+    .where(eq(schema.criminalComplaints.reviewStatus, 'approved'))
+    .orderBy(desc(schema.criminalComplaints.eventDate));
+
+  const serializedComplaints: SerializedComplaint[] = complaintRows.map((c) => ({
+    id: c.id,
+    targetName: c.targetName,
+    filerName: c.filerName,
+    description: c.description ?? null,
+    status: c.status,
+    eventDateFormatted: fmtDateLong(new Date(c.eventDate)),
+    sourceUrls: c.sourceUrls,
+    sourceNames: c.sourceNames,
+    sourceHeadlines: c.sourceHeadlines,
+    sourceDates: c.sourceDates,
+  }));
 
   const serialized: SerializedVerdict[] = rows.map(r => {
     const galeriaEntry = r.personGaleriaId ? (GALERIA.find(g => g.id === r.personGaleriaId) ?? null) : null;
@@ -107,10 +127,18 @@ export default async function BirosagPage({
           első fokú és jogerős ítélet. Tényeket és forrásokat közlünk, nem kommentárt.
         </p>
 
-        {serialized.length > 0 && (
-          <div className="stat-unit stat-unit-fresh" style={{ marginBottom: 24 }}>
-            <h3 className="stat-card-list-title" style={{ marginTop: 0 }}>Legfrissebb</h3>
-            {serialized[0]?.description ?? serialized[0]?.personName}
+        {serializedComplaints.length > 0 && (
+          <div style={{ marginBottom: 40 }}>
+            <div style={{ marginBottom: 16 }}>
+              <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
+                Feljelentések
+              </h3>
+              <p style={{ fontSize: 13, color: '#888', margin: 0 }}>
+                NER-hez, államigazgatáshoz vagy NER-hez kapcsolódó gazdasági szereplőkhöz köthető
+                feljelentések — a megelőző stádium, mielőtt bírósági eljárás indulna.
+              </p>
+            </div>
+            <ComplaintList rows={serializedComplaints} />
           </div>
         )}
 
@@ -119,7 +147,7 @@ export default async function BirosagPage({
             Még nincs rögzített ítélet — az első jogerős ítélettel frissül az oldal.
           </div>
         ) : (
-          <VerdictList rows={serialized} initialUgyFilter={ugy ?? 'all'} />
+          <VerdictList rows={serialized} initialUgyFilter={ugy ?? 'all'} complaintCount={serializedComplaints.length} />
         )}
       </section>
 

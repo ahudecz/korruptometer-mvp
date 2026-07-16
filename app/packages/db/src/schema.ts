@@ -1444,6 +1444,49 @@ export const courtVerdicts = pgTable(
 export type CourtVerdict = typeof courtVerdicts.$inferSelect;
 export type NewCourtVerdict = typeof courtVerdicts.$inferInsert;
 
+// ─── Criminal Complaint Tracker (009) ─────────────────────────────────────
+
+export const complaintStatusEnum = pgEnum('complaint_status', [
+  'feljelentés',
+  'nyomozás',
+  'vádemelés',
+  'ítélet',
+  'elutasítva',
+]);
+
+export const criminalComplaints = pgTable(
+  'CriminalComplaint',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    targetName: text('targetName').notNull(),
+    filerName: text('filerName').notNull(),
+    description: text('description'),
+    status: complaintStatusEnum('status').notNull().default('feljelentés'),
+    // A legutóbbi státuszváltás dátuma (a CourtVerdict.verdictDate mintájára) —
+    // ez a publikus oldalon a "Dátum" oszlop.
+    eventDate: timestamp('eventDate', { withTimezone: true }).notNull(),
+    // Az eredeti feljelentés dátuma, ha ismert — nullable, mert néha csak egy
+    // KÉSŐBBI fejlemény-cikk kerül elő elsőként (l. plan.md Phase 0).
+    filedAt: timestamp('filedAt', { withTimezone: true }),
+    sourceUrls: text('sourceUrls').array().notNull().default(sql`ARRAY[]::text[]`),
+    sourceNames: text('sourceNames').array().notNull().default(sql`ARRAY[]::text[]`),
+    sourceHeadlines: text('sourceHeadlines').array().notNull().default(sql`ARRAY[]::text[]`),
+    sourceDates: text('sourceDates').array().notNull().default(sql`ARRAY[]::text[]`),
+    reviewStatus: reviewStatusEnum('reviewStatus').notNull().default('approved'),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    eventDateIdx: index('CriminalComplaint_eventDate_idx').on(t.eventDate),
+    targetNameIdx: index('CriminalComplaint_targetName_idx').on(t.targetName),
+    reviewStatusIdx: index('CriminalComplaint_reviewStatus_idx').on(t.reviewStatus),
+    statusIdx: index('CriminalComplaint_status_idx').on(t.status),
+  }),
+);
+
+export type CriminalComplaint = typeof criminalComplaints.$inferSelect;
+export type NewCriminalComplaint = typeof criminalComplaints.$inferInsert;
+
 // ─── Detection Pipeline Reliability (006) ────────────────────────────────
 //
 // One row per (article, detector) pair, written ONLY after a real

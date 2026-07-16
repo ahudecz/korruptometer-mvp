@@ -15,6 +15,7 @@
     "./ai-assets": "./src/asset-recovery-detect.ts",
     "./ai-breaking": "./src/pick-daily-breaking.ts",
     "./ai-watchlist": "./src/watchlist-removal-detect.ts",
+    "./ai-complaints": "./src/criminal-complaint-detect.ts",
     "./llm": "./src/llm.ts"
   },
   "scripts": {
@@ -32,6 +33,7 @@
     "scrape-now": "tsx src/scrape-now.ts",
     "fb-sync-now": "tsx src/fb-sync-now.ts",
     "detect-now": "tsx src/detect-now.ts",
+    "detect-criminal-complaints-now": "tsx src/detect-criminal-complaints-now.ts",
     "cleanup-articles": "tsx src/cleanup-articles.ts",
     "delete-foci": "tsx src/delete-foci.ts",
     "import-balasy": "tsx src/import-balasy.ts",
