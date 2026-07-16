@@ -454,7 +454,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
               <div className="verdict-pills">
                 {[
                   { val: 'all',          label: 'Mind' },
-                  { val: 'feljelentés',  label: 'Feljelentés' },
+                  { val: 'feljelentés',  label: 'Csak feljelentés (még nincs fejlemény)' },
                   { val: 'nyomozás',     label: 'Nyomozás' },
                   { val: 'vádemelés',    label: 'Vádemelve' },
                   { val: 'ítélet',       label: 'Ítélet' },

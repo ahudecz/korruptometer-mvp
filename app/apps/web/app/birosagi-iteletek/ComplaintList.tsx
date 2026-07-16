@@ -71,7 +71,11 @@ function ComplaintRow({ c }: { c: SerializedComplaint }) {
         <div className="vrow-identity">
           <div className="vrow-name">{c.targetName}</div>
           <div className="vrow-position">Feljelentő: {c.filerName}</div>
-          <div className="vrow-position">Összeg: {c.amountLabel ?? '–'}</div>
+        </div>
+
+        <div className="vrow-amount">
+          <span className="vrow-amount-label">Összeg</span>
+          <span className="vrow-amount-value">{c.amountLabel ?? '–'}</span>
         </div>
 
         <div className="vrow-court">{c.eventDateFormatted}</div>

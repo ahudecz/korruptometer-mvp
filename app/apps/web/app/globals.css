@@ -12068,6 +12068,33 @@ body:has(.admin-nav) > main {
 
 .vrow-court { font-size: 12px; color: #666; white-space: nowrap; flex-shrink: 0; }
 
+/* 009-criminal-complaint-tracking — az Összeg saját, jól látható blokk a
+   sorban (nem csak egy alárendelt szövegsor), a vrow-court dátum-oszlop
+   mintájára, de kiemelt, félkövér értékkel. */
+.vrow-amount {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 100px;
+  flex-shrink: 0;
+  padding: 0 8px;
+}
+.vrow-amount-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #999;
+}
+.vrow-amount-value {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--accent);
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
 .vrow-badge {
   flex-shrink: 0;
   border-radius: 6px;
