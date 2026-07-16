@@ -10834,6 +10834,14 @@ body:has(.admin-nav) > main {
     max-width: 90px;
     text-align: left;
   }
+  /* A nevek/pozíciók eddig "..."-ra vágva jelentek meg mobilon (ugyanaz a
+     minta, mint a /birosagi-iteletek kártyáin) — helyette engedjük a
+     törést, a body flex:1 + min-width:0 amúgy is megadja hozzá a helyet. */
+  .stat-resigned-name, .stat-resigned-pos {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
 }
 
 /* ─── Módszertan oldal ─────────────────────────────────────────── */
@@ -12145,20 +12153,22 @@ body:has(.admin-nav) > main {
   color: var(--accent);
 }
 
+.complaint-detail-date { display: none; }
+
 @media (max-width: 700px) {
-  .complaint-card-header { flex-wrap: wrap; padding: 12px 14px; gap: 8px; }
-  .complaint-identity { flex-basis: 100%; }
-  /* Függőleges, MINDEN sorban azonos sorrend: Összeg → Státusz → Dátum —
-     korábban ez egy flex-wrap sor volt, ahol a Státusz pozíciója attól
-     függött, elfért-e az Összeg mellett (üres "–" értéknél máshova esett,
-     mint egy hosszú összegnél), user report: "legyen egységes a design". */
+  /* A nyíl és a cím EGY sorban induljon — korábban a complaint-identity
+     flex-basis:100%-je a nyilat saját sorra kényszerítette (user report:
+     "a nyíl ne külön sorban legyen"). */
+  .complaint-card-header { flex-wrap: wrap; padding: 12px 14px; gap: 10px; }
+  /* Kompaktabb elrendezés: az Összeg + Státusz a fejlécben marad, kicsit
+     nagyobb betűvel (user report); a Dátum elég a kinyitott részben. */
   .complaint-meta {
     flex-basis: 100%;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-    margin-top: 6px;
-    margin-left: 28px; /* a chevron szélessége alá igazítva */
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    margin-left: 24px; /* a nyíl szélessége alá igazítva */
   }
   .complaint-meta-item {
     flex-direction: row;
@@ -12166,10 +12176,11 @@ body:has(.admin-nav) > main {
     gap: 6px;
     width: auto;
   }
-  .complaint-meta-item--amount { order: 1; }
-  .complaint-status-pill--meta { order: 2; }
-  .complaint-meta-item--date { order: 3; }
-  .complaint-meta-value { text-align: left; margin-top: 0; }
+  .complaint-meta-item--date { display: none; }
+  .complaint-meta-label { font-size: 10px; }
+  .complaint-meta-value--amount { font-size: 15px; }
+  .complaint-status-pill--meta { font-size: 12px; padding: 5px 12px; }
+  .complaint-detail-date { display: block; font-size: 13px; color: #888; margin: 0 0 10px; }
 }
 
 .vrow-badge {

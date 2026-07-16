@@ -36,6 +36,9 @@ function statusModifier(s: SerializedComplaint['status']): string {
 function ComplaintDetail({ c }: { c: SerializedComplaint }) {
   return (
     <div className="vrow-detail">
+      {/* Mobilon a fejlécből elrejtett dátum itt jelenik meg — l.
+          .complaint-meta-item--date mobil display:none szabálya. */}
+      <p className="complaint-detail-date">{c.eventDateFormatted}</p>
       {c.description && <p className="verdict-summary">{c.description}</p>}
 
       {c.sourceUrls.length > 0 && (
