@@ -74,15 +74,15 @@ function ComplaintRow({ c }: { c: SerializedComplaint }) {
         </div>
 
         <div className="complaint-meta">
-          <div className="complaint-meta-item">
+          <div className="complaint-meta-item complaint-meta-item--amount">
             <span className="complaint-meta-label">Összeg</span>
             <span className="complaint-meta-value complaint-meta-value--amount">{c.amountLabel ?? '–'}</span>
           </div>
-          <div className="complaint-meta-item">
+          <div className="complaint-meta-item complaint-meta-item--date">
             <span className="complaint-meta-label">Dátum</span>
             <span className="complaint-meta-value">{c.eventDateFormatted}</span>
           </div>
-          <span className={`complaint-status-pill ${statusModifier(c.status)}`}>{statusLabel(c.status)}</span>
+          <span className={`complaint-status-pill complaint-status-pill--meta ${statusModifier(c.status)}`}>{statusLabel(c.status)}</span>
         </div>
       </button>
 

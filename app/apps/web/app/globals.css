@@ -12148,16 +12148,28 @@ body:has(.admin-nav) > main {
 @media (max-width: 700px) {
   .complaint-card-header { flex-wrap: wrap; padding: 12px 14px; gap: 8px; }
   .complaint-identity { flex-basis: 100%; }
+  /* Függőleges, MINDEN sorban azonos sorrend: Összeg → Státusz → Dátum —
+     korábban ez egy flex-wrap sor volt, ahol a Státusz pozíciója attól
+     függött, elfért-e az Összeg mellett (üres "–" értéknél máshova esett,
+     mint egy hosszú összegnél), user report: "legyen egységes a design". */
   .complaint-meta {
     flex-basis: 100%;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 14px;
-    margin-top: 2px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    margin-top: 6px;
     margin-left: 28px; /* a chevron szélessége alá igazítva */
   }
-  .complaint-meta-item { align-items: flex-start; width: auto; }
-  .complaint-meta-value { text-align: left; }
+  .complaint-meta-item {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 6px;
+    width: auto;
+  }
+  .complaint-meta-item--amount { order: 1; }
+  .complaint-status-pill--meta { order: 2; }
+  .complaint-meta-item--date { order: 3; }
+  .complaint-meta-value { text-align: left; margin-top: 0; }
 }
 
 .vrow-badge {
@@ -12210,20 +12222,26 @@ body:has(.admin-nav) > main {
 .vrow-detail-meta { flex: 1; }
 .vrow-detail-sentence { font-size: 13px; color: #555; margin-top: 6px; }
 
+.vrow-detail-position { display: none; font-size: 13px; font-weight: 600; color: #555; margin: 0 0 10px; }
+
 @media (max-width: 700px) {
   .vrow-header { gap: 8px; padding: 10px 12px; flex-wrap: wrap; }
   .vrow-crimes { max-width: 100%; order: 4; flex-basis: 100%; margin-top: 2px; }
   .vrow-court { display: none; }
   .vrow-detail { padding: 16px; }
   .vrow-detail-top { flex-direction: column; }
-  /* A hosszú nevek/ügycímek eddig "..."-ra vágva jelentek meg mobilon
-     (white-space: nowrap öröklődött a desktop-elrendezésből) — helyette
-     engedjük a 2 sorba törést. */
-  .vrow-name, .vrow-position {
+  /* A hosszú nevek eddig "..."-ra vágva jelentek meg mobilon (white-space:
+     nowrap öröklődött a desktop-elrendezésből) — helyette engedjük a 2
+     sorba törést. */
+  .vrow-name {
     white-space: normal;
     overflow: visible;
     text-overflow: clip;
   }
+  /* A titulus mobilon túlzsúfolttá tette a fejlécet (user report) — csak
+     kinyitva jelenik meg, a vrow-detail-position mutatja. */
+  .vrow-position { display: none; }
+  .vrow-detail-position { display: block; }
 }
 
 /* ─── Inline code ─────────────────────────────────────────────────── */
