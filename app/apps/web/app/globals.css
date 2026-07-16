@@ -12055,25 +12055,6 @@ body:has(.admin-nav) > main {
   text-overflow: ellipsis;
 }
 
-/* 009-criminal-complaint-tracking — a vrow-name/vrow-position mellett
-   (avatar nélküli sor) a leírás és a forráslink is közvetlenül, kinyitás
-   nélkül látszik. */
-.complaint-row-description {
-  font-size: 13px;
-  color: #555;
-  margin: 6px 0 0;
-  line-height: 1.4;
-}
-.complaint-row-source-link {
-  display: inline-block;
-  margin-top: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--accent);
-  text-decoration: none;
-}
-.complaint-row-source-link:hover { text-decoration: underline; }
-
 .vrow-crimes { display: flex; flex-wrap: wrap; gap: 4px; flex-shrink: 0; max-width: 220px; }
 .vrow-crime-tag {
   background: #fff0f0;

@@ -64,6 +64,7 @@ export default async function BirosagPage({
     targetName: c.targetName,
     filerName: c.filerName,
     description: c.description ?? null,
+    amountLabel: c.amountLabel ?? null,
     status: c.status,
     eventDateFormatted: fmtDateLong(new Date(c.eventDate)),
     sourceUrls: c.sourceUrls,

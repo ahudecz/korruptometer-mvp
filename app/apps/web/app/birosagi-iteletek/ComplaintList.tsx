@@ -8,6 +8,7 @@ export type SerializedComplaint = {
   targetName: string;
   filerName: string;
   description: string | null;
+  amountLabel: string | null;
   status: 'feljelentés' | 'nyomozás' | 'vádemelés' | 'ítélet' | 'elutasítva';
   eventDateFormatted: string;
   sourceUrls: string[];
@@ -33,68 +34,44 @@ function statusModifier(s: SerializedComplaint['status']): string {
 }
 
 function ComplaintDetail({ c }: { c: SerializedComplaint }) {
-  if (c.sourceUrls.length <= 1) return null;
   return (
     <div className="vrow-detail">
-      <div className="verdict-sources-section">
-        <div className="verdict-sources-heading">További forrásaink ebben az ügyben</div>
-        <div className="verdict-source-cards">
-          {c.sourceUrls.slice(1).map((url, i) => (
-            <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="person-news-item verdict-source-card">
-              <span className="person-news-source">{c.sourceNames[i + 1] ?? 'Forrás'}</span>
-              {c.sourceDates[i + 1] && <span className="person-news-date">{c.sourceDates[i + 1]}</span>}
-              <span className="person-news-headline">{c.sourceHeadlines[i + 1] ?? url}</span>
-            </a>
-          ))}
+      {c.description && <p className="verdict-summary">{c.description}</p>}
+
+      {c.sourceUrls.length > 0 && (
+        <div className="verdict-sources-section">
+          <div className="verdict-sources-heading">Sajtóforrások</div>
+          <div className="verdict-source-cards">
+            {c.sourceUrls.map((url, i) => (
+              <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="person-news-item verdict-source-card">
+                <span className="person-news-source">{c.sourceNames[i] ?? 'Forrás'}</span>
+                {c.sourceDates[i] && <span className="person-news-date">{c.sourceDates[i]}</span>}
+                <span className="person-news-headline">{c.sourceHeadlines[i] ?? url}</span>
+              </a>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
 function ComplaintRow({ c }: { c: SerializedComplaint }) {
   const [open, setOpen] = useState(false);
-  const hasExtraSources = c.sourceUrls.length > 1;
 
   return (
     <div className={`vrow-card${open ? ' vrow-card--open' : ''}`}>
-      <div
-        className="vrow-header"
-        style={{ cursor: hasExtraSources ? 'pointer' : 'default' }}
-        onClick={() => hasExtraSources && setOpen((v) => !v)}
-        role={hasExtraSources ? 'button' : undefined}
-        tabIndex={hasExtraSources ? 0 : undefined}
-        aria-expanded={hasExtraSources ? open : undefined}
-        onKeyDown={(e) => {
-          if (hasExtraSources && (e.key === 'Enter' || e.key === ' ')) {
-            e.preventDefault();
-            setOpen((v) => !v);
-          }
-        }}
-      >
-        {hasExtraSources && (
-          <span className="vrow-chevron" aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-        )}
+      <button type="button" className="vrow-header" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+        <span className="vrow-chevron" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
 
         <div className="vrow-identity">
           <div className="vrow-name">{c.targetName}</div>
           <div className="vrow-position">Feljelentő: {c.filerName}</div>
-          {c.description && <p className="complaint-row-description">{c.description}</p>}
-          {c.sourceUrls[0] && (
-            <a
-              href={c.sourceUrls[0]}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="complaint-row-source-link"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {c.sourceNames[0] ?? 'Forrás'} →
-            </a>
-          )}
+          <div className="vrow-position">Összeg: {c.amountLabel ?? '–'}</div>
         </div>
 
         <div className="vrow-court">{c.eventDateFormatted}</div>
@@ -102,7 +79,7 @@ function ComplaintRow({ c }: { c: SerializedComplaint }) {
         <span className={`complaint-status-pill ${statusModifier(c.status)}`} style={{ flexShrink: 0 }}>
           {statusLabel(c.status)}
         </span>
-      </div>
+      </button>
 
       {open && <ComplaintDetail c={c} />}
     </div>

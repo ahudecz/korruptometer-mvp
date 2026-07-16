@@ -223,6 +223,7 @@ async function main() {
         targetName: complaint.targetName.slice(0, 200),
         filerName: complaint.filerName.slice(0, 200),
         description: complaint.description.slice(0, 1000) || null,
+        amountLabel: complaint.amountLabel.slice(0, 200) || null,
         status,
         eventDate: publishedAtDate,
         filedAt: status === 'feljelentés' ? publishedAtDate : null,

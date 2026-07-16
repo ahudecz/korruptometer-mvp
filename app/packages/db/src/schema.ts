@@ -1461,6 +1461,12 @@ export const criminalComplaints = pgTable(
     targetName: text('targetName').notNull(),
     filerName: text('filerName').notNull(),
     description: text('description'),
+    // Rövid magyar címke (pl. "106 milliárd Ft") — NULL, ha a feljelentés nem
+    // konkrét összeghez kötődik, vagy nincs elérhető adat; a publikus oldalon
+    // ilyenkor "–" jelenik meg. Csak beszúráskor töltjük, frissítésnél nem
+    // írjuk felül (l. review.ts decideComplaintTransition kommentje: egy
+    // fejlemény-cikk nem feltétlenül ismétli meg az eredeti összeget).
+    amountLabel: text('amountLabel'),
     status: complaintStatusEnum('status').notNull().default('feljelentés'),
     // A legutóbbi státuszváltás dátuma (a CourtVerdict.verdictDate mintájára) —
     // ez a publikus oldalon a "Dátum" oszlop.

@@ -11,6 +11,7 @@ export type ComplaintEvent = {
   targetName: string;
   filerName: string;
   description: string;
+  amountLabel: string;
   status: ComplaintStatusExtracted;
   confidence: number;
 };
@@ -54,6 +55,11 @@ const TOOL: LlmToolSpec = {
               type: 'string',
               description: 'One or two sentence Hungarian summary of what the complaint/development is about.',
             },
+            amountLabel: {
+              type: 'string',
+              description:
+                'Short Hungarian label for the monetary amount the complaint is about, if any (e.g. "106 milliárd Ft", "30,9 milliárd Ft", "1,52 milliárd Ft"). Empty string if the complaint is not about a specific sum, or no figure is given in the article — do NOT guess or estimate a figure that is not explicitly stated.',
+            },
             status: {
               type: 'string',
               enum: ['feljelentés', 'nyomozás', 'vádemelés', 'ítélet', 'elutasítva'],
@@ -65,7 +71,7 @@ const TOOL: LlmToolSpec = {
               description: 'Confidence 0–1 that THIS SPECIFIC entry is a real criminal complaint meeting the relevance criteria.',
             },
           },
-          required: ['targetName', 'filerName', 'description', 'status', 'confidence'],
+          required: ['targetName', 'filerName', 'description', 'amountLabel', 'status', 'confidence'],
         },
       },
     },

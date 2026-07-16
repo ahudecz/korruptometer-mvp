@@ -499,6 +499,7 @@ export async function processCriminalComplaint(article: ArticleForReprocess, tod
       targetName: complaint.targetName.slice(0, 200),
       filerName: complaint.filerName.slice(0, 200),
       description: complaint.description.slice(0, 1000) || null,
+      amountLabel: complaint.amountLabel.slice(0, 200) || null,
       status,
       eventDate,
       filedAt: status === 'feljelentés' ? eventDate : null,
