@@ -396,10 +396,13 @@ export const UGYEK: UgyekConfig[] = [
     articleKeywords: ['parkfenntartás', 'Őrsi Gergely', 'parkfenntartá'],
     moreUrl: '/ugyek/parkfenntartas',
     videoId: '7A-NUGjuKGg',
+    videoChannel: 'ATV Magyarország',
+    videoTitle: 'Robbant az óbudai korrupciós ügy – Magyar Péter is megszólalt',
+    videoSummary: '2026 júniusában nyolc embert — köztük hat politikust — tartóztattak le a budapesti parkfenntartási kenőpénzbotrányban. A videó az ügy kirobbanását és Magyar Péter reakcióját dolgozza fel.',
     additionalVideos: [
-      { id: 'iditf3NLfos', label: 'Kapcsolódó riport', title: 'Parkfenntartási korrupció — háttér' },
-      { id: '94cOBsarL00', label: 'Kapcsolódó riport', title: 'Parkfenntartási kenőpénzbotrány — dokumentáció' },
-      { id: 'HDzrxp3GAkE', label: 'Kapcsolódó riport', title: 'Parkfenntartási korrupció — részletek' },
+      { id: 'iditf3NLfos', label: 'Kapcsolódó riport', title: 'Újabb részletek derültek ki a budapesti korrupciós parkfenntartási ügyben' },
+      { id: '94cOBsarL00', label: 'Kapcsolódó riport', title: 'Először igazolta az ügyészség a legendás 70-30-as korrupciós leosztást' },
+      { id: 'HDzrxp3GAkE', label: 'Kapcsolódó riport', title: 'Parkfenntartási botrány Budapesten, de ennek az ügynek semmi köze a fűnyíráshoz' },
     ],
     summary: '8 személyt tartóztattak le 2026. június 4-én — köztük Őrsi Gergely (DK) II. kerületi polgármestert, Láng Zsolt (Fidesz) volt polgármestert és négy más politikust. Puskás Péter letartóztatását 2026. július 1-jén megszüntette az ügyészség. A maradék 7 gyanúsított letartóztatását +3 hónappal hosszabbította meg. Z. Zsolt parkfenntartó vállalkozó cégei 2011–2024 között közel 2 milliárd forint kenőpénzt fizethettek budapesti politikusoknak milliárdos közpénzes szerződésekért cserébe — minden nagy párt érintett.',
     description: `A parkfenntartási kenőpénzbotrány egyedülálló a magyar korrupciós ügyekben: egy átpárti, szisztematikus kenőpénz-rendszert tárt fel a budapesti önkormányzati közpénzek körül — amelybe Fidesz, DK, Momentum és MSZP politikusok egyaránt belekeveredtek.
