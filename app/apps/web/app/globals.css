@@ -12161,21 +12161,24 @@ body:has(.admin-nav) > main {
      "a nyíl ne külön sorban legyen"). */
   .complaint-card-header { flex-wrap: wrap; padding: 12px 14px; gap: 10px; }
   /* Kompaktabb elrendezés: az Összeg + Státusz a fejlécben marad, kicsit
-     nagyobb betűvel (user report); a Dátum elég a kinyitott részben.
-     A Státusz-gomb "jobbra zárt" MARGIN-LEFT: AUTO-val, NEM
-     justify-content: space-between-nel — utóbbi egy keskeny kijelzőn
-     (pl. iPhone 12 mini, 375px) az Összeg+hosszú státuszszöveg együtt
-     kilógott, mert a sor sosem törhetett; flex-wrap + auto-margin esetén
-     a gomb szükség esetén saját sorra kerül, de ott is jobbra igazítva
-     marad — SOSEM lóg ki vízszintesen (2026-07-16, user report: "kilóg
-     mindegyik gomb iPhone 12 mininin"). */
+     nagyobb betűvel (user report); a Dátum elég a kinyitott részben,
+     egy sorban, a Státusz-gomb jobbra zárva (justify-content:
+     space-between), nem tör új sorba.
+
+     GYÖKÉROK (2026-07-16, user screenshot): a korábbi flex-basis: 100%
+     + margin-left: 24px kombináció a doboz TELJES szélességét 100%+24px-re
+     tolta — ez okozta, hogy a gomb minden sorban ugyanannyival lógott ki
+     a képernyő jobb széléről, függetlenül attól, mit próbáltam a BELSŐ
+     elemeken (előbb space-between, majd wrap+auto-margin — mindkettő a
+     rossz rétegen javított). calc(100% - 24px) a helyes szélesség, hogy
+     a margóval együtt pontosan 100%-ot adjon ki. */
   .complaint-meta {
-    flex-basis: 100%;
+    flex-basis: calc(100% - 24px);
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
-    row-gap: 6px;
-    column-gap: 10px;
+    justify-content: space-between;
+    gap: 10px;
     margin-top: 8px;
     margin-left: 24px; /* a nyíl szélessége alá igazítva */
   }
@@ -12191,12 +12194,11 @@ body:has(.admin-nav) > main {
      Státusz-gomb elől (user report: "kilóg") — az érték önmagában is
      érthető ebben a kontextusban. */
   .complaint-meta-item--amount .complaint-meta-label { display: none; }
-  .complaint-meta-value--amount { font-size: 15px; white-space: normal; }
+  .complaint-meta-value--amount { font-size: 15px; white-space: nowrap; }
   .complaint-status-pill--meta {
     font-size: 11px;
     padding: 5px 10px;
     flex-shrink: 0;
-    margin-left: auto;
   }
   .complaint-detail-date { display: block; font-size: 13px; color: #888; margin: 0 0 10px; }
 }
