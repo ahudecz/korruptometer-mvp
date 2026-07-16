@@ -12161,11 +12161,14 @@ body:has(.admin-nav) > main {
      "a nyíl ne külön sorban legyen"). */
   .complaint-card-header { flex-wrap: wrap; padding: 12px 14px; gap: 10px; }
   /* Kompaktabb elrendezés: az Összeg + Státusz a fejlécben marad, kicsit
-     nagyobb betűvel (user report); a Dátum elég a kinyitott részben. */
+     nagyobb betűvel (user report); a Dátum elég a kinyitott részben. A
+     Státusz-gomb mindig jobbra zárt (justify-content: space-between), így
+     minden kártyán ugyanott van, függetlenül az Összeg hosszától. */
   .complaint-meta {
     flex-basis: 100%;
     flex-direction: row;
     align-items: center;
+    justify-content: space-between;
     gap: 10px;
     margin-top: 8px;
     margin-left: 24px; /* a nyíl szélessége alá igazítva */
@@ -12177,9 +12180,12 @@ body:has(.admin-nav) > main {
     width: auto;
   }
   .complaint-meta-item--date { display: none; }
-  .complaint-meta-label { font-size: 10px; }
+  /* Az "Összeg" felirat mobilon feleslegesen foglalja a helyet a
+     Státusz-gomb elől (user report: "kilóg") — az érték önmagában is
+     érthető ebben a kontextusban. */
+  .complaint-meta-item--amount .complaint-meta-label { display: none; }
   .complaint-meta-value--amount { font-size: 15px; }
-  .complaint-status-pill--meta { font-size: 12px; padding: 5px 12px; }
+  .complaint-status-pill--meta { font-size: 12px; padding: 5px 12px; flex-shrink: 0; }
   .complaint-detail-date { display: block; font-size: 13px; color: #888; margin: 0 0 10px; }
 }
 
