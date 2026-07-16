@@ -87,7 +87,16 @@ export async function isDuplicate(
 // (e.g. "MÁV igazgatósága") even when a SIBLING article about the same
 // event already named the actual board members individually — creating a
 // redundant entry on top of the real ones (2026-07-14, user report).
-const COLLECTIVE_NAME_RE = /\s(igazgatósága|igazgatótanácsa|vezetősége|testülete|elnöksége|vezetése)$/i;
+//
+// 2026-07-16 — a general "Newscast"-style roundup article, mentioning an
+// already individually-recorded NAV leadership reshuffle only in passing,
+// got re-extracted as the collective "NAV-vezetők" — plural, hyphen-joined,
+// which the original regex (singular, space-separated: "vezetése") didn't
+// match, so it slipped past this guard into a pending Telegram review
+// instead of being auto-discarded as a duplicate. Widened to also catch
+// the plural "-vezetők"/"-vezetői" and a hyphen (not just whitespace)
+// before the suffix.
+const COLLECTIVE_NAME_RE = /[\s-](igazgatósága|igazgatótanácsa|vezetősége|testülete|elnöksége|vezetése|vezetői|vezetők)$/i;
 
 export function isCollectiveEntityName(name: string): boolean {
   return COLLECTIVE_NAME_RE.test(name.trim());
