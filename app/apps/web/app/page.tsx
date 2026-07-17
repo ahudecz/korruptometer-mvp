@@ -383,11 +383,14 @@ const getCachedFeaturedResignations = unstable_cache(
 const getCachedLatestResignations30 = unstable_cache(
   async () => {
     const { getDb, schema } = await import('@/lib/db');
-    const { desc: d, eq: eqF } = await import('drizzle-orm');
+    const { asc: a, desc: d, eq: eqF } = await import('drizzle-orm');
     const db = getDb();
+    // Institution as the secondary sort key: same-day departures from the
+    // same place (pl. Szerencsejáték Zrt., MÁV) land on consecutive rows
+    // instead of interleaved by insertion order (2026-07-17, user report).
     return db.select().from(schema.politicalResignations)
       .where(eqF(schema.politicalResignations.reviewStatus, 'approved'))
-      .orderBy(d(schema.politicalResignations.resignationDate))
+      .orderBy(d(schema.politicalResignations.resignationDate), a(schema.politicalResignations.institution))
       .limit(30);
   },
   ['latest-resignations-30'],
@@ -510,8 +513,10 @@ export default async function HomePage() {
   const { pretrial: pretrialCountDb, elitelt: eliteltCountDb } = verdictCounts;
 
   // "Top lemondások" — a TOP_RESIGNATION_PRIORITY sorrendjében az első 5,
-  // aminek van valós (approved) sora; "További lemondások" — a legfrissebbek
-  // ezek közül kihagyva, hogy ne legyen duplikáció a két lista között.
+  // aminek van valós (approved) sora; "További lemondások" — a legfrissebb 5,
+  // FÜGGETLENÜL attól, hogy szerepel-e fent is (2026-07-17, user report: a
+  // korábbi dedup miatt Szijjártó Péter — bár a Top listában ott volt —
+  // teljesen hiányzott a lenti, "hosszabb" listából).
   const normalizeForMatch = (v: string) =>
     v.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
   const featuredByName = new Map(featuredResignationsRaw.map(r => [normalizeForMatch(r.name), r]));
@@ -519,10 +524,7 @@ export default async function HomePage() {
     .map(name => featuredByName.get(normalizeForMatch(name)))
     .filter((r): r is NonNullable<typeof r> => r != null)
     .slice(0, 5);
-  const featuredIds = new Set(featuredResignations.map(r => r.id));
-  const additionalResignations = latestResignations30
-    .filter(r => !featuredIds.has(r.id))
-    .slice(0, 5);
+  const additionalResignations = latestResignations30.slice(0, 5);
 
   function renderResignedItem(r: typeof latestResignations30[number]) {
     const sourceUrl = r.sourceUrls?.[0];

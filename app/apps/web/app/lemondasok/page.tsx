@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { getActiveBreaking, findBreakingForName } from '@/lib/breaking';
 import { ResignationList, type SerializedResignation } from './resignation-list';
@@ -17,11 +17,19 @@ export const revalidate = 120;
 
 async function fetchRows() {
   const db = getDb();
+  // Institution a másodlagos rendezési kulcs: ha ugyanaznap ugyanonnan
+  // (pl. Szerencsejáték Zrt., MÁV) több ember is távozik, egymás utáni
+  // sorokba kerüljenek, ne a beszúrás sorrendje szerint szétszórva
+  // (2026-07-17, user report).
   return db
     .select()
     .from(schema.politicalResignations)
     .where(eq(schema.politicalResignations.reviewStatus, 'approved'))
-    .orderBy(desc(schema.politicalResignations.resignationDate), desc(schema.politicalResignations.createdAt));
+    .orderBy(
+      desc(schema.politicalResignations.resignationDate),
+      asc(schema.politicalResignations.institution),
+      desc(schema.politicalResignations.createdAt),
+    );
 }
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
