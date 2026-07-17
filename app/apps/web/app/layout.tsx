@@ -8,9 +8,19 @@ import { CookieBanner } from './_home/cookie-banner';
 
 import './globals.css';
 
+// A NEXT_PUBLIC_APP_URL Vercelen (Production env) a kanonikus domain-re van
+// állítva (l. jegyzet lentebb, miért kritikus). Ha valamiért mégis hiányozna,
+// a fallback IS a valódi domain — sose a belső *.vercel.app alias, mert azt
+// használja fel a Next.js az összes relatív OG-kép URL (opengraph-image.tsx
+// fájl-konvenció) abszolút URL-lé alakításához (metadataBase). Ha ez egy
+// Vercel-belső aliasra mutat, a Facebook/Messenger-megosztási előnézet
+// (og:image) törékennyé válik — bármikor csendben eltörhet site-szerte, ha
+// a Vercel deployment protection valaha bekapcsol arra az aliasra, vagy az
+// alias megváltozik (2026-07-17: pont ez okozta, hogy Messengeren nem jött
+// be a linkelőnézet-kép, miközben Viberen igen — l. bugfix screenshotok).
 const appUrl = process.env.NEXT_PUBLIC_APP_URL?.startsWith('http')
   ? process.env.NEXT_PUBLIC_APP_URL
-  : 'https://korruptometer.vercel.app';
+  : 'https://www.kegyencjarat.hu';
 
 const HOME_TITLE = 'Kegyencjárat — NER összeomlás tracker';
 const HOME_DESCRIPTION =

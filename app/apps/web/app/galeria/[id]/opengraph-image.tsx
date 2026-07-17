@@ -179,7 +179,7 @@ export default function OGImage({ params }: { params: { id: string } }) {
           letterSpacing: '0.04em',
         }}
       >
-        korruptometer.vercel.app
+        kegyencjarat.hu
       </div>
     </div>,
     size,
