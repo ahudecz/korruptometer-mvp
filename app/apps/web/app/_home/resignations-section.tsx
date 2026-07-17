@@ -63,7 +63,10 @@ function ResignationRow({ r, breakingArticle }: { r: PoliticalResignation; break
 }
 
 export function ResignationsSection({ resignations, breaking = [] }: Props) {
-  const rest = resignations.filter(r => !r.pinned);
+  // Ugyanaz a `pinned`-szűrő volt itt is, mint a /lemondasok végoldalon
+  // (fix: c6cd14b) — külön render call site, külön hely, ugyanaz a bug,
+  // ugyanaz a fix (2026-07-18, user report).
+  const rest = resignations;
 
   return (
     <div className="lemondott-section-wrap">

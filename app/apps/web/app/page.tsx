@@ -255,11 +255,16 @@ const getCachedKpiSnapshot = unstable_cache(
 const getCachedTopResignations = unstable_cache(
   async () => {
     const { getDb, schema } = await import('@/lib/db');
-    const { desc: d, eq: eqF } = await import('drizzle-orm');
+    const { asc: a, desc: d, eq: eqF } = await import('drizzle-orm');
     const db = getDb();
+    // `pinned` DESC-first used to shove pinned rows out of date order (and,
+    // combined with LIMIT 20, could've pushed a newer non-pinned person out
+    // of the window entirely) — now that pinned rows aren't hidden downstream
+    // anymore (resignations-section.tsx), sort chronologically like the other
+    // two resignation lists, institution as the same-day tiebreaker.
     return db.select().from(schema.politicalResignations)
       .where(eqF(schema.politicalResignations.reviewStatus, 'approved'))
-      .orderBy(d(schema.politicalResignations.pinned), d(schema.politicalResignations.resignationDate))
+      .orderBy(d(schema.politicalResignations.resignationDate), a(schema.politicalResignations.institution))
       .limit(20);
   },
   ['top-resignations'],
