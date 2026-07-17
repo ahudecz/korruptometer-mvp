@@ -40,7 +40,14 @@ export default async function LemondasokPage({ searchParams }: { searchParams: S
     db.select().from(schema.mediaClosures).where(and(eq(schema.mediaClosures.eventType, 'leépítés'), eq(schema.mediaClosures.reviewStatus, 'approved'))),
     getActiveBreaking(),
   ]);
-  const allRest = rows.filter(r => !r.pinned);
+  // `pinned` a WATCHLIST_PERSONS (@korr/db/watchlist.ts) egyik névvel
+  // egyező lemondásra kerül rá (10 galéria-személy is benne van, nem csak a
+  // 8 CALLED_TO_RESIGN tisztségviselő) — eredetileg egy külön "kiemelt"
+  // szekciónak szánták, de az sosem épült meg, úgyhogy a régi `!r.pinned`
+  // szűrő egyszerűen kidobta ezeket a sorokat a listából, láthatatlanná
+  // téve őket a teljes /lemondasok oldalon (2026-07-17, user report:
+  // Szijjártó Péter lemondása eltűnt a végoldalról).
+  const allRest = rows;
   const serializedRest: SerializedResignation[] = allRest.map(r => ({
     id: r.id,
     resignationDateFormatted: new Date(r.resignationDate).toLocaleDateString('hu-HU'),
