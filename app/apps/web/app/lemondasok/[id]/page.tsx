@@ -6,7 +6,7 @@ import { getDb, schema } from '@/lib/db';
 import { WATCH_LIST, type WatchPerson } from '../../_home/watchlist-config';
 import { WATCHLIST_DETAIL, type WatchlistBreakingBlock } from '../../_home/watchlist-detail-config';
 import { CrossGaleria, CrossUgyek, CrossLemondosok } from '../../_home/cross-promo';
-import { truncate } from '../../_home/seo';
+import { truncate, withCta, ctaResignation } from '../../_home/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     detail?.bio ?? detail?.nerRole ?? `${person.name} — ${person.institution}. Lemondásra felszólítva.`;
   return {
     title: truncate(person.name, 40),
-    description: truncate(description, 150),
+    description: withCta(description, ctaResignation()),
   };
 }
 

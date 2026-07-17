@@ -10,7 +10,7 @@ import { GALERIA, type GaleriaDetention, type GaleriaHair } from '../../_home/ga
 import { UGYEK } from '../../_home/ugyek-config';
 import { getPersonRollup } from '../../_home/person-rollup-config';
 import { CrossLemondosok, CrossMegszunt } from '../../_home/cross-promo';
-import { truncate } from '../../_home/seo';
+import { truncate, withCta, ctaPerson } from '../../_home/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!entry) return {};
   return {
     title: truncate(entry.name, 40),
-    description: truncate(entry.description, 150),
+    description: withCta(entry.description, ctaPerson()),
   };
 }
 

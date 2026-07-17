@@ -6,7 +6,7 @@ import { PodcastVideoCard } from '../_home/podcast-video-card';
 
 export const metadata: Metadata = {
   title: 'Podcastok',
-  description: 'A témába vágó YouTube-videók és podcastok gyűjteménye — automatikusan gyűjtve, naprakészen.',
+  description: 'A témába vágó YouTube-videók és podcastok gyűjteménye — automatikusan gyűjtve. Kattints, és nézd meg a legfrissebbeket!',
   openGraph: { title: 'Podcastok — Kegyencjárat', description: 'A témába vágó YouTube-videók és podcastok gyűjteménye.' },
 };
 

@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Pécsi Volvo-gate',
-  description: 'Bánki Erik pécsi Volvo-ügye: közpénzből vásárolt luxusautó és a hozzá köthető korrupciógyanús körülmények.',
+  description: 'Bánki Erik pécsi Volvo-ügye: közpénzből vásárolt luxusautó és a hozzá köthető korrupciógyanús körülmények. Kattints, és nézd meg a részleteket!',
 };
 
 const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];

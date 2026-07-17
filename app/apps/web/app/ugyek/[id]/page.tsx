@@ -8,7 +8,7 @@ import { UGYEK, UGYEK_REDIRECTS, type DescriptionBlock, type BreakingGroupArticl
 import { GALERIA } from '../../_home/galeria-config';
 import { WATCH_LIST } from '../../_home/watchlist-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../_home/cross-promo';
-import { truncate } from '../../_home/seo';
+import { truncate, withCta, ctaGeneric } from '../../_home/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!entry) return {};
   return {
     title: truncate(entry.title, 40),
-    description: truncate(entry.summary, 150),
+    description: withCta(entry.summary, ctaGeneric()),
   };
 }
 

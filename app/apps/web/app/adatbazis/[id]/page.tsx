@@ -15,7 +15,7 @@ import { DescBlock } from '../_components/desc-block';
 import type { DescriptionBlock } from '../../_home/ugyek-config';
 import generatedContent from '../../_home/case-content.generated.json';
 import { getDb } from '@/lib/db';
-import { truncate } from '../../_home/seo';
+import { truncate, withCta, ctaForCase } from '../../_home/seo';
 import { PERSON_ROLLUPS } from '../../_home/person-rollup-config';
 import { getPersonStats } from '../../_home/featured-persons';
 import { PersonGaleriaPromo, CrossAdatbazisSzemelyek, CrossUgyek, CrossBirosag } from '../../_home/cross-promo';
@@ -30,16 +30,16 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const override = getCaseOverride(id);
   const gen = (generatedContent as Record<string, { title?: string }>)[id];
   const rows = (await db.execute(sql`
-    SELECT sc.name, sc.person, sc.institution FROM "ScandalCatalog" sc WHERE sc.id = ${id} LIMIT 1
-  `)) as unknown as Array<{ name: string; person: string | null; institution: string | null }>;
+    SELECT sc.name, sc.person, sc.institution, sc.is_open FROM "ScandalCatalog" sc WHERE sc.id = ${id} LIMIT 1
+  `)) as unknown as Array<{ name: string; person: string | null; institution: string | null; is_open: boolean }>;
   let scandal = rows[0];
   if (!scandal) {
     // DB id may carry accents the (canonical, ascii) URL doesn't — see the
     // matching fallback in the page body below.
     try {
       const fallbackRows = (await db.execute(sql`
-        SELECT sc.name, sc.person, sc.institution FROM "ScandalCatalog" sc WHERE unaccent(sc.id) = unaccent(${id}) LIMIT 1
-      `)) as unknown as Array<{ name: string; person: string | null; institution: string | null }>;
+        SELECT sc.name, sc.person, sc.institution, sc.is_open FROM "ScandalCatalog" sc WHERE unaccent(sc.id) = unaccent(${id}) LIMIT 1
+      `)) as unknown as Array<{ name: string; person: string | null; institution: string | null; is_open: boolean }>;
       scandal = fallbackRows[0];
     } catch {
       // unaccent() unavailable — fall through to {} below like a genuine miss.
@@ -47,12 +47,16 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   }
   if (!scandal) return {};
   const title = autoDisplayTitle(scandal.name, scandal.person, override?.title ?? gen?.title);
-  const description =
+  // Base fact ends up in front, the CTA at the end — withCta() trims the
+  // base (not the CTA) so ~939 auto-generated pages each get a distinct,
+  // click-worthy description instead of a duplicate boilerplate line.
+  const base =
     override?.summary ??
-    `${scandal.person ?? scandal.institution ?? 'Korrupciós ügy'} — dokumentált eset a Kegyencjárat adatbázisában, sajtóforrások alapján.`;
+    `${scandal.person ?? scandal.institution ?? 'Ismeretlen érintett'} — ${title}, dokumentálva a Kegyencjárat korrupciós adatbázisában`;
+  const description = withCta(base, ctaForCase(scandal.is_open));
   return {
     title: truncate(title, 40),
-    description: truncate(description, 150),
+    description,
   };
 }
 

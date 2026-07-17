@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export const metadata = {
   title: 'Forráshivatkozások',
-  description: 'Az adatbázisban felhasznált partneri adatbázisok, sajtóforrások és hatósági dokumentumok teljes listája.',
+  description: 'Az adatbázisban felhasznált partneri adatbázisok, sajtóforrások és hatósági dokumentumok teljes listája. Kattints, és nézd át a forrásokat!',
 };
 
 function SourceEntry({

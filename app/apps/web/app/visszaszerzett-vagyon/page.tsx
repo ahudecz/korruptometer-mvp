@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Visszaszerzett vagyon',
-  description: 'Nyomon követjük a NER-korszakban eltűnt, majd visszaszerzett közpénzt és vagyont — esetenként, összeggel.',
+  description: 'Nyomon követjük a NER-korszakban eltűnt, majd visszaszerzett közpénzt és vagyont. Kattints, és nézd meg az eseteket!',
 };
 
 const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];

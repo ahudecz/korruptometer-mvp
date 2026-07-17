@@ -3,7 +3,7 @@ import GaleriaClient from './GaleriaClient';
 
 export const metadata: Metadata = {
   title: 'Galéria',
-  description: 'A NER kegyenceinek arcképcsarnoka — ügyek, összegek és státuszok egy helyen.',
+  description: 'A NER kegyenceinek arcképcsarnoka — ügyek, összegek és státuszok egy helyen. Kattints, és nézd meg, ki kicsoda!',
   openGraph: { title: 'Galéria — Kegyencjárat', description: 'A NER kegyenceinek arcképcsarnoka.' },
 };
 

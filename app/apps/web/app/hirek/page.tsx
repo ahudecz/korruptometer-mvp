@@ -7,7 +7,7 @@ import { NewsFilters } from './news-filters';
 
 export const metadata: Metadata = {
   title: 'Hírek',
-  description: 'Releváns hírek és cikkek a dokumentált korrupciós ügyekről — automatikusan gyűjtve, naprakészen.',
+  description: 'Releváns hírek és cikkek a dokumentált korrupciós ügyekről — automatikusan gyűjtve. Kattints, és olvasd el a legfrissebbeket!',
   openGraph: { title: 'Hírek — Kegyencjárat', description: 'Releváns hírek a dokumentált korrupciós ügyekről.' },
 };
 import { NewsGrid } from './news-grid';

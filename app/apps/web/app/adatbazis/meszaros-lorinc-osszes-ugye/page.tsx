@@ -15,7 +15,8 @@ export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Mészáros Lőrinc összes ügye',
-  description: 'Mészáros Lőrinc összes, az adatbázisban külön-külön dokumentált ügye egy helyen, érintett közpénzzel és forrásokkal.',
+  description:
+    'Mészáros Lőrinc összes, külön-külön dokumentált ügye egy helyen, érintett közpénzzel és forrásokkal. Kattints, és nézd meg mindet!',
 };
 
 // Single source of truth for excluded ids lives in person-rollup-config.ts

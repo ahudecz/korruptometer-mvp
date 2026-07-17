@@ -24,7 +24,7 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL?.startsWith('http')
 
 const HOME_TITLE = 'Kegyencjárat — NER összeomlás tracker';
 const HOME_DESCRIPTION =
-  'Független, közforrású adatbázis a magyarországi korrupciós ügyekről és a NER összeomlásáról — adatokra, nem szólamokra alapozva.';
+  'Független, közforrású adatbázis a magyarországi korrupciós ügyekről és a NER összeomlásáról. Kattints, és nézz utána egy ügynek!';
 
 export const metadata: Metadata = {
   title: {

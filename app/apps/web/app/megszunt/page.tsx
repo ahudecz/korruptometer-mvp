@@ -7,7 +7,7 @@ export const revalidate = 120;
 
 export const metadata: Metadata = {
   title: 'Megszűnt-e már?',
-  description: 'Nyomon követjük a NER propagandamédiájának felszámolását — melyik szűnt meg, melyik él még.',
+  description: 'Nyomon követjük a NER propagandamédiájának felszámolását. Kattints, és nézd meg, melyik szűnt meg, melyik él még!',
   openGraph: { title: 'Megszűnt-e már? — Kegyencjárat', description: 'A NER propagandamédiumainak felszámolása nyomon követve.' },
 };
 

@@ -7,7 +7,7 @@ import { ResignationList, type SerializedResignation } from './resignation-list'
 
 export const metadata: Metadata = {
   title: 'Lemondott-e már?',
-  description: 'Nyomon követjük, hogy a NER kegyenceinek lemondását ki és mikor teljesítette — és ki húzza még mindig.',
+  description: 'Nyomon követjük, hogy a NER kegyenceinek lemondását ki és mikor teljesítette. Kattints, és nézd meg, ki húzza még mindig!',
   openGraph: { title: 'Lemondott-e már? — Kegyencjárat', description: 'Ki mondott le, és ki húzza még mindig.' },
 };
 import { WatchlistGrid } from '../_home/watchlist-grid';

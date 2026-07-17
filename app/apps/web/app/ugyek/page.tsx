@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Kiemelt ügyek',
-  description: 'A legdurvább, folyamatosan frissülő korrupciós ügyek szerkesztőségi válogatása — a teljes, kereshető archívumhoz lásd az Adatbázist.',
+  description: 'A legdurvább, folyamatosan frissülő korrupciós ügyek szerkesztőségi válogatása. Kattints, és nézd meg, mi derült ki eddig!',
   openGraph: { title: 'Kiemelt ügyek — Kegyencjárat', description: 'A legdurvább, folyamatosan frissülő korrupciós ügyek szerkesztőségi válogatása.' },
 };
 

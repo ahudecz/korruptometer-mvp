@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Adatbázis',
-  description: 'Kereshető, szűrhető adatbázis a dokumentált magyar korrupciós ügyekről — érintettek, összegek és intézmények szerint.',
+  description: 'Kereshető, szűrhető adatbázis a dokumentált magyar korrupciós ügyekről — érintettek, összegek és intézmények szerint. Kattints, és keress rá egy ügyre!',
 };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
