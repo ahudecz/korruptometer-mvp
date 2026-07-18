@@ -522,9 +522,13 @@ export default async function HomePage() {
 
   // "Top lemondások" — a TOP_RESIGNATION_PRIORITY sorrendjében az első 5,
   // aminek van valós (approved) sora; "További lemondások" — a legfrissebb 5,
-  // FÜGGETLENÜL attól, hogy szerepel-e fent is (2026-07-17, user report: a
-  // korábbi dedup miatt Szijjártó Péter — bár a Top listában ott volt —
-  // teljesen hiányzott a lenti, "hosszabb" listából).
+  // KIZÁRVA, aki már szerepel a Top listában (2026-07-18, user report: Sulyok
+  // duplán jelent meg mindkét blokkban). A szűrést a teljes 30-elemes
+  // pool-on végezzük, ELŐBB filter, UTÁNA slice(0,5) — ez automatikusan
+  // pótolja a kiszűrt embert a pool következő, még nem szereplő nevével,
+  // nem csökkenti 5 alá a listát. (2026-07-17-i korábbi hiba, amikor
+  // Szijjártó Péter teljesen eltűnt a lenti listából, egy slice-előbb
+  // filter-utóbb sorrendből eredt — ez a sorrend-csere pont ezt kerüli el.)
   const normalizeForMatch = (v: string) =>
     v.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
   const featuredByName = new Map(featuredResignationsRaw.map(r => [normalizeForMatch(r.name), r]));
@@ -532,7 +536,10 @@ export default async function HomePage() {
     .map(name => featuredByName.get(normalizeForMatch(name)))
     .filter((r): r is NonNullable<typeof r> => r != null)
     .slice(0, 5);
-  const additionalResignations = latestResignations30.slice(0, 5);
+  const featuredNamesSet = new Set(featuredResignations.map(r => normalizeForMatch(r.name)));
+  const additionalResignations = latestResignations30
+    .filter(r => !featuredNamesSet.has(normalizeForMatch(r.name)))
+    .slice(0, 5);
 
   function renderResignedItem(r: typeof latestResignations30[number]) {
     const sourceUrl = r.sourceUrls?.[0];
