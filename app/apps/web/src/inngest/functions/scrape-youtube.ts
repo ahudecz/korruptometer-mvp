@@ -38,7 +38,10 @@ const VIEW_REFRESH_WINDOW_DAYS = 14;
  */
 export const scrapeYoutube = inngest.createFunction(
   { id: 'scrape-youtube', name: 'Scrape YouTube podcasts', concurrency: 1 },
-  [{ event: 'youtube.sync' }, { cron: '10 * * * *' }],
+  // 2026-07-18 user request: óránkéntiről napi 1x-re ritkítva (08:10), a
+  // 'youtube.sync' esemény-trigger törölve (semmi nem küldte, csak az
+  // óránkénti cron hívta be feleslegesen sűrűn).
+  { cron: '10 8 * * *' },
   async ({ step, logger }) => {
     const db = getDb();
     const apiKey = process.env.YOUTUBE_API_KEY;

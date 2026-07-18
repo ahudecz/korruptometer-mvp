@@ -111,7 +111,7 @@ const RESIGNATION_KEYWORDS = [
  */
 export const detectResignations = inngest.createFunction(
   { id: 'detect-resignations', name: 'Detect political resignations', concurrency: 1 },
-  { cron: '20 * * * *' },
+  { cron: '20 */2 * * *' }, // 2026-07-18 user request: óránkéntiről 2 óránkéntire ritkítva (LLM-költség)
   async ({ step, logger }) => {
     const db = getDb();
 

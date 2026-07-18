@@ -10,7 +10,7 @@ const CANDIDATE_WINDOW_HOURS = 36;
 const CANDIDATE_LIMIT = 25;
 
 /**
- * breaking.refresh-daily — cron every 6 hours.
+ * breaking.refresh-daily — cron 2x/day (08:00, 20:00).
  *
  * The homepage BREAKING banner (breaking-banner.tsx) always shows the most
  * recently published article among those with breakingOverride=true OR a
@@ -27,12 +27,13 @@ const CANDIDATE_LIMIT = 25;
  */
 export const refreshDailyBreaking = inngest.createFunction(
   { id: 'refresh-daily-breaking', name: 'Pick the most important recent article for the BREAKING banner', concurrency: 1 },
-  // Event-driven — fires right after a detector (or a Telegram-approved
-  // review) actually inserts something, instead of waiting up to 6h for the
-  // next tick. The cron stays as a safety net (catches anything the event
-  // path missed, e.g. a manual DB insert) but is now rarely the one that
-  // actually changes the pick. See project-breaking-priority memory.
-  [{ event: 'breaking.recompute' }, { cron: '0 */6 * * *' }],
+  // 2026-07-18 user request: was event-driven (fired right after EVERY
+  // detector insert / Telegram-approved review — see project-breaking-
+  // priority memory), which meant this LLM call could fire many times a
+  // day unpredictably. Now a fixed 2x/day cron only — the detectors' own
+  // `inngest.send({ name: 'breaking.recompute' })` calls are harmless
+  // no-ops now (nothing subscribes to that event anymore).
+  { cron: '0 8,20 * * *' },
   async ({ step, logger }) => {
     const db = getDb();
 

@@ -32,7 +32,7 @@ const ASSET_KEYWORDS = [
  */
 export const detectAssetRecoveries = inngest.createFunction(
   { id: 'detect-asset-recoveries', name: 'Detect public asset recoveries', concurrency: 1 },
-  { cron: '50 * * * *' },
+  { cron: '50 */2 * * *' }, // 2026-07-18 user request: óránkéntiről 2 óránkéntire ritkítva (LLM-költség)
   async ({ step, logger }) => {
     const db = getDb();
 

@@ -55,7 +55,7 @@ export function coerceClosureEventType(value: string): ValidClosureEventType {
  */
 export const detectMediaClosures = inngest.createFunction(
   { id: 'detect-media-closures', name: 'Detect media closures', concurrency: 1 },
-  { cron: '40 * * * *' },
+  { cron: '40 */2 * * *' }, // 2026-07-18 user request: óránkéntiről 2 óránkéntire ritkítva (LLM-költség)
   async ({ step, logger }) => {
     const db = getDb();
 
