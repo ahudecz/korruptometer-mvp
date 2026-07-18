@@ -1,14 +1,20 @@
 import 'server-only';
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
-import { desc, eq, ilike, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, ilike, inArray, sql } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 import { answerCallbackQuery, editMessageReplyMarkup, sendTelegramMessage, type InlineKeyboardMarkup } from '@/lib/telegram';
-import { DETECTOR_PROCESSORS, type ArticleForReprocess } from '@/lib/telegram-review-actions';
+import {
+  applyWatchlistRemoval,
+  checkWatchlistRemovalForArticle,
+  DETECTOR_PROCESSORS,
+  findWatchlistCandidates,
+  type ArticleForReprocess,
+} from '@/lib/telegram-review-actions';
 import type { DetectorType } from '@korr/db';
 import { canonicalUrl, dedupHash, fetchPrimaryArticle, getAdapter, routeOutletByUrl } from '@korr/scrapers';
-import { WATCH_LIST } from '@app/_home/watchlist-config';
+import { WATCH_LIST, type WatchPerson } from '@app/_home/watchlist-config';
 
 // Legvégső fallback-név (csak akkor, ha a beküldött szöveg URL-nek NÉZETT ki
 // a regexben, de a new URL() mégis elhasal rajta — gyakorlatilag sosem fordul
@@ -221,6 +227,7 @@ type TelegramUpdate = {
 // szűri ki (isResignation/isClosure/stb. false esetén discarded).
 const TIP_CATEGORY_BUTTONS: Array<{ label: string; callbackData: (id: string) => string }> = [
   { label: '🚪 Lemondás/kirúgás', callbackData: (id) => `a:r:${id}` },
+  { label: '🏛️ Tisztségviselő-eltávolítás', callbackData: (id) => `a:w:${id}` },
   { label: '📴 Megszűnés', callbackData: (id) => `a:m:${id}` },
   { label: '⚖️ Bírósági ítélet', callbackData: (id) => `a:c:${id}` },
   { label: '💰 Vagyonvisszaszerzés', callbackData: (id) => `a:x:${id}` },
@@ -425,6 +432,43 @@ async function loadArticleByUrl(sourceUrl: string): Promise<ArticleForReprocess 
   return rows[0] ?? null;
 }
 
+/** Runs the AI removal-check for a matched WATCH_LIST person and sends the
+ *  verdict as a new message with confirm/discard buttons — the human's
+ *  confirm press is the "second source" a fully automated run would
+ *  otherwise require (see the long comment in telegram-review-actions.ts). */
+async function runWatchlistCheck(person: WatchPerson, article: ArticleForReprocess, callbackQueryId: string) {
+  await answerCallbackQuery(callbackQueryId, 'AI-ellenőrzés fut…');
+  const checked = await checkWatchlistRemovalForArticle(person, article);
+  if (!checked.ok) {
+    await sendTelegramMessage(`⚠️ ${checked.message}`);
+    return;
+  }
+  const { check } = checked;
+  const verdictLabel =
+    check.confirmedArticleIds.length === 0
+      ? 'NEM MEGERŐSÍTETT (csak jövő idejű/tervezett megfogalmazás)'
+      : check.removalType === 'resigned'
+        ? 'LEMONDÁS'
+        : check.removalType === 'removed'
+          ? 'ELTÁVOLÍTÁS'
+          : 'BIZONYTALAN';
+  const text = [
+    `🏛️ ${person.name} (${person.institution})`,
+    `AI-verdikt: ${verdictLabel}`,
+    check.lead ? `Összefoglaló: ${check.lead}` : null,
+    `Indoklás: ${check.reason}`,
+    '',
+    'Egyetlen forrás alapján — a Jóváhagyás gombbal Te adod a második megerősítést.',
+  ].filter(Boolean).join('\n');
+  const keyboard: InlineKeyboardMarkup = {
+    inline_keyboard: [[
+      { text: '✅ Jóváhagyás — rögzítés', callback_data: `a:wc:${person.id}.${article.id}` },
+      { text: '❌ Elutasítás', callback_data: `a:wd:${person.id}.${article.id}` },
+    ]],
+  };
+  await sendTelegramMessage(text, keyboard);
+}
+
 function revalidatePublicPaths() {
   revalidatePath('/');
   revalidatePath('/hirek');
@@ -558,7 +602,25 @@ export async function POST(req: Request) {
         } else if (target === 'asset_recovery') {
           await getDb().delete(schema.assetRecoveries).where(eq(schema.assetRecoveries.id, id));
         } else {
-          await getDb().delete(schema.watchlistRemovals).where(eq(schema.watchlistRemovals.id, id));
+          // 2026-07-18 — applyWatchlistRemoval() (Telegram "🏛️
+          // Tisztségviselő-eltávolítás" gomb) mindig ír egy párosított
+          // PoliticalResignation sort is (hogy a homepage/lemondasok listákon
+          // is megjelenjen, nem csak a personId-kártyán) — visszavonáskor ezt
+          // is törölni kell, különben a lista-oldalakon árván megmaradna egy
+          // már visszavont eltávolítás.
+          const [removed] = await getDb()
+            .delete(schema.watchlistRemovals)
+            .where(eq(schema.watchlistRemovals.id, id))
+            .returning({ personId: schema.watchlistRemovals.personId, sourceUrl: schema.watchlistRemovals.sourceUrl });
+          const person = removed ? WATCH_LIST.find((p) => p.id === removed.personId) : undefined;
+          if (person) {
+            await getDb()
+              .delete(schema.politicalResignations)
+              .where(and(
+                eq(schema.politicalResignations.name, person.name),
+                sql`${removed!.sourceUrl} = ANY(${schema.politicalResignations.sourceUrls})`,
+              ));
+          }
         }
         revalidatePublicPaths();
         resultText = '↩️ Visszavonva.';
@@ -649,6 +711,96 @@ export async function POST(req: Request) {
     } catch (err) {
       await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
       console.error('[telegram-webhook] podcast-video action error', err);
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  // ── 2026-07-18 — "🏛️ Tisztségviselő-eltávolítás" kategória. 3 lépés:
+  // 'w' (kezdő gomb, articleId) → WATCH_LIST név-egyezés a cikkben, 0/1/több
+  // találat; 'wp' (személy-választó, ha több találat volt, id = "personId.
+  // articleId") → ugyanoda fut tovább, mint az 1-találatos ág; 'wc'/'wd'
+  // (Jóváhagyás/Elutasítás az AI-verdikt üzeneten, id = "personId.articleId")
+  // → 'wc' írja be ténylegesen a WatchlistRemoval + PoliticalResignation
+  // sorokat (l. applyWatchlistRemoval). Lásd a hosszú kommentet
+  // telegram-review-actions.ts-ben, miért nem a DETECTOR_BY_CODE gépezet
+  // része ez. ──
+  if (action === 'a' && (code === 'w' || code === 'wp' || code === 'wc' || code === 'wd')) {
+    if (!id) {
+      await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
+      return NextResponse.json({ ok: true });
+    }
+    try {
+      if (code === 'w') {
+        const article = await loadArticle(id);
+        if (!article) {
+          await answerCallbackQuery(cq.id, 'A cikk nem található.');
+          return NextResponse.json({ ok: true });
+        }
+        const candidates = findWatchlistCandidates(article.headline, article.excerpt);
+        if (candidates.length === 0) {
+          await answerCallbackQuery(cq.id, 'Nincs egyezés.');
+          await sendTelegramMessage(
+            `Nem találtam egyezést a figyelt listán (${WATCH_LIST.map((p) => p.name).join(', ')}) ebben a cikkben.`,
+          );
+          return NextResponse.json({ ok: true });
+        }
+        if (candidates.length > 1) {
+          await answerCallbackQuery(cq.id, 'Válassz személyt.');
+          const keyboard: InlineKeyboardMarkup = {
+            inline_keyboard: candidates.map((p) => [{ text: `🏛️ ${p.name}`, callback_data: `a:wp:${p.id}.${id}` }]),
+          };
+          await sendTelegramMessage('Több figyelt személy is egyezik — melyikről van szó?', keyboard);
+          return NextResponse.json({ ok: true });
+        }
+        await runWatchlistCheck(candidates[0]!, article, cq.id);
+        return NextResponse.json({ ok: true });
+      }
+
+      const [personId, articleId] = id.split('.');
+      const person = personId ? WATCH_LIST.find((p) => p.id === personId) : undefined;
+      if (!person) {
+        await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
+        return NextResponse.json({ ok: true });
+      }
+
+      if (code === 'wp') {
+        const article = articleId ? await loadArticle(articleId) : null;
+        if (!article) {
+          await answerCallbackQuery(cq.id, 'A cikk nem található.');
+          return NextResponse.json({ ok: true });
+        }
+        await runWatchlistCheck(person, article, cq.id);
+        return NextResponse.json({ ok: true });
+      }
+
+      if (code === 'wd') {
+        await answerCallbackQuery(cq.id, '❌ Elutasítva.');
+        const finalText = [cq.message.text ?? '', '❌ Elutasítva.'].filter(Boolean).join('\n\n');
+        await editMessageReplyMarkup(cq.message.chat.id, cq.message.message_id, finalText);
+        return NextResponse.json({ ok: true });
+      }
+
+      // code === 'wc'
+      const article = articleId ? await loadArticle(articleId) : null;
+      if (!article) {
+        await answerCallbackQuery(cq.id, 'A cikk nem található.');
+        return NextResponse.json({ ok: true });
+      }
+      const checked = await checkWatchlistRemovalForArticle(person, article);
+      if (!checked.ok) {
+        await answerCallbackQuery(cq.id, 'Hiba.');
+        await sendTelegramMessage(`⚠️ ${checked.message}`);
+        return NextResponse.json({ ok: true });
+      }
+      await applyWatchlistRemoval(person, article, checked.check);
+      revalidatePublicPaths();
+      const resultText = '✅ Eltávolítás rögzítve.';
+      await answerCallbackQuery(cq.id, resultText);
+      const finalText = [cq.message.text ?? '', resultText].filter(Boolean).join('\n\n');
+      await editMessageReplyMarkup(cq.message.chat.id, cq.message.message_id, finalText);
+    } catch (err) {
+      await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
+      console.error('[telegram-webhook] watchlist-removal action error', err);
     }
     return NextResponse.json({ ok: true });
   }

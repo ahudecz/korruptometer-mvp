@@ -7,6 +7,8 @@ import { detectMediaClosureFromArticle } from '@korr/db/ai-closures';
 import { detectVerdictFromArticle } from '@korr/db/ai-verdicts';
 import { detectAssetRecoveryFromArticle } from '@korr/db/ai-assets';
 import { detectCriminalComplaintFromArticle } from '@korr/db/ai-complaints';
+import { checkRemoval, type RemovalCheck } from '@korr/db/ai-watchlist';
+import { WATCH_LIST, type WatchPerson } from '@app/_home/watchlist-config';
 import {
   articleDateIso,
   decideComplaintTransition,
@@ -556,3 +558,124 @@ export const DETECTOR_PROCESSORS: Record<DetectorType, typeof processResignation
   asset_recovery: processAssetRecovery,
   criminal_complaint: processCriminalComplaint,
 };
+
+// ── 2026-07-18 — "🏛️ Tisztségviselő-eltávolítás" Telegram category. ──
+//
+// This is deliberately NOT wired into DETECTOR_PROCESSORS/DetectorType: a
+// WatchlistRemoval row has no reviewStatus/pending concept (unlike the other
+// 4 tables) — detect-watchlist-removals.ts only ever writes once it already
+// has 2 independent corroborating sources, so there's nothing to "approve"
+// later. A single Telegram-submitted article is exactly the single-source,
+// forward-looking-phrased case that strict checker is designed to decline
+// (see checkRemoval's system prompt) — which is precisely why the generic
+// "Lemondás" category returned not_applicable for a submission like
+// "Sulyok Tamás aláírta... holnaptól nem ő a köztársasági elnök" (2026-07-18
+// user report). The human pressing this button, seeing the AI's verdict, and
+// then pressing a SEPARATE confirm button IS the second layer of review that
+// the automated cron gets from requiring 2 sources — just human-in-the-loop
+// instead of source-count-based.
+//
+// On confirm, writes BOTH a WatchlistRemoval row (drives the /lemondasok/[id]
+// card + watchlist-grid.tsx status) AND a PoliticalResignation row (drives
+// the homepage Top/További lemondások + the /lemondasok full list) — mirrors
+// exactly what was done by hand for Sulyok Tamás's case, so a future removal
+// doesn't need a repeat of that manual step.
+
+/** Name-matches WATCH_LIST people against an article's headline+excerpt. */
+export function findWatchlistCandidates(headline: string, excerpt: string): WatchPerson[] {
+  const text = `${headline} ${excerpt}`.toLowerCase();
+  return WATCH_LIST.filter((p) => {
+    const parts = p.name.toLowerCase().split(' ').filter((part) => part.length > 2);
+    return parts.length > 0 && parts.every((part) => text.includes(part));
+  });
+}
+
+export type WatchlistRemovalCheckResult =
+  | { ok: true; check: RemovalCheck }
+  | { ok: false; message: string };
+
+/** Runs the strict high-stakes checker against a single article — the human
+ *  approving via the follow-up confirm button supplies the "second source"
+ *  a fully-automated run would otherwise require. */
+export async function checkWatchlistRemovalForArticle(
+  person: WatchPerson,
+  article: ArticleForReprocess,
+): Promise<WatchlistRemovalCheckResult> {
+  const result = await checkRemoval(person.name, person.institution, [
+    {
+      id: article.id,
+      headline: article.headline,
+      excerpt: article.excerpt,
+      sourceName: article.sourceName,
+      publishedAt: articleDateIso(article.publishedAt),
+    },
+  ]);
+  if (isTransientLlmFailure(result)) {
+    return { ok: false, message: 'Az AI-hívás átmenetileg hibázott, próbáld újra.' };
+  }
+  if (!result.data) {
+    return { ok: false, message: 'Az AI nem adott értékelhető választ.' };
+  }
+  return { ok: true, check: result.data };
+}
+
+function wordLimit(text: string, max: number): string {
+  return text.trim().split(/\s+/).slice(0, max).join(' ');
+}
+
+/** Writes both the WatchlistRemoval (card status) and PoliticalResignation
+ *  (homepage/lemondasok lists) rows for a confirmed removal. Idempotent on
+ *  personId — re-confirming (e.g. a stronger follow-up source) updates the
+ *  existing WatchlistRemoval row instead of erroring on the unique constraint. */
+export async function applyWatchlistRemoval(
+  person: WatchPerson,
+  article: ArticleForReprocess,
+  check: RemovalCheck,
+): Promise<{ removalId: string; resignationId: string }> {
+  const db = getDb();
+  const removalType = check.removalType === 'resigned' ? 'resigned' : 'removed';
+  const dateLabel = new Date().toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  const [removal] = await db
+    .insert(schema.watchlistRemovals)
+    .values({
+      personId: person.id,
+      removalType,
+      sourceHeadline: article.headline,
+      sourceName: article.sourceName ?? 'Forrás',
+      sourceUrl: article.sourceUrl ?? '',
+      sourceDateLabel: dateLabel,
+      lead: check.lead || null,
+    })
+    .onConflictDoUpdate({
+      target: schema.watchlistRemovals.personId,
+      set: {
+        removalType,
+        sourceHeadline: article.headline,
+        sourceName: article.sourceName ?? 'Forrás',
+        sourceUrl: article.sourceUrl ?? '',
+        sourceDateLabel: dateLabel,
+        lead: check.lead || null,
+      },
+    })
+    .returning({ id: schema.watchlistRemovals.id });
+
+  const [resignation] = await db
+    .insert(schema.politicalResignations)
+    .values({
+      name: person.name,
+      position: person.institution,
+      institution: person.institution,
+      resignationType: removalType === 'resigned' ? 'lemondás' : 'felmentés',
+      resignationDate: new Date(),
+      description: wordLimit(check.lead || `${person.name} eltávolítva a pozíciójából`, 7),
+      sector: 'közigazgatás',
+      pinned: true,
+      reviewStatus: 'approved',
+      sourceUrls: article.sourceUrl ? [article.sourceUrl] : [],
+      sourceNames: article.sourceName ? [article.sourceName] : [],
+    })
+    .returning({ id: schema.politicalResignations.id });
+
+  return { removalId: removal!.id, resignationId: resignation!.id };
+}
