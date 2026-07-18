@@ -8,7 +8,6 @@ import { detectVerdicts } from './functions/detect-verdicts';
 import { detectAssetRecoveries } from './functions/detect-asset-recoveries';
 import { detectCriminalComplaints } from './functions/detect-criminal-complaints';
 import { syncFacebookPosts } from './functions/sync-facebook-posts';
-import { refreshDailyBreaking } from './functions/refresh-daily-breaking';
 import { detectWatchlistRemovals } from './functions/detect-watchlist-removals';
 import { gdprRetentionSweep } from './functions/gdpr-retention-sweep';
 import { kmonitorDiscoverTags } from './functions/kmonitor-discover-tags';
@@ -82,6 +81,11 @@ export const functions = [
   // kézi futtatással (l. project-facebook-sync.md / -youtube mintája).
   detectCriminalComplaints,
   syncFacebookPosts,
-  refreshDailyBreaking,
+  // 2026-07-18 user request: refreshDailyBreaking (LLM-válogatott BREAKING
+  // pick) teljesen kikapcsolva — a user mostantól manuálisan dönti el, mi
+  // legyen breaking (l. NewsArticle.breakingOverride / breakingPinnedUntil
+  // közvetlen beállítása). A függvény kódja megmaradt
+  // functions/refresh-daily-breaking.ts-ben, csak nincs regisztrálva —
+  // visszakapcsolható egyetlen sor visszaírásával, ha kell.
   detectWatchlistRemovals,
 ];

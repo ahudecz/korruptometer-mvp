@@ -111,7 +111,7 @@ const RESIGNATION_KEYWORDS = [
  */
 export const detectResignations = inngest.createFunction(
   { id: 'detect-resignations', name: 'Detect political resignations', concurrency: 1 },
-  { cron: '20 */2 * * *' }, // 2026-07-18 user request: óránkéntiről 2 óránkéntire ritkítva (LLM-költség)
+  { cron: '20 * * * *' }, // 2026-07-18: visszaállítva óránkéntire — a 2 órás ritkítás nem csökkentette a költséget (backlog-alapú, cikkmennyiség-függő, nem gyakoriság-függő; üres futás ingyenes), csak a friss detektálást lassította
   async ({ step, logger }) => {
     const db = getDb();
 

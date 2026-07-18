@@ -43,7 +43,7 @@ const COMPLAINT_KEYWORDS = ['feljelent'];
  */
 export const detectCriminalComplaints = inngest.createFunction(
   { id: 'detect-criminal-complaints', name: 'Detect criminal complaints (feljelentés)', concurrency: 1 },
-  { cron: '45 */2 * * *' }, // 2026-07-18 user request: óránkéntiről 2 óránkéntire ritkítva (LLM-költség)
+  { cron: '45 * * * *' }, // 2026-07-18: visszaállítva óránkéntire — l. detect-resignations.ts komment
   async ({ step, logger }) => {
     const db = getDb();
     const todayIso = new Date().toISOString().slice(0, 10);

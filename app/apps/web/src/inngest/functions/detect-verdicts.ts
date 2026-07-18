@@ -52,7 +52,7 @@ const VERDICT_KEYWORDS = [
  */
 export const detectVerdicts = inngest.createFunction(
   { id: 'detect-verdicts', name: 'Detect court verdicts and pretrial detentions', concurrency: 1 },
-  { cron: '30 */2 * * *' }, // 2026-07-18 user request: óránkéntiről 2 óránkéntire ritkítva (LLM-költség)
+  { cron: '30 * * * *' }, // 2026-07-18: visszaállítva óránkéntire — l. detect-resignations.ts komment
   async ({ step, logger }) => {
     const db = getDb();
     // Csak a "mikor rögzítettük ezt a forrásidézetet" (sourceDates) mezőhöz —
