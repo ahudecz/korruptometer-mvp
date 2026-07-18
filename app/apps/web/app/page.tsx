@@ -106,7 +106,8 @@ const getCachedTotalDamage = unstable_cache(
 type CachedArticle = {
   id: string; headline: string; excerpt: string | null; sourceUrl: string; publishedAt: string;
   tag: string | null; featured: boolean | null; imageUrl: string | null;
-  isBreakingCandidate: boolean | null; breakingOverride: boolean | null; sourceName: string | null;
+  isBreakingCandidate: boolean | null; breakingOverride: boolean | null; breakingPinnedUntil: string | null;
+  sourceName: string | null;
 };
 const getCachedAllArticles = unstable_cache(
   async (): Promise<CachedArticle[]> => {
@@ -124,6 +125,7 @@ const getCachedAllArticles = unstable_cache(
       imageUrl: schema.newsArticles.imageUrl,
       isBreakingCandidate: schema.newsArticles.isBreakingCandidate,
       breakingOverride: schema.newsArticles.breakingOverride,
+      breakingPinnedUntil: schema.newsArticles.breakingPinnedUntil,
       sourceName: schema.sources.name,
     })
     .from(schema.newsArticles)
@@ -137,7 +139,7 @@ const getCachedAllArticles = unstable_cache(
     ))
     .orderBy(d(schema.newsArticles.publishedAt))
     .limit(100);
-    return rows.map(r => ({ ...r, publishedAt: r.publishedAt.toISOString() }));
+    return rows.map(r => ({ ...r, publishedAt: r.publishedAt.toISOString(), breakingPinnedUntil: r.breakingPinnedUntil ? r.breakingPinnedUntil.toISOString() : null }));
   },
   ['all-articles-raw'],
   { revalidate: 60 },
@@ -166,13 +168,14 @@ const getCachedRecentNews = unstable_cache(
       imageUrl: schema.newsArticles.imageUrl,
       isBreakingCandidate: schema.newsArticles.isBreakingCandidate,
       breakingOverride: schema.newsArticles.breakingOverride,
+      breakingPinnedUntil: schema.newsArticles.breakingPinnedUntil,
       sourceName: schema.sources.name,
     })
     .from(schema.newsArticles)
     .leftJoin(schema.sources, eqF(schema.sources.id, schema.newsArticles.sourceId))
     .orderBy(d(schema.newsArticles.publishedAt))
     .limit(15);
-    return rows.map(r => ({ ...r, publishedAt: r.publishedAt.toISOString() }));
+    return rows.map(r => ({ ...r, publishedAt: r.publishedAt.toISOString(), breakingPinnedUntil: r.breakingPinnedUntil ? r.breakingPinnedUntil.toISOString() : null }));
   },
   ['recent-news-unfiltered'],
   { revalidate: 60 },

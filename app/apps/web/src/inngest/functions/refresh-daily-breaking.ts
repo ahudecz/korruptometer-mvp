@@ -36,6 +36,23 @@ export const refreshDailyBreaking = inngest.createFunction(
   async ({ step, logger }) => {
     const db = getDb();
 
+    // A live pin (breakingPinnedUntil in the future) always outranks a plain
+    // breakingOverride pick anyway (breaking.ts / breaking-pick.ts tiering),
+    // so spending an LLM call here while one's active would just produce a
+    // result nobody will ever see — skip the run entirely until it expires.
+    const activePin = await step.run('check-active-pin', async () => {
+      const rows = await db
+        .select({ breakingPinnedUntil: schema.newsArticles.breakingPinnedUntil })
+        .from(schema.newsArticles)
+        .where(gte(schema.newsArticles.breakingPinnedUntil, new Date()))
+        .limit(1);
+      return rows.length > 0;
+    });
+    if (activePin) {
+      logger?.info?.('refresh-daily-breaking: skipped, an active breaking pin exists');
+      return { candidates: 0, picked: false, reason: 'active_pin' };
+    }
+
     const candidates = await step.run('load-candidates', async () => {
       const since = new Date(Date.now() - CANDIDATE_WINDOW_HOURS * 60 * 60 * 1000);
       const rows = await db

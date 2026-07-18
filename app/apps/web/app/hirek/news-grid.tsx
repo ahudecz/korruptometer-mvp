@@ -18,6 +18,7 @@ type Article = {
   featured: boolean;
   isBreaking: boolean;
   breakingOverride?: boolean | null;
+  breakingPinnedUntil?: string | null;
   relatedCaseId: string | null;
   sourceSlug: string | null;
   sourceName: string | null;

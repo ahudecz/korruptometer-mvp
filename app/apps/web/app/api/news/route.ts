@@ -55,6 +55,7 @@ export async function GET(req: Request) {
       relatedCaseId: schema.newsArticles.relatedCaseId,
       isBreakingCandidate: schema.newsArticles.isBreakingCandidate,
       breakingOverride: schema.newsArticles.breakingOverride,
+      breakingPinnedUntil: schema.newsArticles.breakingPinnedUntil,
       sourceSlug: schema.sources.slug,
       sourceName: schema.sources.name,
     })

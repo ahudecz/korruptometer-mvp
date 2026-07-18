@@ -136,6 +136,11 @@ export const newsArticles = pgTable(
     viaArchive: boolean('viaArchive').notNull().default(false),
     isBreakingCandidate: boolean('isBreakingCandidate').notNull().default(false),
     breakingOverride: boolean('breakingOverride'),
+    // Kézzel kitűzött BREAKING, időkorláttal védve — amíg a jövőben van, a
+    // legmagasabb prioritási szint (breaking.ts / breaking-pick.ts), a
+    // refresh-daily-breaking cron sem írja felül. Ugyanaz a minta, mint a
+    // PodcastVideo.pinnedUntil.
+    breakingPinnedUntil: timestamp('breakingPinnedUntil', { withTimezone: true }),
     createdAt: timestamp('createdAt', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -146,6 +151,7 @@ export const newsArticles = pgTable(
     ),
     publishedIdx: index('NewsArticle_publishedAt_idx').on(t.publishedAt),
     relatedCaseIdx: index('NewsArticle_relatedCaseId_idx').on(t.relatedCaseId),
+    breakingPinnedUntilIdx: index('NewsArticle_breakingPinnedUntil_idx').on(t.breakingPinnedUntil),
   }),
 );
 

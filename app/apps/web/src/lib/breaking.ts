@@ -3,6 +3,7 @@ import { isBreaking } from '@korr/scrapers';
 import { isWatchlistPerson } from '@korr/db';
 import { getDb, schema } from './db';
 import { getMonitoredNames } from './breaking-monitored';
+import { isActivePin } from './breaking-pick';
 
 export type BreakingArticle = {
   id: string;
@@ -17,6 +18,7 @@ export type BreakingArticle = {
 export async function getActiveBreaking(): Promise<BreakingArticle[]> {
   try {
     const db = getDb();
+    const now = new Date();
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const rows = await db
       .select({
@@ -28,6 +30,7 @@ export async function getActiveBreaking(): Promise<BreakingArticle[]> {
         relatedCaseId: schema.newsArticles.relatedCaseId,
         tag: schema.newsArticles.tag,
         breakingOverride: schema.newsArticles.breakingOverride,
+        breakingPinnedUntil: schema.newsArticles.breakingPinnedUntil,
       })
       .from(schema.newsArticles)
       .where(
@@ -35,6 +38,7 @@ export async function getActiveBreaking(): Promise<BreakingArticle[]> {
           or(
             eq(schema.newsArticles.breakingOverride, true),
             eq(schema.newsArticles.isBreakingCandidate, true),
+            gte(schema.newsArticles.breakingPinnedUntil, now),
           ),
           gte(schema.newsArticles.publishedAt, sevenDaysAgo),
         ),
@@ -85,22 +89,24 @@ export async function getActiveBreaking(): Promise<BreakingArticle[]> {
     };
     return rows
       .filter(r =>
+        isActivePin(r.breakingPinnedUntil) ||
         r.breakingOverride === true ||
         (r.tag && TRUSTED_DETECTOR_TAGS.has(r.tag) && isNationallySignificant(r.headline)) ||
         isBreaking(r.headline, r.excerpt ?? '', monitoredNames),
       )
-      // Tier priority: an editorial/LLM pick (breakingOverride) always
-      // outranks a raw auto-tagged candidate, regardless of which is more
-      // recent — recency only breaks ties within the same tier. Without
-      // this, a fresh but minor auto-tagged story could silently bump a
-      // more significant, already-vetted breakingOverride pick.
+      // Tier priority: a live pin (breakingPinnedUntil in the future) always
+      // wins, regardless of recency — that's the point of a pin (2026-07-18
+      // user request). Below that, an editorial/LLM pick (breakingOverride)
+      // outranks a raw auto-tagged candidate. Without tiering, a fresh but
+      // minor auto-tagged story could silently bump a more significant,
+      // already-vetted pick.
       .sort((a, b) => {
-        const tierA = a.breakingOverride ? 1 : 0;
-        const tierB = b.breakingOverride ? 1 : 0;
+        const tierA = isActivePin(a.breakingPinnedUntil) ? 2 : a.breakingOverride ? 1 : 0;
+        const tierB = isActivePin(b.breakingPinnedUntil) ? 2 : b.breakingOverride ? 1 : 0;
         if (tierA !== tierB) return tierB - tierA;
         return b.publishedAt.getTime() - a.publishedAt.getTime();
       })
-      .map(({ breakingOverride: _, ...rest }) => rest);
+      .map(({ breakingOverride: _, breakingPinnedUntil: __, ...rest }) => rest);
   } catch {
     return [];
   }
