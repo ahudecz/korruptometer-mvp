@@ -14,13 +14,11 @@ import { inngest } from '../client';
 
 const FAILURE_DISABLE_THRESHOLD = 5;
 const ZERO_ARTICLE_ALERT_THRESHOLD = 5;
-// 2026-07-12: az AI-classify fail-open (l. lentebb) egy ÁTMENETI hibára lett
-// kitalálva — ha az Anthropic-kredit napokra kifogy, a fail-open mindent
-// beenged kulcsszó nélkül (pl. Magyar Hang teljes site-feedjéből a
-// magazin-/tárca-cikkeket is), mert minden hívás elhasal. Forrásonként ennyi
-// egymás utáni classifyArticle API-hiba után a kör "kinyit": a maradék
-// bizonytalan cikkeket inkább eldobjuk (fail-closed), és egyszer jelzünk
-// Slacken — nem hívjuk feleslegesen tovább a halott API-t minden cikkre.
+// 2026-07-19: minden classifyArticle-hiba (napi költés-limit VAGY tényleges
+// API-kiesés) fail-closed — a bizonytalan cikket eldobjuk, l. lentebb.
+// Ez a küszöb csak azt szabja meg, hányszori egymás utáni hiba után "nyit
+// ki" a kör (aiCircuitOpen) — utána a maradék bizonytalan cikkre már meg
+// se próbáljuk hívni a halott API-t, és egyszer jelzünk Slacken forrásonként.
 const AI_CIRCUIT_BREAKER_THRESHOLD = 3;
 
 /**
@@ -211,24 +209,34 @@ async function persistArticles(
         totalInputTokens += ai.inputTokens;
         totalOutputTokens += ai.outputTokens;
 
-        // 2026-07-11: ai.apiFailed (pl. kifogyott Anthropic-kredit) korábban
-        // itt is 'nem releváns'-ként jött vissza, mert classifyArticle a
-        // saját hibáját relevant:false-ként adta vissza — emiatt EVERY
-        // maybe-kupacos cikk (minden relevantByDefault forrásból, ha nincs
-        // kemény kulcsszó-találat) csendben kimaradt, amíg az API-kulcs
-        // nem működött. Most explicit: API-hiba esetén megtartjuk
-        // (megbízható forrás, eredeti adatokkal) — DE csak addig, amíg a
-        // hiba elszigeteltnek tűnik (l. AI_CIRCUIT_BREAKER_THRESHOLD).
+        // 2026-07-19: fail-open → fail-closed (user request). 2026-07-11's
+        // fail-open logic assumed an apiFailed run was a rare, transient
+        // outage (dead credit key) — but a DAILY BUDGET CEILING refusal
+        // (l. packages/db/src/llm.ts) is not rare or transient: it fires
+        // reliably, every call, for the rest of every day once the shared
+        // spend cap is hit. Fail-open under THAT condition meant every
+        // uncertain "maybe"-tier article (from a relevantByDefault source)
+        // flooded straight onto the site unfiltered for hours at a time —
+        // this is what put weather/tram-accident/lawnmowing pieces from
+        // Magyar Hang into the news feed on 2026-07-19 (that source has
+        // since also lost relevantByDefault entirely, see magyar-hang.ts).
+        // Now: any classify failure (budget refusal or a genuine transient
+        // API error) discards the uncertain article instead of keeping it
+        // — a real corruption story is never lost this way, because a hard
+        // keyword/monitored-name match always takes the 'in' tier and
+        // bypasses AI entirely, regardless of budget state. The circuit
+        // breaker below now exists only to avoid hammering a dead API
+        // with pointless retries within one run, not to decide keep/drop.
         if (ai.apiFailed) {
           consecutiveAiFailures += 1;
-          if (consecutiveAiFailures >= AI_CIRCUIT_BREAKER_THRESHOLD) {
+          if (consecutiveAiFailures >= AI_CIRCUIT_BREAKER_THRESHOLD && !aiCircuitOpen) {
             aiCircuitOpen = true;
             await postEditorAlert(
-              `AI-classify tartósan hibázik (${consecutiveAiFailures} egymás utáni API-hiba) *${sourceSlug ?? sourceId}* forrásnál — a maradék bizonytalan cikkeket ebben a futásban eldobjuk (fail-closed), amíg az AI vissza nem áll. Ellenőrizd az Anthropic-kredit egyenleget.`,
+              `AI-classify tartósan hibázik (${consecutiveAiFailures} egymás utáni API-hiba, pl. napi költés-limit) *${sourceSlug ?? sourceId}* forrásnál — a maradék bizonytalan cikkeket ebben a futásban eldobjuk (fail-closed), amíg az AI/keret vissza nem áll.`,
             );
-            continue; // ez a cikk is a fail-closed ágra esik, ha épp most nyílt ki a kör
           }
-          logger?.info?.(`classifyArticle: API hiba (${consecutiveAiFailures}/${AI_CIRCUIT_BREAKER_THRESHOLD}), megtartva (fail-open) — "${a.headline}"`);
+          logger?.info?.(`classifyArticle: API hiba (${consecutiveAiFailures}/${AI_CIRCUIT_BREAKER_THRESHOLD}), eldobva (fail-closed) — "${a.headline}"`);
+          continue;
         } else if (!ai.relevant) {
           consecutiveAiFailures = 0;
           continue; // az AI szerint szemét → eldobjuk
