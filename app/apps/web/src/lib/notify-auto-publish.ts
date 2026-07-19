@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { sendTelegramMessage, type InlineKeyboardMarkup } from './telegram';
+import { pinChatMessage, sendTelegramMessage, type InlineKeyboardMarkup } from './telegram';
 
 /**
  * 2026-07-14 — a companion to notify.ts's notifyReviewNeeded(), for the
@@ -60,7 +60,16 @@ export async function notifyAutoPublished(event: NotifyAutoPublishedEvent): Prom
       ],
     };
 
-    await sendTelegramMessage(message, replyMarkup);
+    const messageId = await sendTelegramMessage(message, replyMarkup);
+    // 2026-07-19 — user kérés: a watchlist_removal (WATCH_LIST-es
+    // tisztségviselő tényleges távozása — a legritkább, legnagyobb súlyú
+    // eset ebből a 3-ból) mostantól kitűzve is marad a csoportban, nem csak
+    // egy üzenet a folyamban. CourtVerdict/AssetRecovery szándékosan NEM
+    // pinnelt — azok elég gyakoriak ahhoz, hogy a pin folyton lecserélődne,
+    // ami zajosabb lenne, mint amennyit segít.
+    if (messageId && event.target === 'watchlist_removal') {
+      await pinChatMessage(messageId);
+    }
   } catch {
     // Never let a notification-delivery problem affect the caller.
   }
