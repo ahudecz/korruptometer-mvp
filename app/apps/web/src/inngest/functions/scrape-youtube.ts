@@ -134,11 +134,22 @@ export const scrapeYoutube = inngest.createFunction(
             continue;
           }
 
-          // tier === 'maybe' — Haiku dönt, de az eredmény MINDIG Telegramra megy,
-          // ha releváns (vagy ha maga az AI-hívás hibázott — bizonytalanság
-          // mindkét esetben emberi jóváhagyást kap, nem automatikus döntést).
+          // tier === 'maybe' — Haiku dönt, releváns eredménynél MINDIG
+          // Telegramra megy jóváhagyásra (emberi kontroll egy kísérleti
+          // content-típuson).
+          //
+          // 2026-07-19: ai.apiFailed most fail-closed (korábban ugyanúgy
+          // jóváhagyásra ment, mint egy valós "releváns" — l. scrape-news.ts
+          // ugyanezen napi hibája). Amíg a napi költés-limit tartósan
+          // elutasítja a hívásokat, EZ a kupac minden csatorna minden
+          // kulcsszó nélküli videóját érintette egyetlen futáson belül —
+          // 2026-07-19 hajnal 01:1x UTC, 59 teljesen NER-independens videó
+          // (foci-összefoglalók, kertészkedés, IKEA-sztrájk stb.) zúdult a
+          // Telegramra egy percen belül, mert az AI helyett a hibaág döntött
+          // "jóváhagyandó"-nak mindet. Most: hívás-hiba = eldobva, retry a
+          // következő napi futáskor, amikor a keret már nyitva van.
           const ai = await classifyArticle(video.title, video.description);
-          if (!ai.relevant && !ai.apiFailed) continue; // AI szerint egyértelműen nem releváns
+          if (!ai.relevant || ai.apiFailed) continue;
 
           const rows = await db
             .insert(schema.podcastVideos)
