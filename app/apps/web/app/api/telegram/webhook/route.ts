@@ -233,6 +233,10 @@ const TIP_CATEGORY_BUTTONS: Array<{ label: string; callbackData: (id: string) =>
   { label: '💰 Vagyonvisszaszerzés', callbackData: (id) => `a:x:${id}` },
   { label: '📝 Feljelentés', callbackData: (id) => `a:f:${id}` },
   { label: '📰 Csak hír', callbackData: (id) => `n:g:${id}` },
+  // 2026-07-19 — user kérés: ne kelljen külön "visszavon <név>" parancsot
+  // gépelni, ha a gép előtt nem ülő usernek csak annyi kell, hogy egy
+  // konkrét, már kint lévő szar cikket linkkel törölni tudjon.
+  { label: '🗑️ Törlés (rossz cikk)', callbackData: (id) => `td:n:${id}` },
 ];
 
 function tipCategoryKeyboard(articleId: string): InlineKeyboardMarkup {
@@ -242,6 +246,29 @@ function tipCategoryKeyboard(articleId: string): InlineKeyboardMarkup {
 function firstUrl(text: string): string | null {
   const m = text.match(/https?:\/\/\S+/);
   return m ? m[0].replace(/[.,)\]>]+$/, '') : null;
+}
+
+// 2026-07-19 — YouTube-link felismerés a kézi bejelentés flow-hoz: egy
+// youtube.com/youtu.be linket NEM szabad resolveOrCreateArticleFromUrl-lel
+// NewsArticle-ként feldolgozni (az cikk-scrapelést próbálna futtatni egy
+// videó-oldalon, ami vagy hibázik, vagy szemetet szúrna be) — ehelyett a
+// meglévő PodcastVideo sort keressük meg videoId alapján, és egy önálló
+// törlés-gombot kínálunk (nincs kategória-választás, egy videónak nincs
+// "lemondás/ítélet/stb." kategóriája).
+function extractYoutubeVideoId(url: string): string | null {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\.|^m\./, '');
+    if (host === 'youtu.be') return u.pathname.slice(1).split('/')[0] || null;
+    if (host === 'youtube.com') {
+      if (u.pathname === '/watch') return u.searchParams.get('v');
+      const shortsMatch = u.pathname.match(/^\/(shorts|live)\/([^/]+)/);
+      if (shortsMatch) return shortsMatch[2] ?? null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 type ResolveArticleResult = { id: string; headline: string } | { error: string };
@@ -544,6 +571,25 @@ export async function POST(req: Request) {
     // kötőjelek mentén feldarabolta).
     const url = msg.text ? firstUrl(msg.text) : null;
     if (url) {
+      const youtubeId = extractYoutubeVideoId(url);
+      if (youtubeId) {
+        const videoRows = await getDb()
+          .select({ id: schema.podcastVideos.id, title: schema.podcastVideos.title, channelName: schema.podcastVideos.channelName })
+          .from(schema.podcastVideos)
+          .where(eq(schema.podcastVideos.videoId, youtubeId))
+          .limit(1);
+        const video = videoRows[0];
+        if (!video) {
+          await sendTelegramMessage(`⚠️ Nincs ilyen videó az adatbázisban (talán már törölve, vagy sose vettük fel).\n\n${url}`);
+          return NextResponse.json({ ok: true });
+        }
+        await sendTelegramMessage(
+          `📺 ${video.channelName} — ${video.title}\n\n${url}`,
+          { inline_keyboard: [[{ text: '🗑️ Törlés', callback_data: `td:y:${video.id}` }]] },
+        );
+        return NextResponse.json({ ok: true });
+      }
+
       const resolved = await resolveOrCreateArticleFromUrl(url);
       if ('error' in resolved) {
         await sendTelegramMessage(`⚠️ ${resolved.error}\n\n${url}`);
@@ -653,6 +699,40 @@ export async function POST(req: Request) {
     } catch (err) {
       await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
       console.error('[telegram-webhook] delete-by-search error', err);
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  // ── 2026-07-19 — "🗑️ Törlés" gomb a kézi URL-bejelentés flow-ból (hír
+  // vagy YouTube-videó, amit a user beküldött linkkel, mert szerinte nem
+  // kellett volna kikerülnie). code='n' → NewsArticle sor törlése, code='y'
+  // → PodcastVideo sor törlése. Mindkettő tényleges DELETE, nem
+  // reviewStatus-váltás — egy NewsArticle-nek nincs "elutasítva" állapota
+  // (a hír-pipeline sose ír ilyet vissza egy már beszúrt sorra), a
+  // PodcastVideo esetén pedig itt direkt szándékos a hard delete: a user
+  // egy MÁR KIKERÜLT, publikusan látható rossz videót akar eltüntetni, nem
+  // egy jóváhagyásra váró jelöltet elutasítani (az a meglévő 'y' ág dolga,
+  // ami reviewStatus='rejected'-et ír, hogy a videoId UNIQUE constraint
+  // ne engedje újra felfedezni — itt viszont a user már döntött, a sor
+  // NULLÁZÁSA a cél, nem a re-discovery elleni védelem). ──
+  if (action === 'td') {
+    if ((code !== 'n' && code !== 'y') || !id) {
+      await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
+      return NextResponse.json({ ok: true });
+    }
+    try {
+      if (code === 'n') {
+        await getDb().delete(schema.newsArticles).where(eq(schema.newsArticles.id, id));
+      } else {
+        await getDb().delete(schema.podcastVideos).where(eq(schema.podcastVideos.id, id));
+      }
+      revalidatePublicPaths();
+      await answerCallbackQuery(cq.id, '🗑️ Törölve.');
+      const finalText = [cq.message.text ?? '', '🗑️ Törölve.'].filter(Boolean).join('\n\n');
+      await editMessageReplyMarkup(cq.message.chat.id, cq.message.message_id, finalText);
+    } catch (err) {
+      await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
+      console.error('[telegram-webhook] tip-delete-by-link error', err);
     }
     return NextResponse.json({ ok: true });
   }
