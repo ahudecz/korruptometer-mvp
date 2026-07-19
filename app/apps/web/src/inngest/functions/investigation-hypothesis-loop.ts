@@ -5,6 +5,7 @@ import { and, eq } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 import { completeJob, failJob, startJob } from '@/lib/investigation/job-state';
+import { probeDailySpend } from '@/lib/investigation/llm-spend';
 import type { HypothesisCapKind } from '@korr/shared';
 import { inngest } from '../client';
 
@@ -96,6 +97,26 @@ export const investigationHypothesisLoop = inngest.createFunction(
     await step.run('mark-running', async () => {
       await startJob({ investigationId, jobKind: 'hypothesis_loop' });
     });
+
+    // 2026-07-19 — this loop used to call Anthropic directly with NO daily-
+    // spend gate at all (found while chasing a $1.21/day overspend — see
+    // llm-spend.ts's comment for the other two paths that were also blind
+    // to each other). Manual/admin-triggered only, so unlikely to have
+    // caused today's automatic overspend, but closing it while it's found.
+    const spendProbe = await step.run('probe-daily-ceiling', async () => {
+      const db = getDb();
+      return db.transaction(async (tx) => probeDailySpend(tx, MODEL));
+    });
+    if (spendProbe.paused) {
+      await step.run('mark-paused', async () => {
+        await failJob({
+          investigationId,
+          jobKind: 'hypothesis_loop',
+          codeOrMessage: 'internal_error',
+        });
+      });
+      throw new Error(`Daily LLM spend ceiling reached (${spendProbe.currentSpendHuf}/${spendProbe.ceilingHuf} HUF) — hypothesis loop refused.`);
+    }
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {

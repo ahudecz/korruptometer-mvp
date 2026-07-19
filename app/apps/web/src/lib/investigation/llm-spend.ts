@@ -3,7 +3,19 @@ import { sql } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 
-const DEFAULT_CEILING_HUF = '50000';
+// 2026-07-19 — user report: real spend hit $1.21/day despite the (new,
+// 2026-07-18) $1 gate in packages/db/src/llm.ts. Root cause found: THIS
+// module is a second, independent daily-spend kill-switch that predates
+// tonight's work — investigation-extract-claims.ts calls it directly,
+// never through llmExtract(), so packages/db/src/llm.ts's gate never saw
+// these calls at all. Worse, its ceiling defaulted to 50 000 HUF (~$130,
+// LLM_DAILY_CEILING_HUF was never actually set on Vercel) — two orders of
+// magnitude above what the user intends — and its query only summed the
+// CURRENT model's own spend, not the combined total across every caller,
+// so it couldn't even see packages/db/src/llm.ts's spend to begin with.
+// Now reads the SAME LLM_DAILY_CEILING_USD as the other gate (single
+// source of truth) and sums ALL models for the day, not just its own.
+const HUF_PER_USD = 380; // approximate, matches packages/db/src/llm.ts
 
 export type SpendProbe = {
   paused: boolean;
@@ -12,26 +24,24 @@ export type SpendProbe = {
 };
 
 /**
- * Read today's per-model row in `DailyLlmUsage` with FOR UPDATE so a
- * concurrent extraction can't race the kill-switch check (FR-005,
- * research.md §8). Returns a probe reflecting whether the model is paused
- * for the rest of the day. The caller is responsible for opening the
- * transaction and committing within the same Postgres txn that writes the
- * extraction artefacts.
+ * Read today's TOTAL DailyLlmUsage spend (all models, all callers) with
+ * FOR UPDATE so a concurrent extraction can't race the kill-switch check
+ * (FR-005, research.md §8). Returns a probe reflecting whether extraction
+ * is paused for the rest of the day. The caller is responsible for opening
+ * the transaction and committing within the same Postgres txn that writes
+ * the extraction artefacts.
  */
 export async function probeDailySpend(
   tx: Parameters<Parameters<ReturnType<typeof getDb>['transaction']>[0]>[0],
   model: string,
 ): Promise<SpendProbe> {
-  const ceiling = process.env.LLM_DAILY_CEILING_HUF ?? DEFAULT_CEILING_HUF;
-  // FOR UPDATE on the day's row (Postgres only locks the row if it
-  // exists; the upsert below races safely because the unique constraint
-  // is enforced atomically).
+  const ceilingUsd = Number(process.env.LLM_DAILY_CEILING_USD ?? '1.00');
+  const ceiling = (ceilingUsd * HUF_PER_USD).toFixed(2);
+  void model; // kept in the signature for the call site / logging; no longer used to scope the query
   const rows = (await tx.execute(sql`
-    SELECT "estimatedHufSpend"::text AS current
+    SELECT COALESCE(SUM("estimatedHufSpend"), 0)::text AS current
       FROM "DailyLlmUsage"
      WHERE day = (now() AT TIME ZONE 'Europe/Budapest')::date
-       AND model = ${model}
      FOR UPDATE
   `)) as Array<{ current: string }>;
   const current = rows[0]?.current ?? '0';
