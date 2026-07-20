@@ -57,11 +57,40 @@ const PRICING_USD_PER_MTOK: Record<string, { input: number; output: number }> = 
 // Unknown model → assume the expensive end (Sonnet-tier) so an unrecognised
 // model can never silently bypass the ceiling by under-counting its cost.
 const FALLBACK_PRICING = { input: 3.0, output: 15.0 };
-const HUF_PER_USD = 380; // approximate — only feeds the existing HUF display column, not the gate's own math.
+// 2026-07-20 — approximate. Used both ways now: recordUsage() converts a
+// freshly-computed USD cost to HUF for the persisted ledger column, and
+// todaySpendUsd() converts that same ledger's HUF sum back to USD for the
+// ceiling comparison — so this constant IS part of the gate's math now
+// (it wasn't before the ledger became the gate's read source, see below).
+const HUF_PER_USD = 380;
 
-function modelCostUsd(model: string, inputTokens: number, outputTokens: number): number {
+// 2026-07-20 — Anthropic's standard prompt-cache multipliers, fixed
+// fractions of the model's own base INPUT rate (same ratio across every
+// Claude model, not a separate per-model price): writing a new cache entry
+// costs 1.25x base input; reading a hit costs 0.1x. These are NOT reflected
+// in `response.usage.input_tokens` — the API reports them in their own
+// `cache_creation_input_tokens` / `cache_read_input_tokens` fields. Ignoring
+// them here would silently under-count real spend (and under-feed the daily
+// ceiling gate) the moment caching is turned on below — the exact class of
+// bug this file exists to prevent.
+const CACHE_WRITE_MULTIPLIER = 1.25;
+const CACHE_READ_MULTIPLIER = 0.1;
+
+type UsageBreakdown = {
+  inputTokens: number;
+  outputTokens: number;
+  cacheCreationTokens: number;
+  cacheReadTokens: number;
+};
+
+function modelCostUsd(model: string, u: UsageBreakdown): number {
   const p = PRICING_USD_PER_MTOK[model] ?? FALLBACK_PRICING;
-  return (inputTokens / 1_000_000) * p.input + (outputTokens / 1_000_000) * p.output;
+  return (
+    (u.inputTokens / 1_000_000) * p.input
+    + (u.outputTokens / 1_000_000) * p.output
+    + (u.cacheCreationTokens / 1_000_000) * p.input * CACHE_WRITE_MULTIPLIER
+    + (u.cacheReadTokens / 1_000_000) * p.input * CACHE_READ_MULTIPLIER
+  );
 }
 
 /** Europe/Budapest calendar day, matching the admin llm-usage route's boundary. */
@@ -69,15 +98,27 @@ function todayBudapest(): string {
   return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Budapest' });
 }
 
+/**
+ * 2026-07-20 — reads the ALREADY-COMPUTED `estimatedHufSpend` ledger sum
+ * instead of recomputing cost from raw inputTokens/outputTokens columns (the
+ * old approach). Those two columns no longer capture the full cost picture
+ * once cache tokens exist — recomputing from just them would under-count
+ * exactly like recordUsage would without the fix below. The persisted HUF
+ * total is the single source of truth for what was actually spent.
+ */
 async function todaySpendUsd(): Promise<number> {
-  const rows = await db().select().from(dailyLlmUsage).where(eq(dailyLlmUsage.day, todayBudapest()));
-  return rows.reduce((sum, r) => sum + modelCostUsd(r.model, Number(r.inputTokens), Number(r.outputTokens)), 0);
+  const rows = await db()
+    .select({ estimatedHufSpend: dailyLlmUsage.estimatedHufSpend })
+    .from(dailyLlmUsage)
+    .where(eq(dailyLlmUsage.day, todayBudapest()));
+  const totalHuf = rows.reduce((sum, r) => sum + Number(r.estimatedHufSpend), 0);
+  return totalHuf / HUF_PER_USD;
 }
 
-async function recordUsage(model: string, inputTokens: number, outputTokens: number): Promise<void> {
-  if (inputTokens === 0 && outputTokens === 0) return;
+async function recordUsage(model: string, u: UsageBreakdown): Promise<void> {
+  if (u.inputTokens === 0 && u.outputTokens === 0 && u.cacheCreationTokens === 0 && u.cacheReadTokens === 0) return;
   const day = todayBudapest();
-  const usd = modelCostUsd(model, inputTokens, outputTokens);
+  const usd = modelCostUsd(model, u);
   const huf = (usd * HUF_PER_USD).toFixed(2);
   try {
     await db()
@@ -85,8 +126,8 @@ async function recordUsage(model: string, inputTokens: number, outputTokens: num
       .values({
         day,
         model,
-        inputTokens: BigInt(inputTokens),
-        outputTokens: BigInt(outputTokens),
+        inputTokens: BigInt(u.inputTokens),
+        outputTokens: BigInt(u.outputTokens),
         estimatedHufSpend: huf,
         callCount: 1,
         firstCallAt: new Date(),
@@ -95,8 +136,8 @@ async function recordUsage(model: string, inputTokens: number, outputTokens: num
       .onConflictDoUpdate({
         target: [dailyLlmUsage.day, dailyLlmUsage.model],
         set: {
-          inputTokens: sql`${dailyLlmUsage.inputTokens} + ${BigInt(inputTokens)}`,
-          outputTokens: sql`${dailyLlmUsage.outputTokens} + ${BigInt(outputTokens)}`,
+          inputTokens: sql`${dailyLlmUsage.inputTokens} + ${BigInt(u.inputTokens)}`,
+          outputTokens: sql`${dailyLlmUsage.outputTokens} + ${BigInt(u.outputTokens)}`,
           estimatedHufSpend: sql`${dailyLlmUsage.estimatedHufSpend} + ${huf}`,
           callCount: sql`${dailyLlmUsage.callCount} + 1`,
           lastCallAt: new Date(),
@@ -174,21 +215,32 @@ export async function llmExtract<T>(opts: {
       ? await anthropicExtract<T>(opts, model, maxTokens)
       : await openaiCompatExtract<T>(opts, model, maxTokens);
 
-  await recordUsage(model, result.inputTokens, result.outputTokens);
-  return result;
+  await recordUsage(model, {
+    inputTokens: result.inputTokens,
+    outputTokens: result.outputTokens,
+    cacheCreationTokens: result.cacheCreationTokens,
+    cacheReadTokens: result.cacheReadTokens,
+  });
+  return { data: result.data, inputTokens: result.inputTokens, outputTokens: result.outputTokens };
 }
 
+type ProviderResult<T> = LlmResult<T> & { cacheCreationTokens: number; cacheReadTokens: number };
+
 // ─── OpenAI-compatible path (LangDock: Gemini / Claude / GPT / Mistral) ───────
+// No prompt-caching support in this path (LangDock's OpenAI-compat endpoint
+// doesn't expose it the way Anthropic's native API does) — cache fields are
+// always 0 here, real or not, so the shared cost math in llmExtract() never
+// has to special-case the provider.
 
 async function openaiCompatExtract<T>(
   opts: { system: string; user: string; tool: LlmToolSpec },
   model: string,
   maxTokens: number,
-): Promise<LlmResult<T>> {
+): Promise<ProviderResult<T>> {
   const apiKey = process.env.LLM_API_KEY;
   if (!apiKey) {
     console.error('[llm] LLM_API_KEY is not set — detection pipeline is silently disabled. Set LLM_API_KEY (LangDock) or switch to LLM_PROVIDER=anthropic on Vercel.');
-    return { data: null, inputTokens: 0, outputTokens: 0 };
+    return { data: null, inputTokens: 0, outputTokens: 0, cacheCreationTokens: 0, cacheReadTokens: 0 };
   }
   const baseUrl = process.env.LLM_BASE_URL ?? DEFAULT_LANGDOCK_URL;
 
@@ -227,7 +279,7 @@ async function openaiCompatExtract<T>(
     if (!res.ok) {
       const body = await res.text().catch(() => '');
       console.error(`[llm] ${model} HTTP ${res.status}: ${body.slice(0, 300)}`);
-      return { data: null, inputTokens: 0, outputTokens: 0 };
+      return { data: null, inputTokens: 0, outputTokens: 0, cacheCreationTokens: 0, cacheReadTokens: 0 };
     }
 
     const json = (await res.json()) as {
@@ -248,7 +300,7 @@ async function openaiCompatExtract<T>(
     const args = message?.tool_calls?.[0]?.function?.arguments;
     if (args) {
       try {
-        return { data: JSON.parse(args) as T, inputTokens, outputTokens };
+        return { data: JSON.parse(args) as T, inputTokens, outputTokens, cacheCreationTokens: 0, cacheReadTokens: 0 };
       } catch {
         /* fall through to content parsing */
       }
@@ -257,15 +309,15 @@ async function openaiCompatExtract<T>(
     if (message?.content) {
       const cleaned = stripCodeFence(message.content);
       try {
-        return { data: JSON.parse(cleaned) as T, inputTokens, outputTokens };
+        return { data: JSON.parse(cleaned) as T, inputTokens, outputTokens, cacheCreationTokens: 0, cacheReadTokens: 0 };
       } catch {
         /* no parseable JSON */
       }
     }
-    return { data: null, inputTokens, outputTokens };
+    return { data: null, inputTokens, outputTokens, cacheCreationTokens: 0, cacheReadTokens: 0 };
   } catch (err) {
     console.error(`[llm] ${model} request failed:`, err instanceof Error ? err.message : err);
-    return { data: null, inputTokens: 0, outputTokens: 0 };
+    return { data: null, inputTokens: 0, outputTokens: 0, cacheCreationTokens: 0, cacheReadTokens: 0 };
   } finally {
     clearTimeout(timer);
   }
@@ -287,12 +339,12 @@ async function anthropicExtract<T>(
   opts: { system: string; user: string; tool: LlmToolSpec },
   model: string,
   maxTokens: number,
-): Promise<LlmResult<T>> {
+): Promise<ProviderResult<T>> {
   if (!_anthropic) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       console.error('[llm] ANTHROPIC_API_KEY is not set — detection pipeline is silently disabled.');
-      return { data: null, inputTokens: 0, outputTokens: 0 };
+      return { data: null, inputTokens: 0, outputTokens: 0, cacheCreationTokens: 0, cacheReadTokens: 0 };
     }
     _anthropic = new Anthropic({ apiKey });
   }
@@ -300,7 +352,21 @@ async function anthropicExtract<T>(
     const response = await _anthropic.messages.create({
       model,
       max_tokens: maxTokens,
-      system: opts.system,
+      // 2026-07-20 — prompt caching (user kérés: napi költés felezése). A
+      // system prompt + tool-séma AZONOS minden hívásnál egy adott
+      // detektor-típuson belül (csak a `user` cikk-szöveg változik), de
+      // eddig minden egyes hívás teljes áron küldte újra — ez a fix rész
+      // adta a ~81%-át a mai költésnek (input >> output tokenben). Az
+      // ephemeral cache 5 percig él: egy backlog-scan batch (több cikk
+      // egymás után egy step.run-on belül) szinte mindig ezen belül fut,
+      // úgyhogy az első hívás után a többi már csak a cikkenként változó
+      // user-részt fizeti teljes áron. A cache_control a system blokkon van
+      // — az Anthropic API-nál a cache-elhető prefix rögzített sorrendű
+      // (tools → system → messages), egy töréspont a system végén a tools-t
+      // IS lefedi, nem kell külön a tools tömbre is kiírni.
+      system: [
+        { type: 'text', text: opts.system, cache_control: { type: 'ephemeral' } },
+      ],
       tools: [
         {
           name: opts.tool.name,
@@ -313,13 +379,15 @@ async function anthropicExtract<T>(
     });
     const inputTokens = response.usage?.input_tokens ?? 0;
     const outputTokens = response.usage?.output_tokens ?? 0;
+    const cacheCreationTokens = response.usage?.cache_creation_input_tokens ?? 0;
+    const cacheReadTokens = response.usage?.cache_read_input_tokens ?? 0;
     const toolUse = response.content.find((b) => b.type === 'tool_use');
     if (!toolUse || toolUse.type !== 'tool_use') {
-      return { data: null, inputTokens, outputTokens };
+      return { data: null, inputTokens, outputTokens, cacheCreationTokens, cacheReadTokens };
     }
-    return { data: toolUse.input as T, inputTokens, outputTokens };
+    return { data: toolUse.input as T, inputTokens, outputTokens, cacheCreationTokens, cacheReadTokens };
   } catch (err) {
     console.error(`[llm] anthropic ${model} failed:`, err instanceof Error ? err.message : err);
-    return { data: null, inputTokens: 0, outputTokens: 0 };
+    return { data: null, inputTokens: 0, outputTokens: 0, cacheCreationTokens: 0, cacheReadTokens: 0 };
   }
 }
