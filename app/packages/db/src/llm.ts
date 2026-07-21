@@ -41,12 +41,20 @@ import { dailyLlmUsage } from './schema';
 // "fail open on DB hiccup" pattern, deliberately, because tonight's problem
 // was unbounded spend, not pipeline availability.
 //
-// Known limitation: the check-then-call-then-record sequence isn't atomic —
-// a burst of truly concurrent calls can each pass the check before any of
-// them records usage, so a small overshoot past the ceiling is possible
-// under concurrency. This is a real backstop, not a mathematically perfect
-// one; see memory/feedback for the follow-up if tighter enforcement is
-// needed (e.g. a Postgres advisory lock around the check+record).
+// 2026-07-21 — user report: daily total landed at $1.0008, a hair over the
+// $1.00 ceiling. Root cause: the check→call→record sequence used to run as
+// three separate, unlocked steps — two truly concurrent llmExtract() calls
+// (e.g. scrape-news's classify and a detector firing in the same cron
+// minute) could each read "today's spend" before EITHER had recorded its
+// own cost, so both would pass the ceiling check even though, together,
+// they push the total over it. Fixed: the whole sequence now runs inside
+// one Postgres-advisory-locked transaction (pg_advisory_xact_lock, keyed to
+// the Budapest calendar day) — every llmExtract() call fully resolves
+// (check, provider call, record) before the next one is even allowed to
+// read today's spend. This serialises LLM calls process-wide, which is a
+// non-issue at this volume (a few hundred calls/day) and each detector
+// already runs at Inngest concurrency:1 individually — the lock only ever
+// queues calls from DIFFERENT jobs that happen to land in the same minute.
 
 const PRICING_USD_PER_MTOK: Record<string, { input: number; output: number }> = {
   'claude-haiku-4-5-20251001': { input: 1.0, output: 5.0 },
@@ -98,6 +106,8 @@ function todayBudapest(): string {
   return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Budapest' });
 }
 
+type Tx = Parameters<Parameters<ReturnType<typeof db>['transaction']>[0]>[0];
+
 /**
  * 2026-07-20 — reads the ALREADY-COMPUTED `estimatedHufSpend` ledger sum
  * instead of recomputing cost from raw inputTokens/outputTokens columns (the
@@ -105,9 +115,13 @@ function todayBudapest(): string {
  * once cache tokens exist — recomputing from just them would under-count
  * exactly like recordUsage would without the fix below. The persisted HUF
  * total is the single source of truth for what was actually spent.
+ *
+ * 2026-07-21 — takes the active transaction (tx), not a fresh `db()` call,
+ * so this read happens under the same advisory lock llmExtract() holds for
+ * the whole check→call→record sequence. See the lock comment above.
  */
-async function todaySpendUsd(): Promise<number> {
-  const rows = await db()
+async function todaySpendUsd(tx: Tx): Promise<number> {
+  const rows = await tx
     .select({ estimatedHufSpend: dailyLlmUsage.estimatedHufSpend })
     .from(dailyLlmUsage)
     .where(eq(dailyLlmUsage.day, todayBudapest()));
@@ -115,13 +129,13 @@ async function todaySpendUsd(): Promise<number> {
   return totalHuf / HUF_PER_USD;
 }
 
-async function recordUsage(model: string, u: UsageBreakdown): Promise<void> {
+async function recordUsage(tx: Tx, model: string, u: UsageBreakdown): Promise<void> {
   if (u.inputTokens === 0 && u.outputTokens === 0 && u.cacheCreationTokens === 0 && u.cacheReadTokens === 0) return;
   const day = todayBudapest();
   const usd = modelCostUsd(model, u);
   const huf = (usd * HUF_PER_USD).toFixed(2);
   try {
-    await db()
+    await tx
       .insert(dailyLlmUsage)
       .values({
         day,
@@ -194,34 +208,62 @@ export async function llmExtract<T>(opts: {
 }): Promise<LlmResult<T>> {
   const maxTokens = opts.maxTokens ?? 512;
   const model = opts.model ?? defaultModel();
-
   const ceilingUsd = Number(process.env.LLM_DAILY_CEILING_USD ?? '1.00');
-  if (ceilingUsd > 0) {
-    try {
-      const spent = await todaySpendUsd();
+
+  if (ceilingUsd <= 0) {
+    // Gate disabled — no lock needed, just call straight through.
+    const result =
+      provider() === 'anthropic'
+        ? await anthropicExtract<T>(opts, model, maxTokens)
+        : await openaiCompatExtract<T>(opts, model, maxTokens);
+    await db().transaction((tx) =>
+      recordUsage(tx, model, {
+        inputTokens: result.inputTokens,
+        outputTokens: result.outputTokens,
+        cacheCreationTokens: result.cacheCreationTokens,
+        cacheReadTokens: result.cacheReadTokens,
+      }),
+    );
+    return { data: result.data, inputTokens: result.inputTokens, outputTokens: result.outputTokens };
+  }
+
+  try {
+    return await db().transaction(async (tx) => {
+      // Advisory lock keyed to the Budapest calendar day — held for the
+      // full check→call→record sequence below, so no second call can even
+      // read "today's spend" until this one has either refused or fully
+      // recorded its own cost. See the file-header comment for why.
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('llm_daily_budget'), hashtext(${todayBudapest()}))`);
+
+      const spent = await todaySpendUsd(tx);
       if (spent >= ceilingUsd) {
         console.error(`[llm-budget] daily ceiling reached ($${spent.toFixed(2)} >= $${ceilingUsd.toFixed(2)}) — refusing call, will retry next run.`);
         return { data: null, inputTokens: 0, outputTokens: 0 };
       }
-    } catch (err) {
-      // Fail CLOSED: if we can't verify today's spend, don't spend more.
-      console.error('[llm-budget] failed to check daily spend — refusing call (fail-closed):', err);
-      return { data: null, inputTokens: 0, outputTokens: 0 };
-    }
+
+      const result =
+        provider() === 'anthropic'
+          ? await anthropicExtract<T>(opts, model, maxTokens)
+          : await openaiCompatExtract<T>(opts, model, maxTokens);
+
+      await recordUsage(tx, model, {
+        inputTokens: result.inputTokens,
+        outputTokens: result.outputTokens,
+        cacheCreationTokens: result.cacheCreationTokens,
+        cacheReadTokens: result.cacheReadTokens,
+      });
+      return { data: result.data, inputTokens: result.inputTokens, outputTokens: result.outputTokens };
+    });
+  } catch (err) {
+    // Fail CLOSED: if the locked check/record transaction itself fails
+    // (DB hiccup, lock timeout), refuse the call rather than risk spending
+    // with no ledger entry — the opposite tradeoff from this codebase's
+    // usual "fail open on DB hiccup" pattern, deliberately, because the
+    // problem this file exists to prevent is unbounded spend, not
+    // pipeline availability.
+    console.error('[llm-budget] locked budget check/record failed — refusing call (fail-closed):', err);
+    return { data: null, inputTokens: 0, outputTokens: 0 };
   }
-
-  const result =
-    provider() === 'anthropic'
-      ? await anthropicExtract<T>(opts, model, maxTokens)
-      : await openaiCompatExtract<T>(opts, model, maxTokens);
-
-  await recordUsage(model, {
-    inputTokens: result.inputTokens,
-    outputTokens: result.outputTokens,
-    cacheCreationTokens: result.cacheCreationTokens,
-    cacheReadTokens: result.cacheReadTokens,
-  });
-  return { data: result.data, inputTokens: result.inputTokens, outputTokens: result.outputTokens };
 }
 
 type ProviderResult<T> = LlmResult<T> & { cacheCreationTokens: number; cacheReadTokens: number };
