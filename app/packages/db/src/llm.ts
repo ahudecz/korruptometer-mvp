@@ -208,7 +208,7 @@ export async function llmExtract<T>(opts: {
 }): Promise<LlmResult<T>> {
   const maxTokens = opts.maxTokens ?? 512;
   const model = opts.model ?? defaultModel();
-  const ceilingUsd = Number(process.env.LLM_DAILY_CEILING_USD ?? '1.00');
+  const ceilingUsd = Number(process.env.LLM_DAILY_CEILING_USD ?? '0.50');
 
   if (ceilingUsd <= 0) {
     // Gate disabled — no lock needed, just call straight through.

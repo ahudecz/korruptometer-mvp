@@ -35,7 +35,7 @@ export async function probeDailySpend(
   tx: Parameters<Parameters<ReturnType<typeof getDb>['transaction']>[0]>[0],
   model: string,
 ): Promise<SpendProbe> {
-  const ceilingUsd = Number(process.env.LLM_DAILY_CEILING_USD ?? '1.00');
+  const ceilingUsd = Number(process.env.LLM_DAILY_CEILING_USD ?? '0.50');
   const ceiling = (ceilingUsd * HUF_PER_USD).toFixed(2);
   void model; // kept in the signature for the call site / logging; no longer used to scope the query
   const rows = (await tx.execute(sql`

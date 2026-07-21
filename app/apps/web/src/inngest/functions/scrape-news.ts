@@ -1,5 +1,5 @@
 import 'server-only';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 
 import { adapters, canonicalUrl, dedupHash, scrapeRelevanceTier, isBreaking, shouldFeature } from '@korr/scrapers';
 import type { OutletSlug, ScrapedArticle } from '@korr/scrapers';
@@ -182,14 +182,50 @@ async function persistArticles(
   // van LLM-kulcs. Így olcsó marad, mégis kiszűri a külföld/szemét híreket.
   const useAi = Boolean(process.env.LLM_API_KEY || process.env.ANTHROPIC_API_KEY);
 
-  for (const a of scraped) {
-    const canonical = canonicalUrl(a.sourceUrl, allowlist);
+  // 2026-07-21 — user report + mélyaudit: a forrás RSS/címlapja szinte minden
+  // órában ugyanazokat a már ismert cikkeket adja vissza (mért:
+  // ScraperRun.articlesFound ~8600/nap, articlesNew ~40-70/nap — a "megtalált"
+  // cikkek 99%+-a nem új). Eddig a sourceUrlHash-alapú dedup csak a ciklus
+  // VÉGÉN, az insert onConflictDoNothing()-jénél futott — vagyis egy már
+  // korábban BEILLESZTETT cikk, ha "maybe" kupacba esett, MINDEN órában újra
+  // kifizette a classifyArticle()-hívást, mielőtt az insert úgyis no-op lett
+  // volna. Ez volt a mért napi LLM-hívásszám (637/nap) döntő hányadának a
+  // forrása, nem a tényleges új cikkek mennyisége. Fix: egyetlen batch
+  // SELECT-tel előre betöltjük, mely hash-ek szerepelnek már a DB-ben ebből a
+  // futásból, és MÉG A TIER-SZÁMÍTÁS ELŐTT kihagyjuk őket — a same-story
+  // ellenőrzés és a classify-hívás így soha nem fut le már ismert URL-re.
+  // (A minta ugyanaz, mint a kmonitor-traverse-tag.ts-ben: batch SELECT +
+  // Set + szűrés, csak ide eddig nem lett átültetve.)
+  //
+  // Megjegyzés: ez csak a korábban TÉNYLEGESEN BEILLESZTETT cikkeket fogja
+  // ki (tier='in', vagy 'maybe'+AI relevánsnak ítélte) — az AI által korábban
+  // irrelevánsnak ítélt, ezért be nem illesztett cikkekről nincs hash-nyilván-
+  // tartás, azok elméletileg továbbra is újra-classify-elődhetnek, amíg a
+  // forrás feedjében maradnak. Ha a hívásszám a fix után is magas marad, ez a
+  // következő kör (egy "látott, de elutasított hash" tábla kellene hozzá).
+  const canonicalByArticle = scraped.map((a) => canonicalUrl(a.sourceUrl, allowlist));
+  const hashByArticle = canonicalByArticle.map((c) => dedupHash(c));
+  const existingHashes = hashByArticle.length === 0
+    ? new Set<string>()
+    : new Set(
+        (
+          await db
+            .select({ hash: schema.newsArticles.sourceUrlHash })
+            .from(schema.newsArticles)
+            .where(inArray(schema.newsArticles.sourceUrlHash, hashByArticle))
+        ).map((r) => r.hash),
+      );
+
+  for (let idx = 0; idx < scraped.length; idx += 1) {
+    const a = scraped[idx]!;
+    const canonical = canonicalByArticle[idx]!;
+    const hash = hashByArticle[idx]!;
+
+    if (existingHashes.has(hash)) continue; // már ismert URL — sose ér el a fizetős lépésig
 
     // 1. Ingyenes előszűrés (kulcsszó + URL-szekció + élő névlista).
     const tier = scrapeRelevanceTier(a.headline, a.excerpt, canonical, relevantByDefault, monitoredNames);
     if (tier === 'out') continue; // biztos kuka — AI nélkül eldobjuk
-
-    const hash = dedupHash(canonical);
 
     // 2026-07-21 — user report: a napi költés majdnem duplájára ugrott egy
     // nagy hírnapon (Sulyok-lemondás utóélete, Polgár Judit-sztori — tucatnyi
