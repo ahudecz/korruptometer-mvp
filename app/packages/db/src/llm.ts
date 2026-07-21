@@ -394,21 +394,18 @@ async function anthropicExtract<T>(
     const response = await _anthropic.messages.create({
       model,
       max_tokens: maxTokens,
-      // 2026-07-20 — prompt caching (user kérés: napi költés felezése). A
-      // system prompt + tool-séma AZONOS minden hívásnál egy adott
-      // detektor-típuson belül (csak a `user` cikk-szöveg változik), de
-      // eddig minden egyes hívás teljes áron küldte újra — ez a fix rész
-      // adta a ~81%-át a mai költésnek (input >> output tokenben). Az
-      // ephemeral cache 5 percig él: egy backlog-scan batch (több cikk
-      // egymás után egy step.run-on belül) szinte mindig ezen belül fut,
-      // úgyhogy az első hívás után a többi már csak a cikkenként változó
-      // user-részt fizeti teljes áron. A cache_control a system blokkon van
-      // — az Anthropic API-nál a cache-elhető prefix rögzített sorrendű
-      // (tools → system → messages), egy töréspont a system végén a tools-t
-      // IS lefedi, nem kell külön a tools tömbre is kiírni.
-      system: [
-        { type: 'text', text: opts.system, cache_control: { type: 'ephemeral' } },
-      ],
+      // 2026-07-21 — a 2026-07-20-i cache_control marker itt SZÁNDÉKOSAN
+      // nincs többé: lemértem client.messages.countTokens()-szel, az
+      // ai-classify system+tool sémája ~1224 token — a Haiku 4.5 minimum
+      // cache-elhető prefixe 4096 token (l. Anthropic docs), tehát a marker
+      // sose ért el semmit (cache_creation_input_tokens mindig 0 volt,
+      // megerősítve a platform.claude.com/usage/cache oldalon is: "You're
+      // not using prompt caching"). A 07-20-i mért "felezés" nem a cache-től
+      // jött, hanem ugyanaznapi más fixektől (fail-closed classify-hiba
+      // kezelés). Ha valaha megint felmerül a caching ötlete: előbb
+      // countTokens()-szel ellenőrizd, hogy a prefix eléri-e a 4096 tokent
+      // — jelen rövid, egyedi klasszifikáló promptokon nem fogja.
+      system: opts.system,
       tools: [
         {
           name: opts.tool.name,
