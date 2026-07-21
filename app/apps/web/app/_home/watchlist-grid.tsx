@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { gte } from 'drizzle-orm';
+import { and, eq, gte } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 import { WATCH_LIST, type WatchPerson } from './watchlist-config';
@@ -91,10 +91,24 @@ export async function WatchlistGrid() {
     dbRemovals = [];
   }
 
+  // 2026-07-21 — user report: Polt Péter kártyája "ELTÁVOLÍTVA"-ra váltott
+  // egy MÉG reviewStatus='pending' (egyetlen forrásból, jóváhagyásra váró)
+  // PoliticalResignation-sorra — ez a lekérdezés eddig reviewStatus nélkül
+  // MINDEN sort behúzott, jóváhagyottat és jóváhagyásra várót egyaránt. A
+  // szigorú, 2-forrásos detect-watchlist-removals.ts csak a WatchlistRemoval
+  // táblát írja — ez a név-egyezéses fallback-ág teljesen máshonnan, az
+  // egyszerű egyforrásos resignation-detect.ts pipeline-ból is felszedett
+  // BÁRMIT, amint a sor létrejött, egy ember jóváhagyása előtt. Most csak a
+  // ténylegesen jóváhagyott sorok billenthetik át a kártyát.
   const resignations = await db
     .select({ name: schema.politicalResignations.name, resignationType: schema.politicalResignations.resignationType })
     .from(schema.politicalResignations)
-    .where(gte(schema.politicalResignations.resignationDate, since));
+    .where(
+      and(
+        gte(schema.politicalResignations.resignationDate, since),
+        eq(schema.politicalResignations.reviewStatus, 'approved'),
+      ),
+    );
   const removalByPersonId = new Map(dbRemovals.map((r) => [r.personId, r]));
 
   const persons = WATCH_LIST.map(p => {
