@@ -19,6 +19,7 @@ import { eq, sql } from 'drizzle-orm';
 
 import { db } from './index';
 import { dailyLlmUsage } from './schema';
+import { maybeSendBudgetAlert } from './llm-budget-alert';
 
 // ── 2026-07-18 — hard daily spend gate ──────────────────────────────────────
 // User report: $28.51 spent month-to-date, all Claude Haiku 4.5, climbing
@@ -238,6 +239,7 @@ export async function llmExtract<T>(opts: {
       const spent = await todaySpendUsd(tx);
       if (spent >= ceilingUsd) {
         console.error(`[llm-budget] daily ceiling reached ($${spent.toFixed(2)} >= $${ceilingUsd.toFixed(2)}) — refusing call, will retry next run.`);
+        await maybeSendBudgetAlert(tx, todayBudapest(), spent, ceilingUsd);
         return { data: null, inputTokens: 0, outputTokens: 0 };
       }
 

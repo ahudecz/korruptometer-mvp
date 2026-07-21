@@ -16,7 +16,8 @@
     "./ai-breaking": "./src/pick-daily-breaking.ts",
     "./ai-watchlist": "./src/watchlist-removal-detect.ts",
     "./ai-complaints": "./src/criminal-complaint-detect.ts",
-    "./llm": "./src/llm.ts"
+    "./llm": "./src/llm.ts",
+    "./llm-budget-alert": "./src/llm-budget-alert.ts"
   },
   "scripts": {
     "lint": "eslint src",

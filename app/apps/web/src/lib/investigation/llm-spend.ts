@@ -2,6 +2,7 @@ import 'server-only';
 import { sql } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
+import { maybeSendBudgetAlert } from '@korr/db/llm-budget-alert';
 
 // 2026-07-19 — user report: real spend hit $1.21/day despite the (new,
 // 2026-07-18) $1 gate in packages/db/src/llm.ts. Root cause found: THIS
@@ -46,7 +47,18 @@ export async function probeDailySpend(
   `)) as Array<{ current: string }>;
   const current = rows[0]?.current ?? '0';
   const paused = Number(current) >= Number(ceiling);
+  if (paused) {
+    // Ugyanaz a naponta-egyszeri Telegram-riasztás, mint packages/db/src/
+    // llm.ts fő gate-jénél — LlmBudgetAlert(day) PRIMARY KEY-en dedupolva,
+    // úgyhogy akármelyik gate veszi észre elsőként a napi limit elérését
+    // (ez vagy a fő llmExtract() gate), csak egy üzenet megy ki naponta.
+    await maybeSendBudgetAlert(tx, todayBudapestDate(), Number(current) / HUF_PER_USD, Number(ceiling) / HUF_PER_USD);
+  }
   return { paused, currentSpendHuf: current, ceilingHuf: ceiling };
+}
+
+function todayBudapestDate(): string {
+  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Budapest' });
 }
 
 /**

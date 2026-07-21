@@ -1080,6 +1080,18 @@ export const dailyLlmUsage = pgTable(
   }),
 );
 
+// 2026-07-21 — dedup marker for the "napi LLM-limit elérve" Telegram
+// riasztáshoz (llm-budget-alert.ts). A napi ceiling-gate minden refuse-olt
+// hívásnál újra megnézi, hogy spent >= ceiling — ez egy magas forgalmú napon
+// akár százszor is igaz lehet ugyanarra a napra, de a riasztást csak EGYSZER
+// akarjuk elküldeni. day PRIMARY KEY-re ON CONFLICT DO NOTHING RETURNING-gal
+// pontosan egyszeri (idempotens) küldést ad, a már meglévő napi advisory
+// lock alatt (l. llm.ts), külön zárolás nélkül.
+export const llmBudgetAlerts = pgTable('LlmBudgetAlert', {
+  day: date('day').notNull().primaryKey(),
+  sentAt: timestamp('sentAt', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type ArticleExtractionRun = typeof articleExtractionRuns.$inferSelect;
 export type NewArticleExtractionRun =
   typeof articleExtractionRuns.$inferInsert;

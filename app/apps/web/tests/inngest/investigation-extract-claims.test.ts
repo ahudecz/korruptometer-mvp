@@ -45,31 +45,36 @@ describe('extractor-version (T013)', () => {
 describe('llm-spend kill switch (T013)', () => {
   beforeEach(() => {
     vi.resetModules();
-    delete process.env.LLM_DAILY_CEILING_HUF;
+    // 2026-07-19-i egyesítés óta a gate a LLM_DAILY_CEILING_USD env var-t
+    // olvassa (l. llm-spend.ts header-komment) — a régi LLM_DAILY_CEILING_HUF
+    // már nem hat semmire, ezt a tesztet is erre kellett igazítani.
+    delete process.env.LLM_DAILY_CEILING_USD;
     delete process.env.HAIKU_HUF_INPUT_PER_M;
     delete process.env.HAIKU_HUF_OUTPUT_PER_M;
   });
 
   it('marks paused when DailyLlmUsage.estimatedHufSpend meets the ceiling', async () => {
-    process.env.LLM_DAILY_CEILING_HUF = '100';
+    process.env.LLM_DAILY_CEILING_USD = '1';
     const { probeDailySpend } = await import(
       '../../src/lib/investigation/llm-spend'
     );
     const tx = {
       execute: vi
         .fn()
-        .mockResolvedValueOnce([{ current: '120' }] as unknown),
+        .mockResolvedValueOnce([{ current: '400' }] as unknown)
+        // maybeSendBudgetAlert() second call — no-op path (empty RETURNING = already alerted)
+        .mockResolvedValueOnce([] as unknown),
     } as unknown as Parameters<typeof probeDailySpend>[0];
     const probe = await probeDailySpend(tx, 'claude-haiku-4-5');
     expect(probe).toEqual({
       paused: true,
-      currentSpendHuf: '120',
-      ceilingHuf: '100',
+      currentSpendHuf: '400',
+      ceilingHuf: '380.00',
     });
   });
 
   it('marks NOT paused when row is missing (first call of the day)', async () => {
-    process.env.LLM_DAILY_CEILING_HUF = '100';
+    process.env.LLM_DAILY_CEILING_USD = '1';
     const { probeDailySpend } = await import(
       '../../src/lib/investigation/llm-spend'
     );
