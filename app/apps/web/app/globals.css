@@ -12199,6 +12199,12 @@ body:has(.admin-nav) > main {
     font-size: 11px;
     padding: 5px 10px;
     flex-shrink: 0;
+    /* Mobilon a .complaint-meta justify-content:space-between már önmagában
+       konzisztensen igazítja az Összeget/pill-t (a pill mindig jobbra van
+       zárva), a fix desktop-szélesség itt csak feleslegesen szűkítené a
+       keskeny mobil-sort — visszaállítva tartalom-vezéreltre. */
+    min-width: 0;
+    text-align: left;
   }
   .complaint-detail-date { display: block; font-size: 13px; color: #888; margin: 0 0 10px; }
 }
@@ -12243,6 +12249,17 @@ body:has(.admin-nav) > main {
 .complaint-status-pill--indictment { background: #FF9D00; color: #171a20; }
 .complaint-status-pill--verdict { background: #E31937; color: #fff; }
 .complaint-status-pill--rejected { background: #e0e0e0; color: #5c5e62; text-decoration: line-through; }
+
+/* Fix méret a leghosszabb státusz-szöveghez ("Feljelentés megtörtént") igazítva —
+   enélkül a .complaint-meta (Összeg/Dátum/Pill) teljes szélessége a pill
+   szövegének hosszától függött, és mivel a .complaint-identity flex:1 elnyeli
+   a fennmaradó helyet, egy rövidebb pill (pl. "Nyomozás alatt") jobbra tolta
+   az egész Összeg/Dátum blokkot — soronként eltérő X-pozícióba (user report,
+   2026-07-21). */
+.complaint-status-pill--meta {
+  min-width: 148px;
+  text-align: center;
+}
 
 .vrow-detail {
   padding: 20px 24px 24px;
