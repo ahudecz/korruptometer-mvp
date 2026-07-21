@@ -52,9 +52,11 @@ export async function maybeSendBudgetAlert(
   if (inserted.length === 0) return; // ma már ment riasztás — ez itt egy ismételt refuse
 
   await sendTelegramAlert(
-    `⚠️ Korruptométer: elérte a napi LLM-költséglimitet ($${spentUsd.toFixed(2)} / $${ceilingUsd.toFixed(2)}).\n\n`
+    '⚠️ Korruptométer: elérte a napi LLM-költséglimitet.\n\n'
+    + `Mai elköltés: $${spentUsd.toFixed(2)}\n`
+    + `Napi limit: $${ceilingUsd.toFixed(2)}\n\n`
     + 'A mai nap hátralévő részében a bizonytalan cikkek/detektorhívások automatikusan kimaradnak '
-    + '(fail-closed — nem téved rá a szitesre semmi ellenőrizetlen), amíg a keret éjfélkor '
+    + '(fail-closed — semmi ellenőrizetlen nem kerül fel az oldalra), amíg a keret éjfélkor '
     + '(Europe/Budapest) nem resetel.',
   );
 }
