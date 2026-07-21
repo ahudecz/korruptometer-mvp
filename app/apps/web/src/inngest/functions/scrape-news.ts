@@ -191,6 +191,25 @@ async function persistArticles(
 
     const hash = dedupHash(canonical);
 
+    // 2026-07-21 — user report: a napi költés majdnem duplájára ugrott egy
+    // nagy hírnapon (Sulyok-lemondás utóélete, Polgár Judit-sztori — tucatnyi
+    // lap írta meg ugyanazt). A kereszt-forrásos "ugyanaz a sztori" szűrő
+    // (findSameStoryDuplicate) régen csak a 3. lépésben, az AI-classify UTÁN
+    // futott — vagyis ha 10 lap hozta ugyanazt a sztorit, és mind a 10 a
+    // bizonytalan "maybe" kupacba esett, MIND A 10 kifizetett egy classify-
+    // hívást, mielőtt a duplikátum-szűrő 9-et eldobott volna. A szűrő maga
+    // a NYERS headline/excerpten fut (l. same-story.ts — nem igényli az AI
+    // által finomított szöveget), úgyhogy nyugodtan előrébb hozható: most
+    // MÉG A CLASSIFY ELŐTT fut, a nyilvánvaló duplikátum sose éri el a fizetős
+    // lépést. (A szűrő maga is ritkán hív AI-t — csak a "bizonytalan"
+    // hasonlósági sávban, egyetlen jelölt ellen —, de ez a hívás is a közös
+    // cache-elt llmExtract()-en megy, tehát ugyanúgy olcsó/kapuzott.)
+    const sameStory = await findSameStoryDuplicate({ headline: a.headline, excerpt: a.excerpt, sourceId });
+    if (sameStory.duplicate) {
+      logger?.info?.(`same-story: skipped "${a.headline}" (matches ${sameStory.matchId}, via ${sameStory.via})`);
+      continue;
+    }
+
     let finalExcerpt = a.excerpt;
     let finalTag = a.tag ?? null;
     let finalFeatured = shouldFeature(a.headline, a.excerpt);
@@ -259,15 +278,6 @@ async function persistArticles(
           continue;
         }
       }
-    }
-
-    // 3. Kereszt-forrásos "ugyanaz a sztori" szűrő — más forrásból, más URL-lel
-    // beérkező, de ugyanarról a valós eseményről szóló cikket nem szúrjuk be
-    // duplikátumként (pl. Telex/HVG/Magyar Hang mind ugyanazt a hírt írja meg).
-    const sameStory = await findSameStoryDuplicate({ headline: a.headline, excerpt: finalExcerpt, sourceId });
-    if (sameStory.duplicate) {
-      logger?.info?.(`same-story: skipped "${a.headline}" (matches ${sameStory.matchId}, via ${sameStory.via})`);
-      continue;
     }
 
     const inserted = await db
