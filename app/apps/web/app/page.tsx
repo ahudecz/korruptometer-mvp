@@ -870,103 +870,8 @@ export default async function HomePage() {
         </div>
       )}
 
-      {/* ───── ROGUES GALLERY ───── */}
-      <section className="rogues" id="rogues">
-        <div className="rogues-inner">
-          <div className="section-head">
-            <div className="section-num">02 / Galéria</div>
-            <h2 className="section-title">10 kiemelt személy.</h2>
-          </div>
-          <p className="rogues-deck">
-            A közérdeklődésre leginkább számot tartó ügyek és személyek — sajtójelentések és
-            nyilvánosan hozzáférhető dokumentumok alapján. A státuszok a hiteles médiumok
-            cikkei szerint naponta frissülnek.
-          </p>
-
-          <div className="rogues-key">
-            <div className="k">
-              <span className="dot busted"></span> Jogerősen elítélve
-            </div>
-            <div className="k">
-              <span className="dot pretrial"></span> Előzetes letartóztatásban
-            </div>
-            <div className="k">
-              <span className="dot investig"></span> Feljelentés / nyomozás
-            </div>
-            <div className="k">
-              <span className="dot loose"></span> Nincs ismert eljárás
-            </div>
-            <div className="k">
-              <span className="dot wanted"></span> Körözési parancs kiadva
-            </div>
-          </div>
-
-          <div className="rogues-grid">
-            {GALERIA.slice(0, 10).map((entry, idx) => {
-              const detention = entry.detention as GaleriaDetention;
-              const isBusted = detention === 'busted';
-              const isWanted = detention === 'wanted';
-              const rank = String(idx + 1).padStart(2, '0');
-              return (
-                <Link key={entry.id} href={`/galeria/${entry.id}`} className={`rogue r-${detention}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                  <div className="rogue-rank">
-                    <span>№ {rank}</span>
-                    <span className="id">{entry.id}</span>
-                  </div>
-                  <div className={`rogue-mug ${isBusted ? 'desat' : ''}`}>
-                    <div className="corner-tag">
-                      № {entry.id} / {rank}
-                    </div>
-                    {entry.photoUrl ? (
-                      <img
-                        src={entry.photoUrl.startsWith('/') || entry.photoUrl.includes('wikimedia.org') ? entry.photoUrl : `/api/img-proxy?url=${encodeURIComponent(entry.photoUrl)}`}
-                        alt={entry.name}
-                        className="rogue-photo"
-                      />
-                    ) : (
-                      <Mugshot
-                        caseId={entry.id}
-                        name={entry.name}
-                        variant={entry.variant ?? 0}
-                        glasses={entry.glasses ?? false}
-                        hair={(entry.hair as GaleriaHair) ?? 'short'}
-                        detention={detention}
-                      />
-                    )}
-                    {isBusted && (
-                      <>
-                        <div className="stamp">BUSTED</div>
-                        <div className="face-cross"></div>
-                      </>
-                    )}
-                    {isWanted && <div className="stamp small">KÖRÖZÖTT</div>}
-                    <div className={`status-strip ${detention}`}>
-                      {entry.detentionLabel}
-                    </div>
-                  </div>
-                  <div className="rogue-name">{entry.name}</div>
-                  <div className="rogue-pos">{entry.subtitle}</div>
-                  <div className="rogue-tags">
-                    {entry.crimes.slice(0, 3).map((cr) => (
-                      <span key={cr} className="tag">{cr}</span>
-                    ))}
-                  </div>
-                  <div className="rogue-amount">
-                    <span className="lbl">{entry.amountLabel}</span>
-                    <span className="val">{entry.amount}</span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-
-          <div className="rogues-footer">
-            <Link href="/galeria" className="rogues-more-btn">
-              Részletes leírások és teljes ügyirat →
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* ───── RESIGNATIONS ───── */}
+      <ResignationsSection resignations={topResignations} breaking={breakingArticles} />
 
       {/* ───── BIGGEST CASES ───── */}
       {(() => {
@@ -1250,8 +1155,103 @@ export default async function HomePage() {
         </section>
       </div>
 
-      {/* ───── RESIGNATIONS ───── */}
-      <ResignationsSection resignations={topResignations} breaking={breakingArticles} />
+      {/* ───── ROGUES GALLERY ───── */}
+      <section className="rogues" id="rogues">
+        <div className="rogues-inner">
+          <div className="section-head">
+            <div className="section-num">02 / Galéria</div>
+            <h2 className="section-title">10 kiemelt személy.</h2>
+          </div>
+          <p className="rogues-deck">
+            A közérdeklődésre leginkább számot tartó ügyek és személyek — sajtójelentések és
+            nyilvánosan hozzáférhető dokumentumok alapján. A státuszok a hiteles médiumok
+            cikkei szerint naponta frissülnek.
+          </p>
+
+          <div className="rogues-key">
+            <div className="k">
+              <span className="dot busted"></span> Jogerősen elítélve
+            </div>
+            <div className="k">
+              <span className="dot pretrial"></span> Előzetes letartóztatásban
+            </div>
+            <div className="k">
+              <span className="dot investig"></span> Feljelentés / nyomozás
+            </div>
+            <div className="k">
+              <span className="dot loose"></span> Nincs ismert eljárás
+            </div>
+            <div className="k">
+              <span className="dot wanted"></span> Körözési parancs kiadva
+            </div>
+          </div>
+
+          <div className="rogues-grid">
+            {GALERIA.slice(0, 10).map((entry, idx) => {
+              const detention = entry.detention as GaleriaDetention;
+              const isBusted = detention === 'busted';
+              const isWanted = detention === 'wanted';
+              const rank = String(idx + 1).padStart(2, '0');
+              return (
+                <Link key={entry.id} href={`/galeria/${entry.id}`} className={`rogue r-${detention}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                  <div className="rogue-rank">
+                    <span>№ {rank}</span>
+                    <span className="id">{entry.id}</span>
+                  </div>
+                  <div className={`rogue-mug ${isBusted ? 'desat' : ''}`}>
+                    <div className="corner-tag">
+                      № {entry.id} / {rank}
+                    </div>
+                    {entry.photoUrl ? (
+                      <img
+                        src={entry.photoUrl.startsWith('/') || entry.photoUrl.includes('wikimedia.org') ? entry.photoUrl : `/api/img-proxy?url=${encodeURIComponent(entry.photoUrl)}`}
+                        alt={entry.name}
+                        className="rogue-photo"
+                      />
+                    ) : (
+                      <Mugshot
+                        caseId={entry.id}
+                        name={entry.name}
+                        variant={entry.variant ?? 0}
+                        glasses={entry.glasses ?? false}
+                        hair={(entry.hair as GaleriaHair) ?? 'short'}
+                        detention={detention}
+                      />
+                    )}
+                    {isBusted && (
+                      <>
+                        <div className="stamp">BUSTED</div>
+                        <div className="face-cross"></div>
+                      </>
+                    )}
+                    {isWanted && <div className="stamp small">KÖRÖZÖTT</div>}
+                    <div className={`status-strip ${detention}`}>
+                      {entry.detentionLabel}
+                    </div>
+                  </div>
+                  <div className="rogue-name">{entry.name}</div>
+                  <div className="rogue-pos">{entry.subtitle}</div>
+                  <div className="rogue-tags">
+                    {entry.crimes.slice(0, 3).map((cr) => (
+                      <span key={cr} className="tag">{cr}</span>
+                    ))}
+                  </div>
+                  <div className="rogue-amount">
+                    <span className="lbl">{entry.amountLabel}</span>
+                    <span className="val">{entry.amount}</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="rogues-footer">
+            <Link href="/galeria" className="rogues-more-btn">
+              Részletes leírások és teljes ügyirat →
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* ───── MEDIA CLOSURES ───── */}
       <MediaClosuresSection />
