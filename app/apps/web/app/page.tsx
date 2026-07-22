@@ -827,7 +827,7 @@ export default async function HomePage() {
         <div className="podcast-section-wrap">
           <section className="section" id="podcastok">
             <div className="section-head">
-              <div className="section-num">05 / Videóriportok és podcastok</div>
+              <div className="section-num">01 / Videóriportok és podcastok</div>
               <h2 className="section-title">Amiről beszélni kell.</h2>
             </div>
             <div className="podcast-featured-grid">
@@ -1006,7 +1006,7 @@ export default async function HomePage() {
       {/* ───── DATABASE PREVIEW ───── */}
       <section className="section" id="database">
         <div className="section-head">
-          <div className="section-num">03 / Adatbázis</div>
+          <div className="section-num">04 / Adatbázis</div>
           <h2 className="section-title">Az ügyek nyilvántartása.</h2>
         </div>
         <p className="section-partner-note">
@@ -1096,7 +1096,7 @@ export default async function HomePage() {
       <div className="news-section-wrap">
         <section className="section" id="news">
           <div className="section-head">
-            <div className="section-num">04 / Hírfolyam</div>
+            <div className="section-num">05 / Hírfolyam</div>
             <h2 className="section-title">Élő riportok az ügyekről.</h2>
           </div>
 
@@ -1159,7 +1159,7 @@ export default async function HomePage() {
       <section className="rogues" id="rogues">
         <div className="rogues-inner">
           <div className="section-head">
-            <div className="section-num">02 / Galéria</div>
+            <div className="section-num">06 / Galéria</div>
             <h2 className="section-title">10 kiemelt személy.</h2>
           </div>
           <p className="rogues-deck">
@@ -1263,7 +1263,7 @@ export default async function HomePage() {
       <section className="submission" id="submission">
         <div className="submission-inner">
           <div className="submission-left">
-            <div className="section-num">07 / Bejelentés</div>
+            <div className="section-num">09 / Bejelentés</div>
             <h2>
               Hiányzik egy <em>név</em>?<br />
               Jelentsd be.

@@ -72,7 +72,7 @@ export function ResignationsSection({ resignations, breaking = [] }: Props) {
     <div className="lemondott-section-wrap">
     <section className="section elszamoltatas-section">
       <div className="section-head">
-        <div className="section-num">05 / Személyi változások</div>
+        <div className="section-num">02 / Személyi változások</div>
         <h2 className="section-title">Lemondott-e már?</h2>
       </div>
       <p className="elszamoltatas-deck">
