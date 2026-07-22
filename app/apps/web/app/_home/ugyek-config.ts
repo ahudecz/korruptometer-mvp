@@ -88,7 +88,7 @@ export const UGYEK_REDIRECTS: Record<string, string> = {
 export const UGYEK: UgyekConfig[] = [
   {
     id: 'nka-botrany',
-    eyebrow: 'Aktív · 6 személy előzetesben',
+    eyebrow: 'Aktív · 6 személy előzetesben, 7. gyanúsított letartóztatása folyamatban',
     title: 'NKA botrány',
     responsible: 'Hankó Balázs',
     responsibleGaleriaId: undefined,
@@ -130,11 +130,13 @@ export const UGYEK: UgyekConfig[] = [
     ],
     statusItems: [
       { icon: '🔴', label: 'Őrizetbe vétel', value: '6 személy előzetesben — köztük Bús Balázs volt óbudai polgármester (jún. 23.)' },
+      { icon: '🆕', label: '7. gyanúsított', value: 'Fidesz-frakciós, kormánytisztviselőként is dolgozó munkatárs — kedd hajnalban elvitték, letartóztatását az ügyészség szerdán indítványozta, kilétét egyelőre nem hozták nyilvánosságra (júl. 22.)' },
       { icon: '⚖️', label: 'Nyomozás', value: 'NAV — hűtlen kezelés bűntett gyanúja, 17+ milliárd Ft érintett összeg' },
       { icon: '💰', label: 'Visszaszerzett vagyon', value: '~2,56 milliárd Ft — 2,16 Mrd visszautalt + ~400 M visszatartott (Tarr Zoltán)' },
       { icon: '👤', label: 'Felelős', value: 'Hankó Balázs — volt kulturális miniszter' },
     ],
     sourceRefs: [
+      { label: '444: Újabb fideszes gyanúsított és letartóztatás az NKA-ügyben (júl. 22.)', url: 'https://444.hu/2026/07/22/ujabb-fideszes-gyanusitott-es-letartoztatas-az-nka-ugyben' },
       { label: 'NAV.hu: Áttörés az NKA-ügyben — 6 személy őrizetbe véve (jún. 23.)', url: 'https://nav.gov.hu/sajtoszoba/hirek/Attores_az_NKA-ugyben' },
       { label: 'Telex: 6 személyt vett őrizetbe a NAV (jún. 23.)', url: 'https://telex.hu/belfold/2026/06/23/nka-botrany-hat-szemelyt-orizetbe-vett-a-nav-hanko-balazs-tarr-zoltan' },
       { label: 'Telex: NAV nyomoz az NKA-ügyben', url: 'https://telex.hu/belfold/2026/06/16/nka-nyomozas-nav' },
@@ -143,6 +145,20 @@ export const UGYEK: UgyekConfig[] = [
     ],
     description: `A Nemzeti Kulturális Alap (NKA) botránya az egyik legsúlyosabb közpénzügyi visszaélés, amelyet a Fidesz-korszak vége előtt tártak fel.`,
     descriptionBlocks: [
+      {
+        type: 'breaking-group',
+        headline: '2026. július 22. — Hetedik gyanúsítottat is letartóztattak',
+        lead: 'A Fidesz frakciójának egyik, kormánytisztviselőként is dolgozó munkatársát kedd hajnalban vitték el otthonából — ő a hetedik letartóztatott az NKA-ügyben. A Fidesz képviselőcsoportja számolt be az őrizetbe vételről az MTI-nek, de Havasi Bertalan nem volt hajlandó megnevezni az érintettet, és továbbra is politikailag motiváltnak, koncepciósnak nevezte az eljárásokat. A Bács-Kiskun Megyei Főügyészség megerősítette a letartóztatást a Népszavának: Bodó Marianna szóvivő szerint a gyanúsított letartóztatását különösen jelentős vagyoni hátrányt okozó hűtlen kezelés bűntettének megalapozott gyanújával az ügyészség szerdán indítványozta. A nyomozók kedden lefoglalták a Fidesz teljes kommunikációs rendszerét és adatbázisait is a párt szervereit biztosító központban.',
+        articles: [
+          {
+            source: '444',
+            headline: 'Újabb fideszes gyanúsított és letartóztatás az NKA-ügyben',
+            lead: 'A Fidesz frakciójának egyik munkatársát kedd hajnalban vitték el otthonából — ő már a hetedik letartóztatott az NKA-ügyben. A Bács-Kiskun Megyei Főügyészség megerősítette, hogy a gyanúsított letartóztatását szerdán indítványozták.',
+            url: 'https://444.hu/2026/07/22/ujabb-fideszes-gyanusitott-es-letartoztatas-az-nka-ugyben',
+            date: '2026. július 22.',
+          },
+        ],
+      },
       {
         type: 'breaking-group',
         headline: '2026. június 23. — Hat személyt vett őrizetbe a NAV',
