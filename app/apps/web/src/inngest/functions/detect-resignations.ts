@@ -18,6 +18,7 @@ import {
 } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
+import { isBypassActive, type BypassStep, type BypassLogger } from '@/lib/cron-bypass';
 import { inngest } from '../client';
 
 const BATCH_SIZE = 20;
@@ -109,10 +110,9 @@ const RESIGNATION_KEYWORDS = [
  * DetectionCheck with a specific reason — except a transient API failure,
  * which is left unrecorded so the article is retried next run.
  */
-export const detectResignations = inngest.createFunction(
-  { id: 'detect-resignations', name: 'Detect political resignations', concurrency: 1 },
-  { cron: '20 * * * *' }, // 2026-07-18: visszaállítva óránkéntire — a 2 órás ritkítás nem csökkentette a költséget (backlog-alapú, cikkmennyiség-függő, nem gyakoriság-függő; üres futás ingyenes), csak a friss detektálást lassította
-  async ({ step, logger }) => {
+// 2026-07-22 — kiemelve, hogy a Vercel-cron bypass route Inngest nélkül is
+// meg tudja hívni (l. cron-bypass.ts fejléce).
+export async function runResignationDetectionCore({ step, logger }: { step: BypassStep; logger?: BypassLogger }) {
     const db = getDb();
 
     const articles = await step.run('load-unchecked-articles', () =>
@@ -325,5 +325,16 @@ export const detectResignations = inngest.createFunction(
       `resignation.detect: scanned=${articles.length} candidates=${candidates.length} inserted=${inserted}`,
     );
     return { scanned: articles.length, candidates: candidates.length, inserted };
+}
+
+export const detectResignations = inngest.createFunction(
+  { id: 'detect-resignations', name: 'Detect political resignations', concurrency: 1 },
+  { cron: '20 * * * *' },
+  async ({ step, logger }) => {
+    if (isBypassActive()) {
+      logger?.info?.('detect-resignations: skipped — PIPELINE_BYPASS_INNGEST active, Vercel cron owns this run');
+      return { skipped: 'inngest_bypass_active' };
+    }
+    return runResignationDetectionCore({ step: step as unknown as BypassStep, logger });
   },
 );

@@ -14,6 +14,7 @@ import {
 } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
+import { isBypassActive, type BypassStep, type BypassLogger } from '@/lib/cron-bypass';
 import { inngest } from '../client';
 
 const BATCH_SIZE = 20;
@@ -53,10 +54,9 @@ export function coerceClosureEventType(value: string): ValidClosureEventType {
  * DetectionCheck with a reason, except a transient LLM failure, which is
  * left unrecorded so the article is retried next run.
  */
-export const detectMediaClosures = inngest.createFunction(
-  { id: 'detect-media-closures', name: 'Detect media closures', concurrency: 1 },
-  { cron: '40 * * * *' }, // 2026-07-18: visszaállítva óránkéntire — l. detect-resignations.ts komment
-  async ({ step, logger }) => {
+// 2026-07-22 — kiemelve, hogy a Vercel-cron bypass route Inngest nélkül is
+// meg tudja hívni (l. cron-bypass.ts fejléce).
+export async function runMediaClosureDetectionCore({ step, logger }: { step: BypassStep; logger?: BypassLogger }) {
     const db = getDb();
 
     const articles = await step.run('load-unchecked-articles', () =>
@@ -243,5 +243,16 @@ export const detectMediaClosures = inngest.createFunction(
 
     logger?.info?.(`closure.detect: scanned=${articles.length} candidates=${candidates.length} inserted=${inserted}`);
     return { scanned: articles.length, candidates: candidates.length, inserted };
+}
+
+export const detectMediaClosures = inngest.createFunction(
+  { id: 'detect-media-closures', name: 'Detect media closures', concurrency: 1 },
+  { cron: '40 * * * *' },
+  async ({ step, logger }) => {
+    if (isBypassActive()) {
+      logger?.info?.('detect-media-closures: skipped — PIPELINE_BYPASS_INNGEST active, Vercel cron owns this run');
+      return { skipped: 'inngest_bypass_active' };
+    }
+    return runMediaClosureDetectionCore({ step: step as unknown as BypassStep, logger });
   },
 );

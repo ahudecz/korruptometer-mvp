@@ -2,6 +2,7 @@ import 'server-only';
 import { eq } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
+import { isBypassActive, type BypassStep, type BypassLogger } from '@/lib/cron-bypass';
 
 import { inngest } from '../client';
 
@@ -119,10 +120,9 @@ function storageKeyFromPostUrl(postUrl: string): string {
   return m ? `fb-${m[1]}` : `fb-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
-export const syncFacebookPosts = inngest.createFunction(
-  { id: 'sync-facebook-posts', name: 'Sync Facebook posts', concurrency: 1 },
-  [{ event: 'facebook.sync' }, { cron: 'TZ=Europe/Budapest 0 7 * * *' }],
-  async ({ step, logger }) => {
+// 2026-07-22 — kiemelve, hogy a Vercel-cron bypass route Inngest nélkül is
+// meg tudja hívni (l. cron-bypass.ts fejléce).
+export async function runFacebookSyncCore({ step, logger }: { step: BypassStep; logger?: BypassLogger }) {
     const db = getDb();
     const token = process.env.APIFY_TOKEN;
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
@@ -234,5 +234,16 @@ export const syncFacebookPosts = inngest.createFunction(
 
     logger?.info?.(`sync-facebook-posts: ${pages.length} oldal, ${posts.length} poszt scraped, ${inserted} beillesztve`);
     return { pages: pages.length, scraped: posts.length, inserted };
+}
+
+export const syncFacebookPosts = inngest.createFunction(
+  { id: 'sync-facebook-posts', name: 'Sync Facebook posts', concurrency: 1 },
+  [{ event: 'facebook.sync' }, { cron: 'TZ=Europe/Budapest 0 7 * * *' }],
+  async ({ step, logger }) => {
+    if (isBypassActive()) {
+      logger?.info?.('sync-facebook-posts: skipped — PIPELINE_BYPASS_INNGEST active, Vercel cron owns this run');
+      return { skipped: 'inngest_bypass_active' };
+    }
+    return runFacebookSyncCore({ step: step as unknown as BypassStep, logger });
   },
 );

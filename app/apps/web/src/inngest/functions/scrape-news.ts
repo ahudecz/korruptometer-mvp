@@ -9,6 +9,7 @@ import { postEditorAlert } from '@/lib/slack';
 import { classifyArticle } from '@/lib/ai-classify';
 import { findSameStoryDuplicate } from '@/lib/same-story';
 import { getMonitoredNames } from '@/lib/breaking-monitored';
+import { isBypassActive, type BypassStep, type BypassLogger } from '@/lib/cron-bypass';
 
 import { inngest } from '../client';
 
@@ -32,11 +33,13 @@ const AI_CIRCUIT_BREAKER_THRESHOLD = 3;
  * After the batch finishes, the function emits aggregate.link-articles
  * with the IDs of every freshly inserted article so the aggregator
  * (T157) can resolve case linkage.
+ *
+ * 2026-07-22 — kiemelve a handler törzse, hogy a Vercel-cron bypass route
+ * (l. cron-bypass.ts fejléce) is meg tudja hívni Inngest nélkül, ugyanazzal
+ * a logikával. A valódi Inngest-futás a lenti createFunction()-ön keresztül
+ * megy, változatlan típusokkal — ide csak a step/logger paramétert adja át.
  */
-export const scrapeNews = inngest.createFunction(
-  { id: 'scrape-news', name: 'Scrape news', concurrency: 2 },
-  { cron: '0 * * * *' },
-  async ({ step, logger }) => {
+export async function runScrapeNewsCore({ step, logger }: { step: BypassStep; logger?: BypassLogger }) {
     const db = getDb();
 
     const sources = await step.run('list-sources', async () =>
@@ -158,6 +161,22 @@ export const scrapeNews = inngest.createFunction(
     }
 
     return { sources: sources.length, newArticles: insertedIds.length };
+}
+
+export const scrapeNews = inngest.createFunction(
+  { id: 'scrape-news', name: 'Scrape news', concurrency: 2 },
+  { cron: '0 * * * *' },
+  async ({ step, logger }) => {
+    if (isBypassActive()) {
+      logger?.info?.('scrape-news: skipped — PIPELINE_BYPASS_INNGEST active, Vercel cron owns this run');
+      return { skipped: 'inngest_bypass_active' };
+    }
+    // Inngest's real step.sendEvent is a generic, payload-constrained
+    // function — narrower than the minimal BypassStep interface this core
+    // function needs to also accept the Vercel-cron fake step. The runtime
+    // shape is a superset (safe), the cast just satisfies the structural
+    // generic-variance check.
+    return runScrapeNewsCore({ step: step as unknown as BypassStep, logger });
   },
 );
 

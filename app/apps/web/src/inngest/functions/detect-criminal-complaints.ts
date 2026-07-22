@@ -18,6 +18,7 @@ import {
 } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
+import { isBypassActive, type BypassStep, type BypassLogger } from '@/lib/cron-bypass';
 import { inngest } from '../client';
 
 const BATCH_SIZE = 20;
@@ -41,10 +42,9 @@ const COMPLAINT_KEYWORDS = ['feljelent'];
  * machine. A stale/backward status is discarded with reason 'stale_status',
  * never silently overwriting a further-along case.
  */
-export const detectCriminalComplaints = inngest.createFunction(
-  { id: 'detect-criminal-complaints', name: 'Detect criminal complaints (feljelentés)', concurrency: 1 },
-  { cron: '45 * * * *' }, // 2026-07-18: visszaállítva óránkéntire — l. detect-resignations.ts komment
-  async ({ step, logger }) => {
+// 2026-07-22 — kiemelve, hogy a Vercel-cron bypass route Inngest nélkül is
+// meg tudja hívni (l. cron-bypass.ts fejléce).
+export async function runCriminalComplaintDetectionCore({ step, logger }: { step: BypassStep; logger?: BypassLogger }) {
     const db = getDb();
     const todayIso = new Date().toISOString().slice(0, 10);
 
@@ -235,5 +235,16 @@ export const detectCriminalComplaints = inngest.createFunction(
 
     logger?.info?.(`criminal_complaint.detect: scanned=${articles.length} candidates=${candidates.length} inserted=${inserted}`);
     return { scanned: articles.length, candidates: candidates.length, inserted };
+}
+
+export const detectCriminalComplaints = inngest.createFunction(
+  { id: 'detect-criminal-complaints', name: 'Detect criminal complaints (feljelentés)', concurrency: 1 },
+  { cron: '45 * * * *' },
+  async ({ step, logger }) => {
+    if (isBypassActive()) {
+      logger?.info?.('detect-criminal-complaints: skipped — PIPELINE_BYPASS_INNGEST active, Vercel cron owns this run');
+      return { skipped: 'inngest_bypass_active' };
+    }
+    return runCriminalComplaintDetectionCore({ step: step as unknown as BypassStep, logger });
   },
 );

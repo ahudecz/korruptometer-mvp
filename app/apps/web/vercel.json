@@ -3,5 +3,9 @@
   "framework": "nextjs",
   "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
   "buildCommand": "cd ../.. && rm -rf apps/web/.next && pnpm --filter @korr/web build",
-  "regions": ["dub1"]
+  "regions": ["dub1"],
+  "crons": [
+    { "path": "/api/cron/pipeline", "schedule": "0 * * * *" },
+    { "path": "/api/cron/facebook-sync", "schedule": "0 5 * * *" }
+  ]
 }

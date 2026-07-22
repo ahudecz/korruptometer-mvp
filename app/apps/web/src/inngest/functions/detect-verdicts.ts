@@ -16,6 +16,7 @@ import {
 import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
 import { notifyAutoPublished } from '@/lib/notify-auto-publish';
+import { isBypassActive, type BypassStep, type BypassLogger } from '@/lib/cron-bypass';
 import { inngest } from '../client';
 
 const BATCH_SIZE = 20;
@@ -50,10 +51,9 @@ const VERDICT_KEYWORDS = [
  * DetectionCheck with a reason, except a transient LLM failure, which is
  * left unrecorded so the article is retried next run.
  */
-export const detectVerdicts = inngest.createFunction(
-  { id: 'detect-verdicts', name: 'Detect court verdicts and pretrial detentions', concurrency: 1 },
-  { cron: '30 * * * *' }, // 2026-07-18: visszaállítva óránkéntire — l. detect-resignations.ts komment
-  async ({ step, logger }) => {
+// 2026-07-22 — kiemelve, hogy a Vercel-cron bypass route Inngest nélkül is
+// meg tudja hívni (l. cron-bypass.ts fejléce).
+export async function runVerdictDetectionCore({ step, logger }: { step: BypassStep; logger?: BypassLogger }) {
     const db = getDb();
     // Csak a "mikor rögzítettük ezt a forrásidézetet" (sourceDates) mezőhöz —
     // ez tényleg a feldolgozás napja, NEM a cikk dátuma. Az LLM-hívásoknál
@@ -279,5 +279,16 @@ export const detectVerdicts = inngest.createFunction(
 
     logger?.info?.(`verdict.detect: scanned=${articles.length} candidates=${candidates.length} inserted=${inserted}`);
     return { scanned: articles.length, candidates: candidates.length, inserted };
+}
+
+export const detectVerdicts = inngest.createFunction(
+  { id: 'detect-verdicts', name: 'Detect court verdicts and pretrial detentions', concurrency: 1 },
+  { cron: '30 * * * *' },
+  async ({ step, logger }) => {
+    if (isBypassActive()) {
+      logger?.info?.('detect-verdicts: skipped — PIPELINE_BYPASS_INNGEST active, Vercel cron owns this run');
+      return { skipped: 'inngest_bypass_active' };
+    }
+    return runVerdictDetectionCore({ step: step as unknown as BypassStep, logger });
   },
 );

@@ -7,6 +7,7 @@ import { articleDateIso, isPlaceholderName, isTransientLlmFailure, loadUnchecked
 import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
 import { notifyAutoPublished } from '@/lib/notify-auto-publish';
+import { isBypassActive, type BypassStep, type BypassLogger } from '@/lib/cron-bypass';
 import { inngest } from '../client';
 
 const BATCH_SIZE = 20;
@@ -30,10 +31,9 @@ const ASSET_KEYWORDS = [
  * reason, except a transient LLM failure, which is left unrecorded so the
  * article is retried next run.
  */
-export const detectAssetRecoveries = inngest.createFunction(
-  { id: 'detect-asset-recoveries', name: 'Detect public asset recoveries', concurrency: 1 },
-  { cron: '50 * * * *' }, // 2026-07-18: visszaállítva óránkéntire — l. detect-resignations.ts komment
-  async ({ step, logger }) => {
+// 2026-07-22 — kiemelve, hogy a Vercel-cron bypass route Inngest nélkül is
+// meg tudja hívni (l. cron-bypass.ts fejléce).
+export async function runAssetRecoveryDetectionCore({ step, logger }: { step: BypassStep; logger?: BypassLogger }) {
     const db = getDb();
 
     const articles = await step.run('load-unchecked-articles', () =>
@@ -209,5 +209,16 @@ export const detectAssetRecoveries = inngest.createFunction(
 
     logger?.info?.(`asset.detect: scanned=${articles.length} candidates=${candidates.length} inserted=${inserted}`);
     return { scanned: articles.length, candidates: candidates.length, inserted };
+}
+
+export const detectAssetRecoveries = inngest.createFunction(
+  { id: 'detect-asset-recoveries', name: 'Detect public asset recoveries', concurrency: 1 },
+  { cron: '50 * * * *' },
+  async ({ step, logger }) => {
+    if (isBypassActive()) {
+      logger?.info?.('detect-asset-recoveries: skipped — PIPELINE_BYPASS_INNGEST active, Vercel cron owns this run');
+      return { skipped: 'inngest_bypass_active' };
+    }
+    return runAssetRecoveryDetectionCore({ step: step as unknown as BypassStep, logger });
   },
 );
