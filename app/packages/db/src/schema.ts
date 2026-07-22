@@ -1092,6 +1092,22 @@ export const llmBudgetAlerts = pgTable('LlmBudgetAlert', {
   sentAt: timestamp('sentAt', { withTimezone: true }).notNull().defaultNow(),
 });
 
+// 2026-07-22 — a hash-alapú "már ismerjük" szűrő (scrape-news.ts,
+// 2026-07-21) csak a korábban BEILLESZTETT (tier='in' vagy AI-elfogadott)
+// cikkeket ismeri fel újra a NewsArticle.sourceUrlHash-en keresztül. Amit
+// az AI korábban IRRELEVÁNSNAK ítélt, sosem kerül be a NewsArticle-be —
+// arról eddig semmi nyilvántartás nem volt, úgyhogy minden órában újra
+// fizetős classify-hívást kapott, amíg a forrás feedjéből ki nem csúszott.
+// Ez a tábla zárja be ezt a maradék rést: minden AI-elutasítást (nem a
+// tranziens hibákat, csak a valódi "nem releváns" választ) elmentünk, és a
+// scrape-news előszűrője ezt is ellenőrzi a klasszifikáció előtt —
+// szimmetrikusan a NewsArticle-alapú elfogadás-cache-sel (ami szintén
+// permanens, sosem évül el).
+export const scrapeClassifyRejects = pgTable('ScrapeClassifyReject', {
+  sourceUrlHash: text('sourceUrlHash').notNull().primaryKey(),
+  checkedAt: timestamp('checkedAt', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type ArticleExtractionRun = typeof articleExtractionRuns.$inferSelect;
 export type NewArticleExtractionRun =
   typeof articleExtractionRuns.$inferInsert;

@@ -216,12 +216,12 @@ async function persistArticles(
   // (A minta ugyanaz, mint a kmonitor-traverse-tag.ts-ben: batch SELECT +
   // Set + szűrés, csak ide eddig nem lett átültetve.)
   //
-  // Megjegyzés: ez csak a korábban TÉNYLEGESEN BEILLESZTETT cikkeket fogja
-  // ki (tier='in', vagy 'maybe'+AI relevánsnak ítélte) — az AI által korábban
-  // irrelevánsnak ítélt, ezért be nem illesztett cikkekről nincs hash-nyilván-
-  // tartás, azok elméletileg továbbra is újra-classify-elődhetnek, amíg a
-  // forrás feedjében maradnak. Ha a hívásszám a fix után is magas marad, ez a
-  // következő kör (egy "látott, de elutasított hash" tábla kellene hozzá).
+  // 2026-07-22 — a fenti fix csak a korábban TÉNYLEGESEN BEILLESZTETT
+  // cikkeket fogta ki (tier='in', vagy 'maybe'+AI relevánsnak ítélte) — az
+  // AI által korábban irrelevánsnak ítélt, ezért be nem illesztett cikkekről
+  // eddig nem volt hash-nyilvántartás, azok minden órában újra-classify-
+  // elődtek, amíg a forrás feedjében maradtak. A ScrapeClassifyReject tábla
+  // zárja be ezt a maradék rést — l. schema.ts kommentje.
   const canonicalByArticle = scraped.map((a) => canonicalUrl(a.sourceUrl, allowlist));
   const hashByArticle = canonicalByArticle.map((c) => dedupHash(c));
   const existingHashes = hashByArticle.length === 0
@@ -234,13 +234,25 @@ async function persistArticles(
             .where(inArray(schema.newsArticles.sourceUrlHash, hashByArticle))
         ).map((r) => r.hash),
       );
+  const rejectedHashes = hashByArticle.length === 0
+    ? new Set<string>()
+    : new Set(
+        (
+          await db
+            .select({ hash: schema.scrapeClassifyRejects.sourceUrlHash })
+            .from(schema.scrapeClassifyRejects)
+            .where(inArray(schema.scrapeClassifyRejects.sourceUrlHash, hashByArticle))
+        ).map((r) => r.hash),
+      );
 
   for (let idx = 0; idx < scraped.length; idx += 1) {
     const a = scraped[idx]!;
     const canonical = canonicalByArticle[idx]!;
     const hash = hashByArticle[idx]!;
 
-    if (existingHashes.has(hash)) continue; // már ismert URL — sose ér el a fizetős lépésig
+    // már ismert (beillesztett VAGY korábban AI-elutasított) URL — sose ér
+    // el a fizetős lépésig
+    if (existingHashes.has(hash) || rejectedHashes.has(hash)) continue;
 
     // 1. Ingyenes előszűrés (kulcsszó + URL-szekció + élő névlista).
     const tier = scrapeRelevanceTier(a.headline, a.excerpt, canonical, relevantByDefault, monitoredNames);
@@ -313,6 +325,15 @@ async function persistArticles(
           continue;
         } else if (!ai.relevant) {
           consecutiveAiFailures = 0;
+          // Permanensen elmentjük, hogy erre a hash-re ne kelljen újra
+          // fizetős classify-t hívni — l. ScrapeClassifyReject komment
+          // schema.ts-ben. Szándékosan CSAK ide, a valódi (nem tranziens-
+          // hiba) "nem releváns" válasz esetén — egy apiFailed/kivétel
+          // után a cikk jövő órára újra próbálkozhat.
+          await db
+            .insert(schema.scrapeClassifyRejects)
+            .values({ sourceUrlHash: hash })
+            .onConflictDoNothing({ target: schema.scrapeClassifyRejects.sourceUrlHash });
           continue; // az AI szerint szemét → eldobjuk
         } else {
           consecutiveAiFailures = 0;
