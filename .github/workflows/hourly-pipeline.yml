@@ -1,0 +1,41 @@
+name: Hourly pipeline (Inngest bypass)
+
+# 2026-07-22 — az Inngest-fiók havi kvótája miatt (user szerint aug. 1-ig
+# instabil) a scrape-news + 5 detektor futtatását ideiglenesen erre a
+# workflow-ra tettük át. Az app/apps/web/src/lib/cron-bypass.ts +
+# PIPELINE_BYPASS_INNGEST=1 Vercel env var miatt az Inngest-oldali változat
+# eközben csendben no-op — ez a workflow az egyetlen, ami ténylegesen
+# meghívja a /api/cron/pipeline route-ot.
+#
+# Előzmény: egy Anthropic-oldali cloud routine (CCR sandbox) volt az első
+# próbálkozás erre, de az a sandbox hálózati egress-megbízhatatlansága miatt
+# némán elhasalt (ugyanaz a hibaosztály, mint a 2026-07-15-i Facebook-sync
+# bypass routine-nál — l. memória). A GitHub Actions megbízhatóbb: nincs
+# AI-ügynök-réteg, a log közvetlenül visszakereshető a repó Actions fülén.
+#
+# Kell hozzá egy repo secret: Settings → Secrets and variables → Actions →
+# New repository secret → CRON_SECRET (ugyanaz az érték, mint a Vercel
+# CRON_SECRET env var-ja).
+
+on:
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  trigger-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call /api/cron/pipeline
+        run: |
+          set -e
+          http_code=$(curl -sS -m 280 -o /tmp/response.json -w '%{http_code}' \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://www.kegyencjarat.hu/api/cron/pipeline)
+          echo "HTTP status: $http_code"
+          cat /tmp/response.json
+          echo ""
+          if [ "$http_code" != "200" ]; then
+            echo "::error::pipeline endpoint returned HTTP $http_code"
+            exit 1
+          fi
