@@ -42,7 +42,28 @@ function fmtDate(d: Date): string {
   return `${d.getFullYear()}. ${HU_MONTHS[d.getMonth()]} ${d.getDate()}.`;
 }
 
-function DescBlock({ block }: { block: DescriptionBlock }) {
+// 2026-07-22 — l. adatbazis/_components/desc-block.tsx fejléce: csak a
+// blokk-tömb ELSŐ (legfrissebb) 'breaking-group'-ja marad piros BREAKING,
+// minden korábbi automatikusan sima szürke article-card-listává
+// degradálódik, amint egy újabb bekerül. Nem NKA-specifikus.
+function DescBlock({ block, isLatestBreaking = true }: { block: DescriptionBlock; isLatestBreaking?: boolean }) {
+  if (block.type === 'breaking-group' && !isLatestBreaking) {
+    return (
+      <>
+        {block.articles.map((a: BreakingGroupArticle, i: number) => (
+          <a key={i} href={a.url} target="_blank" rel="noopener noreferrer" className="ugy-block-article-card">
+            <div className="ugy-block-article-meta">
+              <span className="ugy-block-article-source">{a.source}</span>
+              {a.date && <span className="ugy-block-article-date">{a.date}</span>}
+            </div>
+            <div className="ugy-block-article-headline">{a.headline}</div>
+            {a.lead && <p className="ugy-block-article-lead">{a.lead}</p>}
+            <span className="ugy-block-article-arrow">Cikk olvasása →</span>
+          </a>
+        ))}
+      </>
+    );
+  }
   switch (block.type) {
     case 'text':
       return (
@@ -263,6 +284,10 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
     : [];
 
   const descParagraphs = entry.descriptionBlocks ? [] : entry.description.split('\n\n').filter(Boolean);
+  // Konvenció: új breaking-group blokkot mindig a tömb ELEJÉRE kell felvenni
+  // (l. ugyek-config.ts), így az első előfordulás mindig a legfrissebb —
+  // csak az kapja meg a piros BREAKING keretet, l. DescBlock isLatestBreaking.
+  const firstBreakingGroupIndex = entry.descriptionBlocks?.findIndex((b) => b.type === 'breaking-group') ?? -1;
 
   // The first featured video becomes a large "hero" tile; the next two
   // videos (whatever they are) fill in beside it at their normal size,
@@ -409,7 +434,13 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
           </p>
           <div className="ugy-description-body">
             {entry.descriptionBlocks
-              ? entry.descriptionBlocks.map((block, i) => <DescBlock key={i} block={block} />)
+              ? entry.descriptionBlocks.map((block, i) => (
+                  <DescBlock
+                    key={i}
+                    block={block}
+                    isLatestBreaking={i === firstBreakingGroupIndex}
+                  />
+                ))
               : descParagraphs.map((para, i) => <p key={i}>{para}</p>)
             }
           </div>

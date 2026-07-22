@@ -8,8 +8,37 @@ function imgSrc(url: string): string {
 /**
  * Renders one editorial `DescriptionBlock`. Same block vocabulary as /ugyek so
  * curated content is portable between the two surfaces (FR-004).
+ *
+ * 2026-07-22 — user report: a NKA-ügyoldalon két "breaking-group" blokk
+ * (jún. 23. és júl. 22.) egyszerre díszlett piros BREAKING kerettel, mert a
+ * renderelés sose nézte meg, hogy melyik a legfrissebb — minden
+ * 'breaking-group' blokk mindig a saját típusa szerint, egymástól
+ * függetlenül rendereltt. `isLatestBreaking` a hívó felelőssége: csak a
+ * blokk-tömb ELSŐ (konvenció szerint legfrissebb, l. ugyek-config.ts blokk-
+ * sorrend komment) 'breaking-group'-ja kapja meg true-val, minden korábbi
+ * automatikusan sima szürke article-card-listává degradálódik — nem kell
+ * kézzel utólag átírni a régi blokkot, amikor egy új breaking bekerül.
+ * Nem NKA-specifikus: minden /ugyek és /adatbazis oldalra vonatkozik, ahol
+ * 'breaking-group' blokkot használnak.
  */
-export function DescBlock({ block }: { block: DescriptionBlock }) {
+export function DescBlock({ block, isLatestBreaking = true }: { block: DescriptionBlock; isLatestBreaking?: boolean }) {
+  if (block.type === 'breaking-group' && !isLatestBreaking) {
+    return (
+      <>
+        {block.articles.map((a: BreakingGroupArticle, i: number) => (
+          <a key={i} href={a.url} target="_blank" rel="noopener noreferrer" className="ugy-block-article-card">
+            <div className="ugy-block-article-meta">
+              <span className="ugy-block-article-source">{a.source}</span>
+              {a.date && <span className="ugy-block-article-date">{a.date}</span>}
+            </div>
+            <div className="ugy-block-article-headline">{a.headline}</div>
+            {a.lead && <p className="ugy-block-article-lead">{a.lead}</p>}
+            <span className="ugy-block-article-arrow">Cikk olvasása →</span>
+          </a>
+        ))}
+      </>
+    );
+  }
   switch (block.type) {
     case 'text':
       return (

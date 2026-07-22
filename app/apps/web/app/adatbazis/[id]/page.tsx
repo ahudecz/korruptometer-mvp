@@ -379,6 +379,10 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
   }
   const displayBlocks: DescriptionBlock[] | undefined =
     richBlocks && injectedCard ? [...richBlocks, injectedCard] : richBlocks;
+  // Konvenció: új breaking-group blokkot mindig a tömb ELEJÉRE kell felvenni,
+  // így az első előfordulás mindig a legfrissebb — csak az kapja meg a piros
+  // BREAKING keretet, l. DescBlock isLatestBreaking (desc-block.tsx).
+  const firstBreakingGroupIndex = displayBlocks?.findIndex((b) => b.type === 'breaking-group') ?? -1;
 
   // Pinned cross-refs: override-ban megadott ID-k kerülnek előre.
   // Ha egy pinned ügy nem szerepel az auto-lekérdezésben (más person/institution),
@@ -491,7 +495,9 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
           </p>
           <div className="ugy-description-body">
             {displayBlocks?.length ? (
-              displayBlocks.map((b, i) => <DescBlock key={i} block={b} />)
+              displayBlocks.map((b, i) => (
+                <DescBlock key={i} block={b} isLatestBreaking={i === firstBreakingGroupIndex} />
+              ))
             ) : summaryText ? (
               <p>{summaryText}</p>
             ) : (
