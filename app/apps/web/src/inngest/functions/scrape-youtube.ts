@@ -15,6 +15,7 @@ import {
 } from '@/lib/youtube-podcast-sync';
 import { PODCAST_CHANNELS } from '@app/_home/podcast-channels-config';
 
+import { isBypassActive, type BypassStep, type BypassLogger } from '@/lib/cron-bypass';
 import { inngest } from '../client';
 
 const VIEW_REFRESH_WINDOW_DAYS = 14;
@@ -36,13 +37,13 @@ const VIEW_REFRESH_WINDOW_DAYS = 14;
  * YOUTUBE_API_KEY nélkül a teljes job no-op (a @handle → channel_id feloldás
  * is ehhez kötött, nem csak a nézettség-lekérdezés).
  */
-export const scrapeYoutube = inngest.createFunction(
-  { id: 'scrape-youtube', name: 'Scrape YouTube podcasts', concurrency: 1 },
-  // 2026-07-18 user request: óránkéntiről napi 1x-re ritkítva (08:10), a
-  // 'youtube.sync' esemény-trigger törölve (semmi nem küldte, csak az
-  // óránkénti cron hívta be feleslegesen sűrűn).
-  { cron: '10 8 * * *' },
-  async ({ step, logger }) => {
+export async function runYoutubeScrapeCore({
+  step,
+  logger,
+}: {
+  step: BypassStep;
+  logger?: BypassLogger;
+}) {
     const db = getDb();
     const apiKey = process.env.YOUTUBE_API_KEY;
 
@@ -233,5 +234,19 @@ export const scrapeYoutube = inngest.createFunction(
       breakingNotified: totalBreakingNotified,
       ...refresh,
     };
+}
+
+export const scrapeYoutube = inngest.createFunction(
+  { id: 'scrape-youtube', name: 'Scrape YouTube podcasts', concurrency: 1 },
+  // 2026-07-18 user request: óránkéntiről napi 1x-re ritkítva (08:10), a
+  // 'youtube.sync' esemény-trigger törölve (semmi nem küldte, csak az
+  // óránkénti cron hívta be feleslegesen sűrűn).
+  { cron: '10 8 * * *' },
+  async ({ step, logger }) => {
+    if (isBypassActive()) {
+      logger?.info?.('scrape-youtube: skipped — PIPELINE_BYPASS_INNGEST active, Vercel cron owns this run');
+      return { skipped: 'inngest_bypass_active' };
+    }
+    return runYoutubeScrapeCore({ step: step as unknown as BypassStep, logger });
   },
 );
