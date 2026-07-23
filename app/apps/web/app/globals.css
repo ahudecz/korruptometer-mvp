@@ -10829,9 +10829,17 @@ body:has(.admin-nav) > main {
 
 
 @media (max-width: 640px) {
+  /* 2026-07-23 — user report: egy rövid leírású sor (pl. "Kirúgták a
+     MÁV-tól") "beljebb csúszott" a többihez képest. Ok: max-width (nem
+     fix width) + flex-shrink:0 azt jelenti, hogy egy rövid, egysoros
+     szöveg dobozának TÉNYLEGES szélessége a tartalomhoz igazodik, nem a
+     90px-hez — ez sorról sorra eltérő X-pozícióba tolta a dobozt, mert a
+     .stat-resigned-body flex:1 mindig a fennmaradó helyet nyeli el. Fix
+     width (nem max-width) garantálja, hogy minden sor doboza azonos
+     szélességű és pozíciójú, a szöveg hosszától függetlenül. */
   .stat-resigned-desc {
     white-space: normal;
-    max-width: 90px;
+    width: 90px;
     text-align: left;
   }
   /* A nevek/pozíciók eddig "..."-ra vágva jelentek meg mobilon (ugyanaz a
