@@ -5,7 +5,6 @@ import { fmtNumber } from '@korr/shared/format';
 import { Pie3D, type PieSlice } from '@korr/ui/pie3d';
 import { Mugshot } from '@korr/ui/mugshot';
 
-import { CaseFilters } from './adatbazis/case-filters';
 import { ResignationsSection } from './_home/resignations-section';
 import { MediaClosuresSection } from './_home/media-closures-section';
 import { MiniClosureCard } from './_home/closure-card';
@@ -57,15 +56,26 @@ const getCachedScandalCatalog = unstable_cache(
   ['scandal-catalog'],
   { revalidate: 300 },
 );
-const getCachedOffenceTypes = unstable_cache(
+// 2026-07-23 — user report: a "db-count" szöveg ("X kiemelt ügy Y ügyből")
+// eddig a KpiSnapshot.activeCases-t használta Y-nak — az viszont a
+// LEGACY "Case" táblából számol egy szűk "Folyamatban/Vádemelés" státusz-
+// szűréssel (jelenleg 8), semmi köze a ténylegesen megjelenő ScandalCatalog-
+// adatbázishoz (947 sor). Külön, valódi total-count lekérdezés, ugyanazzal
+// a kizárás-listával, mint a fenti top-8 (konzisztens szám).
+const getCachedScandalCatalogCount = unstable_cache(
   async () => {
     const { getDb } = await import('@/lib/db');
     const { sql: s } = await import('drizzle-orm');
     const db = getDb();
-    return (await db.execute(s`SELECT code, "labelHu" AS label FROM "OffenceTypeRef" ORDER BY "sortOrder", "labelHu"`)) as unknown as Array<{ code: string; label: string }>;
+    const excludeIds = [...HIDDEN_DAMAGE_IDS, ...RETIRED_SCANDAL_IDS];
+    const excludeClause = excludeIds.length > 0
+      ? s`WHERE id NOT IN (${s.join(excludeIds.map((v) => s`${v}`), s`, `)})`
+      : s``;
+    const rows = (await db.execute(s`SELECT COUNT(*)::int AS total FROM "ScandalCatalog" ${excludeClause}`)) as unknown as Array<{ total: number }>;
+    return rows[0]?.total ?? 0;
   },
-  ['offence-types'],
-  { revalidate: 3600 },
+  ['scandal-catalog-count'],
+  { revalidate: 300 },
 );
 const getCachedResignationCount = unstable_cache(
   async () => {
@@ -491,7 +501,7 @@ export default async function HomePage() {
     featuredResignationsRaw,
     latestResignations30,
     recentScandals,
-    offRows,
+    totalScandalCount,
     breakingArticles,
     latestClosuresRaw,
     pinnedClosuresRaw,
@@ -512,7 +522,7 @@ export default async function HomePage() {
     getCachedFeaturedResignations(),
     getCachedLatestResignations30(),
     getCachedScandalCatalog(),
-    getCachedOffenceTypes(),
+    getCachedScandalCatalogCount(),
     getCachedActiveBreaking(),
     getCachedLatestClosures(),
     getCachedPinnedClosures(),
@@ -587,7 +597,6 @@ export default async function HomePage() {
   const latestVerdict = latestVerdictDb;
   const latestRecoveries = latestRecoveriesDb.map(r => ({ ...r, amountFt: BigInt(r.amountFt) }));
   const totalRecoveredFt = BigInt(totalRecoveredRaw);
-  const offences = offRows.map((o) => ({ code: o.code, label: o.label }));
   const recentArticles = recentNewsRaw.slice(0, 10).map(a => ({
     ...a,
     isBreaking: (a.breakingOverride ?? a.isBreakingCandidate) === true,
@@ -596,7 +605,6 @@ export default async function HomePage() {
   // Fall back gracefully if a fresh DB is empty (avoids a 500 page).
   // A ScandalCatalog élő összege, nem a KpiSnapshot elavult (jún. 15.) értéke.
   const totalDamage = BigInt(totalDamageRaw);
-  const activeCases = snapshot?.activeCases ?? 0;
   const bySector = (snapshot?.bySector ?? []) as SectorEntry[];
 
   const moneySlices: PieSlice[] = bySector
@@ -1018,11 +1026,9 @@ export default async function HomePage() {
           az itt látható elemzés alapjául. Az adatokat feldolgoztuk, szűrtük és rendszerezve jelenítjük meg.
         </p>
 
-        <CaseFilters offences={offences} initial={{ sort: 'damage_desc' }} />
-
         <div className="db-meta">
           <div className="db-count">
-            <strong>{recentScandals.length}</strong> kiemelt ügy {fmtNumber(activeCases)}{' '}
+            <strong>{recentScandals.length}</strong> kiemelt ügy {fmtNumber(totalScandalCount)}{' '}
             ügyből
           </div>
           <div className="db-sort">
@@ -1193,7 +1199,7 @@ export default async function HomePage() {
               const isWanted = detention === 'wanted';
               const rank = String(idx + 1).padStart(2, '0');
               return (
-                <Link key={entry.id} href={`/galeria/${entry.id}`} className={`rogue r-${detention}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                <Link key={entry.id} href={`/galeria/${entry.id}`} className={`rogue r-${detention}${entry.id === 'lazar-janos' ? ' rogue--lazar-photo-shift' : ''}`} style={{ color: 'inherit', textDecoration: 'none' }}>
                   <div className="rogue-rank">
                     <span>№ {rank}</span>
                     <span className="id">{entry.id}</span>
