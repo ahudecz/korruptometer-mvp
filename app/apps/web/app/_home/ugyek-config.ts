@@ -88,7 +88,7 @@ export const UGYEK_REDIRECTS: Record<string, string> = {
 export const UGYEK: UgyekConfig[] = [
   {
     id: 'nka-botrany',
-    eyebrow: 'Aktív · 6 személy előzetesben, 7. gyanúsított letartóztatása folyamatban',
+    eyebrow: 'Aktív · 7 személy előzetesben',
     title: 'NKA botrány',
     responsible: 'Hankó Balázs',
     responsibleGaleriaId: undefined,
@@ -130,12 +130,13 @@ export const UGYEK: UgyekConfig[] = [
     ],
     statusItems: [
       { icon: '🔴', label: 'Őrizetbe vétel', value: '6 személy előzetesben — köztük Bús Balázs volt óbudai polgármester (jún. 23.)' },
-      { icon: '🆕', label: '7. gyanúsított', value: 'Fidesz-frakciós, kormánytisztviselőként is dolgozó munkatárs — kedd hajnalban elvitték, letartóztatását az ügyészség szerdán indítványozta, kilétét egyelőre nem hozták nyilvánosságra (júl. 22.)' },
+      { icon: '🆕', label: '7. gyanúsított', value: 'Konczos Nóra, Hankó Balázs egykori kabinetfőnöke — a bíróság előzetes letartóztatásba helyezte (júl. 23.)' },
       { icon: '⚖️', label: 'Nyomozás', value: 'NAV — hűtlen kezelés bűntett gyanúja, 17+ milliárd Ft érintett összeg' },
       { icon: '💰', label: 'Visszaszerzett vagyon', value: '~2,56 milliárd Ft — 2,16 Mrd visszautalt + ~400 M visszatartott (Tarr Zoltán)' },
       { icon: '👤', label: 'Felelős', value: 'Hankó Balázs — volt kulturális miniszter' },
     ],
     sourceRefs: [
+      { label: 'Telex: NKA-ügy — letartóztatták Hankó Balázs egykori kabinetfőnökét, Konczos Nórát (júl. 23.)', url: 'https://telex.hu/belfold/2026/07/23/nka-letartoztatas-hanko-kabinetfonok' },
       { label: '444: Újabb fideszes gyanúsított és letartóztatás az NKA-ügyben (júl. 22.)', url: 'https://444.hu/2026/07/22/ujabb-fideszes-gyanusitott-es-letartoztatas-az-nka-ugyben' },
       { label: 'NAV.hu: Áttörés az NKA-ügyben — 6 személy őrizetbe véve (jún. 23.)', url: 'https://nav.gov.hu/sajtoszoba/hirek/Attores_az_NKA-ugyben' },
       { label: 'Telex: 6 személyt vett őrizetbe a NAV (jún. 23.)', url: 'https://telex.hu/belfold/2026/06/23/nka-botrany-hat-szemelyt-orizetbe-vett-a-nav-hanko-balazs-tarr-zoltan' },
@@ -145,6 +146,20 @@ export const UGYEK: UgyekConfig[] = [
     ],
     description: `A Nemzeti Kulturális Alap (NKA) botránya az egyik legsúlyosabb közpénzügyi visszaélés, amelyet a Fidesz-korszak vége előtt tártak fel.`,
     descriptionBlocks: [
+      {
+        type: 'breaking-group',
+        headline: '2026. július 23. — Kiderült a hetedik gyanúsított kiléte: Konczos Nóra, Hankó Balázs egykori kabinetfőnöke',
+        lead: 'Kiderült, ki volt az NKA-botrány hetedik, korábban névtelenül letartóztatott gyanúsítottja: Konczos Nóra, Hankó Balázs volt kulturális miniszter egykori kabinetfőnöke. A bíróság előzetes letartóztatásba helyezte — a gyanú szerint ő kérte e-mailben, hogy biztosítsák a pénzt Mága Zoltán pályázatára, amelyben 500 millió forintot szántak a cigány szavazók, az idősek és a politikailag bizonytalan választók megszólítására.',
+        articles: [
+          {
+            source: 'Telex',
+            headline: 'NKA-ügy: Letartóztatták Hankó Balázs egykori kabinetfőnökét',
+            lead: 'Konczos Nóra az NKA-botrány hetedik gyanúsítottja, akit előzetesbe helyezett a bíróság. Ő kérte egy emailben azt, hogy biztosítsák a pénzt Mága Zoltán pályázatára, amiben 500 millió forintot szántak a cigány szavazók, az idősek és a politikailag bizonytalanok megszólítására.',
+            url: 'https://telex.hu/belfold/2026/07/23/nka-letartoztatas-hanko-kabinetfonok',
+            date: '2026. július 23.',
+          },
+        ],
+      },
       {
         type: 'breaking-group',
         headline: '2026. július 22. — Hetedik gyanúsítottat is letartóztattak',
