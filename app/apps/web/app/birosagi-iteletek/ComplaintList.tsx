@@ -2,6 +2,7 @@
 /* eslint-disable react/no-unescaped-entities -- Hungarian typographic quotes („ ") in display text */
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 export type SerializedComplaint = {
   id: string;
@@ -15,6 +16,11 @@ export type SerializedComplaint = {
   sourceNames: string[];
   sourceHeadlines: string[];
   sourceDates: string[];
+  /** Már a Korruptométer adatbázisában dokumentált, kapcsolódó ScandalCatalog-
+   *  ügyek — külön, kattintható "Kapcsolódó ügyek" szekció, a Sajtóforrások
+   *  ELŐTT (user kérés, 2026-07-23), ugyanazzal a kártya-designnal. */
+  relatedCaseHrefs: string[];
+  relatedCaseLabels: string[];
 };
 
 function statusLabel(s: SerializedComplaint['status']): string {
@@ -40,6 +46,19 @@ function ComplaintDetail({ c }: { c: SerializedComplaint }) {
           .complaint-meta-item--date mobil display:none szabálya. */}
       <p className="complaint-detail-date">{c.eventDateFormatted}</p>
       {c.description && <p className="verdict-summary">{c.description}</p>}
+
+      {c.relatedCaseHrefs.length > 0 && (
+        <div className="verdict-sources-section">
+          <div className="verdict-sources-heading">Kapcsolódó ügyek</div>
+          <div className="verdict-source-cards">
+            {c.relatedCaseHrefs.map((href, i) => (
+              <Link key={i} href={href} className="person-news-item verdict-source-card">
+                <span className="person-news-headline">{c.relatedCaseLabels[i] ?? href}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {c.sourceUrls.length > 0 && (
         <div className="verdict-sources-section">

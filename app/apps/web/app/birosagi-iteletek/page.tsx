@@ -6,6 +6,7 @@ export const metadata = {
   description: 'Nyomon követjük a NER-hez köthető korrupciós ügyek bírósági szakaszát. Kattints, és nézd meg, lett-e vádemelés!',
 };
 import { UGYEK } from '../_home/ugyek-config';
+import { toAsciiId } from '../_home/case-detail-config';
 import { GALERIA } from '../_home/galeria-config';
 import { VerdictList, type SerializedVerdict } from './VerdictList';
 import type { SerializedComplaint } from './ComplaintList';
@@ -71,6 +72,8 @@ export default async function BirosagPage({
     sourceNames: c.sourceNames,
     sourceHeadlines: c.sourceHeadlines,
     sourceDates: c.sourceDates,
+    relatedCaseHrefs: c.relatedCaseIds.map((id) => `/adatbazis/${encodeURIComponent(toAsciiId(id))}`),
+    relatedCaseLabels: c.relatedCaseLabels,
   }));
 
   const serialized: SerializedVerdict[] = rows.map(r => {

@@ -1512,6 +1512,16 @@ export const criminalComplaints = pgTable(
     sourceNames: text('sourceNames').array().notNull().default(sql`ARRAY[]::text[]`),
     sourceHeadlines: text('sourceHeadlines').array().notNull().default(sql`ARRAY[]::text[]`),
     sourceDates: text('sourceDates').array().notNull().default(sql`ARRAY[]::text[]`),
+    // 2026-07-23 — user kérés: ha egy feljelentés egy MÁR listázott
+    // ScandalCatalog-üggyel kapcsolatos (pl. az Eximbank-feljelentések közül
+    // kettő az egyiptomi vonat- és az észak-macedóniai hitel-üggyel), ne
+    // folyószövegben (leírásban) legyen a hivatkozás, hanem saját, kattintható
+    // "Kapcsolódó ügyek" szekció, ugyanazzal a kártya-designnal, mint a
+    // Sajtóforrások. Denormalizált címke-párhuzamos tömb (mint a sourceUrls/
+    // sourceNames), nem élő JOIN az id alapján — ugyanaz a minta, mint a
+    // sourceHeadlines statikus pillanatkép-elve.
+    relatedCaseIds: text('relatedCaseIds').array().notNull().default(sql`ARRAY[]::text[]`),
+    relatedCaseLabels: text('relatedCaseLabels').array().notNull().default(sql`ARRAY[]::text[]`),
     reviewStatus: reviewStatusEnum('reviewStatus').notNull().default('approved'),
     createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
