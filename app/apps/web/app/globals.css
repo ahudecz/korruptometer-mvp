@@ -12201,7 +12201,22 @@ body:has(.admin-nav) > main {
      Státusz-gomb elől (user report: "kilóg") — az érték önmagában is
      érthető ebben a kontextusban. */
   .complaint-meta-item--amount .complaint-meta-label { display: none; }
-  .complaint-meta-value--amount { font-size: 15px; white-space: nowrap; }
+  /* 2026-07-23 — user report: a "Feljelentés megtörtént" pill (a leghosszabb
+     státusz-szöveg, min-width: 148px) keskeny telefonon kilógott, ha az
+     Összeg-érték is hosszú volt. A pill sose vágódhat/tűnhet el (flex-shrink:
+     0, változatlan) — helyette az Összeg-item kap zsugorodási engedélyt
+     (flex + min-width: 0) és "…"-ra vágást, ha nem fér ki. */
+  .complaint-meta-item--amount {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .complaint-meta-value--amount {
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
   .complaint-status-pill--meta {
     font-size: 11px;
     padding: 5px 10px;
