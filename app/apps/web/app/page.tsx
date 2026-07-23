@@ -1031,19 +1031,6 @@ export default async function HomePage() {
             <strong>{recentScandals.length}</strong> kiemelt ügy {fmtNumber(totalScandalCount)}{' '}
             ügyből
           </div>
-          <div className="db-sort">
-            <Link href="/adatbazis?sort=damage_desc" className="db-sort-link">
-              <button type="button" className="active">
-                Közpénz ↓
-              </button>
-            </Link>
-            <Link href="/adatbazis?sort=recent" className="db-sort-link">
-              <button type="button">Friss ↓</button>
-            </Link>
-            <Link href="/adatbazis?sort=name" className="db-sort-link">
-              <button type="button">Név A–Z</button>
-            </Link>
-          </div>
         </div>
 
         <table className="db-table">
