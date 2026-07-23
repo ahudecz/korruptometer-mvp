@@ -6,6 +6,7 @@
  */
 import { sql } from 'drizzle-orm';
 import { normalizeName } from './watchlist';
+import { llmExtract, type LlmToolSpec } from './llm';
 
 export type ReviewDecision = 'approved' | 'pending' | 'discard';
 
@@ -185,6 +186,53 @@ export type ExistingComplaint = { id: string; status: ComplaintStatus };
  *  months to reach an indictment or verdict (spec Assumptions). */
 export const COMPLAINT_DEDUP_WINDOW_DAYS = 180;
 
+// 2026-07-23 — user report: a Neptun/Kréta/Poszeidon-ügyben egy MÁSODIK
+// feljelentés-sor jött létre 6 nappal az első után, mert a régi meccselés
+// egy TELJES, normalizált targetName EGYEZŐSÉGET követelt meg — a két sor
+// ("Kréta, Neptun és Poszeidon rendszerek - gyanús közbeszerzések és
+// verseny-korlátozás" vs. "Neptun, Kréta, Poszeidon rendszerek — Fauszt
+// Zoltánhoz köthető cégek") ugyanarról a valós ügyről szól, de az LLM két
+// külön cikkből két teljesen más szövegű targetName-et generált — a szó
+// szerinti egyezés emiatt sose talált volna rá, akárhány napos ablakkal.
+// Ugyanaz a hibaosztály, mint a cross-source "ugyanaz a sztori" probléma
+// a hírszkréélésnél (l. apps/web/src/lib/same-story.ts) — és ugyanaz a
+// kétlépcsős megoldás: ingyenes pg_trgm word_similarity() előszűrés, és
+// csak a "bizonytalan" sávban egy olcsó, kapuzott AI-döntőbíró hívás.
+// Explicit rendezés (ORDER BY, LIMIT 1) helyett minden számottevő jelöltet
+// megnézünk, mert itt (ellentétben a cross-source cikk-dedupnál) nem egy
+// friss beszúrás elé állított, szűk időablakos QUERY fut, hanem a teljes
+// 180 napos dedup-ablak — több valódi jelölt is lehet.
+const COMPLAINT_FUZZY_LOW = 0.15;
+const COMPLAINT_FUZZY_HIGH = 0.27;
+
+const SAME_COMPLAINT_SYSTEM = `Te egy magyar korrupció-figyelő szerkesztő asszisztens vagy. Két feljelentés/nyomozás cél-leírását kapod. Döntsd el, hogy UGYANARRÓL a valós ügyről/esetről szólnak-e (akkor is, ha más szavakkal, más hangsúllyal írják le — pl. ugyanaz a szoftverrendszer-botrány, csak az egyik a közbeszerzést, a másik az érintett céget emeli ki), vagy két KÜLÖNBÖZŐ ügyről van szó.`;
+
+const SAME_COMPLAINT_TOOL: LlmToolSpec = {
+  name: 'same_complaint',
+  description: 'Decide whether two criminal-complaint target descriptions refer to the same real-world case.',
+  schema: {
+    type: 'object',
+    properties: {
+      same: {
+        type: 'boolean',
+        description: 'True only if both descriptions concern the same specific case/target, not just a similar topic.',
+      },
+    },
+    required: ['same'],
+  },
+};
+
+async function isSameComplaintAi(a: string, b: string): Promise<boolean> {
+  const user = `A leírás: ${a}\n\nB leírás: ${b}`;
+  const { data } = await llmExtract<{ same: boolean }>({
+    system: SAME_COMPLAINT_SYSTEM,
+    user,
+    tool: SAME_COMPLAINT_TOOL,
+    maxTokens: 100,
+  });
+  return Boolean(data?.same);
+}
+
 /**
  * Finds the most recent CriminalComplaint row for a target/case within the
  * dedup window, if any. Matches on `targetName` (the case/target), NOT
@@ -194,6 +242,13 @@ export const COMPLAINT_DEDUP_WINDOW_DAYS = 180;
  * personName-based matching, applied to the complaint's target instead of
  * the defendant, since here there's no single "accused" until an indictment
  * exists.
+ *
+ * Two-tier match: (1) exact normalized-string equality (cheap, catches a
+ * literal re-run); (2) if that misses, pg_trgm word_similarity() against
+ * every candidate in the dedup window — a "duplicate"-tier score returns
+ * immediately, an "ambiguous"-tier score gets one cheap AI tie-break call
+ * against the single best-scoring candidate (same pattern as
+ * same-story.ts's cross-source article dedup).
  */
 export async function findExistingComplaint(
   db: Executable,
@@ -202,14 +257,29 @@ export async function findExistingComplaint(
 ): Promise<ExistingComplaint | null> {
   const key = normalizeName(targetName);
   if (!key) return null;
-  const rows = (await db.execute(sql`
+  const exactRows = (await db.execute(sql`
     SELECT id, "status" FROM "CriminalComplaint"
     WHERE trim(regexp_replace(lower(unaccent(trim("targetName"))), '[^a-z0-9]+', ' ', 'g')) = ${key}
       AND "createdAt" >= now() - make_interval(days => ${withinDays})
     ORDER BY "eventDate" DESC
     LIMIT 1
   `)) as unknown as ExistingComplaint[];
-  return rows[0] ?? null;
+  if (exactRows[0]) return exactRows[0];
+
+  const fuzzyRows = (await db.execute(sql`
+    SELECT id, "status", "targetName", word_similarity(${targetName}, "targetName") AS wsim
+    FROM "CriminalComplaint"
+    WHERE "createdAt" >= now() - make_interval(days => ${withinDays})
+    ORDER BY wsim DESC
+    LIMIT 3
+  `)) as unknown as Array<ExistingComplaint & { targetName: string; wsim: number }>;
+  const best = fuzzyRows[0];
+  if (!best) return null;
+  if (best.wsim >= COMPLAINT_FUZZY_HIGH) return { id: best.id, status: best.status };
+  if (best.wsim < COMPLAINT_FUZZY_LOW) return null;
+
+  const same = await isSameComplaintAi(targetName, best.targetName);
+  return same ? { id: best.id, status: best.status } : null;
 }
 
 const COMPLAINT_STATUS_ORDER: Record<Exclude<ComplaintStatus, 'elutasítva'>, number> = {
