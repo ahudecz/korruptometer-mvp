@@ -11397,7 +11397,7 @@ body:has(.admin-nav) > main {
      fotónál tolva jobbra — desktopon (720px fölött) az eredeti,
      középre-fent object-position marad jó. */
   .rogue--lazar-photo-shift .rogue-photo {
-    object-position: 65% top;
+    object-position: 35% top;
   }
   .status-strip {
     font-size: 9px;
