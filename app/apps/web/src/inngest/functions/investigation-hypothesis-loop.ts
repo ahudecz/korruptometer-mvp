@@ -7,6 +7,7 @@ import { getDb, schema } from '@/lib/db';
 import { completeJob, failJob, startJob } from '@/lib/investigation/job-state';
 import { probeDailySpend } from '@/lib/investigation/llm-spend';
 import type { HypothesisCapKind } from '@korr/shared';
+import { isBypassActive } from '@/lib/cron-bypass';
 import { inngest } from '../client';
 
 const TOOL_DEFS = [
@@ -71,7 +72,11 @@ export const investigationHypothesisLoop = inngest.createFunction(
     retries: 0,
   },
   { event: 'investigation.hypothesis.requested' },
-  async ({ event, step }) => {
+  async ({ event, step, logger }) => {
+    if (isBypassActive()) {
+      logger?.info?.('investigation.hypothesis-loop: skipped — PIPELINE_BYPASS_INNGEST active (Inngest event bus untrusted during the outage)');
+      return { skipped: 'inngest_bypass_active' };
+    }
     const { investigationId, requestedByEditorId } = event.data;
     const startedAt = Date.now();
     const MAX_TOOL_CALLS = Number.parseInt(

@@ -7,6 +7,7 @@ import { WATCH_LIST } from '@app/_home/watchlist-config';
 import { WATCHLIST_DETAIL } from '@app/_home/watchlist-detail-config';
 import { getDb, schema } from '@/lib/db';
 import { notifyAutoPublished } from '@/lib/notify-auto-publish';
+import { isBypassActive, type BypassStep, type BypassLogger } from '@/lib/cron-bypass';
 import { inngest } from '../client';
 
 const CANDIDATE_WINDOW_DAYS = 30;
@@ -43,10 +44,13 @@ function fmtDate(d: Date): string {
  * where a premature auto-flip would be a real credibility problem, hence
  * the two-source bar instead of the single-source threshold used elsewhere.
  */
-export const detectWatchlistRemovals = inngest.createFunction(
-  { id: 'detect-watchlist-removals', name: 'Detect WATCH_LIST mandate terminations', concurrency: 1 },
-  { cron: '0 */6 * * *' },
-  async ({ step, logger }) => {
+export async function runWatchlistRemovalDetectionCore({
+  step,
+  logger,
+}: {
+  step: BypassStep;
+  logger?: BypassLogger;
+}) {
     const db = getDb();
 
     const alreadyDetected = await step.run('load-existing', () =>
@@ -150,5 +154,16 @@ export const detectWatchlistRemovals = inngest.createFunction(
     }
 
     return { checked: pending.length, detected };
+}
+
+export const detectWatchlistRemovals = inngest.createFunction(
+  { id: 'detect-watchlist-removals', name: 'Detect WATCH_LIST mandate terminations', concurrency: 1 },
+  { cron: '0 */6 * * *' },
+  async ({ step, logger }) => {
+    if (isBypassActive()) {
+      logger?.info?.('detect-watchlist-removals: skipped — PIPELINE_BYPASS_INNGEST active, Vercel cron owns this run');
+      return { skipped: 'inngest_bypass_active' };
+    }
+    return runWatchlistRemovalDetectionCore({ step: step as unknown as BypassStep, logger });
   },
 );

@@ -14,6 +14,7 @@ import {
   probeDailySpend,
   recordDailySpend,
 } from '@/lib/investigation/llm-spend';
+import { isBypassActive } from '@/lib/cron-bypass';
 import { inngest } from '../client';
 
 type TxClient = Parameters<
@@ -110,7 +111,11 @@ export const investigationExtractClaims = inngest.createFunction(
     retries: 3,
   },
   { event: 'investigation.article.ingested' },
-  async ({ event, step }) => {
+  async ({ event, step, logger }) => {
+    if (isBypassActive()) {
+      logger?.info?.('investigation.extract-claims: skipped — PIPELINE_BYPASS_INNGEST active (Inngest event bus untrusted during the outage)');
+      return { skipped: 'inngest_bypass_active' };
+    }
     const { articleSource, articleId } = event.data;
     const extractorVersion = getExtractorVersion();
     const model =
