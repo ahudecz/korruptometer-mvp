@@ -878,19 +878,19 @@ export default async function HomePage() {
         const bigCases: BigCaseConfig[] = [
           {
             id: 'nka-botrany',
-            eyebrow: 'Aktív · 6 személy előzetesben',
+            eyebrow: 'Aktív · 7 személy előzetesben',
             title: 'NKA botrány',
             responsible: 'Hankó Balázs',
             summary: 'Hankó Balázs volt kulturális miniszter a 2026-os választások előtt szabálytalanul osztott ki milliárdos NKA-támogatásokat. A NAV hűtlen kezelés bűntett gyanújával nyomoz — az ügy 17+ milliárd Ft-ot érint. Tarr Zoltán a kifizetések visszavizsgálását rendelte el.',
             breakingAlert: {
-              source: 'NAV / Telex',
-              headline: 'Hat személyt vett őrizetbe a NAV — köztük Bús Balázs',
-              lead: '2026. június 23-án a NAV hat személyt vett előzetesbe hűtlen kezelés bűntett megalapozott gyanúja miatt — az NKTK és KIM alkalmazottait. Bús Balázs részletes vallomást tett.',
-              url: 'https://telex.hu/belfold/2026/06/23/nka-botrany-hat-szemelyt-orizetbe-vett-a-nav-hanko-balazs-tarr-zoltan',
+              source: 'Telex',
+              headline: 'Kiderült a hetedik gyanúsított kiléte: Konczos Nóra, Hankó Balázs egykori kabinetfőnöke',
+              lead: 'A bíróság előzetes letartóztatásba helyezte Konczos Nórát, Hankó Balázs volt kulturális miniszter egykori kabinetfőnökét — ő az NKA-botrány hetedik gyanúsítottja, aki e-mailben kérte a Mága Zoltán-pályázat 500 millió forintos finanszírozását.',
+              url: 'https://telex.hu/belfold/2026/07/23/nka-letartoztatas-hanko-kabinetfonok',
             },
             videoId: 'NRA-QuItdUA',
             statusItems: [
-              { icon: '🔴', label: 'Őrizetbe vétel', value: '6 személy előzetesben — köztük Bús Balázs (óbudai) és Ughy Attila (XVIII. ker.) volt polgármesterek (jún. 23.)' },
+              { icon: '🔴', label: 'Őrizetbe vétel', value: '7 személy előzetesben — köztük Bús Balázs (óbudai) és Ughy Attila (XVIII. ker.) volt polgármesterek, valamint Konczos Nóra, Hankó Balázs egykori kabinetfőnöke (júl. 23.)' },
               { icon: '⚖️', label: 'Nyomozás', value: 'NAV — hűtlen kezelés bűntett, 17+ milliárd Ft érintett összeg' },
               { icon: '💰', label: 'Visszaszerzett vagyon', value: '~2,1 milliárd Ft visszaadva + 22 milliárd Ft visszakövetelve (Élvonal)' },
               { icon: '👤', label: 'Felelős', value: 'Hankó Balázs — volt kulturális miniszter' },
