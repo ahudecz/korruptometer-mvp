@@ -83,7 +83,7 @@ const TOOL: LlmToolSpec = {
             description: {
               type: 'string',
               description:
-                'Maximum 4-6 word Hungarian label for what happened — shown in a chart, must be very short. E.g. "MCC kuratóriumi elnökről lemondott", "Kulturális Minisztériumból kirúgták".',
+                'Maximum 4-6 word Hungarian label for what happened — shown in a chart, must be very short, DE nyelvtanilag TELJES, egyértelmű mondat legyen (a "name" mezőben lévő személyre vonatkoztatva, akkor is, ha a nevet magát nem ismétled meg). NE hagyd el az igét vezénylő szerkezetet alany/vonzat nélkül úgy, hogy a pozíció-név álljon a mondat élén ("[pozíció]ról lemondott" — ez félreérthető, hogy a POZÍCIÓ mondott le). Használj egyértelmű "Lemondott X-ként" / "Kirúgták X-ból/ből" / "Felmentették X alól" szerkezetet. HELYES példák: "Lemondott alpolgármesterként", "Lemondott MCC kuratóriumi elnökeként", "Kirúgták a Kulturális Minisztériumból". HELYTELEN (ne ilyet írj): "XII. kerület alpolgármesterről lemondott", "MCC kuratóriumi elnökről lemondott" — ezek a szerkezetek a pozíciót teszik meg (téves) alannyá.',
             },
             sector: {
               type: 'string',
