@@ -148,7 +148,9 @@ KRITIKUS — ki hagyja el a pozíciót vs. ki hozza a döntést:
 - A "Magyar Péter javaslatára Sulyok Tamás felmentette Koltay Andrást" → Koltay András hagyja el a pozíciót (name = Koltay András)
 - Az aláíró, a döntéshozó, a javaslatot tevő személy SOHA nem kerülhet a "name" mezőbe
 
-FONTOS: A "name" mezőbe mindig AZT a személyt/szervzetet írd, aki ténylegesen elhagyja a pozícióját — NEM azt, aki a döntést hozta, aláírta, vagy javasolta.`;
+KRITIKUS — ki mondott le vs. kire hivatkozva mondott le valaki más (2026-07-23, valós hiba): a "lemondott X, Y működésére/magatartására/viselkedésére hivatkozva" (vagy "...Y miatt mondott le", "...Y-ra hivatkozva") mondatszerkezetben Y NEM az, aki lemondott — Y csak az INDOK, akinek a viselkedése miatt más mondott le. Y SOHA nem kerülhet a "name" mezőbe emiatt az idézet/hivatkozás miatt. A ténylegesen lemondó személy neve ilyenkor gyakran NINCS BENNE a címben/kivonatban, csak a pozíciója (pl. "a hegyvidéki alpolgármester") — ha a cikk szövegében sehol nincs kimondva a lemondó KONKRÉT NEVE, NE találgass, és NE tedd be helyette a hivatkozott (indokként szereplő) személy nevét, még akkor sem, ha az az egyetlen tulajdonnév a szövegben. Ilyenkor vagy hagyd ki a bejegyzést, vagy — ha a pozíció/intézmény egyértelmű — adj alacsony (0.5 alatti) confidence-t, hogy emberi ellenőrzésre kerüljön, sose magas bizonyossággal a rossz nevet.
+
+FONTOS: A "name" mezőbe mindig AZT a személyt/szervzetet írd, aki ténylegesen elhagyja a pozícióját — NEM azt, aki a döntést hozta, aláírta, javasolta, vagy akinek a magatartására hivatkozva más mondott le.`;
 
 /**
  * Returns the full LlmResult (not just `data`) so callers can distinguish a
