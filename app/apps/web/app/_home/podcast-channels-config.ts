@@ -136,7 +136,11 @@ export const PODCAST_CHANNELS: PodcastChannelConfig[] = [
     slug: 'magyar-hang',
     handle: '@magyarhang',
     name: 'Magyar Hang',
-    relevantByDefault: true,
+    // 2026-07-24 — a szöveges hír-oldalon ez a médium 07-19 óta csak
+    // kulcsszó alapján megy (relevantByDefault levéve onnan, l.
+    // magyar-hang.ts kommentje), AI nélkül — a YouTube-csatorna itt eddig
+    // mégis külön AI-kaput kapott ugyanarra a médiumra.
+    relevantByDefault: false,
     viewThreshold: 0,
   },
   {
@@ -194,28 +198,31 @@ export const PODCAST_CHANNELS: PodcastChannelConfig[] = [
     slug: '444',
     handle: '@negynegynegy',
     name: '444',
-    relevantByDefault: true,
+    // 2026-07-24 — a 444.ts szöveges OutletAdapter nem relevantByDefault
+    // (kulcsszó vagy semmi, AI nélkül) — a YouTube-csatorna itt eddig külön
+    // AI-kaput kapott ugyanarra a médiumra, l. project-llm-cost-audit.
+    relevantByDefault: false,
     viewThreshold: 125000,
   },
   {
     slug: 'telex',
     handle: '@Telexponthu',
     name: 'Telex',
-    relevantByDefault: true,
+    relevantByDefault: false,
     viewThreshold: 100000,
   },
   {
     slug: 'hvg',
     handle: '@HVGonline',
     name: 'HVG Videó',
-    relevantByDefault: true,
+    relevantByDefault: false,
     viewThreshold: 75000,
   },
   {
     slug: '24hu',
     handle: '@24ponthu',
     name: '24.hu',
-    relevantByDefault: true,
+    relevantByDefault: false,
     viewThreshold: 75000,
   },
 ];
