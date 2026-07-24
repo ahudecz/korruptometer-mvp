@@ -14,7 +14,7 @@ import {
 } from '@/lib/telegram-review-actions';
 import type { DetectorType } from '@korr/db';
 import { ALL_VERIFICATION_TARGETS } from '@korr/db';
-import { canonicalUrl, dedupHash, fetchPrimaryArticle, getAdapter, routeOutletByUrl } from '@korr/scrapers';
+import { canonicalUrl, clipExcerpt, dedupHash, fetchPrimaryArticle, getAdapter, routeOutletByUrl } from '@korr/scrapers';
 import { WATCH_LIST, type WatchPerson } from '@app/_home/watchlist-config';
 
 // Legvégső fallback-név (csak akkor, ha a beküldött szöveg URL-nek NÉZETT ki
@@ -249,6 +249,20 @@ function firstUrl(text: string): string | null {
   return m ? m[0].replace(/[.,)\]>]+$/, '') : null;
 }
 
+// 2026-07-24 — a user az URL MELLÉ bemásolhatja a cikk lényegét (l. a
+// múzeumigazgatók-eset után kért munkafolyamat): "<link> - <pár mondat>"
+// vagy akár több sorban. A linket kivágva, a maradék szöveget adjuk a
+// detektornak tipBodyText-ként — ha van benne érdemi tartalom (nem csak egy
+// árva kötőjel/írásjel a link után). MIN_MANUAL_TEXT_LEN alatt inkább nem
+// vesszük figyelembe (elkerüli, hogy egy véletlen szóköz "manuális szövegnek"
+// tűnjön és felülírja a scrape-elt cikktörzset egy üres stringgel).
+const MIN_MANUAL_TEXT_LEN = 15;
+
+function extractManualBodyText(text: string, url: string): string | null {
+  const rest = text.replace(url, '').replace(/^[\s\-–—:]+/, '').trim();
+  return rest.length >= MIN_MANUAL_TEXT_LEN ? rest : null;
+}
+
 // 2026-07-19 — YouTube-link felismerés a kézi bejelentés flow-hoz: egy
 // youtube.com/youtu.be linket NEM szabad resolveOrCreateArticleFromUrl-lel
 // NewsArticle-ként feldolgozni (az cikk-scrapelést próbálna futtatni egy
@@ -272,7 +286,17 @@ function extractYoutubeVideoId(url: string): string | null {
   }
 }
 
-type ResolveArticleResult = { id: string; headline: string } | { error: string };
+type ResolveArticleResult =
+  | { id: string; headline: string; bodyCaptured: boolean }
+  | { error: string };
+
+/** Fallback-cím, ha a lekérés elhasalt, de a user mellékelt szöveget — a
+ *  szöveg első mondata/sora, max 120 karakterig. */
+function deriveHeadlineFromManualText(text: string): string {
+  const firstLine = text.split(/\n/)[0]!.trim();
+  const firstSentence = firstLine.split(/(?<=[.!?])\s/)[0]!.trim();
+  return (firstSentence || firstLine).slice(0, 120) || 'Kézzel beküldött hír';
+}
 
 /**
  * Ismeretlen (nem konfigurált outlet-adapterrel rendelkező) domainhez dedikált
@@ -299,8 +323,16 @@ async function findOrCreateAdHocSource(hostname: string, siteName: string | null
   return { error: `Nem sikerült Source sort létrehozni "${hostname}"-hoz.` };
 }
 
-/** Beküldött URL feloldása/beszúrása NewsArticle-ként (008 kiterjesztés — kézi bejelentés). */
-async function resolveOrCreateArticleFromUrl(rawUrl: string): Promise<ResolveArticleResult> {
+/**
+ * Beküldött URL feloldása/beszúrása NewsArticle-ként (008 kiterjesztés — kézi
+ * bejelentés). `manualBodyText` — 2026-07-24, a múzeumigazgatók-eset után —
+ * a user az URL mellé bemásolhatja a cikk lényegét (l. extractManualBodyText);
+ * ha ez megvan, EZ a mérvadó a detektáláshoz, a scrape-elt bodyText helyett
+ * (megbízhatóbb, nincs 403/bot-blokk kockázat). Ha a lekérés is elhasal ÉS
+ * nincs manualBodyText, hibát adunk vissza — a hívó ilyenkor megkéri a
+ * usert, hogy küldje újra a linket + pár mondatot.
+ */
+async function resolveOrCreateArticleFromUrl(rawUrl: string, manualBodyText?: string | null): Promise<ResolveArticleResult> {
   const db = getDb();
   const outletSlug = routeOutletByUrl(rawUrl);
   const adapter = outletSlug ? getAdapter(outletSlug) : null;
@@ -308,11 +340,18 @@ async function resolveOrCreateArticleFromUrl(rawUrl: string): Promise<ResolveArt
   const hash = dedupHash(canonical);
 
   const existing = await db
-    .select({ id: schema.newsArticles.id, headline: schema.newsArticles.headline })
+    .select({ id: schema.newsArticles.id, headline: schema.newsArticles.headline, tipBodyText: schema.newsArticles.tipBodyText })
     .from(schema.newsArticles)
     .where(eq(schema.newsArticles.sourceUrlHash, hash))
     .limit(1);
-  if (existing[0]) return { id: existing[0].id, headline: existing[0].headline };
+  if (existing[0]) {
+    // Ha korábban body nélkül jött be, de most a user pótolja kézzel — vegyük fel.
+    if (manualBodyText && !existing[0].tipBodyText) {
+      await db.update(schema.newsArticles).set({ tipBodyText: manualBodyText }).where(eq(schema.newsArticles.id, existing[0].id));
+      return { id: existing[0].id, headline: existing[0].headline, bodyCaptured: true };
+    }
+    return { id: existing[0].id, headline: existing[0].headline, bodyCaptured: !!existing[0].tipBodyText };
+  }
 
   let fetched;
   try {
@@ -320,7 +359,15 @@ async function resolveOrCreateArticleFromUrl(rawUrl: string): Promise<ResolveArt
   } catch {
     fetched = null;
   }
-  if (!fetched) return { error: 'A cikk nem tölthető be (védett oldal vagy hibás link).' };
+  if (!fetched && !manualBodyText) {
+    return { error: 'A cikk nem tölthető be (védett oldal vagy hibás link). Küldd be újra így: <link>, új sorban pár mondat a lényegről — abból dolgozom.' };
+  }
+
+  const headline = fetched?.headline ?? deriveHeadlineFromManualText(manualBodyText!);
+  const excerpt = fetched?.excerpt ?? clipExcerpt(manualBodyText!);
+  const tipBodyText = manualBodyText ?? fetched?.bodyText ?? null;
+  const publishedAt = fetched?.publishedAt ?? new Date();
+  const viaArchive = fetched?.viaArchive ?? false;
 
   let sourceId: string;
   if (outletSlug) {
@@ -334,7 +381,7 @@ async function resolveOrCreateArticleFromUrl(rawUrl: string): Promise<ResolveArt
     } catch {
       hostname = TELEGRAM_TIP_SOURCE_SLUG;
     }
-    const resolved = await findOrCreateAdHocSource(hostname, fetched.siteName);
+    const resolved = await findOrCreateAdHocSource(hostname, fetched?.siteName ?? null);
     if (typeof resolved !== 'string') return resolved;
     sourceId = resolved;
   }
@@ -343,21 +390,22 @@ async function resolveOrCreateArticleFromUrl(rawUrl: string): Promise<ResolveArt
     .insert(schema.newsArticles)
     .values({
       sourceId,
-      headline: fetched.headline,
-      excerpt: fetched.excerpt,
+      headline,
+      excerpt,
+      tipBodyText,
       sourceUrl: canonical,
       sourceUrlHash: hash,
-      publishedAt: fetched.publishedAt,
-      viaArchive: fetched.viaArchive,
+      publishedAt,
+      viaArchive,
     })
     .onConflictDoNothing({ target: schema.newsArticles.sourceUrlHash })
     .returning({ id: schema.newsArticles.id, headline: schema.newsArticles.headline });
 
-  if (rows[0]) return { id: rows[0].id, headline: rows[0].headline };
+  if (rows[0]) return { id: rows[0].id, headline: rows[0].headline, bodyCaptured: !!tipBodyText };
 
   // Race: valaki más (pl. a rendes cron) épp most szúrta be — olvassuk vissza.
-  const raceRows = await db.select({ id: schema.newsArticles.id, headline: schema.newsArticles.headline }).from(schema.newsArticles).where(eq(schema.newsArticles.sourceUrlHash, hash)).limit(1);
-  if (raceRows[0]) return { id: raceRows[0].id, headline: raceRows[0].headline };
+  const raceRows = await db.select({ id: schema.newsArticles.id, headline: schema.newsArticles.headline, tipBodyText: schema.newsArticles.tipBodyText }).from(schema.newsArticles).where(eq(schema.newsArticles.sourceUrlHash, hash)).limit(1);
+  if (raceRows[0]) return { id: raceRows[0].id, headline: raceRows[0].headline, bodyCaptured: !!raceRows[0].tipBodyText };
   return { error: 'Ismeretlen hiba a cikk beszúrásakor.' };
 }
 
@@ -426,12 +474,28 @@ async function setPendingStatus(detectorType: DetectorType, id: string, status: 
   }
 }
 
+// 2026-07-24 — mindkét loader a tárolt tipBodyText-et (teljes cikktörzs vagy
+// kézzel mellékelt szöveg, l. resolveOrCreateArticleFromUrl) adja vissza
+// excerpt-ként, ha van, a rövid og:description helyett — ez a bemenete
+// MINDEN itt induló újra-detektálásnak (resignation/closure/verdict/asset/
+// complaint/watchlist). A publikus `/hirek` nézet a NewsArticle.excerpt
+// oszlopot közvetlenül olvassa, ezt a függvényt nem használja, tehát ott
+// továbbra is a rövid kivonat jelenik meg — csak a detektálás bemenete lett
+// teljesebb.
+function toArticleForReprocess(row: {
+  id: string; headline: string; excerpt: string; tipBodyText: string | null;
+  sourceUrl: string | null; publishedAt: Date; sourceName: string | null;
+}): ArticleForReprocess {
+  return { ...row, excerpt: row.tipBodyText || row.excerpt };
+}
+
 async function loadArticle(articleId: string): Promise<ArticleForReprocess | null> {
   const rows = await getDb()
     .select({
       id: schema.newsArticles.id,
       headline: schema.newsArticles.headline,
       excerpt: schema.newsArticles.excerpt,
+      tipBodyText: schema.newsArticles.tipBodyText,
       sourceUrl: schema.newsArticles.sourceUrl,
       publishedAt: schema.newsArticles.publishedAt,
       sourceName: schema.sources.name,
@@ -440,7 +504,7 @@ async function loadArticle(articleId: string): Promise<ArticleForReprocess | nul
     .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId))
     .where(eq(schema.newsArticles.id, articleId))
     .limit(1);
-  return rows[0] ?? null;
+  return rows[0] ? toArticleForReprocess(rows[0]) : null;
 }
 
 async function loadArticleByUrl(sourceUrl: string): Promise<ArticleForReprocess | null> {
@@ -449,6 +513,7 @@ async function loadArticleByUrl(sourceUrl: string): Promise<ArticleForReprocess 
       id: schema.newsArticles.id,
       headline: schema.newsArticles.headline,
       excerpt: schema.newsArticles.excerpt,
+      tipBodyText: schema.newsArticles.tipBodyText,
       sourceUrl: schema.newsArticles.sourceUrl,
       publishedAt: schema.newsArticles.publishedAt,
       sourceName: schema.sources.name,
@@ -457,7 +522,7 @@ async function loadArticleByUrl(sourceUrl: string): Promise<ArticleForReprocess 
     .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId))
     .where(eq(schema.newsArticles.sourceUrl, sourceUrl))
     .limit(1);
-  return rows[0] ?? null;
+  return rows[0] ? toArticleForReprocess(rows[0]) : null;
 }
 
 /** Runs the AI removal-check for a matched WATCH_LIST person and sends the
@@ -591,13 +656,23 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true });
       }
 
-      const resolved = await resolveOrCreateArticleFromUrl(url);
+      const manualBodyText = extractManualBodyText(msg.text ?? '', url);
+      const resolved = await resolveOrCreateArticleFromUrl(url, manualBodyText);
       if ('error' in resolved) {
         await sendTelegramMessage(`⚠️ ${resolved.error}\n\n${url}`);
         return NextResponse.json({ ok: true });
       }
+      // 2026-07-24 — a múzeumigazgatók-eset óta: ha a mellékelt szöveg
+      // alapján dolgozunk, ezt jelezzük; ha se szöveg, se scrape-elt
+      // cikktörzs nem volt (csak a rövid og:description), figyelmeztetünk,
+      // hogy ha több eset/személy van a cikkben, pótolja kézzel.
+      const bodyNote = manualBodyText
+        ? '📝 A mellékelt szöveg alapján dolgozom.'
+        : resolved.bodyCaptured
+          ? null
+          : '⚠️ Nem sikerült elolvasnom a cikk teljes szövegét (csak a rövid kivonatot). Ha több eset/személy van benne, küldd újra a linket, alá írva pár mondatban a lényeget — abból pontosabban dolgozom.';
       await sendTelegramMessage(
-        `📥 Beküldött hír:\n${resolved.headline}\n\n${url}\n\nMelyik kategóriába tegyem?`,
+        [`📥 Beküldött hír:\n${resolved.headline}`, url, bodyNote, 'Melyik kategóriába tegyem?'].filter(Boolean).join('\n\n'),
         tipCategoryKeyboard(resolved.id),
       );
       return NextResponse.json({ ok: true });
@@ -997,26 +1072,22 @@ export async function POST(req: Request) {
         await answerCallbackQuery(cq.id, 'A cikk már nem található.');
         return NextResponse.json({ ok: true });
       }
-      // 2026-07-24 — a kézi Telegram-tippnél beszúráskor csak a rövid
-      // og:description kerül excerpt-ként a NewsArticle-be (azt mutatja a
-      // publikus /hirek lista is, azt nem szabad felülírni). Ez viszont a
-      // detektort tévútra viheti: egy cikk címe/kivonata csak a hírt
-      // bejelentő embert idézte, a ténylegesen érintettek (pl. 3
-      // múzeumigazgató menesztése) neve csak a cikktörzsben szerepelt, ezért
-      // a rövid excerptből futtatott detektor a bejelentőt vette fel
-      // tévesen érintettként a 3 valódi személy helyett. Itt, közvetlenül
-      // az újra-detektálás előtt, frissen lekérjük a teljes cikktörzset és
-      // AZT adjuk a detektornak (csak ebben a memóriabeli másolatban — az
-      // adatbázisban tárolt rövid excerpt-et nem írjuk felül).
+      // 2026-07-24 — `article.excerpt` itt már a tárolt tipBodyText (teljes
+      // cikktörzs vagy kézzel mellékelt szöveg), ha submission-kor sikerült
+      // rögzíteni (l. toArticleForReprocess/resolveOrCreateArticleFromUrl).
+      // Ha egy régebbi, e commit előtti near_miss-sorról van szó, aminek
+      // nincs tipBodyText-je, itt egy utolsó, egyszeri élő újralekérést
+      // próbálunk — biztonsági háló, nem az elsődleges mechanizmus.
       let detectArticle = article;
-      if (article.sourceUrl) {
+      const looksUnenriched = article.excerpt.length < 900; // EXCERPT_MAX — a rövid og:description sose hosszabb ennél
+      if (looksUnenriched && article.sourceUrl) {
         try {
           const fetched = await fetchPrimaryArticle({ sourceUrl: article.sourceUrl, archiveUrl: null, tagSlug: '', dateText: null });
           if (fetched?.bodyText) {
             detectArticle = { ...article, excerpt: fetched.bodyText };
           }
         } catch {
-          // marad az eredeti (rövid) excerpt — nem blokkoló hiba
+          // marad az eredeti excerpt — nem blokkoló hiba
         }
       }
       const todayIso = new Date().toISOString().slice(0, 10);

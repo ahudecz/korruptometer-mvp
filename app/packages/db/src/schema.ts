@@ -122,6 +122,10 @@ export const newsArticles = pgTable(
       .references(() => sources.id, { onDelete: 'cascade' }),
     headline: text('headline').notNull(),
     excerpt: text('excerpt').notNull(),
+    // 2026-07-24 — kézi Telegram-tipp: teljes cikktörzs (scrape-elt vagy a
+    // user által mellékelt szöveg), KIZÁRÓLAG újra-detektáláshoz. A publikus
+    // `excerpt`-et nem helyettesíti/nem írja felül.
+    tipBodyText: text('tipBodyText'),
     sourceUrl: text('sourceUrl').notNull(),
     sourceUrlHash: text('sourceUrlHash').notNull(),
     publishedAt: timestamp('publishedAt', { withTimezone: true }).notNull(),
@@ -1576,6 +1580,51 @@ export const detectionChecks = pgTable(
 
 export type DetectionCheck = typeof detectionChecks.$inferSelect;
 export type NewDetectionCheck = typeof detectionChecks.$inferInsert;
+
+// ─── Post-Publish Verification (010) ─────────────────────────────────────
+//
+// One row per verification pass over one published record (targetTable +
+// targetId — no FK, 5 different target tables). History table, NOT an
+// upsert-per-row table like DetectionCheck: every recheck after a record
+// changes writes a NEW row. "Should this row be rechecked?" is answered by
+// comparing the record's own updatedAt against MAX(checkedAt) for terminal
+// outcomes ('ok' | 'corrected' | 'approved_by_human') — a watermark, not a
+// fixed time window, so a missed cron run never silently drops a row.
+// `summary` is a short, generated explanation (mirrors DetectionCheck.reason)
+// — NEVER the verbatim article body (NewsArticle.body storage ban,
+// Constitution IV — the fetched article text is transient, LLM-prompt-only).
+
+export const verificationOutcomeEnum = pgEnum('verification_outcome', [
+  'ok',
+  'corrected',
+  'deleted',
+  'pending_approval',
+  'approved_by_human',
+  'reverted_by_human',
+  'unverifiable_skipped',
+]);
+
+export const verificationChecks = pgTable(
+  'VerificationCheck',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    targetTable: text('targetTable').notNull(),
+    targetId: uuid('targetId').notNull(),
+    outcome: verificationOutcomeEnum('outcome').notNull(),
+    verificationMethod: text('verificationMethod'),
+    evidenceUrl: text('evidenceUrl'),
+    summary: text('summary'),
+    telegramMessageId: integer('telegramMessageId'),
+    checkedAt: timestamp('checkedAt', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    targetIdx: index('VerificationCheck_target_idx').on(t.targetTable, t.targetId, t.checkedAt),
+    outcomeIdx: index('VerificationCheck_outcome_idx').on(t.outcome),
+  }),
+);
+
+export type VerificationCheck = typeof verificationChecks.$inferSelect;
+export type NewVerificationCheck = typeof verificationChecks.$inferInsert;
 
 // ─── Breaking Monitor ────────────────────────────────────────────────────────
 
