@@ -13,7 +13,6 @@ import {
   type ArticleForReprocess,
 } from '@/lib/telegram-review-actions';
 import type { DetectorType } from '@korr/db';
-import { ALL_VERIFICATION_TARGETS } from '@korr/db';
 import { canonicalUrl, clipExcerpt, dedupHash, fetchArticleBodyTransient, fetchPrimaryArticle, getAdapter, routeOutletByUrl } from '@korr/scrapers';
 import { WATCH_LIST, type WatchPerson } from '@app/_home/watchlist-config';
 
@@ -776,61 +775,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  // ── 010-post-publish-verification — "megerősítés szükséges" gombok
-  // (notifyVerificationApprovalNeeded). Külön action-namespace ('vy'/'vn',
-  // NEM 'v'/'n') a fenti auto-publish 'v'/'k' ágtól és a review-flow 'n'
-  // ágától, mert a `code` mező itt a VerificationCheck.id-t hordozza, nem
-  // egy detektor/AUTO_PUBLISH_CODE_TABLE kódot. Az "vn" (vond vissza) a
-  // megfelelő ALL_VERIFICATION_TARGETS adaptert hívja a törléshez — nem
-  // duplikál egy második tábla-lookupot. ──
-  if (action === 'vy' || action === 'vn') {
-    const verificationCheckId = code;
-    if (!verificationCheckId) {
-      await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
-      return NextResponse.json({ ok: true });
-    }
-    try {
-      const [check] = await getDb()
-        .select()
-        .from(schema.verificationChecks)
-        .where(eq(schema.verificationChecks.id, verificationCheckId))
-        .limit(1);
-      if (!check) {
-        await answerCallbackQuery(cq.id, 'A bejegyzés már nem található.');
-        return NextResponse.json({ ok: true });
-      }
-
-      let resultText: string;
-      if (action === 'vy') {
-        await getDb().insert(schema.verificationChecks).values({
-          targetTable: check.targetTable,
-          targetId: check.targetId,
-          outcome: 'approved_by_human',
-          summary: 'Ember jóváhagyta Telegramon.',
-        });
-        resultText = '✅ Jóváhagyva, marad.';
-      } else {
-        const target = ALL_VERIFICATION_TARGETS.find((t) => t.tableName === check.targetTable);
-        if (target) await target.applyDelete(getDb(), check.targetId);
-        await getDb().insert(schema.verificationChecks).values({
-          targetTable: check.targetTable,
-          targetId: check.targetId,
-          outcome: 'reverted_by_human',
-          summary: 'Ember visszavonta Telegramon.',
-        });
-        revalidatePublicPaths();
-        resultText = '↩️ Visszavonva.';
-      }
-
-      await answerCallbackQuery(cq.id, resultText);
-      const finalText = [cq.message.text ?? '', resultText].filter(Boolean).join('\n\n');
-      await editMessageReplyMarkup(cq.message.chat.id, cq.message.message_id, finalText);
-    } catch (err) {
-      await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
-      console.error('[telegram-webhook] verification approval action error', err);
-    }
-    return NextResponse.json({ ok: true });
-  }
+  // ── 2026-07-24 — a 010-post-publish-verification 'vy'/'vn' ág ide volt
+  // beszúrva egy PÁRHUZAMOS Claude Code session által, félkészen: az
+  // `ALL_VERIFICATION_TARGETS` importja @korr/db-ből olyan exportra
+  // hivatkozott, ami csak a másik session helyi (nem commitolt) working
+  // tree-jében létezett. Mivel ez a fájl egyben lett commitolva, a hiányzó
+  // export eltörte a prod buildet — a blokk ezért ideiglenesen KIVÉVE innen
+  // (nem törölve, csak nincs itt), amíg a másik session a teljes feature-t
+  // (schema+migráció+index-exportok+ez az ág) egyben, sajátjaként be nem
+  // commitolja.
 
   // ── 2026-07-14 — "Név - kategória - visszavonás" keresés eredményéből
   // választott törlés-gomb. Mindig törli a sort (nem reviewStatus='rejected',
