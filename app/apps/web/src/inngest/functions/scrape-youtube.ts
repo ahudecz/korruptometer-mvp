@@ -150,7 +150,28 @@ export async function runYoutubeScrapeCore({
           // "jóváhagyandó"-nak mindet. Most: hívás-hiba = eldobva, retry a
           // következő napi futáskor, amikor a keret már nyitva van.
           const ai = await classifyArticle(video.title, video.description);
-          if (!ai.relevant || ai.apiFailed) continue;
+          if (ai.apiFailed) continue; // tranziens hiba — retry a következő napi futáskor
+          if (!ai.relevant) {
+            // 2026-07-24 — a knownSet fentebb (sor 55-59) CSAK a ténylegesen
+            // beillesztett videoId-kat ismeri, ez a videó viszont sose lett
+            // beillesztve — enélkül MINDEN nap újra kifizetjük ugyanerre a
+            // videóra a classify-hívást, amíg a csatorna "legutóbbi feltöltés"
+            // ablakában marad (ugyanaz a hibaosztály, mint amit a hír-
+            // pipeline-on 07-21-én javítottunk, l. project-llm-cost-audit).
+            // 'rejected' sorral megjelöljük — a videoId UNIQUE constraint és
+            // a fenti knownSet-szűrés ettől kezdve örökre kihagyja.
+            await db.insert(schema.podcastVideos).values({
+              videoId: video.videoId,
+              channelSlug: channel.slug,
+              channelName: channel.name,
+              title: video.title.slice(0, 500),
+              description: video.description.slice(0, 2000),
+              publishedAt: video.publishedAt,
+              reviewStatus: 'rejected',
+              viewThresholdMet: false,
+            }).onConflictDoNothing({ target: schema.podcastVideos.videoId });
+            continue;
+          }
 
           const rows = await db
             .insert(schema.podcastVideos)
