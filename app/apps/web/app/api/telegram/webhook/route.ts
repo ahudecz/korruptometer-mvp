@@ -13,6 +13,7 @@ import {
   type ArticleForReprocess,
 } from '@/lib/telegram-review-actions';
 import type { DetectorType } from '@korr/db';
+import { ALL_VERIFICATION_TARGETS } from '@korr/db';
 import { canonicalUrl, dedupHash, fetchPrimaryArticle, getAdapter, routeOutletByUrl } from '@korr/scrapers';
 import { WATCH_LIST, type WatchPerson } from '@app/_home/watchlist-config';
 
@@ -681,6 +682,62 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
 
+  // ── 010-post-publish-verification — "megerősítés szükséges" gombok
+  // (notifyVerificationApprovalNeeded). Külön action-namespace ('vy'/'vn',
+  // NEM 'v'/'n') a fenti auto-publish 'v'/'k' ágtól és a review-flow 'n'
+  // ágától, mert a `code` mező itt a VerificationCheck.id-t hordozza, nem
+  // egy detektor/AUTO_PUBLISH_CODE_TABLE kódot. Az "vn" (vond vissza) a
+  // megfelelő ALL_VERIFICATION_TARGETS adaptert hívja a törléshez — nem
+  // duplikál egy második tábla-lookupot. ──
+  if (action === 'vy' || action === 'vn') {
+    const verificationCheckId = code;
+    if (!verificationCheckId) {
+      await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
+      return NextResponse.json({ ok: true });
+    }
+    try {
+      const [check] = await getDb()
+        .select()
+        .from(schema.verificationChecks)
+        .where(eq(schema.verificationChecks.id, verificationCheckId))
+        .limit(1);
+      if (!check) {
+        await answerCallbackQuery(cq.id, 'A bejegyzés már nem található.');
+        return NextResponse.json({ ok: true });
+      }
+
+      let resultText: string;
+      if (action === 'vy') {
+        await getDb().insert(schema.verificationChecks).values({
+          targetTable: check.targetTable,
+          targetId: check.targetId,
+          outcome: 'approved_by_human',
+          summary: 'Ember jóváhagyta Telegramon.',
+        });
+        resultText = '✅ Jóváhagyva, marad.';
+      } else {
+        const target = ALL_VERIFICATION_TARGETS.find((t) => t.tableName === check.targetTable);
+        if (target) await target.applyDelete(getDb(), check.targetId);
+        await getDb().insert(schema.verificationChecks).values({
+          targetTable: check.targetTable,
+          targetId: check.targetId,
+          outcome: 'reverted_by_human',
+          summary: 'Ember visszavonta Telegramon.',
+        });
+        revalidatePublicPaths();
+        resultText = '↩️ Visszavonva.';
+      }
+
+      await answerCallbackQuery(cq.id, resultText);
+      const finalText = [cq.message.text ?? '', resultText].filter(Boolean).join('\n\n');
+      await editMessageReplyMarkup(cq.message.chat.id, cq.message.message_id, finalText);
+    } catch (err) {
+      await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
+      console.error('[telegram-webhook] verification approval action error', err);
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   // ── 2026-07-14 — "Név - kategória - visszavonás" keresés eredményéből
   // választott törlés-gomb. Mindig törli a sort (nem reviewStatus='rejected',
   // ua. indok mint a fenti 'v' ágnál). ──
@@ -940,17 +997,39 @@ export async function POST(req: Request) {
         await answerCallbackQuery(cq.id, 'A cikk már nem található.');
         return NextResponse.json({ ok: true });
       }
+      // 2026-07-24 — a kézi Telegram-tippnél beszúráskor csak a rövid
+      // og:description kerül excerpt-ként a NewsArticle-be (azt mutatja a
+      // publikus /hirek lista is, azt nem szabad felülírni). Ez viszont a
+      // detektort tévútra viheti: egy cikk címe/kivonata csak a hírt
+      // bejelentő embert idézte, a ténylegesen érintettek (pl. 3
+      // múzeumigazgató menesztése) neve csak a cikktörzsben szerepelt, ezért
+      // a rövid excerptből futtatott detektor a bejelentőt vette fel
+      // tévesen érintettként a 3 valódi személy helyett. Itt, közvetlenül
+      // az újra-detektálás előtt, frissen lekérjük a teljes cikktörzset és
+      // AZT adjuk a detektornak (csak ebben a memóriabeli másolatban — az
+      // adatbázisban tárolt rövid excerpt-et nem írjuk felül).
+      let detectArticle = article;
+      if (article.sourceUrl) {
+        try {
+          const fetched = await fetchPrimaryArticle({ sourceUrl: article.sourceUrl, archiveUrl: null, tagSlug: '', dateText: null });
+          if (fetched?.bodyText) {
+            detectArticle = { ...article, excerpt: fetched.bodyText };
+          }
+        } catch {
+          // marad az eredeti (rövid) excerpt — nem blokkoló hiba
+        }
+      }
       const todayIso = new Date().toISOString().slice(0, 10);
-      const outcome = await DETECTOR_PROCESSORS[detectorType](article, todayIso, true);
+      const outcome = await DETECTOR_PROCESSORS[detectorType](detectArticle, todayIso, true);
 
       if (outcome.status === 'inserted' || outcome.status === 'updated') {
         revalidatePublicPaths();
         resultText = '✅ Jóváhagyva és felvéve.';
-        extraNotes = await crossCheckOtherCategories(article, detectorType);
+        extraNotes = await crossCheckOtherCategories(detectArticle, detectorType);
       } else if (outcome.status === 'inserted_multi') {
         revalidatePublicPaths();
         resultText = `✅ Jóváhagyva — ${outcome.recordIds.length}/${outcome.total} fő felvéve.`;
-        extraNotes = await crossCheckOtherCategories(article, detectorType);
+        extraNotes = await crossCheckOtherCategories(detectArticle, detectorType);
       } else if (outcome.status === 'error') {
         await answerCallbackQuery(cq.id, outcome.message);
         return NextResponse.json({ ok: true });
