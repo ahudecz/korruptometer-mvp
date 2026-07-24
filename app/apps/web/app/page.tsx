@@ -62,14 +62,22 @@ const getCachedScandalCatalog = unstable_cache(
 // szűréssel (jelenleg 8), semmi köze a ténylegesen megjelenő ScandalCatalog-
 // adatbázishoz (947 sor). Külön, valódi total-count lekérdezés, ugyanazzal
 // a kizárás-listával, mint a fenti top-8 (konzisztens szám).
+// 2026-07-24 — user report: a nyitóoldal 915-öt, a /adatbazis végoldal
+// 942-t mutatott ugyanarra a "hány ügy van összesen" kérdésre. Ok: ez a
+// lekérdezés a top-8 lista kizárás-listáját (HIDDEN_DAMAGE_IDS is)
+// használta a teljes-darabszámhoz is, de a végoldal saját totalRes
+// lekérdezése (adatbazis/page.tsx) csak a RETIRED_SCANDAL_IDS-t zárja ki
+// — a HIDDEN_DAMAGE_IDS-es sorok NEM torz/hamis ügyek, csak a top-8
+// "legdurvább" rangsorból maradnak ki (mert az összegük torzítana),
+// simán, mint sima ügy viszont valós, számítandó tétel. Ugyanaz a
+// kizárás-lista kell mindkét helyen, hogy a szám egyezzen.
 const getCachedScandalCatalogCount = unstable_cache(
   async () => {
     const { getDb } = await import('@/lib/db');
     const { sql: s } = await import('drizzle-orm');
     const db = getDb();
-    const excludeIds = [...HIDDEN_DAMAGE_IDS, ...RETIRED_SCANDAL_IDS];
-    const excludeClause = excludeIds.length > 0
-      ? s`WHERE id NOT IN (${s.join(excludeIds.map((v) => s`${v}`), s`, `)})`
+    const excludeClause = RETIRED_SCANDAL_IDS.length > 0
+      ? s`WHERE id NOT IN (${s.join(RETIRED_SCANDAL_IDS.map((v) => s`${v}`), s`, `)})`
       : s``;
     const rows = (await db.execute(s`SELECT COUNT(*)::int AS total FROM "ScandalCatalog" ${excludeClause}`)) as unknown as Array<{ total: number }>;
     return rows[0]?.total ?? 0;
