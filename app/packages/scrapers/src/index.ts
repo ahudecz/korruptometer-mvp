@@ -7,6 +7,7 @@ export {
   _resetHttpStateForTests,
 } from './http';
 export { clipExcerpt, EXCERPT_MAX, parseDate } from './parse';
+export { fetchArticleBodyTransient } from './full-text-fetch';
 export { extractFromListing, parseListingHtml } from './extract';
 export { parseRss } from './rss';
 export { adapters, getAdapter, routeOutletByUrl } from './adapters';
