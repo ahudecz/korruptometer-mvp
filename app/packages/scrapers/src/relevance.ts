@@ -1,3 +1,32 @@
+// Magyar ábécé kisbetűi (ékezetesekkel) — a szóhatár-ellenőrzéshez. A natív JS
+// \b csak ASCII \w-t ismer, ami az ékezetes betűket NEM tekinti szóalkotónak,
+// és hamis "szóhatárt" adna pl. egy 'á'/'ő' után — ezért saját karakter-
+// osztályt használunk a natív \b helyett.
+const HU_WORD_CHAR = /[a-z0-9áéíóöőúüű]/;
+
+/**
+ * Substring-keresés, de a találat ELEJÉN szóhatárt követel: a találat előtti
+ * karakter nem lehet magyar szóalkotó betű/szám. Ez kizárja, hogy egy rövid
+ * kulcsszó egy hosszabb, teljesen más jelentésű szó belsejében illeszkedjen —
+ * pl. 'nka' a "mu|nka" belsejében (2026-07-15, egy Mbappé-meccsről szóló
+ * 444-cikk "mestermunka volt" fordulata emiatt jutott át), vagy 'ligeti' a
+ * "Városli|geti" belsejében (Városliget/Városligeti — teljesen más téma).
+ * A találat UTÁNI karaktert szándékosan NEM ellenőrizzük: a magyar
+ * toldalékolás miatt ("Orbán Viktor**t**", "fidesz**es**", "OKFŐ**-é**") a
+ * kulcsszó után közvetlenül folytatódó ragozott alakoknak is illeszkedniük
+ * kell — egy jobb-oldali szóhatár ezeket is kizárná.
+ */
+function includesAsWord(text: string, needle: string): boolean {
+  let fromIndex = 0;
+  for (;;) {
+    const idx = text.indexOf(needle, fromIndex);
+    if (idx === -1) return false;
+    const before = idx > 0 ? (text[idx - 1] ?? '') : '';
+    if (!HU_WORD_CHAR.test(before)) return true;
+    fromIndex = idx + 1;
+  }
+}
+
 const KEYWORDS = [
   // Személyek — NER-közeliek és vizsgált politikusok
   'orbán viktor',
@@ -20,6 +49,10 @@ const KEYWORDS = [
   'ligeti miklós', 'ligeti',
   'zsigó róbert', 'zsigó',
   'ruff bálint',
+  // 2026-07-24 — user kérés: feltétel nélkülire emelve (korábban csak a
+  // lemondás-kombó listában szerepeltek, l. RESIGN_WATCHLIST_NAMES).
+  'forsthoffer ágnes', 'forsthoffer',
+  'bódis kriszta', 'bódis',
   // 2026-07-11 audit: a K-Monitor adatbázis (ScandalCatalog) top 40
   // összegű személye közül ~28 teljesen hiányzott innen — csak akkor
   // kerültek be, ha véletlenül más kulcsszó (pl. intézménynév) is
@@ -75,7 +108,12 @@ const KEYWORDS = [
   'petőfi népe', 'somogyi hírlap', 'zalai hírlap',
   'vas népe', 'tolnai népújság', 'fejér megyei hírlap',
   'hajdú-bihari napló', 'békés megyei hírlap',
-  'kelet-magyarország', 'új néplap', 'új dunántúli napló',
+  // 'kelet-magyarország' (a nyíregyházi KESMA-napilap neve) szándékosan NINCS
+  // itt: substring-illeszkedéssel elkapja a teljesen hétköznapi
+  // "kelet-magyarországi" földrajzi jelzőt is (2026-07-15, egy vasvillával
+  // autókat rongáló férfiról szóló 444-es bűnügyi hír emiatt jutott át —
+  // semmi köze a laphoz). Ugyanaz a hibaosztály, mint az 'ász'/Hamász eset.
+  'új néplap', 'új dunántúli napló',
   'szabad föld',
   // 'vasárnap reggel' (a KESMA hetilap címe) szándékosan NINCS itt: ugyanaz
   // a substring-illeszkedési hiba, mint az 'ász'/Hamász esetnél (l. fentebb)
@@ -126,7 +164,6 @@ const RESIGN_WATCHLIST_NAMES = [
   'gajdos lászló',
   'tarr zoltán',
   'tanács zoltán',
-  'forsthoffer ágnes', 'forsthoffer',
   // Legfőbb állami cégek
   'mvm ', 'mvm zrt',
   'máv ', 'máv-start', 'máv zrt',
@@ -164,8 +201,8 @@ const RESIGN_TRIGGERS = [
 
 function isResignWatchlistEvent(headline: string, excerpt: string): boolean {
   const text = `${headline} ${excerpt}`.toLowerCase();
-  if (!RESIGN_WATCHLIST_NAMES.some((n) => text.includes(n))) return false;
-  return RESIGN_TRIGGERS.some((t) => text.includes(t));
+  if (!RESIGN_WATCHLIST_NAMES.some((n) => includesAsWord(text, n))) return false;
+  return RESIGN_TRIGGERS.some((t) => includesAsWord(text, t));
 }
 
 /**
@@ -178,9 +215,9 @@ function isResignWatchlistEvent(headline: string, excerpt: string): boolean {
  */
 export function isRelevant(headline: string, excerpt: string, extraNames: readonly string[] = []): boolean {
   const text = `${headline} ${excerpt}`.toLowerCase();
-  if (KEYWORDS.some((kw) => text.includes(kw))) return true;
-  if (extraNames.some((n) => text.includes(n))) return true;
-  if (text.includes('tisztítótűz') && TISZTITOTUZ_CONTEXT.some((ctx) => text.includes(ctx))) return true;
+  if (KEYWORDS.some((kw) => includesAsWord(text, kw))) return true;
+  if (extraNames.some((n) => includesAsWord(text, n))) return true;
+  if (includesAsWord(text, 'tisztítótűz') && TISZTITOTUZ_CONTEXT.some((ctx) => includesAsWord(text, ctx))) return true;
   if (isResignWatchlistEvent(headline, excerpt)) return true;
   return false;
 }
@@ -206,8 +243,8 @@ const FEATURED_KEYWORDS = [
 
 export function shouldFeature(headline: string, excerpt: string): boolean {
   const text = `${headline} ${excerpt}`.toLowerCase();
-  if (FEATURED_KEYWORDS.some((kw) => text.includes(kw))) return true;
-  if (text.includes('tisztítótűz') && TISZTITOTUZ_CONTEXT.some((ctx) => text.includes(ctx))) return true;
+  if (FEATURED_KEYWORDS.some((kw) => includesAsWord(text, kw))) return true;
+  if (includesAsWord(text, 'tisztítótűz') && TISZTITOTUZ_CONTEXT.some((ctx) => includesAsWord(text, ctx))) return true;
   return false;
 }
 
@@ -252,12 +289,12 @@ export function isBreaking(
 ): boolean {
   const headlineText = headline.toLowerCase();
   const fullText = `${headlineText} ${excerpt}`.toLowerCase();
-  const hasTrigger = BREAKING_TRIGGERS.some((t) => fullText.includes(t));
+  const hasTrigger = BREAKING_TRIGGERS.some((t) => includesAsWord(fullText, t));
   if (!hasTrigger) return false;
   // A figyelt névnek/ügynek a CÍMBEN kell szerepelnie, nem elég, ha csak az
   // excerpt egy mellékes, más témájú mondatában bukkan fel — az adta a fenti
   // hamis pozitívokat.
-  return monitoredNames.some((m) => headlineText.includes(m));
+  return monitoredNames.some((m) => includesAsWord(headlineText, m));
 }
 
 // ─── Scrape relevance tiering (003-detection-review-engine) ───────────────────
@@ -277,7 +314,7 @@ const JUNK_TERMS = ['vučić', 'vucic', 'örmény népirtás'];
 export function isForeignOrJunk(headline: string, excerpt: string, url?: string): boolean {
   if (url && FOREIGN_URL_SECTIONS.some((s) => url.toLowerCase().includes(s))) return true;
   const text = `${headline} ${excerpt}`.toLowerCase();
-  return JUNK_TERMS.some((t) => text.includes(t));
+  return JUNK_TERMS.some((t) => includesAsWord(text, t));
 }
 
 export type ScrapeTier = 'in' | 'out' | 'maybe';

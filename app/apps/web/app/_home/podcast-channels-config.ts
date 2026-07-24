@@ -168,7 +168,10 @@ export const PODCAST_CHANNELS: PodcastChannelConfig[] = [
     slug: 'szabad-europa',
     handle: '@szabad-europa',
     name: 'Szabad Európa',
-    relevantByDefault: true,
+    // 2026-07-24 — user döntés: kulcsszóra állítva a többi hír-YouTube-
+    // csatornával összhangban, annak ellenére, hogy nincs saját szöveges
+    // OutletAdapter-je (vállalt kockázat, l. project-llm-cost-audit).
+    relevantByDefault: false,
     viewThreshold: 0,
   },
 
@@ -184,14 +187,14 @@ export const PODCAST_CHANNELS: PodcastChannelConfig[] = [
     slug: 'partizan',
     handle: '@Partizánmédia',
     name: 'Partizán',
-    relevantByDefault: true,
+    relevantByDefault: false,
     viewThreshold: 50000,
   },
   {
     slug: 'atv',
     handle: '@ATVmagyarorszag',
     name: 'ATV',
-    relevantByDefault: true,
+    relevantByDefault: false,
     viewThreshold: 50000,
   },
   {
