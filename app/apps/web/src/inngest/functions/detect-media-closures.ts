@@ -2,6 +2,7 @@ import 'server-only';
 import { eq, sql } from 'drizzle-orm';
 
 import { detectMediaClosureFromArticle } from '@korr/db/ai-closures';
+import { fetchArticleBodyTransient } from '@korr/scrapers';
 import {
   articleDateIso,
   decideStatus,
@@ -87,7 +88,21 @@ export async function runMediaClosureDetectionCore({ step, logger }: { step: Byp
 
           if (isTransientLlmFailure(llmResult)) continue;
 
-          const result = llmResult.data;
+          let result = llmResult.data;
+
+          // 2026-07-24 — l. detect-resignations.ts azonos mintája: gyanú
+          // esetén (üres/hiányos találat) egyetlen extra hívás a cikk teljes
+          // törzsszövegével, élőben lekérve, SOSE tárolva (constitution IV).
+          const seemsIncomplete = !result || !result.isClosure || !result.name || isPlaceholderName(result.name);
+          if (seemsIncomplete && article.sourceUrl) {
+            const bodyText = await fetchArticleBodyTransient(article.sourceUrl).catch(() => null);
+            if (bodyText && bodyText.length > article.excerpt.length) {
+              const retryResult = await detectMediaClosureFromArticle(article.headline, bodyText, articleDateIso(article.publishedAt));
+              if (!isTransientLlmFailure(retryResult) && retryResult.data) {
+                result = retryResult.data;
+              }
+            }
+          }
 
           if (!result || !result.isClosure) {
             await markChecked(db, {

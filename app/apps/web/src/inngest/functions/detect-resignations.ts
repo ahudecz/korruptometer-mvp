@@ -2,6 +2,7 @@ import 'server-only';
 import { eq, sql } from 'drizzle-orm';
 
 import { detectResignationFromArticle } from '@korr/db/ai';
+import { fetchArticleBodyTransient } from '@korr/scrapers';
 import {
   articleDateIso,
   type CheckReason,
@@ -145,7 +146,26 @@ export async function runResignationDetectionCore({ step, logger }: { step: Bypa
           // article stays eligible and is retried on the next hourly run.
           if (isTransientLlmFailure(llmResult)) continue;
 
-          const result = llmResult.data;
+          let result = llmResult.data;
+
+          // 2026-07-24 — Jákli Gergely/Paks II eset: a rövid og:description
+          // gyakran nem tartalmazza az érintett nevét (csak azt, hogy VALAKIT
+          // menesztettek), és emiatt a fenti hívás minden órában újra és újra
+          // ugyanúgy elhasal. "Gyanú esetén" (üres találat VAGY hiányos név/
+          // intézmény) egyetlen extra híváshoz folyamodunk, a cikk teljes
+          // törzsszövegével (élőben lekérve, SOSE tárolva — constitution IV).
+          // Fail-open: ha a lekérés/retry nem hoz jobbat, marad az eredeti.
+          const seemsIncomplete = !result || result.resignations.length === 0
+            || result.resignations.some((p) => !p.name || isPlaceholderName(p.name) || !p.institution);
+          if (seemsIncomplete && article.sourceUrl) {
+            const bodyText = await fetchArticleBodyTransient(article.sourceUrl).catch(() => null);
+            if (bodyText && bodyText.length > article.excerpt.length) {
+              const retryResult = await detectResignationFromArticle(article.headline, bodyText, articleDateIso(article.publishedAt));
+              if (!isTransientLlmFailure(retryResult) && retryResult.data) {
+                result = retryResult.data;
+              }
+            }
+          }
 
           if (!result || result.resignations.length === 0) {
             await markChecked(db, {

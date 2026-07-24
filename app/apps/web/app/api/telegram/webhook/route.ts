@@ -14,7 +14,7 @@ import {
 } from '@/lib/telegram-review-actions';
 import type { DetectorType } from '@korr/db';
 import { ALL_VERIFICATION_TARGETS } from '@korr/db';
-import { canonicalUrl, clipExcerpt, dedupHash, fetchPrimaryArticle, getAdapter, routeOutletByUrl } from '@korr/scrapers';
+import { canonicalUrl, clipExcerpt, dedupHash, fetchArticleBodyTransient, fetchPrimaryArticle, getAdapter, routeOutletByUrl } from '@korr/scrapers';
 import { WATCH_LIST, type WatchPerson } from '@app/_home/watchlist-config';
 
 // Legvégső fallback-név (csak akkor, ha a beküldött szöveg URL-nek NÉZETT ki
@@ -286,8 +286,13 @@ function extractYoutubeVideoId(url: string): string | null {
   }
 }
 
+// 2026-07-24 — bodyText itt SOSE kerül adatbázisba (constitution IV — Data
+// Minimization: "NewsArticle.body is not stored"). Csak ebben a válaszban él,
+// a hívó a Telegram-üzenet SZÖVEGÉBE ágyazza be (l. embedBodyInMessage /
+// extractEmbeddedBodyText lentebb) — a later category-gombnyomáskor onnan,
+// cq.message.text-ből olvassuk vissza, sose egy DB-oszlopból.
 type ResolveArticleResult =
-  | { id: string; headline: string; bodyCaptured: boolean }
+  | { id: string; headline: string; bodyText: string | null }
   | { error: string };
 
 /** Fallback-cím, ha a lekérés elhasalt, de a user mellékelt szöveget — a
@@ -331,6 +336,9 @@ async function findOrCreateAdHocSource(hostname: string, siteName: string | null
  * (megbízhatóbb, nincs 403/bot-blokk kockázat). Ha a lekérés is elhasal ÉS
  * nincs manualBodyText, hibát adunk vissza — a hívó ilyenkor megkéri a
  * usert, hogy küldje újra a linket + pár mondatot.
+ *
+ * A visszaadott `bodyText` SOSE kerül adatbázisba (constitution IV) — a
+ * hívó a Telegram-válaszüzenet szövegébe ágyazza, onnan él tovább.
  */
 async function resolveOrCreateArticleFromUrl(rawUrl: string, manualBodyText?: string | null): Promise<ResolveArticleResult> {
   const db = getDb();
@@ -340,17 +348,13 @@ async function resolveOrCreateArticleFromUrl(rawUrl: string, manualBodyText?: st
   const hash = dedupHash(canonical);
 
   const existing = await db
-    .select({ id: schema.newsArticles.id, headline: schema.newsArticles.headline, tipBodyText: schema.newsArticles.tipBodyText })
+    .select({ id: schema.newsArticles.id, headline: schema.newsArticles.headline })
     .from(schema.newsArticles)
     .where(eq(schema.newsArticles.sourceUrlHash, hash))
     .limit(1);
   if (existing[0]) {
-    // Ha korábban body nélkül jött be, de most a user pótolja kézzel — vegyük fel.
-    if (manualBodyText && !existing[0].tipBodyText) {
-      await db.update(schema.newsArticles).set({ tipBodyText: manualBodyText }).where(eq(schema.newsArticles.id, existing[0].id));
-      return { id: existing[0].id, headline: existing[0].headline, bodyCaptured: true };
-    }
-    return { id: existing[0].id, headline: existing[0].headline, bodyCaptured: !!existing[0].tipBodyText };
+    const bodyText = manualBodyText ?? (await fetchArticleBodyTransient(rawUrl).catch(() => null));
+    return { id: existing[0].id, headline: existing[0].headline, bodyText };
   }
 
   let fetched;
@@ -359,13 +363,13 @@ async function resolveOrCreateArticleFromUrl(rawUrl: string, manualBodyText?: st
   } catch {
     fetched = null;
   }
+  const bodyText = manualBodyText ?? (await fetchArticleBodyTransient(rawUrl).catch(() => null));
   if (!fetched && !manualBodyText) {
     return { error: 'A cikk nem tölthető be (védett oldal vagy hibás link). Küldd be újra így: <link>, új sorban pár mondat a lényegről — abból dolgozom.' };
   }
 
   const headline = fetched?.headline ?? deriveHeadlineFromManualText(manualBodyText!);
   const excerpt = fetched?.excerpt ?? clipExcerpt(manualBodyText!);
-  const tipBodyText = manualBodyText ?? fetched?.bodyText ?? null;
   const publishedAt = fetched?.publishedAt ?? new Date();
   const viaArchive = fetched?.viaArchive ?? false;
 
@@ -392,7 +396,6 @@ async function resolveOrCreateArticleFromUrl(rawUrl: string, manualBodyText?: st
       sourceId,
       headline,
       excerpt,
-      tipBodyText,
       sourceUrl: canonical,
       sourceUrlHash: hash,
       publishedAt,
@@ -401,11 +404,11 @@ async function resolveOrCreateArticleFromUrl(rawUrl: string, manualBodyText?: st
     .onConflictDoNothing({ target: schema.newsArticles.sourceUrlHash })
     .returning({ id: schema.newsArticles.id, headline: schema.newsArticles.headline });
 
-  if (rows[0]) return { id: rows[0].id, headline: rows[0].headline, bodyCaptured: !!tipBodyText };
+  if (rows[0]) return { id: rows[0].id, headline: rows[0].headline, bodyText };
 
   // Race: valaki más (pl. a rendes cron) épp most szúrta be — olvassuk vissza.
-  const raceRows = await db.select({ id: schema.newsArticles.id, headline: schema.newsArticles.headline, tipBodyText: schema.newsArticles.tipBodyText }).from(schema.newsArticles).where(eq(schema.newsArticles.sourceUrlHash, hash)).limit(1);
-  if (raceRows[0]) return { id: raceRows[0].id, headline: raceRows[0].headline, bodyCaptured: !!raceRows[0].tipBodyText };
+  const raceRows = await db.select({ id: schema.newsArticles.id, headline: schema.newsArticles.headline }).from(schema.newsArticles).where(eq(schema.newsArticles.sourceUrlHash, hash)).limit(1);
+  if (raceRows[0]) return { id: raceRows[0].id, headline: raceRows[0].headline, bodyText };
   return { error: 'Ismeretlen hiba a cikk beszúrásakor.' };
 }
 
@@ -474,28 +477,12 @@ async function setPendingStatus(detectorType: DetectorType, id: string, status: 
   }
 }
 
-// 2026-07-24 — mindkét loader a tárolt tipBodyText-et (teljes cikktörzs vagy
-// kézzel mellékelt szöveg, l. resolveOrCreateArticleFromUrl) adja vissza
-// excerpt-ként, ha van, a rövid og:description helyett — ez a bemenete
-// MINDEN itt induló újra-detektálásnak (resignation/closure/verdict/asset/
-// complaint/watchlist). A publikus `/hirek` nézet a NewsArticle.excerpt
-// oszlopot közvetlenül olvassa, ezt a függvényt nem használja, tehát ott
-// továbbra is a rövid kivonat jelenik meg — csak a detektálás bemenete lett
-// teljesebb.
-function toArticleForReprocess(row: {
-  id: string; headline: string; excerpt: string; tipBodyText: string | null;
-  sourceUrl: string | null; publishedAt: Date; sourceName: string | null;
-}): ArticleForReprocess {
-  return { ...row, excerpt: row.tipBodyText || row.excerpt };
-}
-
 async function loadArticle(articleId: string): Promise<ArticleForReprocess | null> {
   const rows = await getDb()
     .select({
       id: schema.newsArticles.id,
       headline: schema.newsArticles.headline,
       excerpt: schema.newsArticles.excerpt,
-      tipBodyText: schema.newsArticles.tipBodyText,
       sourceUrl: schema.newsArticles.sourceUrl,
       publishedAt: schema.newsArticles.publishedAt,
       sourceName: schema.sources.name,
@@ -504,7 +491,7 @@ async function loadArticle(articleId: string): Promise<ArticleForReprocess | nul
     .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId))
     .where(eq(schema.newsArticles.id, articleId))
     .limit(1);
-  return rows[0] ? toArticleForReprocess(rows[0]) : null;
+  return rows[0] ?? null;
 }
 
 async function loadArticleByUrl(sourceUrl: string): Promise<ArticleForReprocess | null> {
@@ -513,7 +500,6 @@ async function loadArticleByUrl(sourceUrl: string): Promise<ArticleForReprocess 
       id: schema.newsArticles.id,
       headline: schema.newsArticles.headline,
       excerpt: schema.newsArticles.excerpt,
-      tipBodyText: schema.newsArticles.tipBodyText,
       sourceUrl: schema.newsArticles.sourceUrl,
       publishedAt: schema.newsArticles.publishedAt,
       sourceName: schema.sources.name,
@@ -522,7 +508,35 @@ async function loadArticleByUrl(sourceUrl: string): Promise<ArticleForReprocess 
     .leftJoin(schema.sources, eq(schema.sources.id, schema.newsArticles.sourceId))
     .where(eq(schema.newsArticles.sourceUrl, sourceUrl))
     .limit(1);
-  return rows[0] ? toArticleForReprocess(rows[0]) : null;
+  return rows[0] ?? null;
+}
+
+// 2026-07-24 — a múzeumigazgatók-eset fixe: a rövid excerpt helyett a teljes
+// cikktörzset adjuk a detektornak, DE constitution IV (Data Minimization)
+// miatt ez SOSE kerül adatbázisba. A submission-kori bot-üzenet szövegébe
+// ágyazzuk (l. embedBodyInMessage), és a KÉSŐBBI gombnyomáskor `cq.message
+// .text`-ből olvassuk vissza — ez a Telegram-szál, nem a mi DB-nk, tárolja.
+// Ha a marker hiányzik (pl. régi, e commit előtti gomb), utolsó esélyként
+// egyszeri élő újralekérést próbálunk — sose blokkoló hiba.
+const BODY_MARKER_START = '\n\n📄 RÉSZLET (ezt használom a döntéshez):\n';
+const BODY_MARKER_END = '\n\nMelyik kategóriába tegyem?';
+
+function extractEmbeddedBodyText(messageText: string | undefined): string | null {
+  if (!messageText) return null;
+  const startIdx = messageText.indexOf(BODY_MARKER_START);
+  if (startIdx === -1) return null;
+  const afterMarker = startIdx + BODY_MARKER_START.length;
+  const endIdx = messageText.indexOf(BODY_MARKER_END, afterMarker);
+  const body = (endIdx === -1 ? messageText.slice(afterMarker) : messageText.slice(afterMarker, endIdx)).trim();
+  return body.length > 0 ? body : null;
+}
+
+async function withDetectionBody(article: ArticleForReprocess, cqMessageText: string | undefined): Promise<ArticleForReprocess> {
+  const embedded = extractEmbeddedBodyText(cqMessageText);
+  if (embedded) return { ...article, excerpt: embedded };
+  if (article.excerpt.length >= 900 || !article.sourceUrl) return article; // már eleve elég gazdag, vagy nincs mit lekérni
+  const fetched = await fetchArticleBodyTransient(article.sourceUrl).catch(() => null);
+  return fetched ? { ...article, excerpt: fetched } : article;
 }
 
 /** Runs the AI removal-check for a matched WATCH_LIST person and sends the
@@ -662,17 +676,22 @@ export async function POST(req: Request) {
         await sendTelegramMessage(`⚠️ ${resolved.error}\n\n${url}`);
         return NextResponse.json({ ok: true });
       }
-      // 2026-07-24 — a múzeumigazgatók-eset óta: ha a mellékelt szöveg
-      // alapján dolgozunk, ezt jelezzük; ha se szöveg, se scrape-elt
-      // cikktörzs nem volt (csak a rövid og:description), figyelmeztetünk,
-      // hogy ha több eset/személy van a cikkben, pótolja kézzel.
+      // 2026-07-24 — a múzeumigazgatók-eset óta: ha van teljes szöveg
+      // (mellékelt vagy scrape-elt), a Telegram-üzenet SZÖVEGÉBE ágyazzuk
+      // (constitution IV miatt DB-be nem mehet) — a gombnyomáskor onnan
+      // olvassuk vissza, l. extractEmbeddedBodyText. Ha nincs, figyelmeztetünk.
       const bodyNote = manualBodyText
         ? '📝 A mellékelt szöveg alapján dolgozom.'
-        : resolved.bodyCaptured
+        : resolved.bodyText
           ? null
           : '⚠️ Nem sikerült elolvasnom a cikk teljes szövegét (csak a rövid kivonatot). Ha több eset/személy van benne, küldd újra a linket, alá írva pár mondatban a lényeget — abból pontosabban dolgozom.';
+      const embeddedBody = resolved.bodyText
+        ? `${BODY_MARKER_START}${resolved.bodyText.slice(0, 3000)}`
+        : null;
       await sendTelegramMessage(
-        [`📥 Beküldött hír:\n${resolved.headline}`, url, bodyNote, 'Melyik kategóriába tegyem?'].filter(Boolean).join('\n\n'),
+        [`📥 Beküldött hír:\n${resolved.headline}`, url, bodyNote].filter(Boolean).join('\n\n')
+          + (embeddedBody ?? '')
+          + `${BODY_MARKER_END}`,
         tipCategoryKeyboard(resolved.id),
       );
       return NextResponse.json({ ok: true });
@@ -948,7 +967,8 @@ export async function POST(req: Request) {
           await answerCallbackQuery(cq.id, 'A cikk nem található.');
           return NextResponse.json({ ok: true });
         }
-        const candidates = findWatchlistCandidates(article.headline, article.excerpt);
+        const enrichedArticle = await withDetectionBody(article, cq.message.text);
+        const candidates = findWatchlistCandidates(enrichedArticle.headline, enrichedArticle.excerpt);
         if (candidates.length === 0) {
           await answerCallbackQuery(cq.id, 'Nincs egyezés.');
           await sendTelegramMessage(
@@ -964,7 +984,7 @@ export async function POST(req: Request) {
           await sendTelegramMessage('Több figyelt személy is egyezik — melyikről van szó?', keyboard);
           return NextResponse.json({ ok: true });
         }
-        await runWatchlistCheck(candidates[0]!, article, cq.id);
+        await runWatchlistCheck(candidates[0]!, enrichedArticle, cq.id);
         return NextResponse.json({ ok: true });
       }
 
@@ -981,7 +1001,7 @@ export async function POST(req: Request) {
           await answerCallbackQuery(cq.id, 'A cikk nem található.');
           return NextResponse.json({ ok: true });
         }
-        await runWatchlistCheck(person, article, cq.id);
+        await runWatchlistCheck(person, await withDetectionBody(article, cq.message.text), cq.id);
         return NextResponse.json({ ok: true });
       }
 
@@ -998,7 +1018,7 @@ export async function POST(req: Request) {
         await answerCallbackQuery(cq.id, 'A cikk nem található.');
         return NextResponse.json({ ok: true });
       }
-      const checked = await checkWatchlistRemovalForArticle(person, article);
+      const checked = await checkWatchlistRemovalForArticle(person, await withDetectionBody(article, cq.message.text));
       if (!checked.ok) {
         await answerCallbackQuery(cq.id, 'Hiba.');
         await sendTelegramMessage(`⚠️ ${checked.message}`);
@@ -1072,24 +1092,12 @@ export async function POST(req: Request) {
         await answerCallbackQuery(cq.id, 'A cikk már nem található.');
         return NextResponse.json({ ok: true });
       }
-      // 2026-07-24 — `article.excerpt` itt már a tárolt tipBodyText (teljes
-      // cikktörzs vagy kézzel mellékelt szöveg), ha submission-kor sikerült
-      // rögzíteni (l. toArticleForReprocess/resolveOrCreateArticleFromUrl).
-      // Ha egy régebbi, e commit előtti near_miss-sorról van szó, aminek
-      // nincs tipBodyText-je, itt egy utolsó, egyszeri élő újralekérést
-      // próbálunk — biztonsági háló, nem az elsődleges mechanizmus.
-      let detectArticle = article;
-      const looksUnenriched = article.excerpt.length < 900; // EXCERPT_MAX — a rövid og:description sose hosszabb ennél
-      if (looksUnenriched && article.sourceUrl) {
-        try {
-          const fetched = await fetchPrimaryArticle({ sourceUrl: article.sourceUrl, archiveUrl: null, tagSlug: '', dateText: null });
-          if (fetched?.bodyText) {
-            detectArticle = { ...article, excerpt: fetched.bodyText };
-          }
-        } catch {
-          // marad az eredeti excerpt — nem blokkoló hiba
-        }
-      }
+      // 2026-07-24 — a teljes cikktörzset a submission-kori bot-üzenetből
+      // (cq.message.text) olvassuk vissza (l. withDetectionBody) — SOSE egy
+      // DB-oszlopból (constitution IV — Data Minimization: NewsArticle.body
+      // nem tárolható). Ha a marker hiányzik, egyszeri élő újralekérést
+      // próbál, biztonsági hálóként.
+      const detectArticle = await withDetectionBody(article, cq.message.text);
       const todayIso = new Date().toISOString().slice(0, 10);
       const outcome = await DETECTOR_PROCESSORS[detectorType](detectArticle, todayIso, true);
 

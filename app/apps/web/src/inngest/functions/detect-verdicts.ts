@@ -2,6 +2,7 @@ import 'server-only';
 import { eq, sql } from 'drizzle-orm';
 
 import { detectVerdictFromArticle } from '@korr/db/ai-verdicts';
+import { fetchArticleBodyTransient } from '@korr/scrapers';
 import {
   articleDateIso,
   decideStatus,
@@ -88,7 +89,19 @@ export async function runVerdictDetectionCore({ step, logger }: { step: BypassSt
 
           if (isTransientLlmFailure(llmResult)) continue;
 
-          const result = llmResult.data;
+          let result = llmResult.data;
+
+          // 2026-07-24 — l. detect-resignations.ts azonos mintája.
+          const seemsIncomplete = !result || !result.isVerdict || !result.personName || isPlaceholderName(result.personName) || !result.verdictType;
+          if (seemsIncomplete && article.sourceUrl) {
+            const bodyText = await fetchArticleBodyTransient(article.sourceUrl).catch(() => null);
+            if (bodyText && bodyText.length > article.excerpt.length) {
+              const retryResult = await detectVerdictFromArticle(article.headline, bodyText, articleDateIso(article.publishedAt));
+              if (!isTransientLlmFailure(retryResult) && retryResult.data) {
+                result = retryResult.data;
+              }
+            }
+          }
 
           if (!result || !result.isVerdict) {
             await markChecked(db, {
@@ -184,7 +197,12 @@ export async function runVerdictDetectionCore({ step, logger }: { step: BypassSt
             await db.update(schema.courtVerdicts).set({
               verdictType: result.verdictType,
               sentenceYears: result.sentenceYears ?? 0,
-              sentenceMonths: result.sentenceMonths ?? null,
+              // 2026-07-24 — defenzív: a séma most már ['number','null']-t
+              // enged (l. court-verdict-detect.ts), de a "??"-fallback nem
+              // fogja el, ha valamiért mégis egy nem-szám string jönne át
+              // (pl. egy régi cache-elt hívásból) — a Postgres integer
+              // oszlop egyébként ugyanazzal a hibával halna el.
+              sentenceMonths: typeof result.sentenceMonths === 'number' ? result.sentenceMonths : null,
               sentenceLabel: (result.sentenceLabel ?? '').slice(0, 200),
               verdictDate,
               summary: result.summary.slice(0, 1000),
@@ -202,7 +220,12 @@ export async function runVerdictDetectionCore({ step, logger }: { step: BypassSt
               position: result.position.slice(0, 200),
               crimes: result.crimes.map((c) => c.slice(0, 200)),
               sentenceYears: result.sentenceYears ?? 0,
-              sentenceMonths: result.sentenceMonths ?? null,
+              // 2026-07-24 — defenzív: a séma most már ['number','null']-t
+              // enged (l. court-verdict-detect.ts), de a "??"-fallback nem
+              // fogja el, ha valamiért mégis egy nem-szám string jönne át
+              // (pl. egy régi cache-elt hívásból) — a Postgres integer
+              // oszlop egyébként ugyanazzal a hibával halna el.
+              sentenceMonths: typeof result.sentenceMonths === 'number' ? result.sentenceMonths : null,
               sentenceLabel: (result.sentenceLabel ?? '').slice(0, 200),
               verdictType: result.verdictType,
               verdictDate,

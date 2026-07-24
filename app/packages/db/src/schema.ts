@@ -122,10 +122,6 @@ export const newsArticles = pgTable(
       .references(() => sources.id, { onDelete: 'cascade' }),
     headline: text('headline').notNull(),
     excerpt: text('excerpt').notNull(),
-    // 2026-07-24 — kézi Telegram-tipp: teljes cikktörzs (scrape-elt vagy a
-    // user által mellékelt szöveg), KIZÁRÓLAG újra-detektáláshoz. A publikus
-    // `excerpt`-et nem helyettesíti/nem írja felül.
-    tipBodyText: text('tipBodyText'),
     sourceUrl: text('sourceUrl').notNull(),
     sourceUrlHash: text('sourceUrlHash').notNull(),
     publishedAt: timestamp('publishedAt', { withTimezone: true }).notNull(),

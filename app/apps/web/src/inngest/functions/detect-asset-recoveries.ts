@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache';
 import { and, gte, sql } from 'drizzle-orm';
 
 import { detectAssetRecoveryFromArticle } from '@korr/db/ai-assets';
+import { fetchArticleBodyTransient } from '@korr/scrapers';
 import { articleDateIso, isPlaceholderName, isTransientLlmFailure, loadUncheckedArticles, markChecked, NEAR_MISS_MIN, slugifyCaseLabel } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
@@ -62,7 +63,19 @@ export async function runAssetRecoveryDetectionCore({ step, logger }: { step: By
 
           if (isTransientLlmFailure(llmResult)) continue;
 
-          const result = llmResult.data;
+          let result = llmResult.data;
+
+          // 2026-07-24 — l. detect-resignations.ts azonos mintája.
+          const seemsIncomplete = !result || !result.isRecovery || !result.caseLabel || isPlaceholderName(result.caseLabel) || !result.description;
+          if (seemsIncomplete && article.sourceUrl) {
+            const bodyText = await fetchArticleBodyTransient(article.sourceUrl).catch(() => null);
+            if (bodyText && bodyText.length > article.excerpt.length) {
+              const retryResult = await detectAssetRecoveryFromArticle(article.headline, bodyText, articleDateIso(article.publishedAt));
+              if (!isTransientLlmFailure(retryResult) && retryResult.data) {
+                result = retryResult.data;
+              }
+            }
+          }
 
           if (!result || !result.isRecovery) {
             await markChecked(db, {

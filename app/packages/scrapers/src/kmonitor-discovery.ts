@@ -152,21 +152,6 @@ export async function paginateKMonitorTag(
 export type FetchedPrimaryArticle = ScrapedArticle & {
   viaArchive: boolean;
   siteName: string | null;
-  /**
-   * 2026-07-24 — best-effort teljes cikktörzs (a <p> bekezdések összefűzve,
-   * ~2500 karakterre vágva), a rövid og:description-alapú `excerpt` MELLETT,
-   * nem helyette. Konkrét hiba, amit ez fedez: egy 24.hu cikk címe/kivonata
-   * 3 múzeumigazgató menesztéséről szólt, de a NEVEIK csak a cikktörzsben
-   * szerepeltek — az og:description csak a hírt bejelentő, a menesztésekhez
-   * személyükben nem köthető ember idézetét tartalmazta. A detektor emiatt
-   * ŐT vette fel tévesen lemondóként, a 3 valódi érintett helyett. Csak a
-   * kézi Telegram-tipp újra-detektáláshoz használt (l. webhook route) — az
-   * automata scrape-news.ts pipeline-t szándékosan NEM érinti (l. memória:
-   * project-full-article-fetch-on-suspicion.md a bot-blokkolási kockázatról).
-   * Null, ha nem sikerült bekezdés-szöveget találni — a hívónak ilyenkor a
-   * sima excerpt-re kell visszaesnie.
-   */
-  bodyText: string | null;
 };
 
 /**
@@ -205,7 +190,6 @@ export async function fetchPrimaryArticle(
   // egy konfigurált OutletAdapter-hez tartozik, az og:site_name adja a
   // valódi médium-nevet (attribúcióhoz), nem csak egy generikus fallback-ot.
   const siteName = metaContent($, 'og:site_name');
-  const bodyText = extractBodyText($);
   return {
     headline,
     excerpt,
@@ -214,34 +198,7 @@ export async function fetchPrimaryArticle(
     tag: ref.tagSlug,
     viaArchive,
     siteName: siteName ? siteName.trim().slice(0, 100) || null : null,
-    bodyText,
   };
-}
-
-const BODY_TEXT_MAX = 2500;
-
-/**
- * Generic, forrás-független bekezdés-kinyerés: előbb egy <article>
- * konténeren belüli <p>-ket próbálja (a legtöbb hírportál ezt használja a
- * cikktörzshöz), ha az üres/hiányzik, az egész oldal <p>-jeire esik vissza.
- * Nem próbál forrásonként egyedi CSS-szelektorokat karbantartani — az
- * törékeny lenne; ehelyett annyit vállal, hogy a legtöbb esetben JAVÍT a
- * puszta og:description-ön, nem hogy tökéletes legyen.
- */
-function extractBodyText($: ReturnType<typeof loadHtml>): string | null {
-  const paragraphs = (sel: string) =>
-    $(sel)
-      .map((_, el) => $(el).text().trim())
-      .get()
-      .filter((t) => t.length > 0);
-
-  let parts = paragraphs('article p');
-  if (parts.length === 0) parts = paragraphs('p');
-  if (parts.length === 0) return null;
-
-  const joined = parts.join(' ').replace(/\s+/g, ' ').trim();
-  if (!joined) return null;
-  return joined.slice(0, BODY_TEXT_MAX);
 }
 
 export const _internals = {

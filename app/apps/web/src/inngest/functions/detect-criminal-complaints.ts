@@ -2,6 +2,7 @@ import 'server-only';
 import { eq, sql } from 'drizzle-orm';
 
 import { detectCriminalComplaintFromArticle } from '@korr/db/ai-complaints';
+import { fetchArticleBodyTransient } from '@korr/scrapers';
 import {
   articleDateIso,
   type CheckReason,
@@ -76,7 +77,20 @@ export async function runCriminalComplaintDetectionCore({ step, logger }: { step
 
           if (isTransientLlmFailure(llmResult)) continue;
 
-          const result = llmResult.data;
+          let result = llmResult.data;
+
+          // 2026-07-24 — l. detect-resignations.ts azonos mintája.
+          const seemsIncomplete = !result || result.complaints.length === 0
+            || result.complaints.some((c) => !c.targetName || isPlaceholderName(c.targetName) || !c.filerName);
+          if (seemsIncomplete && article.sourceUrl) {
+            const bodyText = await fetchArticleBodyTransient(article.sourceUrl).catch(() => null);
+            if (bodyText && bodyText.length > article.excerpt.length) {
+              const retryResult = await detectCriminalComplaintFromArticle(article.headline, bodyText, articleDateIso(article.publishedAt));
+              if (!isTransientLlmFailure(retryResult) && retryResult.data) {
+                result = retryResult.data;
+              }
+            }
+          }
 
           if (!result || result.complaints.length === 0) {
             await markChecked(db, {

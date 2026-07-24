@@ -49,7 +49,15 @@ const TOOL: LlmToolSpec = {
         description: 'Prison sentence in years (integer). 0 for pretrial detention, indictment, or acquittal.',
       },
       sentenceMonths: {
-        type: 'number',
+        // 2026-07-24 — a séma korábban csak 'number'-t engedett, de a leírás
+        // "Null if not applicable"-t ígért. A modell emiatt nem tudott
+        // valódi JSON null-t adni (a séma tiltotta), és a "null" SZÖVEGET
+        // küldte helyette — az insert/update ezt egyenesen az integer
+        // oszlopba próbálta írni ("invalid input syntax for type integer:
+        // \"null\"", 2026-07-24 óta 3x hibázott élesben). A ['number','null']
+        // típus a valódi JSON null-t is megengedi, ami a Postgres NULL-ra
+        // helyesen fordul le.
+        type: ['number', 'null'],
         description: 'Additional months of sentence beyond sentenceYears. Null if not applicable.',
       },
       sentenceLabel: {
