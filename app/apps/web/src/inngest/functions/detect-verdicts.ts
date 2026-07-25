@@ -126,7 +126,20 @@ export async function runVerdictDetectionCore({ step, logger }: { step: BypassSt
           }
 
           // 003-review: route by confidence + watchlist; discard below the floor.
-          const reviewStatus = decideStatus(result.confidence, isWatchlistPerson(result.personName));
+          let reviewStatus = decideStatus(result.confidence, isWatchlistPerson(result.personName));
+
+          // 2026-07-25 — user kérés: "ítélet született" státuszba (tényleges
+          // első- vagy jogerős fokú ítélet, nem előzetes/vádemelés/kiengedés)
+          // SENKI ne kerülhessen automatikusan, csak Telegram-jóváhagyással,
+          // a forráscikk linkjével. Eddig magas bizonyosságnál ez a
+          // legkomolyabb státusz is simán, emberi jóváhagyás NÉLKÜL ment
+          // élesbe (csak utólagos, "visszavonható" értesítést kapott) — ez a
+          // legmagasabb téttel járó állapotváltás, itt a legindokoltabb az
+          // előzetes emberi megerősítés, nem az utólagos visszavonási esély.
+          if (reviewStatus === 'approved' && (result.verdictType === 'elsőfokú' || result.verdictType === 'jogerős')) {
+            reviewStatus = 'pending';
+          }
+
           if (reviewStatus === 'discard') {
             await markChecked(db, {
               articleId: article.id,
