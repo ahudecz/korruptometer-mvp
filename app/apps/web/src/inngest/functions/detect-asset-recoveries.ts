@@ -8,6 +8,7 @@ import { articleDateIso, isPlaceholderName, isTransientLlmFailure, loadUnchecked
 import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
 import { notifyAutoPublished } from '@/lib/notify-auto-publish';
+import { sendTelegramMessage } from '@/lib/telegram';
 import { isBypassActive, type BypassStep, type BypassLogger } from '@/lib/cron-bypass';
 import { inngest } from '../client';
 
@@ -117,6 +118,33 @@ export async function runAssetRecoveryDetectionCore({ step, logger }: { step: By
               reason: 'missing_fields',
               confidence: result.confidence,
             });
+            continue;
+          }
+
+          // 2026-07-25 — NKA-eset: egy "eddig összesen X milliárd" futó
+          // összesítőt a detektor korábban friss amountFt-ként vett fel,
+          // majdnem duplikálva a korábbi bejegyzéseket ugyanabból az
+          // ügyből. MINDIG (bypassConfidenceGate-től függetlenül is)
+          // eldobjuk, ha a modell maga jelzi, hogy a szám összesítő — nincs
+          // "Jóváhagyom" gomb, mert az csak újra beszúrná ugyanazt a rossz
+          // számot; kézi Telegram-tipp (pontos új összeggel) a helyes út.
+          if (result.amountIsCumulativeTotal) {
+            await markChecked(db, {
+              articleId: article.id,
+              detectorType: DETECTOR_TYPE,
+              outcome: 'discarded',
+              reason: 'cumulative_total_ambiguous',
+              extractedName: result.caseLabel,
+              confidence: result.confidence,
+            });
+            await sendTelegramMessage(
+              [
+                `⚠️ VAGYONVISSZASZERZÉS — futó összesítő, nem automatikus`,
+                `${result.caseLabel} — a cikk ${result.amountFt.toLocaleString('hu-HU')} Ft-os ÖSSZESÍTŐT közöl, nem azt, mennyi jött vissza ÚJONNAN.`,
+                `Ha van új infó a pontos növekményről, küldd be kézzel a linket + a helyes összeget.`,
+                article.sourceUrl ?? '',
+              ].filter(Boolean).join('\n\n'),
+            );
             continue;
           }
 

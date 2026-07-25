@@ -28,6 +28,7 @@ import {
 } from '@korr/db';
 import { getDb, schema } from './db';
 import { notifyReviewNeeded } from './notify';
+import { sendTelegramMessage } from './telegram';
 import { inngest } from '../inngest/client';
 import { coerceResignationType, coerceSector } from '../inngest/functions/detect-resignations';
 import { coerceClosureEventType } from '../inngest/functions/detect-media-closures';
@@ -381,6 +382,24 @@ export async function processAssetRecovery(article: ArticleForReprocess, todayIs
   if (!result.caseLabel || isPlaceholderName(result.caseLabel) || !result.description) {
     await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'asset_recovery', outcome: 'discarded', reason: 'missing_fields', confidence: result.confidence });
     return { status: 'discarded', reason: 'missing_fields' };
+  }
+
+  // 2026-07-25 — l. detect-asset-recoveries.ts azonos ellenőrzése: egy
+  // "eddig összesen X" futó összesítőt SOSE inzertálunk, még
+  // bypassConfidenceGate=true esetén (kézi tipp / near_miss-jóváhagyás)
+  // sem — a gombnyomás csak azt jóváhagyná, hogy VALÓDI az ügy, nem azt,
+  // hogy ez a KONKRÉT szám helyes lenne friss növekményként.
+  if (result.amountIsCumulativeTotal) {
+    await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'asset_recovery', outcome: 'discarded', reason: 'cumulative_total_ambiguous', extractedName: result.caseLabel, confidence: result.confidence });
+    await sendTelegramMessage(
+      [
+        `⚠️ VAGYONVISSZASZERZÉS — futó összesítő, nem automatikus`,
+        `${result.caseLabel} — a cikk ${result.amountFt.toLocaleString('hu-HU')} Ft-os ÖSSZESÍTŐT közöl, nem azt, mennyi jött vissza ÚJONNAN.`,
+        `Ha van új infó a pontos növekményről, küldd be kézzel a linket + a helyes összeget.`,
+        article.sourceUrl ?? '',
+      ].filter(Boolean).join('\n\n'),
+    );
+    return { status: 'discarded', reason: 'cumulative_total_ambiguous' };
   }
 
   if (await isDuplicate(db, { table: 'AssetRecovery', nameColumn: 'caseLabel' }, result.caseLabel, 14)) {
