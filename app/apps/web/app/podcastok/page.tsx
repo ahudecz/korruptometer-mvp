@@ -4,6 +4,7 @@ import { and, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { getMonitoredNames } from '@/lib/breaking-monitored';
 import { rankPodcastVideos } from '@/lib/podcast-ranking';
+import { cleanSpotlightDescription } from '@/lib/podcast-description';
 import { PodcastVideoCard } from '../_home/podcast-video-card';
 import { PodcastSpotlight } from '../_home/podcast-spotlight';
 import { PodcastFeatureFull } from '../_home/podcast-feature-full';
@@ -24,30 +25,6 @@ function fmtRelative(d: Date | string): string {
   if (h < 48) return 'tegnap';
   const days = Math.floor(h / 24);
   return `${days} napja`;
-}
-
-/** Néhány csatorna csupa nagybetűs kulcsszó-felsorolással kezdi a leírást
- *  ("TISZA PÁRT, MAGYAR PÉTER, ..."), ami mondat helyett tag-halmoznak
- *  néz ki kiírva — ezt is kihagyjuk, nem csak a túl rövid bekezdéseket. */
-function looksLikeTagSalad(s: string): boolean {
-  return !/[a-zíáéóúőűöü]/.test(s);
-}
-
-/** A nyers YouTube-leírás gyakran linkekkel/hashtag-halmokkal/csupa-nagybetűs
- *  kulcsszó-sorral kezdődik — ezeken végigmegyünk, amíg egy valódi,
- *  elég hosszú mondatra nem bukkanunk. Ha semmi nem marad (l. a kézzel
- *  kitűzött sorok, ahol description=''), inkább nem mutatunk semmit, mint
- *  egy törött-tűnő fél mondatot vagy egy kulcsszó-listát. */
-function cleanSpotlightDescription(raw: string): string | null {
-  const withoutUrls = raw.replace(/https?:\/\/\S+/g, '').trim();
-  const blocks = withoutUrls.split(/\n{2,}|\n(?=#)/).map((b) => b.trim()).filter(Boolean);
-  for (const block of blocks) {
-    const withoutHashtags = block.replace(/#\S+/g, '').trim();
-    if (withoutHashtags.length < 30) continue;
-    if (looksLikeTagSalad(withoutHashtags)) continue;
-    return withoutHashtags.length > 220 ? `${withoutHashtags.slice(0, 217).trim()}…` : withoutHashtags;
-  }
-  return null;
 }
 
 type RankedVideo = {
