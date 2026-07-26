@@ -68,6 +68,7 @@ export default async function LemondasokPage({ searchParams }: { searchParams: S
     sourceUrl: r.sourceUrls?.[0] ?? null,
     sourceName: r.sourceNames?.[0] ?? null,
     breakingSourceUrl: findBreakingForName(r.name, breakingArticles)?.sourceUrl ?? null,
+    pinned: r.pinned,
   }));
 
   // 2026-07-26 — user kérés: az 'egyéb' típusú távozások (pl. Hende Csaba,

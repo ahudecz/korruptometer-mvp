@@ -22,20 +22,32 @@ const TYPE_LABEL: Record<string, string> = {
 
 function ResignationRow({ r, breakingArticle }: { r: PoliticalResignation; breakingArticle?: BreakingArticle | null }) {
   const color = TYPE_COLOR[r.resignationType] ?? '#666';
+  // 2026-07-26 — user kérés: a kiemelt/figyelt személyek (WATCH_LIST +
+  // PERMANENT_BREAKING_NAMES, l. watchlist.ts) örökre BREAKING-jelölést
+  // kapnak itt is, nem csak a friss (7 napon belüli) cikkes esetben.
+  const breakingHref = breakingArticle?.sourceUrl ?? (r.pinned ? r.sourceUrls?.[0] ?? null : null);
+  const showBreaking = Boolean(breakingArticle) || r.pinned;
   return (
-    <tr key={r.id} className={breakingArticle ? 'res-row-breaking' : undefined}>
+    <tr key={r.id} className={showBreaking ? 'res-row-breaking' : undefined}>
       <td style={{ fontWeight: 500 }}>
         {r.name}
-        {breakingArticle && (
-          <a
-            href={breakingArticle.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="res-breaking-inline"
-          >
-            <span className="res-breaking-dot" />
-            BREAKING
-          </a>
+        {showBreaking && (
+          breakingHref ? (
+            <a
+              href={breakingHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="res-breaking-inline"
+            >
+              <span className="res-breaking-dot" />
+              BREAKING
+            </a>
+          ) : (
+            <span className="res-breaking-inline">
+              <span className="res-breaking-dot" />
+              BREAKING
+            </span>
+          )
         )}
       </td>
       <td style={{ color: '#666' }}>{r.position}</td>

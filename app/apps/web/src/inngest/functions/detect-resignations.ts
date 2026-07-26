@@ -11,6 +11,7 @@ import {
   isCollectiveEntityName,
   isDuplicate,
   isPlaceholderName,
+  isPermanentBreakingPerson,
   isTransientLlmFailure,
   isWatchlistPerson,
   loadUncheckedArticles,
@@ -265,7 +266,9 @@ export async function runResignationDetectionCore({ step, logger }: { step: Bypa
               resignationDate = fallbackDate;
             }
 
-            const pinned = isWatchlistPerson(person.name);
+            // 2026-07-26 — a WATCH_LIST-en kívül a PERMANENT_BREAKING_NAMES
+            // lista is örökre pinneli a sort (l. watchlist.ts komment).
+            const pinned = isWatchlistPerson(person.name) || isPermanentBreakingPerson(person.name);
 
             const [insertedRow] = await db.insert(schema.politicalResignations).values({
               name: person.name.slice(0, 200),

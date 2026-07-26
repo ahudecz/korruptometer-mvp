@@ -41,14 +41,14 @@ function statusColor(status: WatchPerson['status']): string {
   return '#e31937';
 }
 
-const BREAKING_BADGE_DAYS = 7;
-
-/** True while the badge should still say "BREAKING" — undefined detectedAt
- *  (legacy entries) always shows it, matching the pre-existing behavior. */
-function isStillBreaking(detectedAt: string | undefined): boolean {
-  if (!detectedAt) return true;
-  const ageMs = Date.now() - new Date(detectedAt).getTime();
-  return ageMs <= BREAKING_BADGE_DAYS * 24 * 60 * 60 * 1000;
+// 2026-07-26 — user kérés: ez a végoldal KIZÁRÓLAG a 8 CALLED_TO_RESIGN
+// (WATCH_LIST) tisztségviselőé (l. generateStaticParams fentebb) — ők
+// mindannyian a PERMANENT_BREAKING_NAMES listán vannak, tehát a BREAKING
+// jelölés itt SOSE jár le, függetlenül attól, mikor történt a távozás
+// (korábban 7 nap után eltűnt, l. BREAKING_BADGE_DAYS — ez a lejárat most
+// megszűnt).
+function isStillBreaking(_detectedAt: string | undefined): boolean {
+  return true;
 }
 
 function photoSrc(url: string): string {

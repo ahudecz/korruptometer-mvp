@@ -29,6 +29,12 @@ export type SerializedResignation = {
   sourceUrl: string | null;
   sourceName: string | null;
   breakingSourceUrl: string | null;
+  // 2026-07-26 — user kérés: a kiemelt/figyelt (WATCH_LIST + kézzel bővíthető
+  // PERMANENT_BREAKING_NAMES) személyek örökre BREAKING-jelölést kapnak,
+  // függetlenül attól, hogy a forráscikk még "friss"-nek számít-e (szemben a
+  // breakingSourceUrl-lel, ami 7 napon túl lejár). Ha egy sor mindkettőt
+  // teljesíti, a linkelt (breakingSourceUrl) verzió élvez elsőbbséget.
+  pinned: boolean;
 };
 
 function typeLabel(t: string): string {
@@ -49,8 +55,10 @@ const cellStyle = { padding: '12px', color: '#666' } as const;
 
 function Row({ r }: { r: SerializedResignation }) {
   const color = typeColor(r.resignationType);
+  const breakingHref = r.breakingSourceUrl ?? (r.pinned ? r.sourceUrl : null);
+  const showBreaking = Boolean(r.breakingSourceUrl) || r.pinned;
   return (
-    <tr className={r.breakingSourceUrl ? 'res-row-breaking' : undefined} style={{ borderBottom: '1px solid #f0f0f0' }}>
+    <tr className={showBreaking ? 'res-row-breaking' : undefined} style={{ borderBottom: '1px solid #f0f0f0' }}>
       <td className="res-col-date" style={{ ...cellStyle, whiteSpace: 'nowrap' as const }}>
         {r.resignationDateFormatted}
       </td>
@@ -70,16 +78,23 @@ function Row({ r }: { r: SerializedResignation }) {
       </td>
       <td style={{ ...cellStyle, fontWeight: 500, color: 'var(--ink)' }}>
         {r.name}
-        {r.breakingSourceUrl && (
-          <a
-            href={r.breakingSourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="res-breaking-inline"
-          >
-            <span className="res-breaking-dot" />
-            BREAKING
-          </a>
+        {showBreaking && (
+          breakingHref ? (
+            <a
+              href={breakingHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="res-breaking-inline"
+            >
+              <span className="res-breaking-dot" />
+              BREAKING
+            </a>
+          ) : (
+            <span className="res-breaking-inline">
+              <span className="res-breaking-dot" />
+              BREAKING
+            </span>
+          )
         )}
       </td>
       <td style={cellStyle}>{r.position}</td>
