@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { unstable_cache } from 'next/cache';
 
 import { fmtNumber } from '@korr/shared/format';
+import { PERMANENT_BREAKING_NAMES } from '@korr/db';
 import { Pie3D, type PieSlice } from '@korr/ui/pie3d';
 import { Mugshot } from '@korr/ui/mugshot';
 
@@ -381,12 +382,15 @@ const getCachedTotalRecovered = unstable_cache(
  * lemond/távozik, a saját helyén automatikusan bekerül és kiszorítja a lista
  * VÉGÉN álló kitöltő nevet (2026-07-15, user kérés — l. project memory).
  */
-const TOP_RESIGNATION_PRIORITY = [
-  'Sulyok Tamás', 'Polt Péter', 'Nagy Gábor Bálint', 'Varga Zs. András',
-  'Windisch László', 'Rigó Csaba Balázs', 'Koltay András', 'Senyei György',
-  'Szíjjártó Péter', 'Gulyás Gergely',
-  'Orbán Balázs', 'Németh Zsolt',
-];
+// 2026-07-26 — user report: Hende Csaba felkerült a PERMANENT_BREAKING_NAMES
+// listára (packages/db/src/watchlist.ts), de a nyitóoldal saját, EDDIG
+// KÜLÖN karbantartott listája (ez itt) nem tudott róla, ezért a nyitón
+// egyáltalán meg se jelent — ugyanaz a "duplikált config" hibaosztály, mint
+// a bigCases/ugyek-config eset (l. feedback-ugyek-config-duplicated-in-
+// page-tsx memória). Mostantól ebből a KÖZÖS listából származtatva épül,
+// hogy ez többé ne csúszhasson szét — 'Orbán Balázs' az egyetlen név, ami
+// csak itt szerepelt, azt megtartjuk.
+const TOP_RESIGNATION_PRIORITY = [...PERMANENT_BREAKING_NAMES, 'Orbán Balázs'];
 const getCachedFeaturedResignations = unstable_cache(
   async () => {
     const { getDb, schema } = await import('@/lib/db');
