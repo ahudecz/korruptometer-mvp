@@ -70,7 +70,11 @@ export default async function LemondasokPage({ searchParams }: { searchParams: S
     breakingSourceUrl: findBreakingForName(r.name, breakingArticles)?.sourceUrl ?? null,
   }));
 
-  const kirugasFelmentesCount = rows.filter(r => (r.resignationType === 'kirúgás' || r.resignationType === 'felmentés') && !r.name.includes('szerkesztőség')).length;
+  // 2026-07-26 — user kérés: az 'egyéb' típusú távozások (pl. Hende Csaba,
+  // törvényi kizárás az AB-ból — nem lemondás, nem is szűk értelemben vett
+  // kirúgás/felmentés) is számítsanak bele az összesítőbe, a "Kirúgás /
+  // felmentés" kártyába csoportosítva (egyik sem önkéntes lemondás).
+  const kirugasFelmentesCount = rows.filter(r => (r.resignationType === 'kirúgás' || r.resignationType === 'felmentés' || r.resignationType === 'egyéb') && !r.name.includes('szerkesztőség')).length;
   const lemondasCount = rows.filter(r => r.resignationType === 'lemondás').length;
   const osszes = kirugasFelmentesCount + lemondasCount;
   const szerkLeepitesCount = mediaLeepites.length;

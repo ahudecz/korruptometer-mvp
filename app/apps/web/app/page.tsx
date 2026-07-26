@@ -90,7 +90,12 @@ const getCachedResignationCount = unstable_cache(
     const { getDb, schema } = await import('@/lib/db');
     const { count: cnt, sql: s } = await import('drizzle-orm');
     const db = getDb();
-    return db.select({ c: cnt() }).from(schema.politicalResignations).where(s`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} IN ('lemondás','kirúgás','felmentés') AND ${schema.politicalResignations.name} NOT ILIKE '%szerkesztőség%'`).then(r => r[0]?.c ?? 0);
+    // 2026-07-26 — user kérés: a lényeg, hogy hány NER-káder távozott
+    // AKÁRHOGY IS, nem csak a tiszta lemondás/kirúgás/felmentés esetek —
+    // az 'egyéb' (pl. Hende Csaba, törvényi kizárás az AB-ból) is számítson
+    // bele, csak a 'Hivatalban van' (= még mindig ott van, nem távozott)
+    // maradjon kizárva.
+    return db.select({ c: cnt() }).from(schema.politicalResignations).where(s`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} != 'Hivatalban van' AND ${schema.politicalResignations.name} NOT ILIKE '%szerkesztőség%'`).then(r => r[0]?.c ?? 0);
   },
   ['resignation-count'],
   { revalidate: 300 },
