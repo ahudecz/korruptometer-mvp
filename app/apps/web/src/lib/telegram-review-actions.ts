@@ -363,69 +363,100 @@ export async function processCourtVerdict(article: ArticleForReprocess, todayIso
   return { status: outcomeStatus, recordId };
 }
 
+/**
+ * 2026-07-27 — recoveries tömbbé alakítva (l. asset-recovery-detect.ts
+ * fejléce) — egy cikk több KÜLÖNÁLLÓ összeget is jelenthet (pl. két külön
+ * NKA-támogatás visszavonása egy miniszteri bejelentésben). Ugyanaz a minta,
+ * mint processResignation fent: minden elem végigmegy a teljes ellenőrzési
+ * láncon, DE csak egy összegző upsertDetectionCheckOverride hívás a végén.
+ */
 export async function processAssetRecovery(article: ArticleForReprocess, todayIso: string, bypassConfidenceGate: boolean): Promise<ProcessOutcome> {
   const db = getDb();
   const llmResult = await detectAssetRecoveryFromArticle(article.headline, article.excerpt, articleDateIso(article.publishedAt));
   if (isTransientLlmFailure(llmResult)) return { status: 'error', message: 'Az AI-hívás átmenetileg hibázott, próbáld újra.' };
 
   const result = llmResult.data;
-  if (!result || !result.isRecovery) {
+  if (!result || result.recoveries.length === 0) {
     await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'asset_recovery', outcome: 'discarded', reason: 'not_applicable' });
     return { status: 'discarded', reason: 'not_applicable' };
   }
 
-  if (!bypassConfidenceGate && result.confidence < ASSET_CONFIDENCE_FLOOR) {
-    await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'asset_recovery', outcome: 'discarded', reason: 'low_confidence', extractedName: result.caseLabel || undefined, confidence: result.confidence });
-    if (result.confidence >= NEAR_MISS_MIN && result.caseLabel) {
-      await notifyReviewNeeded({ type: 'near_miss', detectorType: 'asset_recovery', name: result.caseLabel, confidence: result.confidence, articleUrl: article.sourceUrl ?? '', articleId: article.id });
+  const insertedIds: string[] = [];
+  let lastDiscardReason = 'not_applicable';
+  let lastLabel: string | undefined;
+  let lastConfidence: number | undefined;
+
+  for (const item of result.recoveries) {
+    lastLabel = item.caseLabel || lastLabel;
+    lastConfidence = item.confidence;
+
+    if (!bypassConfidenceGate && item.confidence < ASSET_CONFIDENCE_FLOOR) {
+      lastDiscardReason = 'low_confidence';
+      if (item.confidence >= NEAR_MISS_MIN && item.caseLabel) {
+        await notifyReviewNeeded({ type: 'near_miss', detectorType: 'asset_recovery', name: item.caseLabel, confidence: item.confidence, articleUrl: article.sourceUrl ?? '', articleId: article.id });
+      }
+      continue;
     }
-    return { status: 'discarded', reason: 'low_confidence' };
+
+    if (!item.caseLabel || isPlaceholderName(item.caseLabel) || !item.description) {
+      lastDiscardReason = 'missing_fields';
+      continue;
+    }
+
+    // 2026-07-25 — l. detect-asset-recoveries.ts azonos ellenőrzése: egy
+    // "eddig összesen X" futó összesítőt SOSE inzertálunk, még
+    // bypassConfidenceGate=true esetén (kézi tipp / near_miss-jóváhagyás)
+    // sem — a gombnyomás csak azt jóváhagyná, hogy VALÓDI az ügy, nem azt,
+    // hogy ez a KONKRÉT szám helyes lenne friss növekményként.
+    if (item.amountIsCumulativeTotal) {
+      lastDiscardReason = 'cumulative_total_ambiguous';
+      await sendTelegramMessage(
+        [
+          `⚠️ VAGYONVISSZASZERZÉS — futó összesítő, nem automatikus`,
+          `${item.caseLabel} — a cikk ${item.amountFt.toLocaleString('hu-HU')} Ft-os ÖSSZESÍTŐT közöl, nem azt, mennyi jött vissza ÚJONNAN.`,
+          `Ha van új infó a pontos növekményről, küldd be kézzel a linket + a helyes összeget.`,
+          article.sourceUrl ?? '',
+        ].filter(Boolean).join('\n\n'),
+      );
+      continue;
+    }
+
+    if (await isDuplicate(db, { table: 'AssetRecovery', nameColumn: 'caseLabel' }, item.caseLabel, 14)) {
+      lastDiscardReason = 'duplicate';
+      continue;
+    }
+    if (!article.sourceUrl) {
+      lastDiscardReason = 'missing_source';
+      continue;
+    }
+
+    const caseId = slugifyCaseLabel(item.caseLabel);
+    const [row] = await db.insert(schema.assetRecoveries).values({
+      caseId,
+      caseLabel: item.caseLabel.slice(0, 200),
+      description: item.description.slice(0, 1000),
+      amountFt: BigInt(Math.round(item.amountFt)),
+      recoveredAt: resolveDate(item.recoveredAt, article.publishedAt),
+      sourceUrl: article.sourceUrl,
+      sourceName: article.sourceName,
+    }).returning({ id: schema.assetRecoveries.id });
+
+    insertedIds.push(row!.id);
   }
 
-  if (!result.caseLabel || isPlaceholderName(result.caseLabel) || !result.description) {
-    await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'asset_recovery', outcome: 'discarded', reason: 'missing_fields', confidence: result.confidence });
-    return { status: 'discarded', reason: 'missing_fields' };
+  await upsertDetectionCheckOverride(db, {
+    articleId: article.id,
+    detectorType: 'asset_recovery',
+    outcome: insertedIds.length > 0 ? 'inserted' : 'discarded',
+    reason: insertedIds.length > 0 ? undefined : lastDiscardReason,
+    extractedName: lastLabel,
+    confidence: lastConfidence,
+  });
+
+  if (insertedIds.length === 0) {
+    return { status: 'discarded', reason: lastDiscardReason };
   }
 
-  // 2026-07-25 — l. detect-asset-recoveries.ts azonos ellenőrzése: egy
-  // "eddig összesen X" futó összesítőt SOSE inzertálunk, még
-  // bypassConfidenceGate=true esetén (kézi tipp / near_miss-jóváhagyás)
-  // sem — a gombnyomás csak azt jóváhagyná, hogy VALÓDI az ügy, nem azt,
-  // hogy ez a KONKRÉT szám helyes lenne friss növekményként.
-  if (result.amountIsCumulativeTotal) {
-    await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'asset_recovery', outcome: 'discarded', reason: 'cumulative_total_ambiguous', extractedName: result.caseLabel, confidence: result.confidence });
-    await sendTelegramMessage(
-      [
-        `⚠️ VAGYONVISSZASZERZÉS — futó összesítő, nem automatikus`,
-        `${result.caseLabel} — a cikk ${result.amountFt.toLocaleString('hu-HU')} Ft-os ÖSSZESÍTŐT közöl, nem azt, mennyi jött vissza ÚJONNAN.`,
-        `Ha van új infó a pontos növekményről, küldd be kézzel a linket + a helyes összeget.`,
-        article.sourceUrl ?? '',
-      ].filter(Boolean).join('\n\n'),
-    );
-    return { status: 'discarded', reason: 'cumulative_total_ambiguous' };
-  }
-
-  if (await isDuplicate(db, { table: 'AssetRecovery', nameColumn: 'caseLabel' }, result.caseLabel, 14)) {
-    await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'asset_recovery', outcome: 'discarded', reason: 'duplicate', extractedName: result.caseLabel, confidence: result.confidence });
-    return { status: 'discarded', reason: 'duplicate' };
-  }
-  if (!article.sourceUrl) {
-    await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'asset_recovery', outcome: 'discarded', reason: 'missing_source', extractedName: result.caseLabel, confidence: result.confidence });
-    return { status: 'discarded', reason: 'missing_source' };
-  }
-
-  const caseId = slugifyCaseLabel(result.caseLabel);
-  const [row] = await db.insert(schema.assetRecoveries).values({
-    caseId,
-    caseLabel: result.caseLabel.slice(0, 200),
-    description: result.description.slice(0, 1000),
-    amountFt: BigInt(Math.round(result.amountFt)),
-    recoveredAt: resolveDate(result.recoveredAt, article.publishedAt),
-    sourceUrl: article.sourceUrl,
-    sourceName: article.sourceName,
-  }).returning({ id: schema.assetRecoveries.id });
-
-  await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'asset_recovery', outcome: 'inserted', extractedName: result.caseLabel, confidence: result.confidence });
   // The homepage's latest-recoveries/total-recovered blocks are unstable_cache'd
   // with a 5-minute TTL, independent of the page's own force-dynamic rendering —
   // revalidatePublicPaths()'s revalidatePath('/') does NOT bust that data cache,
@@ -433,7 +464,11 @@ export async function processAssetRecovery(article: ArticleForReprocess, todayIs
   // (2026-07-15 user report: "a nyitóoldali blokk nem frissült").
   revalidateTag('asset-recoveries');
   await inngest.send({ name: 'breaking.recompute', data: { reason: 'asset_recovery:telegram-approve' } });
-  return { status: 'inserted', recordId: row!.id };
+
+  if (insertedIds.length === 1) {
+    return { status: 'inserted', recordId: insertedIds[0]! };
+  }
+  return { status: 'inserted_multi', recordIds: insertedIds, total: insertedIds.length };
 }
 
 /**
