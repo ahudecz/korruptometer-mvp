@@ -21,7 +21,7 @@ import { createBypassGuardedFunction, runArticleDetectionBatch, type ArticleProc
 const DETECTOR_TYPE = 'asset_recovery' as const;
 const CONFIDENCE_FLOOR = 0.7;
 
-const ASSET_KEYWORDS = [
+export const ASSET_KEYWORDS = [
   'visszafizet', 'visszaszerz', 'vagyonelkobzás', 'elkobzás', 'lefoglalt',
   'kártérítés', 'visszatérít', 'megtérít', 'visszaadás', 'visszaadja',
   'bírság', 'kötbér', 'visszakövetel', 'közpénz', 'közjavak',

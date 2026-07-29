@@ -24,7 +24,7 @@ const DETECTOR_TYPE = 'criminal_complaint' as const;
 // Keyword pre-filter — the "feljelent" stem covers all Hungarian
 // inflections (feljelentés, feljelentette, feljelenti, feljelentést tett,
 // stb.), verified empirically against live data (spec 009 Input).
-const COMPLAINT_KEYWORDS = ['feljelent'];
+export const COMPLAINT_KEYWORDS = ['feljelent'];
 
 async function processComplaintArticle(
   article: CandidateArticle,

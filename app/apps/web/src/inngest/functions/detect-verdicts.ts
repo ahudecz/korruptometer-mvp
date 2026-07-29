@@ -19,7 +19,7 @@ import { createBypassGuardedFunction, runArticleDetectionBatch, type ArticleProc
 
 const DETECTOR_TYPE = 'court_verdict' as const;
 
-const VERDICT_KEYWORDS = [
+export const VERDICT_KEYWORDS = [
   'előzetes letartóztatás', 'letartóztatt', 'előzetesbe', 'előzetesben',
   'vádemelés', 'vádat emel', 'vádlott', 'bírósági ítélet',
   'börtönbüntetés', 'szabadságvesztés', 'elítélt', 'elítélték',
@@ -27,7 +27,11 @@ const VERDICT_KEYWORDS = [
   'fogdába', 'fogvatartott', 'kihallgat', 'gyanúsított',
   // Gyakori előzmény-fázisú megfogalmazás letartóztatás előtt/helyett —
   // hiányzott, pedig a relevance.ts BREAKING_TRIGGERS listája már ismeri.
-  'őrizetbe', 'házkutatás', 'razzia', 'körözik', 'elfogatóparancs',
+  // 'razzia' helyett 'razzi' stem: a magyar tárgyrag ("razziát") az 'a'
+  // végződést 'á'-ra nyújtja, így a teljes szó szerinti "razzia" nem
+  // egyezett volna a leggyakoribb, ragozott alakkal (a
+  // detect-verdicts.test.ts írása közben derült ki).
+  'őrizetbe', 'házkutatás', 'razzi', 'körözik', 'elfogatóparancs',
   // Szabadon engedés / eljárás-vég — enélkül egy korábban letartóztatott
   // személy kiengedése sosem jutott el az LLM-ig (2026-07-08, Szakács
   // István-eset: a "Kiengedték Szakács Istvánt" jellegű cikkek egyike sem

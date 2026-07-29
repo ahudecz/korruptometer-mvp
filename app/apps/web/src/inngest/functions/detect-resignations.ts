@@ -89,7 +89,7 @@ export function coerceSector(value: string): ValidSector {
 // the extra LLM calls. This is a pre-filter only (the LLM still makes the
 // real lemondás/kirúgás/felmentés/nincs-ilyen call), so a broader list only
 // costs a few extra LLM calls, not precision.
-const RESIGNATION_KEYWORDS = [
+export const RESIGNATION_KEYWORDS = [
   'lemond', 'kirúg', 'felment', 'levált', 'mond le', 'menesz',
   'visszahív', 'cserél', 'visszavon', 'távoz',
   // kirúgás szinonimái (2026-07-16, user által megadott teljes lista):
