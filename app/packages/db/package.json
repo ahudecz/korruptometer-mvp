@@ -34,6 +34,7 @@
     "scrape-now": "tsx src/scrape-now.ts",
     "fb-sync-now": "tsx src/fb-sync-now.ts",
     "detect-now": "tsx src/detect-now.ts",
+    "verification-seed-baseline": "tsx src/verification-seed-baseline.ts",
     "detect-criminal-complaints-now": "tsx src/detect-criminal-complaints-now.ts",
     "cleanup-articles": "tsx src/cleanup-articles.ts",
     "delete-foci": "tsx src/delete-foci.ts",
