@@ -22,6 +22,7 @@ loadEnv({ path: resolve(__dirname, '../../../.env') });
 import Anthropic from '@anthropic-ai/sdk';
 import postgres, { type TransactionSql } from 'postgres';
 
+import { assertWriteTarget } from './guard';
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 const API_KEY = process.env.ANTHROPIC_API_KEY;
@@ -74,6 +75,8 @@ async function topHeadline(id: string): Promise<string | null> {
 }
 
 async function main() {
+  assertWriteTarget('catalog-cleanup-catchalls');
+
   // members of the catch-all scandals
   const members = await sql<Row[]>`
     SELECT id, "caseName", "primaryPersonName" AS person, "primaryEntityName" AS inst, "articleCount"

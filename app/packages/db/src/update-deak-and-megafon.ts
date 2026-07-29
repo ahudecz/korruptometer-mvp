@@ -10,6 +10,7 @@ import postgres from 'postgres';
 import { eq, ilike, sql } from 'drizzle-orm';
 import * as schema from './schema';
 
+import { assertWriteTarget } from './guard';
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 const conn = postgres(DB_URL, { prepare: false, max: 1 });
@@ -20,6 +21,8 @@ function dedupHash(url: string) {
 }
 
 async function main() {
+  assertWriteTarget('update-deak-and-megafon');
+
   // ── 1. Deák Dániel frissítése ─────────────────────────────────────
   const deak = await db
     .select({ id: schema.politicalResignations.id, name: schema.politicalResignations.name })

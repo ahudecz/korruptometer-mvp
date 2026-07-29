@@ -20,6 +20,7 @@ import { and, desc, eq, gte, sql } from 'drizzle-orm';
 import * as schema from './schema';
 import { isWatchlistPerson } from './watchlist';
 import { detectResignationFromArticle } from './resignation-detect';
+import { assertWriteTarget } from './guard';
 
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
@@ -55,6 +56,8 @@ const ALWAYS_DETECT_NAMES = [
 ];
 
 async function main() {
+  assertWriteTarget('detect-now');
+
   const todayIso = new Date().toISOString().slice(0, 10);
 
   // Az összes cikket végignézzük (nem csak az utolsó 2 óra)

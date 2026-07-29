@@ -10,6 +10,7 @@ import postgres from 'postgres';
 import { eq, ilike } from 'drizzle-orm';
 import * as schema from './schema';
 
+import { assertWriteTarget } from './guard';
 function dedupHash(url: string) {
   return createHash('sha256').update(url).digest('hex');
 }
@@ -41,6 +42,8 @@ const ARTICLES = [
 ];
 
 async function main() {
+  assertWriteTarget('insert-nka-articles');
+
   for (const art of ARTICLES) {
     const sources = await db
       .select({ id: schema.sources.id, name: schema.sources.name })

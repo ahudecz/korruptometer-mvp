@@ -18,6 +18,7 @@ import postgres from 'postgres';
 import { sql } from 'drizzle-orm';
 
 import * as schema from './schema';
+import { assertWriteTarget } from './guard';
 import {
   cases,
   editors,
@@ -98,6 +99,8 @@ function urlHash(u: string): string {
 }
 
 async function main() {
+  assertWriteTarget('seed');
+
   const url = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
   if (!url) {
     throw new Error('DIRECT_URL or DATABASE_URL must be set to seed the DB');

@@ -18,6 +18,7 @@ loadEnv({ path: resolve(__dirname, '../../../.env') });
 
 import postgres from 'postgres';
 
+import { assertWriteTarget } from './guard';
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 const sql = postgres(DB_URL, { prepare: false, max: 6 });
@@ -53,6 +54,8 @@ type Notice = {
 };
 
 async function main() {
+  assertWriteTarget('ted-ingest-search');
+
   const body = (page: number) => JSON.stringify({
     query: `buyer-country="HUN" AND notice-type="can-standard" AND publication-date>=${FROM_DATE}`,
     fields: ['publication-number', 'total-value', 'total-value-cur', 'estimated-value-lot',

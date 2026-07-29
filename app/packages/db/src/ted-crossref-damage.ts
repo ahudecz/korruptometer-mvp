@@ -23,6 +23,7 @@ loadEnv({ path: resolve(__dirname, '../../../.env') });
 
 import postgres from 'postgres';
 
+import { assertWriteTarget } from './guard';
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 const sql = postgres(DB_URL, { prepare: false, max: 4 });
@@ -53,6 +54,8 @@ function coreMatch(a: string, b: string): boolean {
 }
 
 async function main() {
+  assertWriteTarget('ted-crossref-damage');
+
   // idempotent: clear this pass's prior outputs for bootstrap cases
   await sql`DELETE FROM "DamageEstimate" d USING "Investigation" i WHERE i.id=d."investigationId" AND i."caseKeySource" LIKE 'kmonitor_%'`;
   await sql`DELETE FROM "ExternalRecord" e USING "Investigation" i WHERE i.id=e."investigationId" AND i."caseKeySource" LIKE 'kmonitor_%' AND e."sourceSystem"='TED'`;

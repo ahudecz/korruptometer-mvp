@@ -9,12 +9,15 @@ import { ilike, eq, sql } from 'drizzle-orm';
 import postgres from 'postgres';
 import * as schema from './schema';
 
+import { assertWriteTarget } from './guard';
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 const conn = postgres(DB_URL, { prepare: false, max: 1 });
 const db = drizzle(conn, { schema });
 
 async function main() {
+  assertWriteTarget('dedup-resignations');
+
   // List all Pesti Srácok and VG resignation records
   const rows = await db
     .select()

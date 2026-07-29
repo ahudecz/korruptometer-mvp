@@ -17,6 +17,7 @@ import { eq } from 'drizzle-orm';
 import postgres from 'postgres';
 import * as schema from './schema';
 
+import { assertWriteTarget } from './guard';
 const APIFY_API = 'https://api.apify.com/v2';
 const ACTOR_ID = 'apify~facebook-posts-scraper';
 const RESULTS_PER_PAGE = 2;
@@ -115,6 +116,8 @@ interface ApifyRunResponse {
 }
 
 async function main() {
+  assertWriteTarget('fb-sync-now');
+
   const pages = await db
     .select()
     .from(schema.facebookPages)

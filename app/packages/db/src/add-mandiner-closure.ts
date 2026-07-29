@@ -4,7 +4,10 @@ loadEnv({ path: resolve(__dirname, '../../../.env.local') });
 
 import postgres from 'postgres';
 
-async function main() {
+
+import { assertWriteTarget } from './guard';async function main() {
+  assertWriteTarget('add-mandiner-closure');
+
   const sql = postgres(process.env.DATABASE_URL!, { prepare: false });
 
   const existing = await sql`

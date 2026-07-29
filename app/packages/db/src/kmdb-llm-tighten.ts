@@ -29,6 +29,7 @@ import postgres from 'postgres';
 
 import * as schema from './schema';
 
+import { assertWriteTarget } from './guard';
 const MODEL = process.env.KMDB_LLM_MODEL ?? 'claude-haiku-4-5';
 const LIMIT = Number.parseInt(process.env.KMDB_LLM_LIMIT ?? '50', 10);
 const HF_BASE = process.env.HF_DATASET_BASE ?? 'https://datasets-server.huggingface.co';
@@ -123,6 +124,8 @@ Rules:
 }
 
 async function main() {
+  assertWriteTarget('kmdb-llm-tighten');
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set');
   const dbUrl = process.env.DIRECT_URL ?? process.env.DATABASE_URL;

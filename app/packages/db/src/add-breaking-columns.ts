@@ -5,7 +5,10 @@ loadEnv({ path: resolve(__dirname, '../../../.env.local') });
 import { createHash } from 'node:crypto';
 import postgres from 'postgres';
 
-async function main() {
+
+import { assertWriteTarget } from './guard';async function main() {
+  assertWriteTarget('add-breaking-columns');
+
   const sql = postgres(process.env.DATABASE_URL!, { prepare: false });
 
   const url = 'https://telex.hu/belfold/2026/06/23/nka-botrany-hat-szemelyt-orizetbe-vett-a-nav-hanko-balazs-tarr-zoltan';

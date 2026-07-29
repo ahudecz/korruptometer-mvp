@@ -21,6 +21,7 @@ loadEnv({ path: resolve(__dirname, '../../../.env') });
 
 import postgres from 'postgres';
 
+import { assertWriteTarget } from './guard';
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 const sql = postgres(DB_URL, { prepare: false, max: 8 });
@@ -115,6 +116,8 @@ async function fetchXml(pn: string): Promise<string | null> {
 }
 
 async function main() {
+  assertWriteTarget('ted-ingest');
+
   const allPns = new Set<string>();
   for (const cpv of CPVS) {
     const pns = await searchPns(cpv);

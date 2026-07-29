@@ -20,6 +20,7 @@ loadEnv({ path: resolve(__dirname, '../../../.env') });
 import Anthropic from '@anthropic-ai/sdk';
 import postgres from 'postgres';
 
+import { assertWriteTarget } from './guard';
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 const API_KEY = process.env.ANTHROPIC_API_KEY;
@@ -105,6 +106,8 @@ async function nameOne(c: {
 }
 
 async function main() {
+  assertWriteTarget('catalog-llm-name');
+
   const cases = await sql<{ id: string; person: string | null; inst: string | null }[]>`
     SELECT id, "primaryPersonName" AS person, "primaryEntityName" AS inst
     FROM "Investigation"

@@ -9,10 +9,13 @@ import { eq } from 'drizzle-orm';
 import postgres from 'postgres';
 import * as schema from './schema';
 
+import { assertWriteTarget } from './guard';
 const conn = postgres(process.env.DATABASE_URL!, { prepare: false, max: 1 });
 const db = drizzle(conn, { schema });
 
 async function main() {
+  assertWriteTarget('add-telex-szolo');
+
   const url = 'https://telex.hu/belfold/2026/01/13/szolo-utca-gyanusitas-15-kiskoru-sertett';
   const urlHash = createHash('sha256').update(url).digest('hex');
 

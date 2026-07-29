@@ -19,6 +19,7 @@ loadEnv({ path: resolve(__dirname, '../../../.env') });
 import postgres from 'postgres';
 import { urlIdentity } from './url-canonical';
 
+import { assertWriteTarget } from './guard';
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 const DRY_RUN = process.env.DRY_RUN === '1';
@@ -26,6 +27,8 @@ const DRY_RUN = process.env.DRY_RUN === '1';
 const sql = postgres(DB_URL, { prepare: false, max: 4 });
 
 async function main() {
+  assertWriteTarget('catalog-kmdb-dedup');
+
   const rows = await sql<{ newsId: number; sourceUrl: string | null }[]>`
     SELECT "newsId", "sourceUrl" FROM "KMonitorArticle"
   `;

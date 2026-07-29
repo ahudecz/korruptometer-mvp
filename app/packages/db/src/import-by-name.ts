@@ -18,6 +18,7 @@ import { ilike, or } from 'drizzle-orm';
 import postgres from 'postgres';
 import * as schema from './schema';
 
+import { assertWriteTarget } from './guard';
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 const conn = postgres(DB_URL, { prepare: false, max: 1 });
@@ -182,6 +183,8 @@ async function importArticle(
 }
 
 async function main() {
+  assertWriteTarget('import-by-name');
+
   console.log(`\n🔍 Keresés: "${NAME}" — april 12 óta\n`);
 
   const sources = await db.select().from(schema.sources);

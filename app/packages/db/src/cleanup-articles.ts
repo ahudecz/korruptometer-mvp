@@ -16,6 +16,7 @@ import postgres from 'postgres';
 import * as schema from './schema';
 import { isRelevant } from '@korr/scrapers';
 
+import { assertWriteTarget } from './guard';
 const RELEVANT_BY_DEFAULT_SLUGS = new Set([
   'atlatszo',
   'direkt36',
@@ -33,6 +34,8 @@ const conn = postgres(DB_URL, { prepare: false, max: 1 });
 const db = drizzle(conn, { schema });
 
 async function main() {
+  assertWriteTarget('cleanup-articles');
+
   // Összes forrás slug-jai az id alapján
   const sources = await db.select({ id: schema.sources.id, slug: schema.sources.slug }).from(schema.sources);
   const slugById = new Map(sources.map((s) => [s.id, s.slug]));

@@ -27,6 +27,7 @@ loadEnv({ path: resolve(__dirname, '../../../.env') });
 import Anthropic from '@anthropic-ai/sdk';
 import postgres from 'postgres';
 
+import { assertWriteTarget } from './guard';
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 const API_KEY = process.env.ANTHROPIC_API_KEY;
@@ -74,6 +75,8 @@ const pct = (sorted: number[], p: number): number => {
 };
 
 async function main() {
+  assertWriteTarget('catalog-benchmark-damage');
+
   const cases = await sql<CaseRow[]>`
     SELECT id, "caseName" FROM "Investigation"
     WHERE "caseKeySource" LIKE 'kmonitor_%' AND status='new'`;

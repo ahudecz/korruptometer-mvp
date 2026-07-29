@@ -7,10 +7,13 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
 
+import { assertWriteTarget } from './guard';
 const conn = postgres(process.env.DIRECT_URL ?? process.env.DATABASE_URL!, { prepare: false, max: 1 });
 const db = drizzle(conn, { schema });
 
 async function main() {
+  assertWriteTarget('add-panyiszabolcs-source');
+
   const [row] = await db
     .insert(schema.sources)
     .values({

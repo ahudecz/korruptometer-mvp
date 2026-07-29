@@ -23,6 +23,7 @@ loadEnv({ path: resolve(__dirname, '../../../.env') });
 import Anthropic from '@anthropic-ai/sdk';
 import postgres from 'postgres';
 
+import { assertWriteTarget } from './guard';
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 const API_KEY = process.env.ANTHROPIC_API_KEY;
@@ -107,6 +108,8 @@ const CLUSTERS = [
 ];
 
 async function main() {
+  assertWriteTarget('catalog-llm-proof');
+
   for (const c of CLUSTERS) {
     const rows = await sql<{ id: string; title: string; amountHuf: string | null }[]>`
       SELECT i.id, k.title, k."amountHuf"
