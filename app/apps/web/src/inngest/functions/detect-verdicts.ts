@@ -44,6 +44,41 @@ export const VERDICT_KEYWORDS = [
   'megafon',
 ];
 
+const VALID_VERDICT_TYPES = [
+  'előzetesben', 'elsőfokú', 'jogerős', 'vádemelés',
+  'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve', 'egyéb',
+] as const;
+type ValidVerdictType = (typeof VALID_VERDICT_TYPES)[number];
+
+/**
+ * 2026-07-29 — recurring "Bús Balázs" production error (3x in 2 days,
+ * 07-28 through 07-29): the LLM occasionally double-escapes a Hungarian
+ * diacritic in its JSON tool-call output for this field — instead of the
+ * real "ő" character (U+0151), the string contains the 6 literal ASCII
+ * characters backslash, u, 0, 1, 5, 1. JSON.parse only decodes a SINGLE
+ * backslash-u escape, so a double-escaped one survives parsing as that
+ * literal 6-character sequence rather than "ő".
+ * CourtVerdict_verdictType_check (0050 migráció) correctly REJECTS the
+ * resulting insert, but nothing ever repaired the value, so the same
+ * candidate re-failed every single hourly run (and — because one throwing
+ * article aborts the whole batch step, see detector-runner.ts — silently
+ * starved every OTHER verdict candidate queued in the same batch too).
+ * Unlike coerceResignationType/coerceClosureEventType (which only guard
+ * against truncation), this also un-escapes any literal backslash-u
+ * sequences before validating — same defensive shape otherwise: valid
+ * value passes through, a repairable one is fixed, anything else falls
+ * back to 'egyéb' instead of crashing.
+ */
+export function coerceVerdictType(value: string): ValidVerdictType {
+  const unescaped = value.replace(/\\u([0-9a-fA-F]{4})/g, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
+  const normalized = unescaped.normalize('NFC').trim();
+  if ((VALID_VERDICT_TYPES as readonly string[]).includes(normalized)) {
+    return normalized as ValidVerdictType;
+  }
+  const match = VALID_VERDICT_TYPES.find((v) => v.startsWith(normalized) || normalized.startsWith(v.slice(0, 5)));
+  return match ?? 'egyéb';
+}
+
 async function processVerdictArticle(
   article: CandidateArticle,
   result: VerdictExtraction | null,
@@ -77,6 +112,12 @@ async function processVerdictArticle(
     return { inserted: false, approved: false };
   }
 
+  // 2026-07-29 — l. coerceVerdictType fejléce: a nyers LLM-érték néha
+  // duplán escape-elt ékezetet tartalmaz, ami a DB CHECK constraint-et
+  // sértené. Mindenhol EZT a javított értéket használjuk a nyers
+  // result.verdictType helyett.
+  const verdictType = coerceVerdictType(result.verdictType);
+
   // 003-review: route by confidence + watchlist; discard below the floor.
   let reviewStatus = decideStatus(result.confidence, isWatchlistPerson(result.personName));
 
@@ -88,7 +129,7 @@ async function processVerdictArticle(
   // "visszavonható" értesítést kapott) — ez a legmagasabb téttel járó
   // állapotváltás, itt a legindokoltabb az előzetes emberi megerősítés, nem
   // az utólagos visszavonási esély.
-  if (reviewStatus === 'approved' && (result.verdictType === 'elsőfokú' || result.verdictType === 'jogerős')) {
+  if (reviewStatus === 'approved' && (verdictType === 'elsőfokú' || verdictType === 'jogerős')) {
     reviewStatus = 'pending';
   }
 
@@ -122,7 +163,7 @@ async function processVerdictArticle(
   // existing row, not silently discard the development the way
   // isDuplicate() used to.
   const existingVerdict = await findExistingVerdict(db, result.personName);
-  if (existingVerdict && existingVerdict.verdictType === result.verdictType) {
+  if (existingVerdict && existingVerdict.verdictType === verdictType) {
     await markChecked(db, {
       articleId: article.id,
       detectorType: DETECTOR_TYPE,
@@ -160,7 +201,7 @@ async function processVerdictArticle(
   let recordId: string;
   if (existingVerdict) {
     await db.update(schema.courtVerdicts).set({
-      verdictType: result.verdictType,
+      verdictType,
       sentenceYears: result.sentenceYears ?? 0,
       // 2026-07-24 — defenzív: a séma most már ['number','null']-t enged
       // (l. court-verdict-detect.ts), de a "??"-fallback nem fogja el, ha
@@ -187,7 +228,7 @@ async function processVerdictArticle(
       sentenceYears: result.sentenceYears ?? 0,
       sentenceMonths: typeof result.sentenceMonths === 'number' ? result.sentenceMonths : null,
       sentenceLabel: (result.sentenceLabel ?? '').slice(0, 200),
-      verdictType: result.verdictType,
+      verdictType,
       verdictDate,
       court: (result.court || 'Ismeretlen bíróság').slice(0, 200),
       summary: result.summary.slice(0, 1000),
@@ -237,7 +278,7 @@ async function processVerdictArticle(
       target: 'court_verdict',
       recordId,
       name: result.personName,
-      detail: `${result.verdictType}${result.sentenceLabel ? ` — ${result.sentenceLabel}` : ''}`,
+      detail: `${verdictType}${result.sentenceLabel ? ` — ${result.sentenceLabel}` : ''}`,
       articleUrl: article.sourceUrl ?? '',
     });
   }
