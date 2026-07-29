@@ -5,6 +5,7 @@ loadEnv({ path: resolve(__dirname, '../../../.env.local') });
 import { createHash } from 'node:crypto';
 import postgres from 'postgres';
 
+import { assertWriteTarget } from './guard';
 function urlHash(url: string): string {
   return createHash('sha256').update(url).digest('hex').slice(0, 32);
 }
@@ -50,6 +51,8 @@ async function upsertArticle(sql: postgres.Sql, {
 }
 
 async function main() {
+  assertWriteTarget('add-nka-breaking-articles');
+
   const sql = postgres(process.env.DATABASE_URL!, { prepare: false });
 
   const telexId = await upsertSource(sql, 'telex', 'Telex', 'https://telex.hu', 'national');

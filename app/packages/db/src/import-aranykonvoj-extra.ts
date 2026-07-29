@@ -9,6 +9,7 @@ import { eq } from 'drizzle-orm';
 import postgres from 'postgres';
 import * as schema from './schema';
 
+import { assertWriteTarget } from './guard';
 const conn = postgres(process.env.DATABASE_URL!, { prepare: false, max: 1 });
 const db = drizzle(conn, { schema });
 
@@ -44,6 +45,8 @@ const ARTICLES = [
 ];
 
 async function main() {
+  assertWriteTarget('import-aranykonvoj-extra');
+
   const src = await db.select({ id: schema.sources.id }).from(schema.sources).where(eq(schema.sources.slug, '444'));
   const sourceId = src[0]?.id ?? null;
 

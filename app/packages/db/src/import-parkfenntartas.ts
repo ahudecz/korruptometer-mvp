@@ -5,11 +5,14 @@ loadEnv({ path: resolve(__dirname, '../../../.env.local') });
 import postgres from 'postgres';
 import { randomUUID } from 'node:crypto';
 
+import { assertWriteTarget } from './guard';
 function pgArr(items: string[]): string {
   return '{' + items.map(i => `"${i.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`).join(',') + '}';
 }
 
 async function main() {
+  assertWriteTarget('import-parkfenntartas');
+
   const sql = postgres(process.env.DATABASE_URL!, { prepare: false });
 
   const PARK_SOURCE_URLS = [

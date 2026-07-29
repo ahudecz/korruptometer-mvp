@@ -45,6 +45,7 @@ import {
 } from './detection-check';
 import { detectCriminalComplaintFromArticle } from './criminal-complaint-detect';
 
+import { assertWriteTarget } from './guard';
 const DRY_RUN = process.env.DRY_RUN === '1';
 const DETECTOR_TYPE = 'criminal_complaint' as const;
 // 14 days, not the usual 7 (BACKLOG_DAYS) — this is a brand-new detector
@@ -123,6 +124,8 @@ async function notifyPending(opts: { targetName: string; filerName: string; conf
 }
 
 async function main() {
+  assertWriteTarget('detect-criminal-complaints-now');
+
   console.log(`target: ${new URL(DB_URL!).host}${DRY_RUN ? ' (DRY_RUN)' : ''}`);
 
   const articles = await loadAllArticlesInWindow(BACKLOG_DAYS);

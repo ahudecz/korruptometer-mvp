@@ -4,6 +4,7 @@ config({ path: resolve(process.cwd(), '../../.env.local') });
 config({ path: resolve(process.cwd(), '../../.env') });
 import postgres from 'postgres';
 
+import { assertWriteTarget } from './guard';
 const conn = postgres(process.env.DATABASE_URL!, { prepare: false, max: 1 });
 
 const KEYWORDS = [
@@ -21,6 +22,8 @@ const likeConditions = KEYWORDS
   .join(' OR ');
 
 async function main() {
+  assertWriteTarget('backfill-featured');
+
   const rows = await conn.unsafe(`
     UPDATE "NewsArticle"
     SET featured = (${likeConditions})

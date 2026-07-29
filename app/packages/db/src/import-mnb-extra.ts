@@ -9,6 +9,7 @@ import { eq } from 'drizzle-orm';
 import postgres from 'postgres';
 import * as schema from './schema';
 
+import { assertWriteTarget } from './guard';
 const conn = postgres(process.env.DATABASE_URL!, { prepare: false, max: 1 });
 const db = drizzle(conn, { schema });
 
@@ -44,6 +45,8 @@ const ARTICLES = [
 ];
 
 async function main() {
+  assertWriteTarget('import-mnb-extra');
+
   // Ensure szeretlekmagyarorszag.hu source exists
   await db.insert(schema.sources).values({
     slug: 'szeretlek-mo',

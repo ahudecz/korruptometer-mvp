@@ -4,7 +4,10 @@ loadEnv({ path: resolve(__dirname, '../../../.env.local') });
 
 import postgres from 'postgres';
 
-async function main() {
+
+import { assertWriteTarget } from './guard';async function main() {
+  assertWriteTarget('import-nka-elozetes');
+
   const sql = postgres(process.env.DATABASE_URL!, { prepare: false });
 
   // Töröljük a teszt adatot

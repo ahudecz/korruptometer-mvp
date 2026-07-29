@@ -10,6 +10,7 @@ import { eq, or, ilike } from 'drizzle-orm';
 import postgres from 'postgres';
 import * as schema from './schema';
 
+import { assertWriteTarget } from './guard';
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 const conn = postgres(DB_URL, { prepare: false, max: 1 });
@@ -71,6 +72,8 @@ const ARTICLES = [
 ];
 
 async function main() {
+  assertWriteTarget('import-volvo-gate');
+
   // Ensure all required sources exist
   for (const src of SOURCES_TO_ENSURE) {
     await db.insert(schema.sources).values(src).onConflictDoNothing({ target: schema.sources.slug });

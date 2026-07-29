@@ -7,6 +7,7 @@ import postgres from 'postgres';
 import { and, inArray, not, or, ilike, sql } from 'drizzle-orm';
 import * as schema from './schema';
 
+import { assertWriteTarget } from './guard';
 // Ezek a tag-ek garantáltan nem ide valók HA a headline sem tartalmaz releváns kulcsszót
 const JUNK_TAGS = [
   'Üzlet', 'Külföld', 'Karrier', 'Mobil', 'Reggeli', 'Híradó',
@@ -28,6 +29,8 @@ const RESCUE_PATTERNS = [
 ];
 
 async function main() {
+  assertWriteTarget('cleanup-by-tag');
+
   const db = drizzle(postgres(process.env.DATABASE_URL!, { prepare: false, max: 1 }), { schema });
 
   const rescueConditions = RESCUE_PATTERNS.map(p => ilike(schema.newsArticles.headline, p));

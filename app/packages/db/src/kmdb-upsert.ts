@@ -23,6 +23,7 @@ import postgres from 'postgres';
 import * as schema from './schema';
 import { urlIdentity } from './url-canonical';
 
+import { assertWriteTarget } from './guard';
 type PersonRecord = {
   displayName: string;
   normalizedName: string;
@@ -72,6 +73,8 @@ function toBig(n: number | null): bigint | null {
 }
 
 async function main() {
+  assertWriteTarget('kmdb-upsert');
+
   const outDir = process.env.KMDB_OUT ?? '/tmp/kmdb-out';
   const persons = readJsonl<PersonRecord>(`${outDir}/persons.jsonl`);
   const articles = readJsonl<ArticleRecord>(`${outDir}/articles.jsonl`);

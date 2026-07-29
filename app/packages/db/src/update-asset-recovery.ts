@@ -3,7 +3,10 @@ import { config as loadEnv } from 'dotenv';
 loadEnv({ path: resolve(__dirname, '../../../.env.local') });
 import postgres from 'postgres';
 
-async function main() {
+
+import { assertWriteTarget } from './guard';async function main() {
+  assertWriteTarget('update-asset-recovery');
+
   const sql = postgres(process.env.DATABASE_URL!, { prepare: false });
 
   // Update Tarr Zoltán entry from 400M to 470M so total = 1,690M + 470M = 2,160M = 2.16 mrd

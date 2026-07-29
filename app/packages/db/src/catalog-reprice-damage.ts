@@ -23,6 +23,7 @@ loadEnv({ path: resolve(__dirname, '../../../.env') });
 import Anthropic from '@anthropic-ai/sdk';
 import postgres from 'postgres';
 
+import { assertWriteTarget } from './guard';
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 const API_KEY = process.env.ANTHROPIC_API_KEY;
@@ -62,6 +63,8 @@ const TOOL: Anthropic.Tool = {
 type Row = { id: string; caseName: string | null; person: string | null; inst: string | null; summary: string | null; cur: string };
 
 async function main() {
+  assertWriteTarget('catalog-reprice-damage');
+
   const rows = await sql<Row[]>`
     SELECT i.id, i."caseName", i."primaryPersonName" AS person, i."primaryEntityName" AS inst,
            i.summary, d."totalHighHuf"::text AS cur

@@ -8,12 +8,15 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
 
+import { assertWriteTarget } from './guard';
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 const conn = postgres(DB_URL, { prepare: false, max: 1 });
 const db = drizzle(conn, { schema });
 
 async function main() {
+  assertWriteTarget('add-media1-source');
+
   await db
     .insert(schema.sources)
     .values({

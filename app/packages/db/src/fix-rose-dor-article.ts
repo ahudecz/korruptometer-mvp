@@ -3,7 +3,10 @@ import { config as loadEnv } from 'dotenv';
 loadEnv({ path: resolve(__dirname, '../../../.env.local') });
 import postgres from 'postgres';
 
-async function main() {
+
+import { assertWriteTarget } from './guard';async function main() {
+  assertWriteTarget('fix-rose-dor-article');
+
   const sql = postgres(process.env.DATABASE_URL!, { prepare: false });
 
   const res = await sql`

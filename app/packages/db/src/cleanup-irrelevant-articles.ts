@@ -9,6 +9,7 @@ import postgres from 'postgres';
 import { and, eq, not, or, ilike, inArray, sql } from 'drizzle-orm';
 import * as schema from './schema';
 
+import { assertWriteTarget } from './guard';
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 const conn = postgres(DB_URL, { prepare: false, max: 1 });
@@ -45,6 +46,8 @@ const KEEP_PATTERNS = [
 const KEEP_TAGS = ['NKA', 'MNB', 'Lemondás', 'volvo-gate', 'Megafon'];
 
 async function main() {
+  assertWriteTarget('cleanup-irrelevant-articles');
+
   // 1. Összes cikk száma
   const [{ total } = { total: 0 }] = await db
     .select({ total: sql<number>`count(*)::int` })

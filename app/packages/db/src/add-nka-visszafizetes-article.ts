@@ -4,11 +4,14 @@ loadEnv({ path: resolve(__dirname, '../../../.env.local') });
 import { createHash } from 'node:crypto';
 import postgres from 'postgres';
 
+import { assertWriteTarget } from './guard';
 function urlHash(url: string): string {
   return createHash('sha256').update(url).digest('hex').slice(0, 32);
 }
 
 async function main() {
+  assertWriteTarget('add-nka-visszafizetes-article');
+
   const sql = postgres(process.env.DATABASE_URL!, { prepare: false });
 
   const url = 'https://telex.hu/belfold/2026/05/23/nka-palyazati-penzek-visszafizetes-kis-grofo-varosliget-zrt';

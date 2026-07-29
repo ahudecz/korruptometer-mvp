@@ -21,6 +21,7 @@ import * as schema from './schema';
 import { adapters, isRelevant, shouldFeature } from '@korr/scrapers';
 import type { OutletSlug } from '@korr/scrapers';
 
+import { assertWriteTarget } from './guard';
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 
@@ -43,6 +44,8 @@ function canonicalUrl(url: string): string {
 }
 
 async function main() {
+  assertWriteTarget('scrape-now');
+
   const sources = await db
     .select()
     .from(schema.sources)

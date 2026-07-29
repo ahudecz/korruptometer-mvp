@@ -4,6 +4,7 @@ loadEnv({ path: resolve(__dirname, '../../../apps/web/.env.local') });
 loadEnv({ path: resolve(__dirname, '../../../apps/web/.env') });
 import postgres from 'postgres';
 
+import { assertWriteTarget } from './guard';
 // NKA-taggel vannak de semmi közük az NKA-botrányhoz
 const JUNK_PATTERNS = [
   '%kisfiút felrúgó karateedzőt%',
@@ -32,6 +33,8 @@ const JUNK_PATTERNS = [
 const TARR_KEEP_SOURCES = ['telex', '444'];
 
 async function main() {
+  assertWriteTarget('cleanup-nka-junk');
+
   const conn = postgres(process.env.DATABASE_URL!, { prepare: false, max: 1 });
 
   let totalDeleted = 0;

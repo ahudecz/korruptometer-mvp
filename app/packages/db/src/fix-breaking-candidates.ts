@@ -4,12 +4,15 @@ config({ path: resolve(__dirname, '../../../.env.local') });
 
 import postgres from 'postgres';
 
+import { assertWriteTarget } from './guard';
 const PROD = process.env.PROD_DATABASE_URL;
 if (!PROD) throw new Error('PROD_DATABASE_URL nincs beállítva');
 
 const sql = postgres(PROD, { ssl: 'require', max: 1, connect_timeout: 15 });
 
 async function main() {
+  assertWriteTarget('fix-breaking-candidates');
+
   const check = await sql`
     SELECT id, headline, "isBreakingCandidate", "sourceUrl"
     FROM "NewsArticle"

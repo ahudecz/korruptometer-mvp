@@ -31,6 +31,7 @@ loadEnv({ path: resolve(__dirname, '../../../.env') });
 import Anthropic from '@anthropic-ai/sdk';
 import postgres from 'postgres';
 
+import { assertWriteTarget } from './guard';
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 const API_KEY = process.env.ANTHROPIC_API_KEY;
@@ -209,6 +210,8 @@ async function processPerson(personName: string): Promise<void> {
 }
 
 async function main() {
+  assertWriteTarget('catalog-kmdb-person-extract');
+
   const arg = process.argv[2];
   if (arg === '--batch') {
     budget.cap = Number(process.argv[3] ?? '10');

@@ -10,6 +10,7 @@ import { eq } from 'drizzle-orm';
 import postgres from 'postgres';
 import * as schema from './schema';
 
+import { assertWriteTarget } from './guard';
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('DATABASE_URL not set');
 const conn = postgres(DB_URL, { prepare: false, max: 1 });
@@ -55,6 +56,8 @@ const ARTICLES = [
 ];
 
 async function main() {
+  assertWriteTarget('import-szolo-utca');
+
   for (const art of ARTICLES) {
     const urlHash = hash(art.sourceUrl);
 
