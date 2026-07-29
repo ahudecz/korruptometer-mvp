@@ -17,7 +17,7 @@ import { createBypassGuardedFunction, runArticleDetectionBatch, type ArticleProc
 
 const DETECTOR_TYPE = 'media_closure' as const;
 
-const CLOSURE_KEYWORDS = [
+export const CLOSURE_KEYWORDS = [
   'megszűnt', 'megszűnik', 'bezár', 'bezárnak', 'leállítják', 'leáll', 'felszámol',
   'leépítés', 'leépít', 'leépítik', 'elbocsát', 'tömeges kirúgás', 'tömeges elbocsátás',
   'médium', 'szerkesztőség', 'csatorna', 'műsor', 'lap', 'portál',
