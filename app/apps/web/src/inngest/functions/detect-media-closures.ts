@@ -1,24 +1,20 @@
 import 'server-only';
 import { eq, sql } from 'drizzle-orm';
 
-import { detectMediaClosureFromArticle } from '@korr/db/ai-closures';
-import { fetchArticleBodyTransient } from '@korr/scrapers';
+import { detectMediaClosureFromArticle, type MediaClosureExtraction } from '@korr/db/ai-closures';
 import {
-  articleDateIso,
   decideStatus,
   isDuplicate,
   isPlaceholderName,
-  isTransientLlmFailure,
-  loadUncheckedArticles,
   markChecked,
   NEAR_MISS_MIN,
+  type CandidateArticle,
 } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
-import { isBypassActive, type BypassStep, type BypassLogger } from '@/lib/cron-bypass';
-import { inngest } from '../client';
+import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
+import { createBypassGuardedFunction, runArticleDetectionBatch, type ArticleProcessResult } from '../lib/detector-runner';
 
-const BATCH_SIZE = 20;
 const DETECTOR_TYPE = 'media_closure' as const;
 
 const CLOSURE_KEYWORDS = [
@@ -47,6 +43,150 @@ export function coerceClosureEventType(value: string): ValidClosureEventType {
   return match ?? 'egyéb';
 }
 
+async function processClosureArticle(
+  article: CandidateArticle,
+  result: MediaClosureExtraction | null,
+): Promise<ArticleProcessResult> {
+  const db = getDb();
+
+  if (!result || !result.isClosure) {
+    await markChecked(db, {
+      articleId: article.id,
+      detectorType: DETECTOR_TYPE,
+      outcome: 'discarded',
+      reason: 'not_applicable',
+    });
+    return { inserted: false, approved: false };
+  }
+
+  if (!result.name || isPlaceholderName(result.name)) {
+    await markChecked(db, {
+      articleId: article.id,
+      detectorType: DETECTOR_TYPE,
+      outcome: 'discarded',
+      reason: 'missing_fields',
+      confidence: result.confidence,
+    });
+    return { inserted: false, approved: false };
+  }
+
+  // 003-review: media outlets aren't watchlist persons → confidence only.
+  const reviewStatus = decideStatus(result.confidence, false);
+  if (reviewStatus === 'discard') {
+    await markChecked(db, {
+      articleId: article.id,
+      detectorType: DETECTOR_TYPE,
+      outcome: 'discarded',
+      reason: 'low_confidence',
+      extractedName: result.name,
+      confidence: result.confidence,
+    });
+    if (result.confidence >= NEAR_MISS_MIN) {
+      await notifyReviewNeeded({
+        type: 'near_miss',
+        detectorType: DETECTOR_TYPE,
+        name: result.name,
+        confidence: result.confidence,
+        articleUrl: article.sourceUrl ?? '',
+        articleId: article.id,
+      });
+    }
+    return { inserted: false, approved: false };
+  }
+
+  if (await isDuplicate(db, { table: 'MediaClosure', nameColumn: 'name' }, result.name)) {
+    await markChecked(db, {
+      articleId: article.id,
+      detectorType: DETECTOR_TYPE,
+      outcome: 'discarded',
+      reason: 'duplicate',
+      extractedName: result.name,
+      confidence: result.confidence,
+    });
+    return { inserted: false, approved: false };
+  }
+
+  // Same-URL dedup, independent of name matching — see the identical
+  // comment in detect-resignations.ts (2026-07-13, Káel Csaba dupe).
+  if (article.sourceUrl) {
+    const sameUrlExisting = await db.execute(sql`
+      SELECT 1 FROM "MediaClosure" WHERE "sourceUrl" = ${article.sourceUrl} LIMIT 1
+    `) as unknown as { length: number };
+    if (sameUrlExisting.length > 0) {
+      await markChecked(db, {
+        articleId: article.id,
+        detectorType: DETECTOR_TYPE,
+        outcome: 'discarded',
+        reason: 'duplicate',
+        extractedName: result.name,
+        confidence: result.confidence,
+      });
+      return { inserted: false, approved: false };
+    }
+  }
+
+  // A public entry MUST always be traceable to a source article —
+  // never publish an unsourced claim.
+  if (!article.sourceUrl) {
+    await markChecked(db, {
+      articleId: article.id,
+      detectorType: DETECTOR_TYPE,
+      outcome: 'discarded',
+      reason: 'missing_source',
+      extractedName: result.name,
+      confidence: result.confidence,
+    });
+    return { inserted: false, approved: false };
+  }
+
+  const fallbackDate = new Date(article.publishedAt as unknown as string);
+  let eventDate: Date;
+  try {
+    eventDate = new Date(result.eventDate);
+    if (isNaN(eventDate.getTime())) eventDate = fallbackDate;
+  } catch {
+    eventDate = fallbackDate;
+  }
+
+  const [insertedRow] = await db.insert(schema.mediaClosures).values({
+    name: result.name.slice(0, 200),
+    eventType: coerceClosureEventType(result.eventType),
+    description: result.description.slice(0, 1000) || null,
+    eventDate,
+    sourceUrl: article.sourceUrl,
+    sourceName: article.sourceName,
+    reviewStatus,
+  }).returning({ id: schema.mediaClosures.id });
+
+  await db
+    .update(schema.newsArticles)
+    .set({ tag: 'Megszűnés' })
+    .where(eq(schema.newsArticles.id, article.id));
+
+  await markChecked(db, {
+    articleId: article.id,
+    detectorType: DETECTOR_TYPE,
+    outcome: 'inserted',
+    extractedName: result.name,
+    confidence: result.confidence,
+  });
+
+  if (reviewStatus === 'pending') {
+    await notifyReviewNeeded({
+      type: 'pending',
+      detectorType: DETECTOR_TYPE,
+      name: result.name,
+      confidence: result.confidence,
+      articleUrl: article.sourceUrl ?? '',
+      articleId: article.id,
+      recordId: insertedRow!.id,
+    });
+    return { inserted: true, approved: false };
+  }
+
+  return { inserted: true, approved: true };
+}
+
 /**
  * closure.detect — cron every hour.
  * Backlog scan (006) over NOT-YET-CHECKED articles from the last 7 days —
@@ -58,216 +198,22 @@ export function coerceClosureEventType(value: string): ValidClosureEventType {
 // 2026-07-22 — kiemelve, hogy a Vercel-cron bypass route Inngest nélkül is
 // meg tudja hívni (l. cron-bypass.ts fejléce).
 export async function runMediaClosureDetectionCore({ step, logger }: { step: BypassStep; logger?: BypassLogger }) {
-    const db = getDb();
-
-    const articles = await step.run('load-unchecked-articles', () =>
-      loadUncheckedArticles(db, DETECTOR_TYPE),
-    );
-
-    if (articles.length === 0) return { scanned: 0, inserted: 0 };
-
-    const candidates = articles.filter((a) => {
-      const text = `${a.headline} ${a.excerpt}`.toLowerCase();
-      return CLOSURE_KEYWORDS.some((kw) => text.includes(kw));
-    });
-
-    if (candidates.length === 0) return { scanned: articles.length, inserted: 0 };
-
-    let inserted = 0;
-    let approvedInserted = 0;
-
-    for (let i = 0; i < candidates.length; i += BATCH_SIZE) {
-      const batch = candidates.slice(i, i + BATCH_SIZE);
-      const batchNum = Math.floor(i / BATCH_SIZE);
-
-      const batchResult = await step.run(`process-batch-${batchNum}`, async () => {
-        let count = 0;
-        let approvedCount = 0;
-        for (const article of batch) {
-          const llmResult = await detectMediaClosureFromArticle(article.headline, article.excerpt, articleDateIso(article.publishedAt));
-
-          if (isTransientLlmFailure(llmResult)) continue;
-
-          let result = llmResult.data;
-
-          // 2026-07-24 — l. detect-resignations.ts azonos mintája: gyanú
-          // esetén (üres/hiányos találat) egyetlen extra hívás a cikk teljes
-          // törzsszövegével, élőben lekérve, SOSE tárolva (constitution IV).
-          const seemsIncomplete = !result || !result.isClosure || !result.name || isPlaceholderName(result.name);
-          if (seemsIncomplete && article.sourceUrl) {
-            const bodyText = await fetchArticleBodyTransient(article.sourceUrl).catch(() => null);
-            if (bodyText && bodyText.length > article.excerpt.length) {
-              const retryResult = await detectMediaClosureFromArticle(article.headline, bodyText, articleDateIso(article.publishedAt));
-              if (!isTransientLlmFailure(retryResult) && retryResult.data) {
-                result = retryResult.data;
-              }
-            }
-          }
-
-          if (!result || !result.isClosure) {
-            await markChecked(db, {
-              articleId: article.id,
-              detectorType: DETECTOR_TYPE,
-              outcome: 'discarded',
-              reason: 'not_applicable',
-            });
-            continue;
-          }
-
-          if (!result.name || isPlaceholderName(result.name)) {
-            await markChecked(db, {
-              articleId: article.id,
-              detectorType: DETECTOR_TYPE,
-              outcome: 'discarded',
-              reason: 'missing_fields',
-              confidence: result.confidence,
-            });
-            continue;
-          }
-
-          // 003-review: media outlets aren't watchlist persons → confidence only.
-          const reviewStatus = decideStatus(result.confidence, false);
-          if (reviewStatus === 'discard') {
-            await markChecked(db, {
-              articleId: article.id,
-              detectorType: DETECTOR_TYPE,
-              outcome: 'discarded',
-              reason: 'low_confidence',
-              extractedName: result.name,
-              confidence: result.confidence,
-            });
-            if (result.confidence >= NEAR_MISS_MIN) {
-              await notifyReviewNeeded({
-                type: 'near_miss',
-                detectorType: DETECTOR_TYPE,
-                name: result.name,
-                confidence: result.confidence,
-                articleUrl: article.sourceUrl ?? '',
-                articleId: article.id,
-              });
-            }
-            continue;
-          }
-
-          if (await isDuplicate(db, { table: 'MediaClosure', nameColumn: 'name' }, result.name)) {
-            await markChecked(db, {
-              articleId: article.id,
-              detectorType: DETECTOR_TYPE,
-              outcome: 'discarded',
-              reason: 'duplicate',
-              extractedName: result.name,
-              confidence: result.confidence,
-            });
-            continue;
-          }
-
-          // Same-URL dedup, independent of name matching — see the identical
-          // comment in detect-resignations.ts (2026-07-13, Káel Csaba dupe).
-          if (article.sourceUrl) {
-            const sameUrlExisting = await db.execute(sql`
-              SELECT 1 FROM "MediaClosure" WHERE "sourceUrl" = ${article.sourceUrl} LIMIT 1
-            `) as unknown as { length: number };
-            if (sameUrlExisting.length > 0) {
-              await markChecked(db, {
-                articleId: article.id,
-                detectorType: DETECTOR_TYPE,
-                outcome: 'discarded',
-                reason: 'duplicate',
-                extractedName: result.name,
-                confidence: result.confidence,
-              });
-              continue;
-            }
-          }
-
-          // A public entry MUST always be traceable to a source article —
-          // never publish an unsourced claim.
-          if (!article.sourceUrl) {
-            await markChecked(db, {
-              articleId: article.id,
-              detectorType: DETECTOR_TYPE,
-              outcome: 'discarded',
-              reason: 'missing_source',
-              extractedName: result.name,
-              confidence: result.confidence,
-            });
-            continue;
-          }
-
-          const fallbackDate = new Date(article.publishedAt as unknown as string);
-          let eventDate: Date;
-          try {
-            eventDate = new Date(result.eventDate);
-            if (isNaN(eventDate.getTime())) eventDate = fallbackDate;
-          } catch {
-            eventDate = fallbackDate;
-          }
-
-          const [insertedRow] = await db.insert(schema.mediaClosures).values({
-            name: result.name.slice(0, 200),
-            eventType: coerceClosureEventType(result.eventType),
-            description: result.description.slice(0, 1000) || null,
-            eventDate,
-            sourceUrl: article.sourceUrl,
-            sourceName: article.sourceName,
-            reviewStatus,
-          }).returning({ id: schema.mediaClosures.id });
-
-          await db
-            .update(schema.newsArticles)
-            .set({ tag: 'Megszűnés' })
-            .where(eq(schema.newsArticles.id, article.id));
-
-          await markChecked(db, {
-            articleId: article.id,
-            detectorType: DETECTOR_TYPE,
-            outcome: 'inserted',
-            extractedName: result.name,
-            confidence: result.confidence,
-          });
-
-          if (reviewStatus === 'pending') {
-            await notifyReviewNeeded({
-              type: 'pending',
-              detectorType: DETECTOR_TYPE,
-              name: result.name,
-              confidence: result.confidence,
-              articleUrl: article.sourceUrl ?? '',
-              articleId: article.id,
-              recordId: insertedRow!.id,
-            });
-          } else {
-            approvedCount++;
-          }
-
-          count++;
-        }
-        return { count, approvedCount };
-      });
-
-      inserted += batchResult.count;
-      approvedInserted += batchResult.approvedCount;
-    }
-
-    if (approvedInserted > 0) {
-      await step.sendEvent('emit-breaking-recompute', {
-        name: 'breaking.recompute',
-        data: { reason: 'media_closure' },
-      });
-    }
-
-    logger?.info?.(`closure.detect: scanned=${articles.length} candidates=${candidates.length} inserted=${inserted}`);
-    return { scanned: articles.length, candidates: candidates.length, inserted };
+  return runArticleDetectionBatch({
+    step,
+    logger,
+    detectorType: DETECTOR_TYPE,
+    keywords: CLOSURE_KEYWORDS,
+    callLlm: detectMediaClosureFromArticle,
+    // 2026-07-24 — l. detect-resignations.ts azonos mintája: gyanú esetén
+    // (üres/hiányos találat) egyetlen extra hívás a cikk teljes
+    // törzsszövegével, élőben lekérve, SOSE tárolva (constitution IV).
+    isIncomplete: (result) => !result || !result.isClosure || !result.name || isPlaceholderName(result.name),
+    processArticle: processClosureArticle,
+    logLabel: 'closure.detect',
+  });
 }
 
-export const detectMediaClosures = inngest.createFunction(
-  { id: 'detect-media-closures', name: 'Detect media closures', concurrency: 1 },
-  { cron: '40 * * * *' },
-  async ({ step, logger }) => {
-    if (isBypassActive()) {
-      logger?.info?.('detect-media-closures: skipped — PIPELINE_BYPASS_INNGEST active, Vercel cron owns this run');
-      return { skipped: 'inngest_bypass_active' };
-    }
-    return runMediaClosureDetectionCore({ step: step as unknown as BypassStep, logger });
-  },
+export const detectMediaClosures = createBypassGuardedFunction(
+  { id: 'detect-media-closures', name: 'Detect media closures', cron: '40 * * * *' },
+  runMediaClosureDetectionCore,
 );
