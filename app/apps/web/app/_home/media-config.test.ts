@@ -32,8 +32,13 @@ describe('findOutletLogo', () => {
   });
 
   it('returns undefined for institutions/events with no corresponding outlet', () => {
-    expect(findOutletLogo('Szuverenitásvédelmi Hivatal')).toBeUndefined();
     expect(findOutletLogo('MCC Feszt')).toBeUndefined();
     expect(findOutletLogo('KEKVA-alapítványok')).toBeUndefined();
+  });
+
+  // 7b44a58 — moved out of the "no corresponding outlet" list above once
+  // this closed institution got its own logo entry for the megszűnt-oldal.
+  it('matches the Szuverenitásvédelmi Hivatal closed-institution entry', () => {
+    expect(findOutletLogo('Szuverenitásvédelmi Hivatal')?.id).toBe('szuverenitasvedelmi-hivatal');
   });
 });

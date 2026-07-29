@@ -47,13 +47,20 @@ beforeEach(() => {
 });
 
 describe('aggregate.kpi-rollup configuration', () => {
-  it('declares concurrency=1 and 10s debounce on `kpi-recompute`', async () => {
+  // 2026-06-24 (bf6e180) — a debounce `key` mezőt Inngest CEL-kifejezésként
+  // parse-olja, nem szöveges kulcsként; a szó szerinti 'kpi-recompute'
+  // string emiatt érvénytelen kifejezésnek (`kpi - recompute`) minősült,
+  // és az EGÉSZ app-regisztrációt elutasíttatta Inngesttel. A helyes
+  // megoldás egy globális (kulcs nélküli) debounce — a `key` mező azóta
+  // szándékosan hiányzik, ez nem regresszió.
+  it('declares concurrency=1 and a global (keyless) 10s debounce', async () => {
     await import('./aggregate-kpi-rollup');
     expect(captured.config).toMatchObject({
       id: 'aggregate-kpi-rollup',
       concurrency: { limit: 1 },
-      debounce: { period: '10s', key: 'kpi-recompute' },
+      debounce: { period: '10s' },
     });
+    expect((captured.config as { debounce?: { key?: unknown } }).debounce?.key).toBeUndefined();
   });
 
   it('listens on hourly cron AND kpi.recompute event', async () => {
