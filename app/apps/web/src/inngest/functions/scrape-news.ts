@@ -15,6 +15,19 @@ import { inngest } from '../client';
 
 const FAILURE_DISABLE_THRESHOLD = 5;
 const ZERO_ARTICLE_ALERT_THRESHOLD = 5;
+// 2026-07-29 — a forráslista eddig szekvenciálisan futott (egyenként await),
+// pedig adapter.crawl() network I/O-bound: egy lassú forrás a teljes
+// /api/cron/pipeline láncot (scrape + 6 detektor + verifikáció) az 5 perces
+// Vercel-limit közelébe tolhatta, és mivel minden lépés egymás UTÁN fut,
+// pont a lánc VÉGÉN lévő verify-published-records esne ki elsőként, csendben
+// (l. cron/pipeline/route.ts). 4 forrás egyszerre — nem korlátlan Promise.all,
+// mert a megosztott napi LLM-keret (llm.ts) és a Slack-riasztások (Source
+// auto-disable) burst-szerű egyidejű terhelését sem érdemes túltolni. A
+// megosztott költés-keret pg_advisory_xact_lock-kal védett (l. llm.ts) —
+// kifejezetten konkurrens hívásra tervezve, és a getDb() pool (lib/db.ts)
+// kommentje is Promise.all-ra van méretezve (max:10), tehát ez a
+// párhuzamosítás nem új kockázat, csak eddig kihasználatlan kapacitás.
+const SOURCE_CONCURRENCY = 4;
 // 2026-07-19: minden classifyArticle-hiba (napi költés-limit VAGY tényleges
 // API-kiesés) fail-closed — a bizonytalan cikket eldobjuk, l. lentebb.
 // Ez a küszöb csak azt szabja meg, hányszori egymás utáni hiba után "nyit
@@ -56,11 +69,11 @@ export async function runScrapeNewsCore({ step, logger }: { step: BypassStep; lo
 
     const insertedIds: string[] = [];
 
-    for (const source of sources) {
+    async function processSource(source: (typeof sources)[number]): Promise<void> {
       const adapter = adapters[source.slug as OutletSlug];
       if (!adapter) {
         logger?.warn?.(`scrape.news: no adapter for source ${source.slug}`);
-        continue;
+        return;
       }
 
       const result = await step.run(`run-${source.slug}`, async () => {
@@ -142,6 +155,15 @@ export async function runScrapeNewsCore({ step, logger }: { step: BypassStep; lo
           }
         });
       }
+    }
+
+    // SOURCE_CONCURRENCY forrás fut egyszerre (l. fenti komment) — insertedIds
+    // sorrendje kötegen belül a Promise.all felbontási sorrendjétől függ, de
+    // ez sosem volt szemantikailag jelentős (csak az aggregate.link-articles
+    // eseménybe megy bele, ami maga nem sorrendfüggő).
+    for (let i = 0; i < sources.length; i += SOURCE_CONCURRENCY) {
+      const batch = sources.slice(i, i + SOURCE_CONCURRENCY);
+      await Promise.all(batch.map((source) => processSource(source)));
     }
 
     if (insertedIds.length > 0) {
