@@ -6,20 +6,35 @@ import { getDb, schema } from '@/lib/db';
 import { WATCH_LIST, type WatchPerson } from '../../_home/watchlist-config';
 import { WATCHLIST_DETAIL, type WatchlistBreakingBlock } from '../../_home/watchlist-detail-config';
 import { CrossGaleria, CrossUgyek, CrossLemondosok } from '../../_home/cross-promo';
-import { truncate, withCta, ctaResignation } from '../../_home/seo';
-
 export const dynamic = 'force-dynamic';
+
+// Kézzel írt, a személyre szabott — nem a bio/nerRole gépi levágásából
+// összerakott — SEO-leírás mind a 8 WATCH_LIST-es emberre (2026-07-31, user
+// kérés: a truncate(bio)+generikus CTA "csak annyit ér, mint amit a Google
+// magától is csinálna"). A CTA mindenkinél ugyanaz, és szó szerint a cím
+// kérdésére felel — nem az általános "hogy áll most" volt előtte.
+const RESIGNATION_SEO: Record<string, string> = {
+  'sulyok-tamas': 'Sulyok Tamás köztársasági elnökként egyetlen kényelmetlen törvényt sem küldött vissza az Országgyűlésnek.',
+  'polt-peter': 'Polt Péter 21 évig volt legfőbb ügyész — egyetlen NER-közeli korrupciós ügyet sem vitt vádig.',
+  'nagy-gabor-balint': 'Nagy Gábor Bálint Polt Péter utódjaként folytatja a szelektív igazságszolgáltatás gyakorlatát legfőbb ügyészként.',
+  'varga-zs-andras': 'Varga Zs. András Kúria-elnökként törvénysértően bocsátott el bírókat, és feljelentette a Tisza-appot letöltőket.',
+  'windisch-laszlo': 'Windisch László ÁSZ-elnökként az ellenzéket bünteti, a NER-projekteket érintetlenül hagyja.',
+  'rigo-csaba-balazs': 'Rigó Csaba Balázs GVH-elnökként nem vizsgálta az oligarchák monopóliumait, és kirúgta a kritikus közgazdászt.',
+  'koltay-andras': 'Koltay András NMHH-elnökként védte a NER-médiumokat, majd 2026 júliusában távozott posztjáról.',
+  'senyei-gyorgy': 'Senyei György OBH-elnökként kormányülésen vett részt, és jó viszonyban áll a korrupt Schadl Györggyel.',
+};
+const RESIGNATION_CTA = 'Kattints, és nézd meg, lemondott-e már!';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const person = WATCH_LIST.find((p) => p.id === id);
   if (!person) return {};
-  const detail = WATCHLIST_DETAIL.find((d) => d.id === id);
-  const description =
-    detail?.bio ?? detail?.nerRole ?? `${person.name} — ${person.institution}. Lemondásra felszólítva.`;
+  const base = RESIGNATION_SEO[id] ?? `${person.name} — ${person.institution}. Lemondásra felszólítva.`;
   return {
-    title: truncate(person.name, 40),
-    description: withCta(description, ctaResignation()),
+    // absolute: a "%s — Kegyencjárat" root-template ne toldja meg — a
+    // Google-találatban úgyis ott a domain, felesleges duplikáció (user kérés).
+    title: { absolute: `Lemondott-e már ${person.name}?` },
+    description: `${base} ${RESIGNATION_CTA}`,
   };
 }
 

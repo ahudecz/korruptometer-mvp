@@ -91,14 +91,25 @@ const getCachedScandalCatalogCount = unstable_cache(
 const getCachedResignationCount = unstable_cache(
   async () => {
     const { getDb, schema } = await import('@/lib/db');
-    const { count: cnt, sql: s } = await import('drizzle-orm');
+    const { count: cnt, and, eq, notInArray, notIlike } = await import('drizzle-orm');
+    const { RESIGNATION_EXCLUDED_TYPES, SZERKESZTOSEG_NEEDLE } = await import('./lemondasok/resignation-stats');
     const db = getDb();
     // 2026-07-26 — user kérés: a lényeg, hogy hány NER-káder távozott
     // AKÁRHOGY IS, nem csak a tiszta lemondás/kirúgás/felmentés esetek —
     // az 'egyéb' (pl. Hende Csaba, törvényi kizárás az AB-ból) is számítson
     // bele, csak a 'Hivatalban van' (= még mindig ott van, nem távozott)
-    // maradjon kizárva.
-    return db.select({ c: cnt() }).from(schema.politicalResignations).where(s`${schema.politicalResignations.reviewStatus} = 'approved' AND ${schema.politicalResignations.resignationType} != 'Hivatalban van' AND ${schema.politicalResignations.name} NOT ILIKE '%szerkesztőség%'`).then(r => r[0]?.c ?? 0);
+    // maradjon kizárva. A kizárás-listát ÉS a szerkesztőség-szűrőt a
+    // resignation-stats.ts-ből importáljuk (nem itt hardkódolva), hogy ez a
+    // szám sose tudjon szétcsúszni a /lemondasok hub-oldal "osszes"
+    // értékétől — l. resignation-stats.test.ts (2026-08-02, user report).
+    return db.select({ c: cnt() }).from(schema.politicalResignations).where(and(
+      eq(schema.politicalResignations.reviewStatus, 'approved'),
+      notInArray(
+        schema.politicalResignations.resignationType,
+        RESIGNATION_EXCLUDED_TYPES as (typeof schema.resignationTypeEnum.enumValues)[number][],
+      ),
+      notIlike(schema.politicalResignations.name, `%${SZERKESZTOSEG_NEEDLE}%`),
+    )).then(r => r[0]?.c ?? 0);
   },
   ['resignation-count'],
   { revalidate: 300 },
@@ -308,6 +319,12 @@ const getCachedVerdictCounts = unstable_cache(
     const { getDb, schema } = await import('@/lib/db');
     const { eq: eqF, sql: s } = await import('drizzle-orm');
     const db = getDb();
+    // A ('előzetesben', 'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve')
+    // kizárás-lista itt szándékosan tükrözi a birosagi-iteletek/verdict-stats.ts
+    // RELEASED_TYPES + 'előzetesben' kombóját — ha ott bővül a lista, itt is
+    // kell (l. verdict-stats.test.ts, ami a teljes CHECK-constraint-listát
+    // végigfuttatja azon a modulon; ide DB-oldali raw SQL miatt nem
+    // importálható közvetlenül).
     return db.select({
       pretrial: s<number>`count(*) FILTER (WHERE ${schema.courtVerdicts.verdictType} = 'előzetesben')::int`,
       elitelt: s<number>`count(*) FILTER (WHERE ${schema.courtVerdicts.verdictType} NOT IN ('előzetesben', 'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve'))::int`,

@@ -10,8 +10,8 @@ import { PodcastSpotlight } from '../_home/podcast-spotlight';
 import { PodcastFeatureFull } from '../_home/podcast-feature-full';
 
 export const metadata: Metadata = {
-  title: 'Podcastok',
-  description: 'A témába vágó YouTube-videók és podcastok gyűjteménye — automatikusan gyűjtve. Kattints, és nézd meg a legfrissebbeket!',
+  title: { absolute: 'Podcastok' },
+  description: 'NER-kritikus YouTube-videók és podcastok gyűjteménye — a Juhi NER100-tól Tompos Márton Orbánék-sorozatáig. Kattints, és nézd meg a legfrissebbeket!',
   openGraph: { title: 'Podcastok — Kegyencjárat', description: 'A témába vágó YouTube-videók és podcastok gyűjteménye.' },
 };
 

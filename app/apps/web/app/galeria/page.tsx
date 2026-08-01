@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import GaleriaClient from './GaleriaClient';
 
 export const metadata: Metadata = {
-  title: 'Galéria',
-  description: 'A NER kegyenceinek arcképcsarnoka — ügyek, összegek és státuszok egy helyen. Kattints, és nézd meg, ki kicsoda!',
+  title: { absolute: 'Galéria' },
+  description: '10 kiemelt NER-vezető arcképcsarnoka — Orbántól Mészárosig, ügyekkel és összegekkel. Kattints, és nézd meg, milyen gyanús ügyeik vannak!',
   openGraph: { title: 'Galéria — Kegyencjárat', description: 'A NER kegyenceinek arcképcsarnoka.' },
 };
 

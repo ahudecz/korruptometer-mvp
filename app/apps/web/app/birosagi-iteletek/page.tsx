@@ -2,8 +2,8 @@ import { desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 
 export const metadata = {
-  title: 'Börtönben van-e?',
-  description: 'Nyomon követjük a NER-hez köthető korrupciós ügyek bírósági szakaszát. Kattints, és nézd meg, lett-e vádemelés!',
+  title: { absolute: 'Börtönben van-e?' },
+  description: 'NER-hez kapcsolható eljárások — előzetes letartóztatástól a jogerős ítéletig. Kattints, és nézd meg az eseteket!',
 };
 import { UGYEK } from '../_home/ugyek-config';
 import { toAsciiId } from '../_home/case-detail-config';

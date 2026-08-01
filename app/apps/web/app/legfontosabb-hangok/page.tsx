@@ -8,8 +8,8 @@ const PAGE_SIZE = 20;
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'A legfontosabb hangok',
-  description: 'Független oknyomozók, aktivisták és kritikus Facebook-oldalak, amikről a nagy hírportálok nem mindig írnak. Kattints, és kövesd őket!',
+  title: { absolute: 'A legfontosabb hangok' },
+  description: 'Független oknyomozók és kritikus közösségi oldalak, akiknek szerepe volt a NER lebontásában. Összegyűjtve, egy helyen.',
 };
 
 export default async function LegfontosabbHangokPage() {

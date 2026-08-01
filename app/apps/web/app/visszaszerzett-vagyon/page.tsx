@@ -4,12 +4,13 @@ import { getDb, schema } from '@/lib/db';
 import { UGYEK } from '../_home/ugyek-config';
 import { FtValue } from '../_home/ft-value';
 import { RecoveryRow, stopRowClick, type RecoveryRowTarget } from './recovery-row';
+import { computeRecoveryTotal } from './recovery-stats';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Visszaszerzett vagyon',
-  description: 'Nyomon követjük a NER-korszakban eltűnt, majd visszaszerzett közpénzt és vagyont. Kattints, és nézd meg az eseteket!',
+  title: { absolute: 'Visszaszerzett vagyon' },
+  description: 'Nyomon követjük, mennyi NER-korszakban eltűnt közpénz és vagyon térült meg eddig. Kattints, és nézd meg, hol áll a mutató!',
 };
 
 const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
@@ -59,7 +60,7 @@ export default async function VisszaszerzettVagyonPage({
     .sort((a, b) => Number(b.totalFt - a.totalFt))
     .slice(0, 8);
 
-  const totalAll = rows.reduce((s, r) => s + r.amountFt, 0n);
+  const totalAll = computeRecoveryTotal(rows);
   const recoveryPct = Number(totalAll) / Number(RECOVERY_GOAL_FT) * 100;
   // A csík maga a valós %-ot mutatja, de kap egy minimális látható szélességet
   // (0,6%) is, hogy ne tűnjön el teljesen a sáv elején egy kis összegnél.

@@ -9,7 +9,7 @@ import { WATCH_LIST } from '../../../_home/watchlist-config';
 import { PERSON_PHOTOS, cleanTitle, toAsciiId } from '../../../_home/case-detail-config';
 import { getPersonRollup } from '../../../_home/person-rollup-config';
 import { DescBlock } from '../../_components/desc-block';
-import { truncate, withCta, ctaPerson } from '../../../_home/seo';
+import { withCta, ctaPerson } from '../../../_home/seo';
 import { PersonGaleriaPromo, CrossAdatbazisSzemelyek, CrossUgyek, CrossBirosag } from '../../../_home/cross-promo';
 
 import { getDb } from '@/lib/db';
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   for (const r of rows) total += BigInt(r.damage_huf ?? 0);
 
   return {
-    title: truncate(`${config.personName} összes ügye`, 40),
+    title: { absolute: `${config.personName} összes ügye` },
     description: withCta(
       `${config.personName} ${fmtNumber(rows.length)} dokumentált ügye, összesen ${fmtFt(total)} érintett közpénzzel`,
       ctaPerson(),

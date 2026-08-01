@@ -8,9 +8,23 @@ import { UGYEK, UGYEK_REDIRECTS, type DescriptionBlock, type BreakingGroupArticl
 import { GALERIA } from '../../_home/galeria-config';
 import { WATCH_LIST } from '../../_home/watchlist-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../_home/cross-promo';
-import { truncate, withCta, ctaGeneric } from '../../_home/seo';
 
 export const dynamic = 'force-dynamic';
+
+// Kézzel írt SEO-leírás mind a 8 kiemelt ügyre — nem az on-page `summary`
+// gépi levágása (2026-07-31, user kérés). Egy tömör, konkrét tényt emel ki,
+// ami a 155 karakteres kereten belül is önmagában megáll.
+const UGY_SEO: Record<string, string> = {
+  'nka-botrany': 'Hankó Balázs 17 milliárd forintnyi NKA-pénzt osztott szét politikai céllal — a NAV hűtlen kezelés gyanújával nyomoz.',
+  'aranykonvoj': 'TEK-kommandósok állítottak meg egy 27 milliárdos ukrán aranyszállítmányt — Orbán kormánya rendelte el a rajtaütést.',
+  'parkfenntartas': '8 politikust — Fidesz, DK, Momentum, MSZP — tartóztattak le 2 milliárd forintos budapesti kenőpénzbotrányban.',
+  'lelegeztetogep': 'Az EU legdrágábban vette a kínai lélegeztetőgépeket — Orbán tanácsadójának fivére milliárdos osztalékot vett fel.',
+  'hatvanpuszta': 'Orbán Viktor majorságának valódi tulajdonosa és finanszírozása mind a mai napig ismeretlen.',
+  'mnb-botrany': 'Matolcsy 266 milliárd forintot csatornázott MNB-alapítványokba — 2026-ban nyomozás indult ellene.',
+  'ki-az-a-zsolt-bacsi': 'A Szőlő utcai gyermekvédelmi botrány koronatanúja — a kormány a nyilvánosságra kerülés után ellentámadásba lendült.',
+  'pecsi-volvo-gate': 'A pécsi Tüke Zrt. 700 milliós közkárral vett használt Volvo buszokat egy fideszes képviselőhöz köthető cégtől.',
+};
+const UGY_CTA = 'Kattints, és ismerd meg a részleteket!';
 
 // Egy csupa-nagybetűs kulcsszó (pl. "NKA", "MNB") kis- és nagybetűre
 // nem érzékeny (ILIKE) substring-illesztéssel véletlen egyezéseket ad —
@@ -30,9 +44,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const entry = UGYEK.find((u) => u.id === id);
   if (!entry) return {};
+  const base = UGY_SEO[id] ?? entry.summary;
   return {
-    title: truncate(entry.title, 40),
-    description: withCta(entry.summary, ctaGeneric()),
+    title: { absolute: entry.title },
+    description: `${base} ${UGY_CTA}`,
   };
 }
 

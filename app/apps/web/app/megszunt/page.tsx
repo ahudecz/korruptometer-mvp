@@ -2,12 +2,13 @@ import type { Metadata } from 'next';
 import { desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { CrossLemondosok, CrossUgyek, CrossGaleria, CrossFelszolitottak } from '../_home/cross-promo';
+import { computeMediaClosureStats } from './media-closure-stats';
 
 export const revalidate = 120;
 
 export const metadata: Metadata = {
-  title: 'Megszűnt-e már?',
-  description: 'Nyomon követjük a NER propagandamédiájának felszámolását. Kattints, és nézd meg, melyik szűnt meg, melyik él még!',
+  title: { absolute: 'Megszűnt-e már?' },
+  description: '75 NER-közeli médiumot követünk nyomon — melyik szűnt meg, melyik él túl mindent. Kattints, és nézd meg a listát!',
   openGraph: { title: 'Megszűnt-e már? — Kegyencjárat', description: 'A NER propagandamédiumainak felszámolása nyomon követve.' },
 };
 
@@ -36,9 +37,11 @@ export default async function MegszuntPage() {
     .orderBy(desc(schema.mediaClosures.eventDate))
     .limit(200);
 
-  const megszuntCount = rows.filter(r => r.eventType === 'megszűnés').length;
-  const leepitesCount = rows.filter(r => r.eventType === 'leépítés').length;
-  const mediaCount = megszuntCount + leepitesCount;
+  // media-closure-stats.ts: tesztelt, egyetlen forrás — l.
+  // media-closure-stats.test.ts (2026-08-02, user report: ez a szám korábban
+  // csak megszűnés+leépítés sorokat számolt, a táblázat viszont mindet
+  // kiírta, így élesben 19-et mutatott a valós 21 helyett).
+  const { mediaCount, megszuntCount, leepitesCount } = computeMediaClosureStats(rows);
 
   return (
     <div className="news-section-wrap">

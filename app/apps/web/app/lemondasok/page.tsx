@@ -4,10 +4,11 @@ import { and, asc, desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { getActiveBreaking, findBreakingForName } from '@/lib/breaking';
 import { ResignationList, type SerializedResignation } from './resignation-list';
+import { computeResignationStats } from './resignation-stats';
 
 export const metadata: Metadata = {
-  title: 'Lemondott-e már?',
-  description: 'Nyomon követjük, hogy a NER kegyenceinek lemondását ki és mikor teljesítette. Kattints, és nézd meg, ki húzza még mindig!',
+  title: { absolute: 'Lemondott-e már?' },
+  description: 'Magyar Péter 8 NER-közeli tisztségviselőt szólított fel lemondásra. Kattints, és nézd meg, ki adta már be a lemondását!',
   openGraph: { title: 'Lemondott-e már? — Kegyencjárat', description: 'Ki mondott le, és ki húzza még mindig.' },
 };
 import { WatchlistGrid } from '../_home/watchlist-grid';
@@ -75,9 +76,11 @@ export default async function LemondasokPage({ searchParams }: { searchParams: S
   // törvényi kizárás az AB-ból — nem lemondás, nem is szűk értelemben vett
   // kirúgás/felmentés) is számítsanak bele az összesítőbe, a "Kirúgás /
   // felmentés" kártyába csoportosítva (egyik sem önkéntes lemondás).
-  const kirugasFelmentesCount = rows.filter(r => (r.resignationType === 'kirúgás' || r.resignationType === 'felmentés' || r.resignationType === 'egyéb') && !r.name.includes('szerkesztőség')).length;
-  const lemondasCount = rows.filter(r => r.resignationType === 'lemondás').length;
-  const osszes = kirugasFelmentesCount + lemondasCount;
+  // resignation-stats.ts: egyetlen, tesztelt forrás — l. resignation-stats.test.ts,
+  // ami minden élő resignation_type enum-értékre garantálja, hogy vagy
+  // kizárt, vagy pontosan egy kártyába van sorolva (2026-08-02, user report:
+  // a hub-oldal és a nyitóoldal total-ja folyamatosan szétcsúszott).
+  const { osszes, kirugasFelmentesCount, lemondasCount, visszahivasCount } = computeResignationStats(rows);
   const szerkLeepitesCount = mediaLeepites.length;
 
   return (
@@ -294,7 +297,7 @@ export default async function LemondasokPage({ searchParams }: { searchParams: S
               felmentett emberről, aki még nem szerepel a listában, írj nekünk a{' '}
               <a href="mailto:hello@kegyencjarat.hu">hello@kegyencjarat.hu</a> címre.
             </p>
-            <div className="megszunt-stats megszunt-stats--4" style={{ marginBottom: 32 }}>
+            <div className="megszunt-stats megszunt-stats--5" style={{ marginBottom: 32 }}>
               <div className="megszunt-stat">
                 <div className="megszunt-stat-value">{osszes}</div>
                 <div className="megszunt-stat-label">NER-káder távozott összesen</div>
@@ -306,6 +309,10 @@ export default async function LemondasokPage({ searchParams }: { searchParams: S
               <div className="megszunt-stat">
                 <div className="megszunt-stat-value" style={{ color: '#4B7AFF' }}>{lemondasCount}</div>
                 <div className="megszunt-stat-label">Lemondás</div>
+              </div>
+              <div className="megszunt-stat">
+                <div className="megszunt-stat-value megszunt-stat-value--purple">{visszahivasCount}</div>
+                <div className="megszunt-stat-label">↩ Visszahívás</div>
               </div>
               <div className="megszunt-stat">
                 <div className="megszunt-stat-value megszunt-stat-value--orange">{szerkLeepitesCount}</div>
