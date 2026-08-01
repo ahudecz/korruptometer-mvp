@@ -5,6 +5,8 @@ import {
   isCountedDeparture,
   isSzerkesztosegName,
   RESIGNATION_EXCLUDED_TYPES,
+  RESIGNATION_TYPE_LABEL,
+  RESIGNATION_TYPE_COLOR,
   type ResignationStatRow,
 } from './resignation-stats';
 
@@ -65,5 +67,20 @@ describe('computeResignationStats', () => {
   it('isSzerkesztosegName is case-insensitive', () => {
     expect(isSzerkesztosegName('Valami SZERKESZTŐSÉGE')).toBe(true);
     expect(isSzerkesztosegName('Teszt Elek')).toBe(false);
+  });
+});
+
+describe('RESIGNATION_TYPE_LABEL / RESIGNATION_TYPE_COLOR', () => {
+  // 2026-08-02, user report: a nyitóoldal (resignations-section.tsx) saját,
+  // harmadik szín/címke-térképet tartott karban, aminek nem volt
+  // 'visszahívás' bejegyzése — szürkén jelent meg élesben, miközben a
+  // /lemondasok lista már helyesen lilán mutatta. Ez a teszt biztosítja,
+  // hogy minden élő resignation_type mindkét (import szerint EGYETLEN,
+  // megosztott) térképben szerepeljen.
+  it('every live resignation_type has both a label and a color defined', () => {
+    for (const type of ALL_TYPES) {
+      expect(RESIGNATION_TYPE_LABEL[type], `missing label for "${type}"`).toBeDefined();
+      expect(RESIGNATION_TYPE_COLOR[type], `missing color for "${type}"`).toBeDefined();
+    }
   });
 });

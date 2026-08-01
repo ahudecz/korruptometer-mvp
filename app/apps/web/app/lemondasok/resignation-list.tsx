@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
+import { RESIGNATION_TYPE_LABEL, RESIGNATION_TYPE_COLOR } from './resignation-stats';
 
 const SECTOR_OPTIONS = [
   { value: 'nemzetbiztonság', label: 'Nemzetbiztonság' },
@@ -38,19 +39,11 @@ export type SerializedResignation = {
 };
 
 function typeLabel(t: string): string {
-  if (t === 'lemondás') return '↓ Lemondás';
-  if (t === 'kirúgás') return '✕ Kirúgás';
-  if (t === 'felmentés') return '⟲ Felmentés';
-  if (t === 'visszahívás') return '↩ Visszahívás';
-  return t;
+  return RESIGNATION_TYPE_LABEL[t] ?? t;
 }
 
 function typeColor(t: string): string {
-  if (t === 'lemondás') return '#4B7AFF';
-  if (t === 'kirúgás') return '#E31937';
-  if (t === 'felmentés') return '#FF9D00';
-  if (t === 'visszahívás') return '#8A5CF6';
-  return '#666';
+  return RESIGNATION_TYPE_COLOR[t] ?? '#666';
 }
 
 const cellStyle = { padding: '12px', color: '#666' } as const;

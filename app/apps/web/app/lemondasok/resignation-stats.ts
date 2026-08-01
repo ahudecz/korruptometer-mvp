@@ -50,6 +50,32 @@ export interface ResignationStats {
   uncategorizedCount: number;
 }
 
+// Egyetlen forrás a resignationType → címke/szín leképezésre is — 2026-08-02,
+// user report: a nyitóoldal (resignations-section.tsx) saját, harmadik,
+// egymástól függetlenül karbantartott TYPE_COLOR/TYPE_LABEL térképet
+// tartott, aminek szintén nem volt 'visszahívás' bejegyzése, ezért szürkén
+// jelent meg élesben a lemondasok/resignation-list.tsx-en már lila
+// badge-ként helyesen mutatott típus. A lenti két map az EGYETLEN hely,
+// ahol ez definiálva van — l. resignation-stats.test.ts, ami minden élő
+// resignation_type enum-értékre garantálja, hogy mindkettőben szerepel.
+export const RESIGNATION_TYPE_LABEL: Record<string, string> = {
+  'lemondás': '↓ Lemondás',
+  'kirúgás': '✕ Kirúgás',
+  'felmentés': '⟲ Felmentés',
+  'visszahívás': '↩ Visszahívás',
+  'egyéb': '◈ Egyéb',
+  'Hivatalban van': 'Hivatalban van',
+};
+
+export const RESIGNATION_TYPE_COLOR: Record<string, string> = {
+  'lemondás': '#4B7AFF',
+  'kirúgás': '#E31937',
+  'felmentés': '#FF9D00',
+  'visszahívás': '#8A5CF6',
+  'egyéb': '#888888',
+  'Hivatalban van': '#666666',
+};
+
 export function computeResignationStats(rows: ResignationStatRow[]): ResignationStats {
   const counted = rows.filter(isCountedDeparture);
   const kirugasFelmentesCount = counted.filter(r => KIRUGAS_FELMENTES_TYPES.includes(r.resignationType)).length;
