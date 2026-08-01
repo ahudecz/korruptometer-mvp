@@ -13,6 +13,24 @@ export type ReviewDecision = 'approved' | 'pending' | 'discard';
 export const AUTO_PUBLISH_THRESHOLD = 0.77; // lowered from 0.9 — false positives get deleted after the fact instead of stuck in review
 export const REVIEW_FLOOR = 0.7; // FR-004 / FR-005
 export const DEDUP_WINDOW_DAYS = 30; // FR-009
+export const DESCRIPTION_WORD_LIMIT = 7; // matches the DB check constraints (migration 0034)
+
+/**
+ * PoliticalResignation.description and MediaClosure.description have a
+ * DB-level "max 7 words" check constraint (migration 0034 —
+ * memory/feedback-media-description-length.md: a long sentence-style
+ * description breaks the homepage KPI grid). The LLM prompt is supposed to
+ * keep to that on its own, but when it doesn't the old `.slice(0, 1000)`
+ * char-truncation let the row through to `db.insert()`, which then threw
+ * on the constraint and silently discarded the whole detection (2026-07-31
+ * — MediaClosure hadn't gotten a new row since 2026-07-07 because of this).
+ * Enforce the word limit in code so a verbose LLM output degrades to a
+ * shorter description instead of failing the insert.
+ */
+export function truncateDescriptionWords(value: string, limit = DESCRIPTION_WORD_LIMIT): string {
+  const words = value.trim().split(/\s+/).filter(Boolean);
+  return words.slice(0, limit).join(' ');
+}
 
 /**
  * Decide what to do with a detection.

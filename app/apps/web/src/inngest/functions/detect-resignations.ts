@@ -14,6 +14,7 @@ import {
   isWatchlistPerson,
   markChecked,
   NEAR_MISS_MIN,
+  truncateDescriptionWords,
 } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
@@ -211,7 +212,7 @@ async function processResignationArticle(
       institution: person.institution.slice(0, 200),
       resignationType: coerceResignationType(person.resignationType),
       resignationDate,
-      description: person.description.slice(0, 1000) || null,
+      description: truncateDescriptionWords(person.description.slice(0, 1000)) || null,
       sector: coerceSector(person.sector),
       pinned,
       reviewStatus,

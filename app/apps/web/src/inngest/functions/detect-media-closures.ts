@@ -8,6 +8,7 @@ import {
   isPlaceholderName,
   markChecked,
   NEAR_MISS_MIN,
+  truncateDescriptionWords,
   type CandidateArticle,
 } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
@@ -151,7 +152,7 @@ async function processClosureArticle(
   const [insertedRow] = await db.insert(schema.mediaClosures).values({
     name: result.name.slice(0, 200),
     eventType: coerceClosureEventType(result.eventType),
-    description: result.description.slice(0, 1000) || null,
+    description: truncateDescriptionWords(result.description.slice(0, 1000)) || null,
     eventDate,
     sourceUrl: article.sourceUrl,
     sourceName: article.sourceName,
