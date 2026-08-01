@@ -9,6 +9,7 @@ import {
   type ClaimForCluster,
 } from '@/lib/investigation/cluster';
 import { normalizeName } from '@/lib/investigation/normalize-name';
+import { isBypassActive } from '@/lib/cron-bypass';
 import { inngest } from '../client';
 
 type TxClient = Parameters<
@@ -34,10 +35,16 @@ export const investigationCluster = inngest.createFunction(
       { key: 'event.data.claimIds', limit: 1 },
       { limit: 1 },
     ],
+    // 2026-07-31 — same fan-out-volume concern as investigation-extract-claims
+    // (this function's upstream, 1:1 per article). See that file's comment.
+    throttle: { limit: 15, period: '1h' },
     retries: 3,
   },
   { event: 'investigation.claims.extracted' },
   async ({ event, step }) => {
+    if (isBypassActive()) {
+      return { skipped: 'inngest_bypass_active' };
+    }
     const { articleSource, articleId, claimIds } = event.data;
     Sentry.addBreadcrumb({
       category: 'investigation.cluster',

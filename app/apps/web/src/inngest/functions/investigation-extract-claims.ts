@@ -108,6 +108,17 @@ export const investigationExtractClaims = inngest.createFunction(
       { key: 'event.data.articleId', limit: 1 },
       { limit: parseInt(process.env.EXTRACTION_CONCURRENCY ?? '2', 10) },
     ],
+    // 2026-07-31 — this is the fan-out entry point: scrape-news emits one
+    // investigation.article.ingested event PER new article, so this function's
+    // run count scales directly with scrape volume. The 2026-07-13..17 Inngest
+    // free-tier quota blowout (59k→166k executions in 4 days, l.
+    // memory/project-facebook-sync.md) is suspected to have come from this
+    // uncapped chain (extract-claims → cluster → downstream), which had only
+    // concurrency (parallelism) limits, not a volume cap. A throttle caps the
+    // absolute rate regardless of how many articles land in an hour, so
+    // re-enabling this chain (turning off PIPELINE_BYPASS_INNGEST) can't
+    // reproduce the same runaway — worst case, extraction lags behind scraping.
+    throttle: { limit: 15, period: '1h' },
     retries: 3,
   },
   { event: 'investigation.article.ingested' },

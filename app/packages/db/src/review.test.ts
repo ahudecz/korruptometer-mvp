@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decideComplaintTransition, decideStatus, findExistingComplaint, isDuplicate } from './review';
+import { decideComplaintTransition, decideStatus, findExistingComplaint, isDuplicate, truncateDescriptionWords } from './review';
 import { isWatchlistPerson, normalizeName } from './watchlist';
 
 describe('decideStatus', () => {
@@ -139,5 +139,26 @@ describe('findExistingComplaint', () => {
     const db = { execute: async () => { queried = true; return []; } };
     expect(await findExistingComplaint(db, '   ')).toBeNull();
     expect(queried).toBe(false);
+  });
+});
+
+describe('truncateDescriptionWords', () => {
+  it('leaves a description at or under the limit unchanged', () => {
+    expect(truncateDescriptionWords('rövid és tömör leírás')).toBe('rövid és tömör leírás');
+  });
+
+  it('cuts a longer description down to 7 words (matches the DB check constraint)', () => {
+    const long = 'ez egy nagyon hosszú mondat-szerű leírás ami elrontaná a homepage KPI grid elrendezését';
+    const result = truncateDescriptionWords(long);
+    expect(result.split(/\s+/)).toHaveLength(7);
+    expect(result).toBe('ez egy nagyon hosszú mondat-szerű leírás ami');
+  });
+
+  it('collapses stray whitespace/newlines before counting words', () => {
+    expect(truncateDescriptionWords('  egy   két\t三\nnégy öt hat hét nyolc  ')).toBe('egy két 三 négy öt hat hét');
+  });
+
+  it('returns an empty string for empty/whitespace-only input', () => {
+    expect(truncateDescriptionWords('   ')).toBe('');
   });
 });
