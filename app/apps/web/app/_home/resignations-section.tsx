@@ -2,26 +2,15 @@ import Link from 'next/link';
 import type { PoliticalResignation } from '@korr/db';
 import { findBreakingForName, type BreakingArticle } from '@/lib/breaking';
 import { WatchlistGrid } from './watchlist-grid';
+import { RESIGNATION_TYPE_LABEL, RESIGNATION_TYPE_COLOR } from '../lemondasok/resignation-stats';
 
 interface Props {
   resignations: PoliticalResignation[];
   breaking?: BreakingArticle[];
 }
 
-const TYPE_COLOR: Record<string, string> = {
-  'lemondás': '#4B7AFF',
-  'kirúgás': '#E31937',
-  'felmentés': '#FF9D00',
-};
-
-const TYPE_LABEL: Record<string, string> = {
-  'lemondás': '↓ Lemondás',
-  'kirúgás': '✕ Kirúgás',
-  'felmentés': '⟲ Felmentés',
-};
-
 function ResignationRow({ r, breakingArticle }: { r: PoliticalResignation; breakingArticle?: BreakingArticle | null }) {
-  const color = TYPE_COLOR[r.resignationType] ?? '#666';
+  const color = RESIGNATION_TYPE_COLOR[r.resignationType] ?? '#666';
   // 2026-07-26 — user kérés: a kiemelt/figyelt személyek (WATCH_LIST +
   // PERMANENT_BREAKING_NAMES, l. watchlist.ts) örökre BREAKING-jelölést
   // kapnak itt is, nem csak a friss (7 napon belüli) cikkes esetben.
@@ -57,7 +46,7 @@ function ResignationRow({ r, breakingArticle }: { r: PoliticalResignation; break
           backgroundColor: `${color}18`,
           color,
         }}>
-          {TYPE_LABEL[r.resignationType] ?? r.resignationType}
+          {RESIGNATION_TYPE_LABEL[r.resignationType] ?? r.resignationType}
         </span>
       </td>
       <td style={{ color: '#666' }}>

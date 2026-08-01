@@ -312,7 +312,7 @@ export default async function LemondasokPage({ searchParams }: { searchParams: S
               </div>
               <div className="megszunt-stat">
                 <div className="megszunt-stat-value megszunt-stat-value--purple">{visszahivasCount}</div>
-                <div className="megszunt-stat-label">↩ Visszahívás</div>
+                <div className="megszunt-stat-label">Visszahívás</div>
               </div>
               <div className="megszunt-stat">
                 <div className="megszunt-stat-value megszunt-stat-value--orange">{szerkLeepitesCount}</div>
