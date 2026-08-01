@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { ComplaintList, type SerializedComplaint } from './ComplaintList';
+import { isReleased, computeVerdictStats } from './verdict-stats';
 
 export type SerializedVerdict = {
   id: string;
@@ -38,12 +39,6 @@ const YEAR_RANGES: Record<string, [number, number | null]> = {
   '11-15': [11, 15],
   '15+':   [15, null],
 };
-
-const RELEASED_TYPES = ['szabadlábra helyezve', 'eljárás megszűnt', 'felmentve'] as const;
-type ReleasedType = typeof RELEASED_TYPES[number];
-function isReleased(t: string): t is ReleasedType {
-  return (RELEASED_TYPES as readonly string[]).includes(t);
-}
 
 function releasedLabel(t: string) {
   if (t === 'szabadlábra helyezve') return 'KIENGEDVE';
@@ -349,10 +344,10 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
   const hasFilter = search || verdictTypeFilter !== 'all' || complaintStatusFilter !== 'all' || crimeFilter.length > 0 || yearRange !== 'all' || courtFilter !== 'all' || ugyFilter !== 'all';
   const activeFiltered   = filtered.filter(r => !isReleased(r.verdictType));
   const releasedFiltered = filtered.filter(r => isReleased(r.verdictType));
-  const nonPretrial   = activeFiltered.filter(r => r.verdictType !== 'előzetesben');
-  const totalYears    = nonPretrial.reduce((s, r) => s + r.sentenceYears, 0);
-  const jogerosCount  = nonPretrial.filter(r => r.verdictType === 'jogerős').length;
-  const pretrialCount = activeFiltered.filter(r => r.verdictType === 'előzetesben').length;
+  // verdict-stats.ts: tesztelt, egyetlen forrás — l. verdict-stats.test.ts,
+  // ami minden CHECK-constraint-listás verdictType értékre garantálja, hogy
+  // pontosan egy kártyába/számlálóba esik (2026-08-02, user report).
+  const { pretrialCount, nonPretrialCount, jogerosCount, totalYears } = computeVerdictStats(filtered);
 
   function clearAll() {
     setSearch(''); setVerdictTypeFilter('all'); setComplaintStatusFilter('all'); setCrimeFilter([]); setYearRange('all'); setCourtFilter('all'); setUgyFilter('all');
@@ -371,7 +366,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
           <div className="megszunt-stat-label">Előzetesben van</div>
         </div>
         <div className="megszunt-stat">
-          <div className="megszunt-stat-value">{nonPretrial.length}</div>
+          <div className="megszunt-stat-value">{nonPretrialCount}</div>
           <div className="megszunt-stat-label">Ítélet összesen</div>
         </div>
         <div className="megszunt-stat">

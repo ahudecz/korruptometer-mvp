@@ -41,6 +41,7 @@ function typeLabel(t: string): string {
   if (t === 'lemondás') return '↓ Lemondás';
   if (t === 'kirúgás') return '✕ Kirúgás';
   if (t === 'felmentés') return '⟲ Felmentés';
+  if (t === 'visszahívás') return '↩ Visszahívás';
   return t;
 }
 
@@ -48,6 +49,7 @@ function typeColor(t: string): string {
   if (t === 'lemondás') return '#4B7AFF';
   if (t === 'kirúgás') return '#E31937';
   if (t === 'felmentés') return '#FF9D00';
+  if (t === 'visszahívás') return '#8A5CF6';
   return '#666';
 }
 

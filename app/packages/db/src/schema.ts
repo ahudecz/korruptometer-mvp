@@ -1327,6 +1327,7 @@ export const resignationTypeEnum = pgEnum('resignation_type', [
   'felmentés',
   'egyéb',
   'Hivatalban van',
+  'visszahívás',
 ]);
 
 export const resignationSectorEnum = pgEnum('resignation_sector', [

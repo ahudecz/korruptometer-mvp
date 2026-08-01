@@ -5,8 +5,8 @@ import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } fro
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Kiemelt ügyek',
-  description: 'A legdurvább, folyamatosan frissülő korrupciós ügyek szerkesztőségi válogatása. Kattints, és nézd meg, mi derült ki eddig!',
+  title: { absolute: 'Kiemelt ügyek' },
+  description: 'A legdurvább NER-es korrupciós ügyek egy helyen — az NKA-botránytól az aranykonvojig. Kattints, és nézd meg, mi derült ki eddig!',
   openGraph: { title: 'Kiemelt ügyek — Kegyencjárat', description: 'A legdurvább, folyamatosan frissülő korrupciós ügyek szerkesztőségi válogatása.' },
 };
 

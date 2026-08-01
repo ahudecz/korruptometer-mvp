@@ -10,17 +10,34 @@ import { GALERIA, type GaleriaDetention, type GaleriaHair } from '../../_home/ga
 import { UGYEK } from '../../_home/ugyek-config';
 import { getPersonRollup } from '../../_home/person-rollup-config';
 import { CrossLemondosok, CrossMegszunt } from '../../_home/cross-promo';
-import { truncate, withCta, ctaPerson } from '../../_home/seo';
 
 export const dynamic = 'force-dynamic';
+
+// Kézzel írt SEO-leírás mind a 10 galéria-profilra — nem az on-page
+// `description` gépi levágása (2026-07-31, user kérés). Egy tömör, konkrét
+// tényt emel ki, ami a 155 karakteres kereten belül is önmagában megáll.
+const GALERIA_SEO: Record<string, string> = {
+  'orban-viktor': '16 éves kormányzása alatt állami vagyon és közpénz áramlott a hozzá közelálló vállalkozókhoz.',
+  'rogan-antal': 'Belügyminiszterként felügyelte a letelepedésikötvény-programot — a jutalékok Rogán-közeli offshore-okba folytak.',
+  'meszaros-lorinc': 'Orbán gyerekkori barátjaként pár száz milliós vagyonból 2026-ra közel 900 milliárd forintos vagyont épített.',
+  'tiborcz-istvan': 'Orbán veje 50 milliárdos EU-s közvilágítási szerződést szerzett — az OLAF 16 milliárd visszafizetését javasolta.',
+  'szijjarto-peter': 'Külügyminiszterként azeri és orosz energetikai cégekhez fűződő kapcsolatai parlamenti vizsgálat tárgyát képezik.',
+  'takacs-peter': 'A lélegeztetőgép-botrányban sógora és Orbán főtanácsadójának fivére milliárdos osztalékot vont ki egy közös cégből.',
+  'matolcsy-gyorgy': 'MNB-elnökként 266 milliárd forintot csatornázott alapítványokba — 2026-ban nyomozás indult ellene.',
+  'lazar-janos': '46 ingatlan, 3 luxusautó — batidai kastélyát 3,3 milliárd forint közpénzből újíttatta fel saját miniszterségeként.',
+  'balasy-gyula': 'A New Land Media alapítója 700 milliárd forintnyi állami reklámpénzt csatornázott a Fidesz-közeli médián keresztül.',
+  'semjen-zsolt': 'KDNP-elnökként az egyházi normatívák és ingatlan-visszaadások révén évi tízmilliárdokat juttatott egyházaknak.',
+};
+const GALERIA_CTA = 'Kattints, és nézd meg az összes ügyét!';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const entry = GALERIA.find((e) => e.id === id);
   if (!entry) return {};
+  const base = GALERIA_SEO[id] ?? entry.description;
   return {
-    title: truncate(entry.name, 40),
-    description: withCta(entry.description, ctaPerson()),
+    title: { absolute: entry.name },
+    description: `${base} ${GALERIA_CTA}`,
   };
 }
 

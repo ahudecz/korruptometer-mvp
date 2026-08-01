@@ -138,6 +138,64 @@ button {
 .nav-links a:hover {
   opacity: 0.55;
 }
+.nav-dropdown {
+  position: relative;
+}
+.nav-dropdown-caret {
+  display: inline-block;
+  font-size: 10px;
+  margin-left: 2px;
+  opacity: 0.6;
+  transition: transform 0.15s ease;
+}
+.nav-dropdown:hover .nav-dropdown-caret,
+.nav-dropdown:focus-within .nav-dropdown-caret {
+  transform: rotate(180deg);
+}
+.nav-dropdown-menu {
+  position: absolute;
+  /* top: 100% (nulla rés a trigger és a menü között) — egy margin-top-tal
+     nyitott rés megszakítaná a :hover-láncot, mert a kurzor a rés üres
+     területén se a triggert, se a menüt nem hoverelné, és a menü idő előtt
+     eltűnne, mielőtt a kurzor elérné. */
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 10px 6px 6px;
+  min-width: 170px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+}
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown:focus-within .nav-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+.nav-dropdown-menu a {
+  display: block;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--ink);
+  text-decoration: none;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.nav-dropdown-menu a:hover {
+  background: rgba(0, 0, 0, 0.05);
+  opacity: 1;
+}
 .nav-cta {
   background: var(--ink);
   color: #fff;
@@ -170,10 +228,31 @@ button {
   transform-origin: center;
 }
 
+/* A 8 elemes nav (2 lenyílóval) ~1150-1250px körül már nem fér ki egy
+   sorba — a "Bejelentés tétele" CTA kilóg a viewportból (2026-07-15, mért
+   érték: 1100px szélességnél már ~80px-szel túllóg). Ez lefedi a legtöbb
+   14"-os laptop logikai felbontását (1280/1366/1440 méréseknél még bőven
+   elfér, de zoomolva vagy kisebb effektív szélességnél már nem) — ezért a
+   hamburger-váltás küszöbét a korábbi 720px-ről jóval feljebb, 1300px-re
+   emeltük, biztos ráhagyással.  */
+@media (max-width: 1300px) {
+  .nav-links,
+  .nav-cta {
+    display: none;
+  }
+  .hamburger {
+    display: block;
+  }
+}
+
 /* ─── Mobil overlay menü ─────────────────────────────────────────── */
 .mobile-overlay {
   position: fixed;
   inset: 0;
+  /* iOS Safari a base 'inset: 0'-t a nagy (cím/eszköztárral együtt számolt)
+     viewporthoz igazítja, ami a tényleges látható területnél nagyobb lehet —
+     a 100dvh a ténylegesen látható magassághoz igazít, ahol támogatott. */
+  height: 100dvh;
   background: var(--ink);
   z-index: 998;
   padding: 88px 28px 40px;
@@ -201,14 +280,69 @@ button {
   display: block;
   color: rgba(255,255,255,0.85);
   font-family: 'Archivo', sans-serif;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
-  padding: 16px 0;
+  padding: 12px 0;
   border-bottom: 1px solid rgba(255,255,255,0.1);
   text-decoration: none;
   letter-spacing: -0.01em;
 }
 .mobile-nav-link:hover {
+  color: #fff;
+}
+.mobile-nav-group {
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.mobile-nav-group-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: rgba(255,255,255,0.85);
+  font-family: 'Archivo', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  padding: 12px 0;
+  text-align: left;
+}
+.mobile-nav-group-trigger:hover,
+.mobile-nav-group-trigger[aria-expanded="true"] {
+  color: #fff;
+}
+.mobile-nav-group-caret {
+  font-size: 15px;
+  opacity: 0.6;
+  transition: transform 0.2s ease;
+}
+.mobile-nav-group-trigger[aria-expanded="true"] .mobile-nav-group-caret {
+  transform: rotate(180deg);
+}
+.mobile-nav-group-children {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.2s ease;
+}
+.mobile-nav-group-children[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.mobile-nav-group-children > div {
+  overflow: hidden;
+  min-height: 0;
+}
+.mobile-nav-group-link {
+  display: block;
+  color: rgba(255,255,255,0.6);
+  font-family: 'Archivo', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 10px 0 10px 14px;
+  text-decoration: none;
+}
+.mobile-nav-group-link:hover {
   color: #fff;
 }
 .mobile-nav-cta {
@@ -5967,13 +6101,6 @@ button {
   .nav-inner {
     padding: 14px 20px;
   }
-  .nav-links,
-  .nav-cta {
-    display: none;
-  }
-  .hamburger {
-    display: block;
-  }
   .hero {
     padding: 60px 20px 40px;
   }
@@ -11212,6 +11339,7 @@ body:has(.admin-nav) > main {
 .megszunt-stat-value--red   { color: #E31937; }
 .megszunt-stat-value--orange { color: #FF9D00; }
 .megszunt-stat-value--blue  { color: #4B7AFF; }
+.megszunt-stat-value--purple { color: #8A5CF6; }
 
 .megszunt-stat-label {
   font-size: 12px;
@@ -11394,10 +11522,10 @@ body:has(.admin-nav) > main {
   }
   /* 2026-07-23 — user report: Lázár János fotója a mobil-only taller crop
      (fent) mellett balra vágta a bal szemét. Csak mobilon, csak ennél a
-     fotónál tolva jobbra — desktopon (720px fölött) az eredeti,
+     fotónál tolva jobbra — deszkabon (720px fölött) az eredeti,
      középre-fent object-position marad jó. */
   .rogue--lazar-photo-shift .rogue-photo {
-    object-position: 42.5% top;
+    object-position: 65% top;
   }
   .status-strip {
     font-size: 9px;

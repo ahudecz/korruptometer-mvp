@@ -6,8 +6,8 @@ import { getDb, schema } from '@/lib/db';
 import { NewsFilters } from './news-filters';
 
 export const metadata: Metadata = {
-  title: 'Hírek',
-  description: 'Releváns hírek és cikkek a dokumentált korrupciós ügyekről — automatikusan gyűjtve. Kattints, és olvasd el a legfrissebbeket!',
+  title: { absolute: 'Hírek' },
+  description: 'Percről percre frissülő hírfolyam a dokumentált korrupciós ügyekről — szerkesztői válogatás nélkül. Kattints, és olvasd el a legfrissebbeket!',
   openGraph: { title: 'Hírek — Kegyencjárat', description: 'Releváns hírek a dokumentált korrupciós ügyekről.' },
 };
 import { NewsGrid } from './news-grid';
