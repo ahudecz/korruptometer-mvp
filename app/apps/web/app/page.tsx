@@ -846,7 +846,7 @@ export default async function HomePage() {
               {latestClosures.map((c) => (
                 <MiniClosureCard key={c.id} name={c.name} eventType={c.eventType} eventDate={c.eventDate} sourceUrl={c.sourceUrl} sourceName={c.sourceName} />
               ))}
-              <Link href="/megszunt" className="closure-card-viewall">Összes megszűnt médium →</Link>
+              <Link href="/megszunt" className="closure-card-viewall">Összes megszűnt NER médium és intézmény →</Link>
             </div>
           </div>
           <div className="closure-teaser-group">
@@ -855,12 +855,12 @@ export default async function HomePage() {
               {pinnedClosures.map((c) => (
                 <MiniClosureCard key={c.id} name={c.name} eventType={c.eventType} eventDate={c.eventDate} sourceUrl={c.sourceUrl} sourceName={c.sourceName} />
               ))}
-              <Link href="/megszunt" className="closure-card-viewall">Összes megszűnt médium →</Link>
+              <Link href="/megszunt" className="closure-card-viewall">Összes megszűnt NER médium és intézmény →</Link>
             </div>
           </div>
         </div>
         <div className="elszamoltatas-more">
-          <Link href="/megszunt" className="btn-red">Összes megszűnt médium →</Link>
+          <Link href="/megszunt" className="btn-red">Összes megszűnt NER médium és intézmény →</Link>
         </div>
       </section>
 

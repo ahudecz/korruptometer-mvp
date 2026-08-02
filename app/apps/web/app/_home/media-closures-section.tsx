@@ -124,7 +124,7 @@ export function MediaClosuresSection() {
         })}
 
         <div className="elszamoltatas-more">
-          <Link href="/megszunt" className="btn-red">Összes megszűnt médium →</Link>
+          <Link href="/megszunt" className="btn-red">Összes megszűnt NER médium és intézmény →</Link>
         </div>
       </section>
     </div>
