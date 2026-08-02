@@ -25,7 +25,7 @@ const TOOL: LlmToolSpec = {
       },
       name: {
         type: 'string',
-        description: 'Name of the medium, show, or event. E.g. "Pesti Srácok", "Magyar Nemzet", "Tűzfalcsoport konferencia". Empty string if isClosure is false.',
+        description: 'Name of the SPECIFIC entity that is actually closing/laying off/being cancelled per the article — not any other NER-affiliated brand merely mentioned alongside it. E.g. if a parent foundation is dissolved but an outlet it owns is only discussed as "future undecided", extract the foundation\'s name, not the outlet\'s. E.g. "Pesti Srácok", "Magyar Nemzet", "Tűzfalcsoport konferencia". Empty string if isClosure is false.',
       },
       eventType: {
         type: 'string',
