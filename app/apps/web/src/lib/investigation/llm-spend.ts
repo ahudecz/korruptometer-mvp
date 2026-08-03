@@ -39,11 +39,22 @@ export async function probeDailySpend(
   const ceilingUsd = Number(process.env.LLM_DAILY_CEILING_USD ?? '0.50');
   const ceiling = (ceilingUsd * HUF_PER_USD).toFixed(2);
   void model; // kept in the signature for the call site / logging; no longer used to scope the query
+  // Postgres rejects `FOR UPDATE` directly on an aggregate SELECT ("FOR
+  // UPDATE is not allowed with aggregate functions", 0A000) — the row lock
+  // has to happen on the underlying rows in a subquery, with the SUM taken
+  // in the outer, lock-free query. This was broken from day one but only
+  // started erroring in prod on 2026-08-02 once native Inngest actually
+  // started invoking investigation.extract-claims for real again (the
+  // Vercel-cron bypass had this function as a no-op the whole time it was
+  // active, so the query never ran).
   const rows = (await tx.execute(sql`
-    SELECT COALESCE(SUM("estimatedHufSpend"), 0)::text AS current
-      FROM "DailyLlmUsage"
-     WHERE day = (now() AT TIME ZONE 'Europe/Budapest')::date
-     FOR UPDATE
+    SELECT COALESCE(SUM(current), 0)::text AS current
+      FROM (
+        SELECT "estimatedHufSpend" AS current
+          FROM "DailyLlmUsage"
+         WHERE day = (now() AT TIME ZONE 'Europe/Budapest')::date
+         FOR UPDATE
+      ) locked_rows
   `)) as Array<{ current: string }>;
   const current = rows[0]?.current ?? '0';
   const paused = Number(current) >= Number(ceiling);
