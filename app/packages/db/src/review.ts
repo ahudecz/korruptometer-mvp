@@ -16,6 +16,37 @@ export const DEDUP_WINDOW_DAYS = 30; // FR-009
 export const DESCRIPTION_WORD_LIMIT = 7; // matches the DB check constraints (migration 0034)
 
 /**
+ * Hungarian words that can never grammatically be the LAST word of a short
+ * label — either they are an attributive adjective/participle that modifies
+ * a noun which must follow ("helyettes kormányzó" → cutting after "helyettes"
+ * strands it without its noun), or a conjunction/relative pronoun/article
+ * that always introduces more text. A naive fixed-word-count cut can land
+ * exactly on one of these (2026-08-06 user report: "Felmentette Nagy
+ * Mártont az IMF-ben betöltött helyettes" — the source was "...betöltött
+ * helyettes kormányzói tisztségéből", 9 words, sliced to 7 mid-phrase).
+ * Not an exhaustive grammar check — a closed-class blocklist of the specific
+ * word types observed to produce this failure — but cheap and catches the
+ * pattern regardless of which detector/table produced the text.
+ */
+const DANGLING_LAST_WORDS = new Set([
+  // attributive adjectives/participles that require a following noun
+  'helyettes', 'volt', 'korábbi', 'jelenlegi', 'egykori', 'leendő',
+  'megbízott', 'ideiglenes', 'kinevezett', 'nyugalmazott', 'vezető', 'fő',
+  'társ', 'ügyvezető', 'betöltött', 'akkori', 'új', 'régi', 'soron',
+  // conjunctions / relative pronouns that always continue the sentence
+  'és', 'vagy', 'de', 'hogy', 'mint', 'mivel', 'ha', 'amely', 'amelyet',
+  'amelynek', 'aki', 'akit', 'akinek', 'ami', 'amit', 'amik', 'mert',
+  'illetve', 'valamint', 'majd', 'míg', 'pedig',
+  // bare articles that always need an object
+  'a', 'az', 'egy',
+]);
+
+function isDanglingLastWord(word: string): boolean {
+  const stripped = word.toLowerCase().replace(/[.,;:!?]+$/, '');
+  return DANGLING_LAST_WORDS.has(stripped);
+}
+
+/**
  * PoliticalResignation.description and MediaClosure.description have a
  * DB-level "max 7 words" check constraint (migration 0034 —
  * memory/feedback-media-description-length.md: a long sentence-style
@@ -26,10 +57,20 @@ export const DESCRIPTION_WORD_LIMIT = 7; // matches the DB check constraints (mi
  * — MediaClosure hadn't gotten a new row since 2026-07-07 because of this).
  * Enforce the word limit in code so a verbose LLM output degrades to a
  * shorter description instead of failing the insert.
+ *
+ * 2026-08-06 — cutting at a fixed word count can itself strand a dangling
+ * word at the new end (see DANGLING_LAST_WORDS above). After slicing to
+ * `limit`, keep dropping trailing words while the last one is a dangler, so
+ * the result is always a complete-reading phrase instead of a mid-word/
+ * mid-clause fragment. Also applied to inputs already at/under the limit —
+ * an LLM output can be short AND still end badly.
  */
 export function truncateDescriptionWords(value: string, limit = DESCRIPTION_WORD_LIMIT): string {
-  const words = value.trim().split(/\s+/).filter(Boolean);
-  return words.slice(0, limit).join(' ');
+  let words = value.trim().split(/\s+/).filter(Boolean).slice(0, limit);
+  while (words.length > 0 && isDanglingLastWord(words[words.length - 1]!)) {
+    words = words.slice(0, -1);
+  }
+  return words.join(' ');
 }
 
 /**
