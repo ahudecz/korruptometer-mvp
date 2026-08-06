@@ -150,8 +150,9 @@ describe('truncateDescriptionWords', () => {
   it('cuts a longer description down to 7 words (matches the DB check constraint)', () => {
     const long = 'ez egy nagyon hosszú mondat-szerű leírás ami elrontaná a homepage KPI grid elrendezését';
     const result = truncateDescriptionWords(long);
-    expect(result.split(/\s+/)).toHaveLength(7);
-    expect(result).toBe('ez egy nagyon hosszú mondat-szerű leírás ami');
+    // The naive 7-word cut would land on "ami" (a relative pronoun that
+    // always continues the sentence) — backed off to the last complete word.
+    expect(result).toBe('ez egy nagyon hosszú mondat-szerű leírás');
   });
 
   it('collapses stray whitespace/newlines before counting words', () => {
@@ -160,5 +161,55 @@ describe('truncateDescriptionWords', () => {
 
   it('returns an empty string for empty/whitespace-only input', () => {
     expect(truncateDescriptionWords('   ')).toBe('');
+  });
+
+  describe('dangling-word backoff (2026-08-06 IMF/Nagy Márton bug report)', () => {
+    it('backs off past an attributive adjective stranded by the word-count cut', () => {
+      // Real production bug: source text "...az IMF-ben betöltött helyettes
+      // kormányzói tisztségéből" (9 words) sliced to 7 stranded "helyettes"
+      // without the noun ("kormányzó") it modifies — nonsensical fragment.
+      const source = 'Felmentette Nagy Mártont az IMF-ben betöltött helyettes kormányzói tisztségéből';
+      const result = truncateDescriptionWords(source);
+      // Cascades twice: the 7-word cut lands on "helyettes" (dangling
+      // adjective), and the word before it, "betöltött", is itself a
+      // dangling participle too — both get dropped.
+      expect(result).toBe('Felmentette Nagy Mártont az IMF-ben');
+      expect(result.endsWith('helyettes')).toBe(false);
+      expect(result.endsWith('betöltött')).toBe(false);
+    });
+
+    it('backs off past a trailing conjunction', () => {
+      expect(truncateDescriptionWords('Lemondott a posztjáról és')).toBe('Lemondott a posztjáról');
+    });
+
+    it('backs off past a trailing relative pronoun', () => {
+      expect(truncateDescriptionWords('Felmentették a vezetői posztról, ami')).toBe('Felmentették a vezetői posztról,');
+    });
+
+    it('backs off past a bare trailing article', () => {
+      // Cascades through both trailing danglers ("a" then "és").
+      expect(truncateDescriptionWords('Bezárt a szerkesztőség és a')).toBe('Bezárt a szerkesztőség');
+    });
+
+    it('cascades through multiple trailing danglers', () => {
+      expect(truncateDescriptionWords('Kirúgták az igazgatót a volt')).toBe('Kirúgták az igazgatót');
+    });
+
+    it('leaves a short, already-complete description untouched', () => {
+      expect(truncateDescriptionWords('Kirúgták a Kulturális Minisztériumból')).toBe('Kirúgták a Kulturális Minisztériumból');
+    });
+
+    it('applies the same backoff to descriptions already at/under the limit', () => {
+      // Not every bad ending comes from truncation — a short LLM output can
+      // itself end on a dangler and must be caught the same way.
+      expect(truncateDescriptionWords('Felmentették a miniszter helyettes')).toBe('Felmentették a miniszter');
+    });
+
+    it('respects a non-default limit (CourtVerdict.description is max 6 words, migration 0035)', () => {
+      const source = 'Szakács István: 3 év börtön terrorcselekmény előkészítése miatt';
+      const result = truncateDescriptionWords(source, 6);
+      expect(result.split(/\s+/)).toHaveLength(6);
+      expect(result).toBe('Szakács István: 3 év börtön terrorcselekmény');
+    });
   });
 });

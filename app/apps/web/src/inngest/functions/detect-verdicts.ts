@@ -9,6 +9,7 @@ import {
   isWatchlistPerson,
   markChecked,
   NEAR_MISS_MIN,
+  truncateDescriptionWords,
   type CandidateArticle,
 } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
@@ -212,7 +213,15 @@ async function processVerdictArticle(
       sentenceLabel: (result.sentenceLabel ?? '').slice(0, 200),
       verdictDate,
       summary: result.summary.slice(0, 1000),
-      description: result.description ? result.description.slice(0, 200) : null,
+      // CourtVerdict.description has a DB-level "max 6 words" check
+      // constraint (migration 0035) — same class of bug as the
+      // PoliticalResignation/MediaClosure one truncateDescriptionWords was
+      // built for (2026-07-31: an over-limit value silently discards the
+      // whole insert). This table never got the guard wired in; a verbose
+      // LLM output would throw on the constraint unnoticed. truncateDescriptionWords
+      // also backs off a fixed-length cut that lands on a dangling word
+      // (2026-08-06 IMF/Nagy Márton bug — see review.ts).
+      description: result.description ? truncateDescriptionWords(result.description, 6) || null : null,
       sourceUrls: sql`array_append("sourceUrls", ${article.sourceUrl})`,
       sourceNames: sql`array_append("sourceNames", ${article.sourceName ?? ''})`,
       sourceHeadlines: sql`array_append("sourceHeadlines", ${article.headline.slice(0, 500)})`,
@@ -232,7 +241,15 @@ async function processVerdictArticle(
       verdictDate,
       court: (result.court || 'Ismeretlen bíróság').slice(0, 200),
       summary: result.summary.slice(0, 1000),
-      description: result.description ? result.description.slice(0, 200) : null,
+      // CourtVerdict.description has a DB-level "max 6 words" check
+      // constraint (migration 0035) — same class of bug as the
+      // PoliticalResignation/MediaClosure one truncateDescriptionWords was
+      // built for (2026-07-31: an over-limit value silently discards the
+      // whole insert). This table never got the guard wired in; a verbose
+      // LLM output would throw on the constraint unnoticed. truncateDescriptionWords
+      // also backs off a fixed-length cut that lands on a dangling word
+      // (2026-08-06 IMF/Nagy Márton bug — see review.ts).
+      description: result.description ? truncateDescriptionWords(result.description, 6) || null : null,
       sourceUrls: [article.sourceUrl],
       sourceNames: article.sourceName ? [article.sourceName] : [],
       sourceHeadlines: article.headline ? [article.headline.slice(0, 500)] : [],
