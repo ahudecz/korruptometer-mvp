@@ -2,7 +2,7 @@ import 'server-only';
 
 import { isRelevant } from '@korr/scrapers';
 
-import type { PodcastChannelConfig } from '@app/_home/podcast-channels-config';
+import { isBlockedPodcastVideoTitle, type PodcastChannelConfig } from '@app/_home/podcast-channels-config';
 
 export interface DiscoveredVideo {
   videoId: string;
@@ -95,8 +95,12 @@ export type VideoTier = 'in' | 'out' | 'maybe';
  *   'in'    — dedikált (alwaysRelevant) csatorna, vagy kulcsszó-egyezés → ingyen jóváhagyva
  *   'maybe' — relevantByDefault csatorna, nincs kulcsszó-egyezés → AI dönt (l. scrape-youtube.ts)
  *   'out'   — se csatorna, se kulcsszó nem indokolja → eldobva, AI nélkül
+ *
+ * A cím-tiltólista (BLOCKED_PODCAST_VIDEO_TITLES) MINDEN fenti szabályt
+ * megelőz, alwaysRelevant csatornáknál is — l. podcast-channels-config.ts.
  */
 export function classifyVideoTier(video: DiscoveredVideo, channel: PodcastChannelConfig): VideoTier {
+  if (isBlockedPodcastVideoTitle(video.title)) return 'out';
   if (channel.alwaysRelevant) return 'in';
   if (isRelevant(video.title, video.description)) return 'in';
   if (channel.relevantByDefault) return 'maybe';

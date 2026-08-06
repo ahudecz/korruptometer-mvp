@@ -28,6 +28,31 @@ export interface PodcastChannelConfig {
   viewThreshold: number;
 }
 
+/**
+ * Cím alapú spam-tiltólista — visszatérő "álfrissítés" videók, amik minden
+ * nap ÚJ videoId-vel és friss publishedAt-tel jelennek meg (a csatorna
+ * újra feltölti/reklónozza ugyanazt a régi felvételt), így a videoId-alapú
+ * dedup (scrape-youtube.ts knownSet) sose fogja meg őket. alwaysRelevant
+ * csatornáknál (viewThreshold=0, l. fent) ez emberi felülvizsgálat NÉLKÜL
+ * egyenesen a homepage hero-jába kerülne minden nap — ez a lista minden
+ * tier-kaput megelőz (l. classifyVideoTier, youtube-podcast-sync.ts),
+ * csatornafüggetlenül.
+ *
+ * 2026-08-06: user jelzés — a Molnár Áron csatorna 2026-07-17 óta
+ * gyakorlatilag minden nap újraposztolja ugyanazt a "Rendkívüli
+ * országgyűlés: Magyar Péter A Parlamentben, Óriási Vita!" videót (25 db
+ * DB-sor törölve, mindegyik erre a napi "1 órája feltöltve" trükkre esett
+ * be). Normalizált (trim + lowercase) egyezés a videó címén.
+ */
+export const BLOCKED_PODCAST_VIDEO_TITLES: string[] = [
+  'rendkívüli országgyűlés: magyar péter a parlamentben, óriási vita!',
+];
+
+export function isBlockedPodcastVideoTitle(title: string): boolean {
+  const normalized = title.trim().toLowerCase();
+  return BLOCKED_PODCAST_VIDEO_TITLES.includes(normalized);
+}
+
 export const PODCAST_CHANNELS: PodcastChannelConfig[] = [
   // ── Saját politikusi csatornák — minden videó eleve témába vágó ──────────
   {

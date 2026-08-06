@@ -43,4 +43,22 @@ describe('classifyVideoTier', () => {
   it('"out" ha nem relevantByDefault és nincs kulcsszó-egyezés', () => {
     expect(classifyVideoTier({ videoId: 'x', title: 'Random napi vlog', description: '', publishedAt: new Date() }, strictChannel)).toBe('out');
   });
+
+  it('"out" a cím-tiltólistán szereplő videóra, alwaysRelevant csatornánál is (2026-08-06 Molnár Áron-spam)', () => {
+    expect(
+      classifyVideoTier(
+        { videoId: 'x', title: 'Rendkívüli országgyűlés: Magyar Péter A Parlamentben, Óriási Vita!', description: '', publishedAt: new Date() },
+        alwaysRelevantChannel,
+      ),
+    ).toBe('out');
+  });
+
+  it('"out" a cím-tiltólistán szereplő videóra kis/nagybetű és szóköz eltéréssel is', () => {
+    expect(
+      classifyVideoTier(
+        { videoId: 'x', title: '  RENDKÍVÜLI ORSZÁGGYŰLÉS: Magyar Péter A Parlamentben, Óriási Vita!  ', description: '', publishedAt: new Date() },
+        alwaysRelevantChannel,
+      ),
+    ).toBe('out');
+  });
 });
