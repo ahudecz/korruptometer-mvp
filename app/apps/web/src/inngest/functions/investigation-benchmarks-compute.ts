@@ -24,6 +24,18 @@ import { inngest } from '../client';
 export const investigationBenchmarksCompute = inngest.createFunction(
   {
     id: 'investigation.benchmarks-compute',
+    // 2026-08-07 — investigation.xref fans this out ~13x per run (once per
+    // external-data adapter, see investigation-xref.ts), and each call
+    // recomputes EVERY dimension's cohort across the ENTIRE dataset (not
+    // just this investigation) — the most expensive function in the
+    // investigation pipeline, undebounced. investigation-score.ts already
+    // got this exact debounce on 2026-07-13 for the identical fan-out shape
+    // (its comment: "the primary driver of the Inngest Hobby-plan execution
+    // quota being blown through mid-month") — this function was flagged as
+    // the OTHER co-driver in that same investigation but never got the fix
+    // applied to itself. Measured impact 2026-08-07: 1,300 executions/24h
+    // here alone (of ~3,900 total, ~114k/50k monthly quota already blown).
+    debounce: { key: 'event.data.investigationId', period: '30s' },
     concurrency: [{ key: 'event.data.investigationId', limit: 1 }],
     retries: 3,
   },
