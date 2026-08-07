@@ -2,6 +2,25 @@ import { describe, expect, it } from 'vitest';
 import { decideComplaintTransition, decideStatus, findExistingComplaint, isDuplicate, truncateDescriptionWords } from './review';
 import { isWatchlistPerson, normalizeName } from './watchlist';
 
+// Drizzle's `sql` template tag returns an object tree (StringChunk literals
+// interleaved with params/nested SQL), not a plain string — this walks it
+// back into readable text so a mock db.execute() can assert on the query
+// shape (e.g. "does this include the createdAt window clause or not")
+// without a live database.
+function sqlToText(query: unknown): string {
+  const chunks = (query as { queryChunks?: unknown[] })?.queryChunks;
+  if (!chunks) return '';
+  return chunks
+    .map((c) => {
+      const withQueryChunks = c as { queryChunks?: unknown[] };
+      if (withQueryChunks?.queryChunks) return sqlToText(c);
+      const withValue = c as { value?: unknown[] };
+      if (Array.isArray(withValue?.value)) return withValue.value.join('');
+      return '?';
+    })
+    .join('');
+}
+
 describe('decideStatus', () => {
   it('discards below the 0.70 floor (FR-005)', () => {
     expect(decideStatus(0.64, false)).toBe('discard');
@@ -61,6 +80,24 @@ describe('normalizeName', () => {
     expect(normalizeName('Kovács Zoltán')).toBe('kovacs zoltan');
     expect(normalizeName('Origo szerkesztőség (75%)')).toBe('origo szerkesztoseg 75');
   });
+
+  describe('honorific stripping (2026-08-07 Fürcht Pál bug report)', () => {
+    it('normalizes "Dr. X" and "X" to the same key', () => {
+      expect(normalizeName('Dr. Fürcht Pál')).toBe(normalizeName('Fürcht Pál'));
+      expect(normalizeName('Dr. Fürcht Pál')).toBe('furcht pal');
+    });
+
+    it('strips other common Hungarian honorifics (prof, ifj, id)', () => {
+      expect(normalizeName('Prof. Kovács Zoltán')).toBe('kovacs zoltan');
+      expect(normalizeName('ifj. Kovács Zoltán')).toBe('kovacs zoltan');
+      expect(normalizeName('id. Kovács Zoltán')).toBe('kovacs zoltan');
+    });
+
+    it('does not strip a name that only coincidentally starts with an honorific-like token', () => {
+      // "Id." alone with nothing after it should never eat the whole name.
+      expect(normalizeName('Dr')).toBe('dr');
+    });
+  });
 });
 
 // US2 — auto-publish vs. watchlist, exercised the way the detectors call it.
@@ -88,6 +125,29 @@ describe('isDuplicate', () => {
     const db = { execute: async () => { queried = true; return []; } };
     expect(await isDuplicate(db, { table: 'CourtVerdict', nameColumn: 'personName' }, '   ')).toBe(false);
     expect(queried).toBe(false);
+  });
+
+  // 2026-08-07 — Fürcht Pál bug report, part 2: even after the honorific-
+  // stripping fix (normalizeName, see below) makes "Dr. Fürcht Pál" and
+  // "Fürcht Pál" match, the OLD default 30-day window would still have
+  // waved the duplicate through — the original row was ~54 days old. An
+  // exact name match within a table is always the same real-world one-shot
+  // event (a person doesn't resign twice under the identical name), so
+  // isDuplicate() no longer expires by default. Explicit-window callers
+  // (AssetRecovery, which genuinely can have repeat events under the same
+  // case label) are unaffected.
+  it('does NOT include a createdAt window clause when withinDays is omitted — no expiry', async () => {
+    let capturedQuery: unknown;
+    const db = { execute: async (query: unknown) => { capturedQuery = query; return []; } };
+    await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Fürcht Pál');
+    expect(sqlToText(capturedQuery)).not.toContain('createdAt');
+  });
+
+  it('still applies an explicit withinDays window when the caller passes one (e.g. AssetRecovery)', async () => {
+    let capturedQuery: unknown;
+    const db = { execute: async (query: unknown) => { capturedQuery = query; return []; } };
+    await isDuplicate(db, { table: 'AssetRecovery', nameColumn: 'caseLabel' }, 'NKA visszafizetés', 14);
+    expect(sqlToText(capturedQuery)).toContain('createdAt');
   });
 });
 

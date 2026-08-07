@@ -12,7 +12,12 @@ export type ReviewDecision = 'approved' | 'pending' | 'discard';
 
 export const AUTO_PUBLISH_THRESHOLD = 0.77; // lowered from 0.9 — false positives get deleted after the fact instead of stuck in review
 export const REVIEW_FLOOR = 0.7; // FR-004 / FR-005
-export const DEDUP_WINDOW_DAYS = 30; // FR-009
+// FR-009. 2026-08-07: no longer isDuplicate()'s default (that's now
+// unbounded — see its doc comment) — still used as the default window for
+// CourtVerdict's lifecycle-aware findExistingVerdict() below, where a time
+// cutoff is actually meaningful (a case can go quiet and later become newly
+// relevant again).
+export const DEDUP_WINDOW_DAYS = 30;
 export const DESCRIPTION_WORD_LIMIT = 7; // matches the DB check constraints (migration 0034)
 
 /**
@@ -110,10 +115,10 @@ export type DedupTable =
 type Executable = { execute: (query: ReturnType<typeof sql>) => Promise<unknown> };
 
 /**
- * True if a row with the same normalised name already exists in the table
- * within the dedup window, in ANY reviewStatus (approved/pending/rejected).
- * Institution is intentionally ignored, and rejected rows count, so a
- * previously rejected detection is not re-created (FR-009, FR-011).
+ * True if a row with the same normalised name already exists in the table,
+ * in ANY reviewStatus (approved/pending/rejected). Institution is
+ * intentionally ignored, and rejected rows count, so a previously rejected
+ * detection is not re-created (FR-009, FR-011).
  *
  * The SQL side re-derives the same normalisation as normalizeName() —
  * lower + unaccent + punctuation-to-space + collapse/trim — so that e.g.
@@ -121,21 +126,38 @@ type Executable = { execute: (query: ReturnType<typeof sql>) => Promise<unknown>
  * are recognised as the same name (research.md called this "írásjel-toleráns"
  * matching, but the query previously only lower/unaccent/trimmed the raw
  * strings, so punctuation differences slipped past the guard).
+ *
+ * 2026-08-07 — `withinDays` no longer defaults to a 30-day cutoff. Bug
+ * report: "Dr. Fürcht Pál" resigned 2026-06-14; a 2026-08-07 follow-up
+ * article that only RECAPPED that same resignation as background for an
+ * unrelated story got re-extracted as a "new" resignation, and since the
+ * row was ~54 days old, the old 30-day window would have waved it through
+ * as non-duplicate even after the honorific-stripping fix in
+ * normalizeName(). An exact name match within the SAME table is always the
+ * SAME real-world one-shot event (a person doesn't resign from — or a
+ * media outlet doesn't close under — the identical name twice), so there is
+ * no principled cutoff after which it stops being a duplicate. Pass an
+ * explicit `withinDays` when a table genuinely can have legitimate repeat
+ * events under the same name (e.g. AssetRecovery — recurring recoveries on
+ * the same case — already does, with 14).
  */
 export async function isDuplicate(
   db: Executable,
   target: DedupTable,
   name: string,
-  withinDays: number = DEDUP_WINDOW_DAYS,
+  withinDays?: number,
 ): Promise<boolean> {
   const key = normalizeName(name);
   if (!key) return false;
   const tableId = sql.identifier(target.table);
   const nameCol = sql.identifier(target.nameColumn);
+  const windowClause = withinDays != null
+    ? sql`AND "createdAt" >= now() - make_interval(days => ${withinDays})`
+    : sql``;
   const rows = (await db.execute(sql`
     SELECT 1 FROM ${tableId}
     WHERE trim(regexp_replace(lower(unaccent(trim(${nameCol}))), '[^a-z0-9]+', ' ', 'g')) = ${key}
-      AND "createdAt" >= now() - make_interval(days => ${withinDays})
+      ${windowClause}
     LIMIT 1
   `)) as unknown as { length: number };
   return rows.length > 0;
