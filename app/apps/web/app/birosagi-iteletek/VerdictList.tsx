@@ -6,6 +6,26 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { ComplaintList, type SerializedComplaint } from './ComplaintList';
 import { isReleased, computeVerdictStats } from './verdict-stats';
+import { computeComplaintBarMax, computeComplaintTotal } from './complaint-stats';
+import { FtValue } from '../_home/ft-value';
+import { fmtFtParts } from '@korr/shared/format';
+
+// A magyarázó mondathoz: "1457 milliárd forintot", nem "1457 Milliárd Ft" —
+// a fmtFtParts egységcímkéje ("Milliárd Ft" / "M Ft" / "e Ft" / "Ft") alapján
+// illeszti a mondatba a megfelelő magyar szót.
+function complaintAmountPhrase(n: bigint): string {
+  const { value, unitLong } = fmtFtParts(n);
+  if (unitLong === 'Milliárd Ft') return `${value} milliárd forintot`;
+  if (unitLong === 'M Ft') return `${value} millió forintot`;
+  if (unitLong === 'e Ft') return `${value} ezer forintot`;
+  return `${value} forintot`;
+}
+
+// Fix dátum (user kérés, 2026-08-07) — NEM az első rögzített feljelentés
+// dátuma, hanem a választás (2026. ápr. 12.) másnapja: onnantól számít
+// érdekesnek a feljelentési hullám, függetlenül attól, mikor rögzítettük
+// ténylegesen az első sort.
+const COMPLAINTS_SINCE_LABEL = '2026. április 13.';
 
 export type SerializedVerdict = {
   id: string;
@@ -336,6 +356,14 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
     return true;
   }), [complaints, search, complaintStatusFilter]);
 
+  // A számláló MINDIG a teljes (szűretlen) feljelentés-listát összegzi — ez
+  // egy állandó összesítő, nem a keresés/szűrés eredménye (l. a
+  // .recovery-tracker minta a /visszaszerzett-vagyon oldalon).
+  const complaintTotal = useMemo(() => computeComplaintTotal(complaints), [complaints]);
+  const complaintBarMax = useMemo(() => computeComplaintBarMax(complaintTotal), [complaintTotal]);
+  const complaintPct = Number(complaintTotal) / Number(complaintBarMax) * 100;
+  const complaintBarWidth = complaintTotal > 0n ? Math.min(100, Math.max(complaintPct, 0.6)) : 0;
+
   const hasYears = useMemo(
     () => rows.some(r => r.sentenceYears > 0 && !isReleased(r.verdictType) && r.verdictType !== 'előzetesben'),
     [rows],
@@ -618,6 +646,34 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
               feljelentések — a megelőző stádium, mielőtt bírósági eljárás indulna.
             </p>
           </div>
+
+          <div className="complaint-tracker">
+            <div className="complaint-tracker-head">
+              <div className="complaint-tracker-label">Feljelentési értékösszeg számláló</div>
+            </div>
+            <div className="complaint-tracker-track">
+              <div className="complaint-tracker-fill" style={{ width: `${complaintBarWidth}%` }} />
+            </div>
+            {/* A sáv két végét jelölő skála — 0-tól a jelenlegi felső
+                határig (1000, majd 5000 milliárdnál) —, hogy az utóbbi ne
+                lógjon árván a fejlécben, hanem egyértelműen a sávhoz
+                tartozzon (user kérés, 2026-08-07). */}
+            <div className="complaint-tracker-scale">
+              <span>0 Ft</span>
+              <span><FtValue n={complaintBarMax} mode="long" /></span>
+            </div>
+            <div className="complaint-tracker-stats">
+              <span className="complaint-tracker-current"><FtValue n={complaintTotal} mode="long" /></span>
+            </div>
+            <p className="complaint-tracker-note">
+              NER-hez és államigazgatáshoz köthető feltételezett bűncselekmények miatt{' '}
+              {COMPLAINTS_SINCE_LABEL} óta összesen {complaintAmountPhrase(complaintTotal)} érintő
+              ügyekben tettek feljelentést. Ez nem jelenti, hogy ennyi pénzt elloptak — ez az
+              érintett szerződések teljes értéke, aminek egy része teljesült is, de a gyanú szerint
+              a túlárazás és más visszaélések miatt ebből is jelentős összeg veszhetett el.
+            </p>
+          </div>
+
           {filteredComplaints.length === 0 ? (
             <div style={{ padding: '24px 0', color: '#888', fontSize: 13 }}>
               Nincs a feltételeknek megfelelő feljelentés.
