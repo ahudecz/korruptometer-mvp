@@ -61,4 +61,13 @@ describe('classifyVideoTier', () => {
       ),
     ).toBe('out');
   });
+
+  it('"out" a spam-sablon egy korábban NEM látott középső-szavas variánsára is (2026-08-08: a csatorna a cím közepét variálja újraposztoláskor)', () => {
+    expect(
+      classifyVideoTier(
+        { videoId: 'x', title: 'Rendkívüli országgyűlés: Magyar Péter Ismét Bombázott, Óriási Vita!', description: '', publishedAt: new Date() },
+        alwaysRelevantChannel,
+      ),
+    ).toBe('out');
+  });
 });
