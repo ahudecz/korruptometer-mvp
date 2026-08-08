@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decideComplaintTransition, decideStatus, findExistingComplaint, isDuplicate, truncateDescriptionWords } from './review';
+import { cleanPositionTitle, decideComplaintTransition, decideStatus, findExistingComplaint, isDuplicate, truncateDescriptionWords } from './review';
 import { isWatchlistPerson, normalizeName } from './watchlist';
 
 // Drizzle's `sql` template tag returns an object tree (StringChunk literals
@@ -271,5 +271,39 @@ describe('truncateDescriptionWords', () => {
       expect(result.split(/\s+/)).toHaveLength(6);
       expect(result).toBe('Szakács István: 3 év börtön terrorcselekmény');
     });
+  });
+});
+
+describe('cleanPositionTitle', () => {
+  it('strips the "X-ben betöltött Y" construction down to Y (2026-08-08 Nagy Márton bug report)', () => {
+    // Real production bug: position ended up "az IMF-ben betöltött helyettes
+    // kormányzó" instead of "helyettes kormányzó" — grammatically fine, but
+    // redundant next to institution="IMF" and inconsistent with every other
+    // row's plain one-to-three-word style.
+    expect(cleanPositionTitle('az IMF-ben betöltött helyettes kormányzó')).toBe('helyettes kormányzó');
+  });
+
+  it('handles the "-ban betöltött" variant too', () => {
+    expect(cleanPositionTitle('a minisztériumban betöltött államtitkár')).toBe('államtitkár');
+  });
+
+  it('strips a bare leading article even without the "betöltött" construction', () => {
+    expect(cleanPositionTitle('az elnök')).toBe('elnök');
+    expect(cleanPositionTitle('a polgármester')).toBe('polgármester');
+  });
+
+  it('leaves an already-clean title untouched', () => {
+    expect(cleanPositionTitle('vezérigazgató')).toBe('vezérigazgató');
+    expect(cleanPositionTitle('helyettes kormányzó')).toBe('helyettes kormányzó');
+    expect(cleanPositionTitle('Nagykövet')).toBe('Nagykövet');
+  });
+
+  it('does not touch a word that merely starts with "a"/"az"', () => {
+    expect(cleanPositionTitle('Alelnök')).toBe('Alelnök');
+    expect(cleanPositionTitle('azonnali intézkedésért felelős biztos')).toBe('azonnali intézkedésért felelős biztos');
+  });
+
+  it('trims surrounding whitespace', () => {
+    expect(cleanPositionTitle('  az IMF-ben betöltött helyettes kormányzó  ')).toBe('helyettes kormányzó');
   });
 });

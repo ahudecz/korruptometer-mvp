@@ -62,7 +62,7 @@ const TOOL: LlmToolSpec = {
             position: {
               type: 'string',
               description:
-                'The role/title of the person LEAVING (e.g. "miniszter", "államtitkár", "polgármester").',
+                'The BARE role/title of the person LEAVING — 1-4 words, e.g. "miniszter", "államtitkár", "polgármester", "helyettes kormányzó". NEVER a full sentence fragment, and NEVER repeat the institution name (that already goes in the separate "institution" field) — do NOT write "az X-ben betöltött Y" (that duplicates institution="X" for no reason), just write "Y". Do NOT start with a leading article ("a"/"az") — it is a title, not the subject of a sentence.',
             },
             institution: {
               type: 'string',

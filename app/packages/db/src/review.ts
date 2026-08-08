@@ -79,6 +79,32 @@ export function truncateDescriptionWords(value: string, limit = DESCRIPTION_WORD
 }
 
 /**
+ * PoliticalResignation.position / CourtVerdict.position should read as a
+ * bare job-title noun phrase ("miniszter", "helyettes kormányzó") — never a
+ * full sentence fragment that re-states the institution (already its own
+ * column) wrapped in a leading definite article. Real bug (2026-08-06, user
+ * report on the Nagy Márton row): the LLM extracted position "az IMF-ben
+ * betöltött helyettes kormányzó" instead of just "helyettes kormányzó" —
+ * grammatically fine in isolation, but redundant next to institution="IMF"
+ * and inconsistent with every sibling row's plain style (all one-to-three
+ * word titles, l. lemondasok/resignation-list.tsx).
+ *
+ * Two passes, in order:
+ *  1. The specific construction that produced the real bug — "X-ban/-ben
+ *     betöltött Y" ("the Y role held at X") — keep only Y, the part after
+ *     "betöltött".
+ *  2. Strip a bare leading "a "/"az " article that survives (or was there
+ *     to begin with, independent of the "betöltött" construction).
+ */
+export function cleanPositionTitle(value: string): string {
+  let title = value.trim();
+  const heldAtMatch = title.match(/^az?\s+.+?\bbetöltött\s+(.+)$/i);
+  if (heldAtMatch) title = heldAtMatch[1]!.trim();
+  title = title.replace(/^az?\s+/i, '');
+  return title;
+}
+
+/**
  * Decide what to do with a detection.
  *
  *   confidence < 0.70           → 'discard'   (FR-005, universal floor)

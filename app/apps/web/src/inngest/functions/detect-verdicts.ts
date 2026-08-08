@@ -3,6 +3,7 @@ import { eq, sql } from 'drizzle-orm';
 
 import { detectVerdictFromArticle, type VerdictExtraction } from '@korr/db/ai-verdicts';
 import {
+  cleanPositionTitle,
   decideStatus,
   findExistingVerdict,
   isPlaceholderName,
@@ -232,7 +233,7 @@ async function processVerdictArticle(
   } else {
     const [insertedRow] = await db.insert(schema.courtVerdicts).values({
       personName: result.personName.slice(0, 200),
-      position: result.position.slice(0, 200),
+      position: cleanPositionTitle(result.position).slice(0, 200),
       crimes: result.crimes.map((c) => c.slice(0, 200)),
       sentenceYears: result.sentenceYears ?? 0,
       sentenceMonths: typeof result.sentenceMonths === 'number' ? result.sentenceMonths : null,

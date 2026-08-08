@@ -5,6 +5,7 @@ import { detectResignationFromArticle, type ResignationExtraction } from '@korr/
 import {
   type CandidateArticle,
   type CheckReason,
+  cleanPositionTitle,
   decideStatus,
   hasIndividualResignationForInstitution,
   isCollectiveEntityName,
@@ -208,7 +209,7 @@ async function processResignationArticle(
 
     const [insertedRow] = await db.insert(schema.politicalResignations).values({
       name: person.name.slice(0, 200),
-      position: person.position.slice(0, 200),
+      position: cleanPositionTitle(person.position).slice(0, 200),
       institution: person.institution.slice(0, 200),
       resignationType: coerceResignationType(person.resignationType),
       resignationDate,
