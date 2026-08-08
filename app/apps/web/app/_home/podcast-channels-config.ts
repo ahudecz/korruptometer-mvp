@@ -43,14 +43,28 @@ export interface PodcastChannelConfig {
  * országgyűlés: Magyar Péter A Parlamentben, Óriási Vita!" videót (25 db
  * DB-sor törölve, mindegyik erre a napi "1 órája feltöltve" trükkre esett
  * be). Normalizált (trim + lowercase) egyezés a videó címén.
+ *
+ * 2026-08-08: user jelzés — egy sor mégis átcsúszott (2026-08-06 09:01 UTC-
+ * kor scrapelve, a fenti fix csak 11:24-kor ért ki élesre a main-re — tiszta
+ * deploy-időzítési rés, a szűrő maga jól működött). UGYANEKKOR kiderült,
+ * hogy a csatorna a cím KÖZEPÉT variálja újraposztoláskor (l. a 2026-07-16-i
+ * "...Magyar Péter VISSZATÉR Óriási Vita!" változatot) — az egzakt-string
+ * lista emiatt önmagában nem tartós. A minta-alapú lista lent ezt a
+ * spam-sablont (nem a szó szerinti címet) tiltja, a variánsokat is elkapja.
  */
 export const BLOCKED_PODCAST_VIDEO_TITLES: string[] = [
   'rendkívüli országgyűlés: magyar péter a parlamentben, óriási vita!',
+  'rendkívüli országgyűlés: magyar péter visszatér óriási vita!',
+];
+
+const BLOCKED_PODCAST_TITLE_PATTERNS: RegExp[] = [
+  /^rendkívüli országgyűlés: magyar péter .*óriási vita!?$/,
 ];
 
 export function isBlockedPodcastVideoTitle(title: string): boolean {
   const normalized = title.trim().toLowerCase();
-  return BLOCKED_PODCAST_VIDEO_TITLES.includes(normalized);
+  if (BLOCKED_PODCAST_VIDEO_TITLES.includes(normalized)) return true;
+  return BLOCKED_PODCAST_TITLE_PATTERNS.some((re) => re.test(normalized));
 }
 
 export const PODCAST_CHANNELS: PodcastChannelConfig[] = [
