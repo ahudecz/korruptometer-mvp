@@ -39,16 +39,20 @@ export function NavMobile() {
         ✕
       </button>
       <nav>
-        {NAV_LINKS.map(({ href, label }) => (
-          <Link
-            key={href}
-            href={href}
-            className="mobile-nav-link"
-            onClick={() => setOpen(false)}
-          >
-            {label}
-          </Link>
-        ))}
+        {NAV_LINKS.map(({ href, label }) => {
+          const active = pathname === href || pathname.startsWith(`${href}/`);
+          return (
+            <Link
+              key={href}
+              href={href}
+              className="mobile-nav-link"
+              aria-current={active ? 'page' : undefined}
+              onClick={() => setOpen(false)}
+            >
+              {label}
+            </Link>
+          );
+        })}
       </nav>
       <Link href="/bejelentes" className="mobile-nav-cta" onClick={() => setOpen(false)}>
         Bejelentés tétele →

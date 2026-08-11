@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { SiteFooter } from './site-footer';
 import { NavMobile } from './nav-mobile';
+import { NavLinks } from './nav-links';
 import { CookieBanner } from './_home/cookie-banner';
 
 import './globals.css';
@@ -68,29 +69,7 @@ export default function RootLayout({
                 className="brand-logo"
               />
             </Link>
-            <ul className="nav-links" aria-label="Fő navigáció">
-              <li>
-                <Link href="/galeria">Galéria</Link>
-              </li>
-              <li>
-                <Link href="/ugyek">Kiemelt ügyek</Link>
-              </li>
-              <li>
-                <Link href="/adatbazis">Adatbázis</Link>
-              </li>
-              <li>
-                <Link href="/hirek">Hírek</Link>
-              </li>
-              <li>
-                <Link href="/lemondasok">Lemondott-e?</Link>
-              </li>
-              <li>
-                <Link href="/birosagi-iteletek">Börtönben van-e?</Link>
-              </li>
-              <li>
-                <Link href="/megszunt">Megszűnt-e?</Link>
-              </li>
-            </ul>
+            <NavLinks />
             <Link href="/bejelentes" className="nav-cta">
               Bejelentés tétele
             </Link>
