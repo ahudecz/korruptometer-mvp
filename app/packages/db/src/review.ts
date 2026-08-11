@@ -12,7 +12,12 @@ export type ReviewDecision = 'approved' | 'pending' | 'discard';
 
 export const AUTO_PUBLISH_THRESHOLD = 0.77; // lowered from 0.9 — false positives get deleted after the fact instead of stuck in review
 export const REVIEW_FLOOR = 0.7; // FR-004 / FR-005
-export const DEDUP_WINDOW_DAYS = 30; // FR-009
+// FR-009. 2026-08-07: no longer isDuplicate()'s default (that's now
+// unbounded — see its doc comment) — still used as the default window for
+// CourtVerdict's lifecycle-aware findExistingVerdict() below, where a time
+// cutoff is actually meaningful (a case can go quiet and later become newly
+// relevant again).
+export const DEDUP_WINDOW_DAYS = 30;
 export const DESCRIPTION_WORD_LIMIT = 7; // matches the DB check constraints (migration 0034)
 
 /**
@@ -136,10 +141,10 @@ export type DedupTable =
 type Executable = { execute: (query: ReturnType<typeof sql>) => Promise<unknown> };
 
 /**
- * True if a row with the same normalised name already exists in the table
- * within the dedup window, in ANY reviewStatus (approved/pending/rejected).
- * Institution is intentionally ignored, and rejected rows count, so a
- * previously rejected detection is not re-created (FR-009, FR-011).
+ * True if a row with the same normalised name already exists in the table,
+ * in ANY reviewStatus (approved/pending/rejected). Institution is
+ * intentionally ignored, and rejected rows count, so a previously rejected
+ * detection is not re-created (FR-009, FR-011).
  *
  * The SQL side re-derives the same normalisation as normalizeName() —
  * lower + unaccent + punctuation-to-space + collapse/trim — so that e.g.
@@ -147,21 +152,38 @@ type Executable = { execute: (query: ReturnType<typeof sql>) => Promise<unknown>
  * are recognised as the same name (research.md called this "írásjel-toleráns"
  * matching, but the query previously only lower/unaccent/trimmed the raw
  * strings, so punctuation differences slipped past the guard).
+ *
+ * 2026-08-07 — `withinDays` no longer defaults to a 30-day cutoff. Bug
+ * report: "Dr. Fürcht Pál" resigned 2026-06-14; a 2026-08-07 follow-up
+ * article that only RECAPPED that same resignation as background for an
+ * unrelated story got re-extracted as a "new" resignation, and since the
+ * row was ~54 days old, the old 30-day window would have waved it through
+ * as non-duplicate even after the honorific-stripping fix in
+ * normalizeName(). An exact name match within the SAME table is always the
+ * SAME real-world one-shot event (a person doesn't resign from — or a
+ * media outlet doesn't close under — the identical name twice), so there is
+ * no principled cutoff after which it stops being a duplicate. Pass an
+ * explicit `withinDays` when a table genuinely can have legitimate repeat
+ * events under the same name (e.g. AssetRecovery — recurring recoveries on
+ * the same case — already does, with 14).
  */
 export async function isDuplicate(
   db: Executable,
   target: DedupTable,
   name: string,
-  withinDays: number = DEDUP_WINDOW_DAYS,
+  withinDays?: number,
 ): Promise<boolean> {
   const key = normalizeName(name);
   if (!key) return false;
   const tableId = sql.identifier(target.table);
   const nameCol = sql.identifier(target.nameColumn);
+  const windowClause = withinDays != null
+    ? sql`AND "createdAt" >= now() - make_interval(days => ${withinDays})`
+    : sql``;
   const rows = (await db.execute(sql`
     SELECT 1 FROM ${tableId}
     WHERE trim(regexp_replace(lower(unaccent(trim(${nameCol}))), '[^a-z0-9]+', ' ', 'g')) = ${key}
-      AND "createdAt" >= now() - make_interval(days => ${withinDays})
+      ${windowClause}
     LIMIT 1
   `)) as unknown as { length: number };
   return rows.length > 0;
@@ -265,7 +287,7 @@ export async function findExistingVerdict(
 
 export type ComplaintStatus = 'feljelentés' | 'nyomozás' | 'vádemelés' | 'ítélet' | 'elutasítva';
 
-export type ExistingComplaint = { id: string; status: ComplaintStatus };
+export type ExistingComplaint = { id: string; status: ComplaintStatus; filerName: string };
 
 /** 180 days, not the usual 30 (DEDUP_WINDOW_DAYS) — a complaint can take
  *  months to reach an indictment or verdict (spec Assumptions). */
@@ -343,7 +365,7 @@ export async function findExistingComplaint(
   const key = normalizeName(targetName);
   if (!key) return null;
   const exactRows = (await db.execute(sql`
-    SELECT id, "status" FROM "CriminalComplaint"
+    SELECT id, "status", "filerName" FROM "CriminalComplaint"
     WHERE trim(regexp_replace(lower(unaccent(trim("targetName"))), '[^a-z0-9]+', ' ', 'g')) = ${key}
       AND "createdAt" >= now() - make_interval(days => ${withinDays})
     ORDER BY "eventDate" DESC
@@ -352,7 +374,7 @@ export async function findExistingComplaint(
   if (exactRows[0]) return exactRows[0];
 
   const fuzzyRows = (await db.execute(sql`
-    SELECT id, "status", "targetName", word_similarity(${targetName}, "targetName") AS wsim
+    SELECT id, "status", "filerName", "targetName", word_similarity(${targetName}, "targetName") AS wsim
     FROM "CriminalComplaint"
     WHERE "createdAt" >= now() - make_interval(days => ${withinDays})
     ORDER BY wsim DESC
@@ -360,11 +382,11 @@ export async function findExistingComplaint(
   `)) as unknown as Array<ExistingComplaint & { targetName: string; wsim: number }>;
   const best = fuzzyRows[0];
   if (!best) return null;
-  if (best.wsim >= COMPLAINT_FUZZY_HIGH) return { id: best.id, status: best.status };
+  if (best.wsim >= COMPLAINT_FUZZY_HIGH) return { id: best.id, status: best.status, filerName: best.filerName };
   if (best.wsim < COMPLAINT_FUZZY_LOW) return null;
 
   const same = await isSameComplaintAi(targetName, best.targetName);
-  return same ? { id: best.id, status: best.status } : null;
+  return same ? { id: best.id, status: best.status, filerName: best.filerName } : null;
 }
 
 const COMPLAINT_STATUS_ORDER: Record<Exclude<ComplaintStatus, 'elutasítva'>, number> = {
@@ -389,4 +411,26 @@ export function decideComplaintTransition(current: ComplaintStatus, next: Compla
   if (next === 'elutasítva') return current === 'elutasítva' ? 'stale' : 'update';
   if (current === 'elutasítva') return 'update';
   return COMPLAINT_STATUS_ORDER[next] > COMPLAINT_STATUS_ORDER[current] ? 'update' : 'stale';
+}
+
+/**
+ * 2026-08-11 bug report: a second, genuinely INDEPENDENT complaint about
+ * the same broader case (Gondosóra-program) — the Ministry filing against
+ * the program's named director, weeks after the Integritás Hatóság's
+ * original filing — was silently discarded as 'stale_status'. Root cause:
+ * findExistingComplaint()'s fuzzy targetName match (built to collapse
+ * DIFFERENT WORDING of the SAME complaint, see COMPLAINT_FUZZY_* above)
+ * correctly found the same case, but decideComplaintTransition() then saw
+ * two 'feljelentés' entries and treated the new one as non-advancing —
+ * there was no signal that this was a SECOND, separate complaint rather
+ * than a recap of the first. filerName is that signal: the same legal case
+ * only ever has one complainant of record per filing, so a different filer
+ * on a fuzzy-matched case means "new complaint", not "stale update" — the
+ * caller (detect-criminal-complaints.ts) should insert a new row instead of
+ * running it through decideComplaintTransition at all.
+ */
+export function isSameComplainant(a: string, b: string): boolean {
+  const na = normalizeName(a);
+  const nb = normalizeName(b);
+  return na.length > 0 && na === nb;
 }

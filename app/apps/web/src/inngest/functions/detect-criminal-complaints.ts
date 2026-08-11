@@ -7,6 +7,7 @@ import {
   decideStatus,
   findExistingComplaint,
   isPlaceholderName,
+  isSameComplainant,
   isWatchlistPerson,
   markChecked,
   NEAR_MISS_MIN,
@@ -85,7 +86,18 @@ async function processComplaintArticle(
     }
 
     const status = complaint.status as ComplaintStatus;
-    const existing = await findExistingComplaint(db, complaint.targetName);
+    const existingMatch = await findExistingComplaint(db, complaint.targetName);
+    // 2026-08-11 fix: the fuzzy case-match can correctly find the same
+    // broader case while this article is actually reporting a SECOND,
+    // independent complaint (different filer) — e.g. the Ministry filing
+    // weeks after the Integritás Hatóság's original Gondosóra complaint.
+    // Only treat it as an update to the SAME complaint (and run it through
+    // the monotonic status state machine) when the filer also matches;
+    // otherwise fall through to inserting a new row below. See
+    // isSameComplainant()'s doc comment in review.ts for the full story.
+    const existing = existingMatch && isSameComplainant(existingMatch.filerName, complaint.filerName)
+      ? existingMatch
+      : null;
 
     if (existing) {
       const transition = decideComplaintTransition(existing.status, status);
@@ -181,11 +193,15 @@ async function processComplaintArticle(
  * scan), extracts EVERY distinct complaint an article describes (a single
  * kormányinfó can announce several unrelated ones, see spec 009), and either
  * inserts a new CriminalComplaint row or — if a matching row already exists
- * for the same case (findExistingComplaint, matched on targetName, not
- * filerName) — updates it IF the new status is a genuine forward (or
- * reopening) transition per decideComplaintTransition()'s monotonic state
- * machine. A stale/backward status is discarded with reason 'stale_status',
- * never silently overwriting a further-along case.
+ * for the same case (findExistingComplaint, matched on targetName) AND the
+ * same party filed it (isSameComplainant, matched on filerName) — updates
+ * it IF the new status is a genuine forward (or reopening) transition per
+ * decideComplaintTransition()'s monotonic state machine. A stale/backward
+ * status on the SAME complainant is discarded with reason 'stale_status',
+ * never silently overwriting a further-along case. A case-match with a
+ * DIFFERENT filer (a second, independent complaint about the same broader
+ * case — see isSameComplainant()'s doc comment in review.ts) is treated as
+ * a new complaint and gets its own row instead.
  */
 // 2026-07-22 — kiemelve, hogy a Vercel-cron bypass route Inngest nélkül is
 // meg tudja hívni (l. cron-bypass.ts fejléce).
