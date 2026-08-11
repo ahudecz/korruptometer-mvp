@@ -24,7 +24,8 @@ export type OutletSlug =
   | 'kmonitor-news'
   | 'media1'
   | 'portfolio'
-  | 'panyiszabolcs';
+  | 'panyiszabolcs'
+  | 'kormanyhu';
 
 export type OutletAdapter = {
   slug: OutletSlug;
