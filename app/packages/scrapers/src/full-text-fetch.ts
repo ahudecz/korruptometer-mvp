@@ -44,6 +44,18 @@ export async function fetchArticleBodyTransient(
  * page) and returns the parent whose own paragraphs sum to the most text —
  * a minimal readability-style heuristic, good enough given the fail-open
  * cross-outlet fallback for whatever this misses.
+ *
+ * 2026-08-11 bug report: a Telex article's single most load-bearing fact —
+ * a named minister quote naming exactly who was dismissed ("...felmentette
+ * a ... Kft. ügyvezetőjét, dr. Juhász Rolandot") — lived inside a
+ * <blockquote>, its own separate DOM parent with only that one paragraph.
+ * It always loses the "biggest parent" comparison against the main body
+ * (many paragraphs, one shared parent) and was silently dropped entirely —
+ * the retry-with-full-body detector path then still had no name to extract
+ * from. <blockquote> is a semantically distinct element (a pull-quote/cited
+ * statement, not navigation or a sidebar) — appended unconditionally rather
+ * than made to compete on raw length, since it's exactly the kind of text
+ * that carries a precise, citable fact.
  */
 function extractBodyText(html: string): string {
   const $ = loadHtml(html);
@@ -70,5 +82,11 @@ function extractBodyText(html: string): string {
     }
   }
 
-  return bestTexts.join('\n\n');
+  const quoteTexts: string[] = [];
+  $('blockquote').each((_i, el) => {
+    const text = $(el).text().trim().replace(/\s+/g, ' ');
+    if (text) quoteTexts.push(text);
+  });
+
+  return [...bestTexts, ...quoteTexts].join('\n\n');
 }

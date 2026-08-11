@@ -60,4 +60,22 @@ describe('fetchArticleBodyTransient', () => {
     const text = await fetchArticleBodyTransient(URL, { fetchImpl: makeFetch(200, html) });
     expect(text?.length).toBe(4000);
   });
+
+  it('includes a <blockquote> pull-quote even though it loses the "biggest parent" comparison to the main body (2026-08-11 Gondosóra/Juhász Roland bug: the ONLY sentence naming who was dismissed lived in a blockquote and was silently dropped)', async () => {
+    const html = `
+      <html><body>
+        <div class="article-body">
+          <p>Ez az első bekezdés, amely a cikk tényleges tartalmát írja le részletesen.</p>
+          <p>Ez a második bekezdés, amely folytatja a történetet további részletekkel.</p>
+          <p>Egy harmadik bekezdés is szükséges, hogy a szöveg elérje a minimális hosszt biztosan.</p>
+        </div>
+        <blockquote>
+          <p>„A feltárt visszásságok miatt a minisztérium tulajdonosi joggyakorlóként a mai napon azonnali hatállyal felmentette a Kormányzati Szolgáltató Központ Nonprofit Kft. ügyvezetőjét, dr. Juhász Rolandot”</p>
+        </blockquote>
+      </body></html>
+    `;
+    const text = await fetchArticleBodyTransient(URL, { fetchImpl: makeFetch(200, html) });
+    expect(text).toContain('első bekezdés');
+    expect(text).toContain('Juhász Rolandot');
+  });
 });
