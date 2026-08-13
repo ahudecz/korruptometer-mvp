@@ -12601,16 +12601,20 @@ body:has(.admin-nav) > main {
      státusz-szöveg, min-width: 148px) keskeny telefonon kilógott, ha az
      Összeg-érték is hosszú volt. A pill sose vágódhat/tűnhet el (flex-shrink:
      0, változatlan) — helyette az Összeg-item kap zsugorodási engedélyt
-     (flex + min-width: 0) és "…"-ra vágást, ha nem fér ki. */
+     (flex + min-width: 0).
+     2026-08-13 — user report: a fenti fixben a "…"-ra vágás egy valóban
+     hosszú összeg-szöveget (pl. "2,8 milliárd Ft (informatikai rendszer) +
+     4,6 milliárd Ft (üzemeltetés)") olvashatatlanul levágott mobilon, holott
+     desktopon szabadon törik. white-space:nowrap+ellipsis helyett normál
+     sortörés — a sor magassága nő, de a teljes összeg olvasható marad. */
   .complaint-meta-item--amount {
     flex: 1 1 auto;
     min-width: 0;
   }
   .complaint-meta-value--amount {
     font-size: 15px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow-wrap: break-word;
     min-width: 0;
   }
   .complaint-status-pill--meta {
