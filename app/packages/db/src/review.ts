@@ -428,9 +428,71 @@ export function decideComplaintTransition(current: ComplaintStatus, next: Compla
  * on a fuzzy-matched case means "new complaint", not "stale update" — the
  * caller (detect-criminal-complaints.ts) should insert a new row instead of
  * running it through decideComplaintTransition at all.
+ *
+ * 2026-08-13 bug report: the flip side of the same fix — ONE real complaint
+ * (Miniszterelnökség vs. Kaminski Fanny/Triton Communications) was covered
+ * by 6 different outlets, each extracting a slightly different filerName
+ * string for the SAME filer ("Miniszterelnökség", "a kormány",
+ * "Miniszterelnökség (Ruff Bálint vezette minisztérium)", "Ruff Bálinték",
+ * "Miniszterelnökség (Ruff Bálint)") — none of which matched any other
+ * EXACTLY, so every article after the first was (wrongly) inserted as a
+ * brand-new, independent complaint. Added a substring case (a parenthetical
+ * suffix like "(Ruff Bálint)" naming the minister doesn't change which
+ * institution filed) for the free, sync path.
  */
 export function isSameComplainant(a: string, b: string): boolean {
   const na = normalizeName(a);
   const nb = normalizeName(b);
-  return na.length > 0 && na === nb;
+  if (na.length === 0 || nb.length === 0) return false;
+  if (na === nb) return true;
+  // "Miniszterelnökség" vs. "Miniszterelnökség (Ruff Bálint)" — same
+  // institution, one just names the minister in parens. Word-by-word
+  // prefix check (not a raw string prefix) so "Kormány" doesn't falsely
+  // match an unrelated "Kormányzati Ellenőrzési Hivatal" — a character-level
+  // startsWith would wrongly pass ("kormányzati" starts with "kormány").
+  const wordsA = na.split(' ');
+  const wordsB = nb.split(' ');
+  const [shorter, longer] = wordsA.length <= wordsB.length ? [wordsA, wordsB] : [wordsB, wordsA];
+  return shorter.length > 0 && shorter.every((word, i) => longer[i] === word);
+}
+
+const SAME_FILER_SYSTEM = `Te egy magyar közéleti asszisztens vagy. Két megnevezést kapsz, amelyek két KÜLÖNBÖZŐ cikkben ugyanannak a feljelentésnek a FELJELENTŐJÉT jelölik. Döntsd el, hogy a valóságban UGYANARRA a személyre/intézményre utalnak-e — akkor is, ha az egyik köznyelvi vagy rövidített forma (pl. "a kormány" a "Miniszterelnökség" helyett, egy miniszter neve/stábja a minisztériuma helyett) —, vagy két ténylegesen KÜLÖNBÖZŐ feljelentőről van szó (pl. egy állami szerv ÉS egy tőle független civil szervezet/magánszemély).`;
+
+const SAME_FILER_TOOL: LlmToolSpec = {
+  name: 'same_filer',
+  description: 'Decide whether two complainant descriptions refer to the same real-world filer of a criminal complaint.',
+  schema: {
+    type: 'object',
+    properties: {
+      same: {
+        type: 'boolean',
+        description: 'True only if both descriptions name the same real-world person/institution as the filer, not merely a related one.',
+      },
+    },
+    required: ['same'],
+  },
+};
+
+async function isSameComplainantAi(a: string, b: string): Promise<boolean> {
+  const user = `A feljelentő: ${a}\n\nB feljelentő: ${b}`;
+  const { data } = await llmExtract<{ same: boolean }>({
+    system: SAME_FILER_SYSTEM,
+    user,
+    tool: SAME_FILER_TOOL,
+    maxTokens: 100,
+  });
+  return Boolean(data?.same);
+}
+
+/**
+ * Fuzzy wrapper around isSameComplainant(): only reaches for the AI
+ * tie-break when the free exact/substring check misses AND both names are
+ * non-empty — mirrors isSameComplaintAi()'s gating for targetName above, so
+ * this stays a rare, cheap call (only fires once findExistingComplaint has
+ * ALREADY matched the case/target — most articles never get this far).
+ */
+export async function isSameComplainantFuzzy(a: string, b: string): Promise<boolean> {
+  if (isSameComplainant(a, b)) return true;
+  if (normalizeName(a).length === 0 || normalizeName(b).length === 0) return false;
+  return isSameComplainantAi(a, b);
 }

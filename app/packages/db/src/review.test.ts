@@ -219,6 +219,26 @@ describe('isSameComplainant (2026-08-11 Gondosóra bug: a second, independent co
     expect(isSameComplainant('', 'Integritás Hatóság')).toBe(false);
     expect(isSameComplainant('Integritás Hatóság', '')).toBe(false);
   });
+
+  // 2026-08-13 fix: 6 outlets covering the SAME Miniszterelnökség filing
+  // against Kaminski Fanny/Triton Communications each extracted a slightly
+  // different filerName string, and none matched any other EXACTLY —
+  // isSameComplainant()'s old pure-equality check treated every follow-up
+  // article as a brand-new complaint, producing 6 duplicate rows for one
+  // real-world filing.
+  it('true when one name is the other plus a parenthetical minister/staff suffix', () => {
+    expect(isSameComplainant('Miniszterelnökség', 'Miniszterelnökség (Ruff Bálint)')).toBe(true);
+    expect(isSameComplainant('Miniszterelnökség (Ruff Bálint vezette minisztérium)', 'Miniszterelnökség')).toBe(true);
+  });
+
+  it('false for a word-boundary near-miss (no false positive from raw substring)', () => {
+    expect(isSameComplainant('Kormány', 'Kormányzati Ellenőrzési Hivatal')).toBe(false);
+  });
+
+  it('still false for genuinely unrelated short forms (left for the AI tie-break, not this sync check)', () => {
+    expect(isSameComplainant('a kormány', 'Miniszterelnökség')).toBe(false);
+    expect(isSameComplainant('Ruff Bálinték', 'Miniszterelnökség')).toBe(false);
+  });
 });
 
 describe('truncateDescriptionWords', () => {

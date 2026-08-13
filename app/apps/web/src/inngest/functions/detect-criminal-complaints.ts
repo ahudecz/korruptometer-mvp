@@ -7,7 +7,7 @@ import {
   decideStatus,
   findExistingComplaint,
   isPlaceholderName,
-  isSameComplainant,
+  isSameComplainantFuzzy,
   isWatchlistPerson,
   markChecked,
   NEAR_MISS_MIN,
@@ -93,9 +93,16 @@ async function processComplaintArticle(
     // weeks after the Integritás Hatóság's original Gondosóra complaint.
     // Only treat it as an update to the SAME complaint (and run it through
     // the monotonic status state machine) when the filer also matches;
-    // otherwise fall through to inserting a new row below. See
-    // isSameComplainant()'s doc comment in review.ts for the full story.
-    const existing = existingMatch && isSameComplainant(existingMatch.filerName, complaint.filerName)
+    // otherwise fall through to inserting a new row below.
+    // 2026-08-13 fix: isSameComplainantFuzzy (not the plain sync
+    // isSameComplainant) — different outlets covering the SAME filing often
+    // extract differently-worded filer names ("a kormány" / "Miniszter-
+    // elnökség" / "Ruff Bálinték" for one real filer), which an exact/
+    // substring check alone still misses; the fuzzy wrapper adds a cheap,
+    // gated AI tie-break for that case. See isSameComplainant()'s and
+    // isSameComplainantFuzzy()'s doc comments in review.ts for the full
+    // story.
+    const existing = existingMatch && await isSameComplainantFuzzy(existingMatch.filerName, complaint.filerName)
       ? existingMatch
       : null;
 
@@ -194,13 +201,14 @@ async function processComplaintArticle(
  * kormányinfó can announce several unrelated ones, see spec 009), and either
  * inserts a new CriminalComplaint row or — if a matching row already exists
  * for the same case (findExistingComplaint, matched on targetName) AND the
- * same party filed it (isSameComplainant, matched on filerName) — updates
- * it IF the new status is a genuine forward (or reopening) transition per
- * decideComplaintTransition()'s monotonic state machine. A stale/backward
- * status on the SAME complainant is discarded with reason 'stale_status',
- * never silently overwriting a further-along case. A case-match with a
- * DIFFERENT filer (a second, independent complaint about the same broader
- * case — see isSameComplainant()'s doc comment in review.ts) is treated as
+ * same party filed it (isSameComplainantFuzzy, matched on filerName) —
+ * updates it IF the new status is a genuine forward (or reopening)
+ * transition per decideComplaintTransition()'s monotonic state machine. A
+ * stale/backward status on the SAME complainant is discarded with reason
+ * 'stale_status', never silently overwriting a further-along case. A
+ * case-match with a DIFFERENT filer (a second, independent complaint about
+ * the same broader case — see isSameComplainant()'s doc comment in
+ * review.ts) is treated as
  * a new complaint and gets its own row instead.
  */
 // 2026-07-22 — kiemelve, hogy a Vercel-cron bypass route Inngest nélkül is
