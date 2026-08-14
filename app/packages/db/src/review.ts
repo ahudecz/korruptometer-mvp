@@ -146,20 +146,35 @@ type Executable = { execute: (query: ReturnType<typeof sql>) => Promise<unknown>
  * intentionally ignored, and rejected rows count, so a previously rejected
  * detection is not re-created (FR-009, FR-011).
  *
- * The SQL side re-derives the same normalisation as normalizeName() —
- * lower + unaccent + punctuation-to-space + collapse/trim — so that e.g.
- * "Promenad24" and "Promenad24.hu" or "Kovács Zoltán!" and "Kovács Zoltán"
- * are recognised as the same name (research.md called this "írásjel-toleráns"
- * matching, but the query previously only lower/unaccent/trimmed the raw
- * strings, so punctuation differences slipped past the guard).
+ * The SQL side matches via the `normalize_name()` Postgres function
+ * (migration 0052) applied to BOTH sides of the comparison — lower +
+ * unaccent + punctuation-to-space + collapse/trim + leading-honorific-strip,
+ * so e.g. "Kovács Zoltán!" / "Kovács Zoltán" and "Dr. Kovács Zoltán" /
+ * "Kovács Zoltán" are recognised as the same name. (NOT "Promenad24.hu" vs.
+ * "Promenad24", despite an earlier version of this comment claiming so,
+ * verified 2026-08-14 — normalize-name-sql.integration.test.ts: the
+ * trailing ".hu" becomes a real extra word ("promenad24 hu"), not trimmed
+ * whitespace, so the two never actually matched under this transform.)
+ *
+ * 2026-08-14 — this used to be a hand-rolled inline regex here that only
+ * replicated PART of normalizeName()'s logic (no honorific-strip), while
+ * the comparison KEY was computed via the real normalizeName() in JS — two
+ * independent implementations of "the same" normalization, free to drift.
+ * They did: the 2026-08-07 Fürcht Pál fix taught normalizeName() to strip
+ * "Dr./Prof./ifj./id." but nobody touched this inline SQL, so "Dr. Láng
+ * Géza" (stored) vs. "Láng Géza" (new article) — and separately "dr. Nagy
+ * Gábor Bálint" vs. "Nagy Gábor Bálint" — still inserted as duplicates a
+ * week later. Calling the SAME `normalize_name()` SQL function on both
+ * sides makes this a single source of truth: there is no second
+ * implementation left to fall out of sync (see normalize_name()'s own doc
+ * comment in the migration for the full story).
  *
  * 2026-08-07 — `withinDays` no longer defaults to a 30-day cutoff. Bug
  * report: "Dr. Fürcht Pál" resigned 2026-06-14; a 2026-08-07 follow-up
  * article that only RECAPPED that same resignation as background for an
  * unrelated story got re-extracted as a "new" resignation, and since the
  * row was ~54 days old, the old 30-day window would have waved it through
- * as non-duplicate even after the honorific-stripping fix in
- * normalizeName(). An exact name match within the SAME table is always the
+ * as non-duplicate. An exact name match within the SAME table is always the
  * SAME real-world one-shot event (a person doesn't resign from — or a
  * media outlet doesn't close under — the identical name twice), so there is
  * no principled cutoff after which it stops being a duplicate. Pass an
@@ -173,8 +188,7 @@ export async function isDuplicate(
   name: string,
   withinDays?: number,
 ): Promise<boolean> {
-  const key = normalizeName(name);
-  if (!key) return false;
+  if (!normalizeName(name)) return false; // cheap short-circuit, avoids a query on blank input
   const tableId = sql.identifier(target.table);
   const nameCol = sql.identifier(target.nameColumn);
   const windowClause = withinDays != null
@@ -182,7 +196,7 @@ export async function isDuplicate(
     : sql``;
   const rows = (await db.execute(sql`
     SELECT 1 FROM ${tableId}
-    WHERE trim(regexp_replace(lower(unaccent(trim(${nameCol}))), '[^a-z0-9]+', ' ', 'g')) = ${key}
+    WHERE normalize_name(${nameCol}) = normalize_name(${name})
       ${windowClause}
     LIMIT 1
   `)) as unknown as { length: number };
@@ -265,17 +279,20 @@ export type ExistingVerdict = { id: string; verdictType: string };
  * extracted one: same type → genuinely the same event re-reported (still a
  * true duplicate, discard); different type → a real status change (UPDATE
  * the existing row instead of inserting a new one or discarding).
+ *
+ * 2026-08-14 — matches via normalize_name() (migration 0052) on both sides,
+ * not a hand-rolled inline regex — see isDuplicate()'s doc comment for why
+ * that used to silently miss honorific-prefixed duplicates.
  */
 export async function findExistingVerdict(
   db: Executable,
   personName: string,
   withinDays: number = DEDUP_WINDOW_DAYS,
 ): Promise<ExistingVerdict | null> {
-  const key = normalizeName(personName);
-  if (!key) return null;
+  if (!normalizeName(personName)) return null;
   const rows = (await db.execute(sql`
     SELECT id, "verdictType" FROM "CourtVerdict"
-    WHERE trim(regexp_replace(lower(unaccent(trim("personName"))), '[^a-z0-9]+', ' ', 'g')) = ${key}
+    WHERE normalize_name("personName") = normalize_name(${personName})
       AND "createdAt" >= now() - make_interval(days => ${withinDays})
     ORDER BY "verdictDate" DESC
     LIMIT 1
@@ -362,11 +379,14 @@ export async function findExistingComplaint(
   targetName: string,
   withinDays: number = COMPLAINT_DEDUP_WINDOW_DAYS,
 ): Promise<ExistingComplaint | null> {
-  const key = normalizeName(targetName);
-  if (!key) return null;
+  if (!normalizeName(targetName)) return null;
+  // 2026-08-14 — normalize_name() (migration 0052) on both sides, not a
+  // 4th hand-rolled copy of the same inline regex; see isDuplicate()'s doc
+  // comment for why that class of duplication is exactly what caused
+  // silent drift elsewhere.
   const exactRows = (await db.execute(sql`
     SELECT id, "status", "filerName" FROM "CriminalComplaint"
-    WHERE trim(regexp_replace(lower(unaccent(trim("targetName"))), '[^a-z0-9]+', ' ', 'g')) = ${key}
+    WHERE normalize_name("targetName") = normalize_name(${targetName})
       AND "createdAt" >= now() - make_interval(days => ${withinDays})
     ORDER BY "eventDate" DESC
     LIMIT 1

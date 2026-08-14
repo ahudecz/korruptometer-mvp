@@ -20,8 +20,6 @@ import { UGYEK } from './_home/ugyek-config';
 import { autoDisplayTitle, getCaseDisplayTitle, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS, toAsciiId } from './_home/case-detail-config';
 import { NewsCardImage } from './hirek/news-card-image';
 import { PodcastVideoCard } from './_home/podcast-video-card';
-import { PodcastSpotlight } from './_home/podcast-spotlight';
-import { cleanSpotlightDescription } from '@/lib/podcast-description';
 import { pickBreakingArticle } from '@/lib/breaking-pick';
 
 // force-dynamic. ISR (revalidate) was tried instead on 2026-07-08, on the
@@ -221,24 +219,20 @@ const getCachedRecentNews = unstable_cache(
 // nézettségi küszöbét elért videók (viewThresholdMet), l. scrape-youtube.ts.
 // Egy kézzel kitűzött (pinnedUntil a jövőben) videó mindig elöl áll,
 // függetlenül a saját publishedAt-jétől — utána a többi a szokásos
-// legfrissebb-elöl sorrendben. 1 nyitó spotlight + 6-os rács (2×3) = 7
-// (2026-07-26, user jóváhagyással: a korábbi hero+2-kísérő helyett a
-// /podcastok végoldalon már élesített spotlight-nyelvezet kompakt
-// változata, l. podcast-spotlight.tsx).
+// legfrissebb-elöl sorrendben. 1 hero + 2 companion + 6-os rács (2×3) = 9.
 const getCachedRecentPodcasts = unstable_cache(
   async () => {
     const { getDb, schema } = await import('@/lib/db');
     const { and: andF, eq: eqF, desc: d, sql: s } = await import('drizzle-orm');
     const db = getDb();
-    // Nagyobb jelölt-készlet (nem csak a végleges 7), hogy a csatornánkénti
-    // max-1-videó szűrés után is legyen elég sor a limit kitöltéséhez —
+    // Nagyobb jelölt-készlet (nem csak a végleges 9), hogy a csatornánkénti
+    // max-1-videó szűrés után is legyen elég sor a 9-es limit kitöltéséhez —
     // egy nagyon aktív csatorna különben minden helyet elvinne a nyitóoldalon.
     const candidates = await db
       .select({
         id: schema.podcastVideos.id,
         videoId: schema.podcastVideos.videoId,
         title: schema.podcastVideos.title,
-        description: schema.podcastVideos.description,
         channelSlug: schema.podcastVideos.channelSlug,
         channelName: schema.podcastVideos.channelName,
         publishedAt: schema.podcastVideos.publishedAt,
@@ -253,7 +247,7 @@ const getCachedRecentPodcasts = unstable_cache(
       if (seenChannels.has(c.channelSlug)) continue;
       seenChannels.add(c.channelSlug);
       rows.push(c);
-      if (rows.length === 7) break;
+      if (rows.length === 9) break;
     }
     return rows.map((r) => ({ ...r, publishedAt: r.publishedAt.toISOString() }));
   },
@@ -418,15 +412,19 @@ const getCachedFeaturedResignations = unstable_cache(
   async () => {
     const { getDb, schema } = await import('@/lib/db');
     const { and: andF, eq: eqF, sql: s } = await import('drizzle-orm');
-    const { normalizeName } = await import('@korr/db');
     const db = getDb();
     // drizzle's sql`` tag does NOT auto-cast a JS array to a Postgres ARRAY
     // literal the way the raw `postgres` client does — `= ANY(${array})`
     // throws "op ANY/ALL (array) requires array on right side" here. An
     // OR-chain of parameterized equalities sidesteps that entirely; the list
     // is tiny (~12 names) so this is in no way a performance concern.
+    // 2026-08-14 — normalize_name() (migration 0052), not a hand-rolled
+    // inline regex — that copy never stripped a leading "Dr./Prof."
+    // honorific, so a watchlist name here could silently fail to match a
+    // DB row stored WITH one (see isDuplicate()'s doc comment in review.ts
+    // for the live bug this caused elsewhere).
     const nameMatch = s.join(
-      TOP_RESIGNATION_PRIORITY.map((n) => s`trim(regexp_replace(lower(unaccent(trim(name))), '[^a-z0-9]+', ' ', 'g')) = ${normalizeName(n)}`),
+      TOP_RESIGNATION_PRIORITY.map((n) => s`normalize_name(name) = normalize_name(${n})`),
       s` OR `,
     );
     return db.select().from(schema.politicalResignations)
@@ -878,18 +876,29 @@ export default async function HomePage() {
               <div className="section-num">01 / Videóriportok és podcastok</div>
               <h2 className="section-title">Amiről beszélni kell.</h2>
             </div>
-            <PodcastSpotlight
-              videoId={recentPodcastsRaw[0]!.videoId}
-              title={recentPodcastsRaw[0]!.title}
-              description={cleanSpotlightDescription(recentPodcastsRaw[0]!.description)}
-              channelName={recentPodcastsRaw[0]!.channelName}
-              publishedAtLabel={fmtRelative(recentPodcastsRaw[0]!.publishedAt)}
-              eyebrow="Kiemelt beszélgetés"
-              lead
-            />
-            {recentPodcastsRaw.length > 1 && (
+            <div className="podcast-featured-grid">
+              <PodcastVideoCard
+                key={recentPodcastsRaw[0]!.id}
+                videoId={recentPodcastsRaw[0]!.videoId}
+                title={recentPodcastsRaw[0]!.title}
+                channelName={recentPodcastsRaw[0]!.channelName}
+                publishedAtLabel={fmtRelative(recentPodcastsRaw[0]!.publishedAt)}
+                variant="hero"
+              />
+              {recentPodcastsRaw.slice(1, 3).map((v) => (
+                <PodcastVideoCard
+                  key={v.id}
+                  videoId={v.videoId}
+                  title={v.title}
+                  channelName={v.channelName}
+                  publishedAtLabel={fmtRelative(v.publishedAt)}
+                  variant="companion"
+                />
+              ))}
+            </div>
+            {recentPodcastsRaw.length > 3 && (
               <div className="podcast-grid">
-                {recentPodcastsRaw.slice(1).map((v) => (
+                {recentPodcastsRaw.slice(3).map((v) => (
                   <PodcastVideoCard
                     key={v.id}
                     videoId={v.videoId}

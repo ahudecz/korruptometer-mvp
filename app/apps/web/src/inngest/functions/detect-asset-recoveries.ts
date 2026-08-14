@@ -102,13 +102,17 @@ async function processAssetRecoveryArticle(
     }
 
     // Dedup: skip if same caseLabel already recorded in last 14 days.
+    // 2026-08-14 — was a bare lower()=lower() (no accent/punctuation
+    // handling at all, the weakest dedup in the codebase); normalize_name()
+    // (migration 0052) brings it in line with the other 3 dedup tables —
+    // see isDuplicate()'s doc comment in review.ts for the full story.
     const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
     const existing = await db
       .select({ id: schema.assetRecoveries.id })
       .from(schema.assetRecoveries)
       .where(
         and(
-          sql`lower(${schema.assetRecoveries.caseLabel}) = lower(${item.caseLabel})`,
+          sql`normalize_name(${schema.assetRecoveries.caseLabel}) = normalize_name(${item.caseLabel})`,
           gte(schema.assetRecoveries.createdAt, fourteenDaysAgo),
         ),
       )
