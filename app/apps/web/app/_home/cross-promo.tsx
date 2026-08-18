@@ -227,9 +227,15 @@ export async function CrossBirosag() {
 
   const active = rows.filter(r => !RELEASED_VERDICT_TYPES.includes(r.verdictType));
   const pretrialCount = active.filter(r => r.verdictType === 'előzetesben').length;
-  const convictedCount = active.filter(r => r.verdictType === 'elsőfokú' || r.verdictType === 'jogerős').length;
+  // A "jogerős" és az "elsőfokú" NEM ugyanaz — az elsőfokú ítélet még
+  // fellebbezhető, nem végleges, ezért külön mondatrészt kap, nem esik bele
+  // a "jogerősen elítélve" számlálóba (user report, 2026-08-17: a korábbi
+  // összevonás azt sugallta, hogy valaki jogerősen el van ítélve, miközben
+  // csak első fokon volt ítélet, vagy egyáltalán nem volt személyes ítélet).
+  const jogerosCount = active.filter(r => r.verdictType === 'jogerős').length;
+  const elsofokuCount = active.filter(r => r.verdictType === 'elsőfokú').length;
 
-  if (pretrialCount === 0 && convictedCount === 0) return null;
+  if (pretrialCount === 0 && jogerosCount === 0 && elsofokuCount === 0) return null;
 
   // Ügyenkénti gyorsgombok — csoportosítás personUgyId szerint, rendezés
   // (létszám desc, majd legfrissebb dátum desc). 2-3 ügynél ez a sorrend
@@ -250,7 +256,8 @@ export async function CrossBirosag() {
     .sort((a, b) => b.count - a.count || +b.latest - +a.latest);
 
   const sentenceParts = [`${pretrialCount} fő van jelenleg előzetes letartóztatásban`];
-  if (convictedCount > 0) sentenceParts.push(`${convictedCount} fő jogerősen elítélve`);
+  if (jogerosCount > 0) sentenceParts.push(`${jogerosCount} fő jogerősen elítélve`);
+  if (elsofokuCount > 0) sentenceParts.push(`${elsofokuCount} fő elsőfokon elítélve`);
 
   return (
     <div className="cross-promo">

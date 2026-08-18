@@ -395,7 +395,13 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
         </div>
         <div className="megszunt-stat">
           <div className="megszunt-stat-value">{nonPretrialCount}</div>
-          <div className="megszunt-stat-label">Ítélet összesen</div>
+          {/* Ez a szám nem CSAK a ténylegesen kihirdetett ítéleteket
+              (elsőfokú/jogerős) számolja, hanem minden előzetesen túljutott,
+              még nem lezárt/kiengedett szakaszt is (vádemelés, fellebbezés
+              alatt is beleesik — l. verdict-stats.ts komment). A régi
+              "Ítélet összesen" felirat ezt tévesen sugallta (user report,
+              2026-08-17: egy csak vádemelt ügy is "ítéletként" jelent meg). */}
+          <div className="megszunt-stat-label">Vádemelve vagy elítélve</div>
         </div>
         <div className="megszunt-stat">
           <div className="megszunt-stat-value">{totalYears}</div>
