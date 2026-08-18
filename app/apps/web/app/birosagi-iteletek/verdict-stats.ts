@@ -6,9 +6,13 @@
 // ami minden itt felsorolt értékre lefuttatja az invariánst).
 //
 // A partíció itt már eleve KIZÁRÁS-alapú (RELEASED_TYPES + 'előzetesben'
-// NEM ez, a többi IGEN "Ítélet összesen") — ez a minta 2026-08-02 előtt is
-// helyes volt, ezt a modult csak a resignation-stats.ts / media-closure-
-// stats.ts mintájának megfelelően emeltük ki tesztelhető, önálló fájlba.
+// NEM ez, a többi IGEN "Vádemelve vagy elítélve") — ez a minta 2026-08-02
+// előtt is helyes volt, ezt a modult csak a resignation-stats.ts / media-
+// closure-stats.ts mintájának megfelelően emeltük ki tesztelhető, önálló
+// fájlba. A UI-felirat 2026-08-17-én változott "Ítélet összesen"-ről (ez a
+// vádemelés/fellebbezés-alatt szakaszra is ráillett, holott azok nem
+// ítéletek — user report) — a SZÁMÍTÁS (kizárás-alapú partíció) nem
+// változott, csak a szöveg lett pontosabb.
 
 export const RELEASED_TYPES = ['szabadlábra helyezve', 'eljárás megszűnt', 'felmentve'] as const;
 export type ReleasedType = (typeof RELEASED_TYPES)[number];
@@ -21,7 +25,7 @@ export type VerdictStatRow = { verdictType: string; sentenceYears: number };
 
 export interface VerdictStats {
   pretrialCount: number;
-  /** "Ítélet összesen" — minden aktív (nem kiengedett/lezárt) ÉS nem előzetesben lévő sor. */
+  /** "Vádemelve vagy elítélve" — minden aktív (nem kiengedett/lezárt) ÉS nem előzetesben lévő sor. */
   nonPretrialCount: number;
   jogerosCount: number;
   totalYears: number;
