@@ -319,15 +319,18 @@ const getCachedVerdictCounts = unstable_cache(
     const { getDb, schema } = await import('@/lib/db');
     const { eq: eqF, sql: s } = await import('drizzle-orm');
     const db = getDb();
-    // A ('előzetesben', 'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve')
-    // kizárás-lista itt szándékosan tükrözi a birosagi-iteletek/verdict-stats.ts
-    // RELEASED_TYPES + 'előzetesben' kombóját — ha ott bővül a lista, itt is
-    // kell (l. verdict-stats.test.ts, ami a teljes CHECK-constraint-listát
-    // végigfuttatja azon a modulon; ide DB-oldali raw SQL miatt nem
-    // importálható közvetlenül).
+    // A homepage-kártya felirata szó szerint "Jogerősen elítélt" — ez CSAK
+    // a verdictType='jogerős' sorokra igaz. A korábbi verzió a "kizárás-
+    // alapú" (nem előzetesben/kiengedve/lezárva) bucket méretét írta ki ide,
+    // ami vádemelés/elsőfokú/fellebbezés-alatt sorokat is beleszámolt —
+    // ezért mutathatott "1 fő"-t úgy, hogy valójában senki nincs jogerősen
+    // elítélve, csak vádat emeltek ellene (user report, 2026-08-19). Az a
+    // tágabb bucket a /birosagi-iteletek "Vádemelve vagy elítélve" stat-ja,
+    // AZ maradt kizárás-alapú (l. verdict-stats.ts) — ide, a homepage-re
+    // szigorúan csak a 'jogerős' szám kell.
     return db.select({
       pretrial: s<number>`count(*) FILTER (WHERE ${schema.courtVerdicts.verdictType} = 'előzetesben')::int`,
-      elitelt: s<number>`count(*) FILTER (WHERE ${schema.courtVerdicts.verdictType} NOT IN ('előzetesben', 'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve'))::int`,
+      elitelt: s<number>`count(*) FILTER (WHERE ${schema.courtVerdicts.verdictType} = 'jogerős')::int`,
     }).from(schema.courtVerdicts)
       .where(eqF(schema.courtVerdicts.reviewStatus, 'approved'))
       .then(r => r[0] ?? { pretrial: 0, elitelt: 0 });
