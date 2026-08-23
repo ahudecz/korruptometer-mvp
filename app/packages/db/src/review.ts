@@ -142,9 +142,8 @@ type Executable = { execute: (query: ReturnType<typeof sql>) => Promise<unknown>
 
 /**
  * True if a row with the same normalised name already exists in the table,
- * in ANY reviewStatus (approved/pending/rejected). Institution is
- * intentionally ignored, and rejected rows count, so a previously rejected
- * detection is not re-created (FR-009, FR-011).
+ * in ANY reviewStatus (approved/pending/rejected), and rejected rows count,
+ * so a previously rejected detection is not re-created (FR-009, FR-011).
  *
  * The SQL side re-derives the same normalisation as normalizeName() —
  * lower + unaccent + punctuation-to-space + collapse/trim — so that e.g.
@@ -166,12 +165,27 @@ type Executable = { execute: (query: ReturnType<typeof sql>) => Promise<unknown>
  * explicit `withinDays` when a table genuinely can have legitimate repeat
  * events under the same name (e.g. AssetRecovery — recurring recoveries on
  * the same case — already does, with 14).
+ *
+ * 2026-08-23 — that "identical name = same event" assumption over-corrected:
+ * a person CAN legitimately resign from two unrelated posts at different
+ * times (Lázár János: Magyar Teniszszövetség elnöke, 2026-04-12 vs.
+ * országgyűlési képviselő, 2026-08-20 — same name, unrelated institutions,
+ * user report — the 3-months-later resignation from Parliament was silently
+ * discarded as a "duplicate" of the tennis-federation one). `institution`
+ * is now an optional extra guard: when passed (PoliticalResignation only —
+ * the only DedupTable with that column), a name match ALSO requires the
+ * existing row's institution to reasonably match (normalized equality or
+ * substring containment either way, to tolerate "Zrt."/suffix wording
+ * drift) before counting as a duplicate. Omitted for tables with no
+ * institution concept (MediaClosure/CourtVerdict/AssetRecovery) — those
+ * keep the old name-only behavior.
  */
 export async function isDuplicate(
   db: Executable,
   target: DedupTable,
   name: string,
   withinDays?: number,
+  institution?: string,
 ): Promise<boolean> {
   const key = normalizeName(name);
   if (!key) return false;
@@ -180,10 +194,21 @@ export async function isDuplicate(
   const windowClause = withinDays != null
     ? sql`AND "createdAt" >= now() - make_interval(days => ${withinDays})`
     : sql``;
+  const institutionClause = institution
+    ? sql`AND (
+        trim(regexp_replace(lower(unaccent(trim("institution"))), '[^a-z0-9]+', ' ', 'g'))
+          = trim(regexp_replace(lower(unaccent(${institution})), '[^a-z0-9]+', ' ', 'g'))
+        OR trim(regexp_replace(lower(unaccent(trim("institution"))), '[^a-z0-9]+', ' ', 'g'))
+          LIKE '%' || trim(regexp_replace(lower(unaccent(${institution})), '[^a-z0-9]+', ' ', 'g')) || '%'
+        OR trim(regexp_replace(lower(unaccent(${institution})), '[^a-z0-9]+', ' ', 'g'))
+          LIKE '%' || trim(regexp_replace(lower(unaccent(trim("institution"))), '[^a-z0-9]+', ' ', 'g')) || '%'
+      )`
+    : sql``;
   const rows = (await db.execute(sql`
     SELECT 1 FROM ${tableId}
     WHERE trim(regexp_replace(lower(unaccent(trim(${nameCol}))), '[^a-z0-9]+', ' ', 'g')) = ${key}
       ${windowClause}
+      ${institutionClause}
     LIMIT 1
   `)) as unknown as { length: number };
   return rows.length > 0;

@@ -112,7 +112,7 @@ describe('US2 auto-publish vs watchlist (combined)', () => {
 
 // US3 — dedup guard (the SQL is mocked; we assert the function's own logic).
 describe('isDuplicate', () => {
-  it('is true when a matching row exists (institution is irrelevant)', async () => {
+  it('is true when a matching row exists (institution ignored when omitted)', async () => {
     const db = { execute: async () => [{ exists: 1 }] };
     expect(await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Kovács Zoltán')).toBe(true);
   });
@@ -148,6 +148,47 @@ describe('isDuplicate', () => {
     const db = { execute: async (query: unknown) => { capturedQuery = query; return []; } };
     await isDuplicate(db, { table: 'AssetRecovery', nameColumn: 'caseLabel' }, 'NKA visszafizetés', 14);
     expect(sqlToText(capturedQuery)).toContain('createdAt');
+  });
+
+  // 2026-08-23 — Lázár János bug report: he resigned as Magyar Teniszszövetség
+  // elnök on 2026-04-12, then separately resigned his országgyűlési képviselő
+  // mandátum on 2026-08-20 — same name, unrelated institutions, but the
+  // name-only check silently discarded the second, much bigger story as a
+  // "duplicate" of the first. isDuplicate() now takes an optional
+  // `institution` — omitted, it's the old name-only behavior (still covered
+  // by the tests above); passed, a match ALSO requires the institution to
+  // reasonably line up.
+  describe('institution-aware guard (2026-08-23 Lázár János fix)', () => {
+    it('does NOT include an institution clause when institution is omitted', async () => {
+      let capturedQuery: unknown;
+      const db = { execute: async (query: unknown) => { capturedQuery = query; return []; } };
+      await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Lázár János');
+      expect(sqlToText(capturedQuery)).not.toContain('institution');
+    });
+
+    it('includes an institution clause when institution is passed', async () => {
+      let capturedQuery: unknown;
+      const db = { execute: async (query: unknown) => { capturedQuery = query; return []; } };
+      await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Lázár János', undefined, 'Országgyűlés');
+      expect(sqlToText(capturedQuery)).toContain('institution');
+    });
+
+    it('a same-name match still counts as duplicate when the mocked query says so (same institution case)', async () => {
+      // The institution-comparison itself happens SQL-side (mocked here) —
+      // this only asserts the function still surfaces true/false from
+      // whatever the query returns, same as before.
+      const db = { execute: async () => [{ exists: 1 }] };
+      expect(await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Lázár János', undefined, 'Magyar Teniszszövetség')).toBe(true);
+    });
+
+    it('a same-name match with a non-matching institution is NOT a duplicate (query returns no rows)', async () => {
+      // Simulates the real bug: the row exists (Teniszszövetség), but the
+      // SQL institution clause excludes it because this call is checking
+      // against 'Országgyűlés' — the mock reflects what Postgres would
+      // actually return, not the function inventing the filter itself.
+      const db = { execute: async () => [] };
+      expect(await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Lázár János', undefined, 'Országgyűlés')).toBe(false);
+    });
   });
 });
 

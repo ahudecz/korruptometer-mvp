@@ -154,9 +154,13 @@ async function processResignationArticle(
       continue;
     }
 
-    // Dedup by normalized name across ALL statuses within the window, so a
-    // rejected detection is not re-created (FR-009, FR-011).
-    if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, person.name)) {
+    // Dedup by normalized name + institution across ALL statuses, so a
+    // rejected detection is not re-created (FR-009, FR-011) — but a second,
+    // genuinely different resignation by the same person from a DIFFERENT
+    // institution is NOT blocked (l. isDuplicate() komment, 2026-08-23: Lázár
+    // János Teniszszövetség-lemondása néma duplikátumnak jelölte az OGY-
+    // mandátumáról szóló, teljesen más lemondását).
+    if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, person.name, undefined, person.institution)) {
       lastDiscardReason = 'duplicate';
       continue;
     }
