@@ -137,7 +137,11 @@ export function isWatchlistPerson(extractedName: string): boolean {
 // WATCHLIST_PERSONS-ba.
 export const PERMANENT_BREAKING_NAMES: readonly string[] = [
   ...CALLED_TO_RESIGN,
-  'Hende Csaba',
+  // 2026-08-23 — user kérés: Lázár János (OGY-mandátum lemondása) vette át
+  // Hende Csaba helyét — nagyobb súlyú, aktuálisabb sztori a "Top lemondások"
+  // homepage-kártyán (l. page.tsx TOP_RESIGNATION_PRIORITY, ami erről a
+  // listáról származtatva épül).
+  'Lázár János',
   'Gulyás Gergely',
   'Szíjjártó Péter',
   'Császár Attila',
