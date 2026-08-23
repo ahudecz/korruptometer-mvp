@@ -10,15 +10,46 @@
  * scrapers/relevance.ts; this module consolidates them.
  */
 
-/** Normalised name key: lowercase, accent- and punctuation-insensitive, trimmed. */
+// Hungarian honorifics that can prefix a name without changing who it
+// refers to. Mirrors the equivalent list in
+// apps/web/src/lib/investigation/normalize-name.ts (a separate module for
+// the investigation-clustering feature, which already had to solve this
+// same problem — kept as two lists rather than a shared import because the
+// two packages don't otherwise depend on each other).
+const HONORIFIC_TOKENS = new Set(['dr', 'ifj', 'id', 'prof']);
+
+/**
+ * Normalised name key: lowercase, accent- and punctuation-insensitive,
+ * trimmed, leading honorific stripped.
+ *
+ * 2026-08-07 — bug report: "Dr. Fürcht Pál" (created 2026-06-14) and
+ * "Fürcht Pál" (created 2026-08-07, extracted from an unrelated follow-up
+ * article that recapped the same June resignation as background) normalized
+ * to DIFFERENT keys ("dr furcht pal" vs "furcht pal") because the honorific
+ * was never stripped — isDuplicate()'s exact-match dedup treated them as two
+ * different people and let the recap through as a "new" resignation. Strip
+ * the honorific so both forms collapse to the same identity key regardless
+ * of which article happened to include the title.
+ */
 export function normalizeName(name: string): string {
-  return name
+  const base = name
     .toLowerCase()
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '') // strip diacritics
     .replace(/[^a-z0-9\s]/g, ' ') // punctuation → space
     .replace(/\s+/g, ' ')
     .trim();
+
+  // Peel leading honorific tokens ("dr", "prof", "ifj", "id") — bounded so a
+  // pathological input can't loop, and never strips the last remaining
+  // token (an honorific never appears without an actual name following).
+  let s = base;
+  for (let i = 0; i < 4; i += 1) {
+    const [first, ...rest] = s.split(' ');
+    if (!first || rest.length === 0 || !HONORIFIC_TOKENS.has(first)) break;
+    s = rest.join(' ');
+  }
+  return s;
 }
 
 // 8 "lemondásra felszólított" — NER key office holders.
@@ -106,7 +137,11 @@ export function isWatchlistPerson(extractedName: string): boolean {
 // WATCHLIST_PERSONS-ba.
 export const PERMANENT_BREAKING_NAMES: readonly string[] = [
   ...CALLED_TO_RESIGN,
-  'Hende Csaba',
+  // 2026-08-23 — user kérés: Lázár János (OGY-mandátum lemondása) vette át
+  // Hende Csaba helyét — nagyobb súlyú, aktuálisabb sztori a "Top lemondások"
+  // homepage-kártyán (l. page.tsx TOP_RESIGNATION_PRIORITY, ami erről a
+  // listáról származtatva épül).
+  'Lázár János',
   'Gulyás Gergely',
   'Szíjjártó Péter',
   'Császár Attila',
