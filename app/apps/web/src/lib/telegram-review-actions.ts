@@ -146,7 +146,10 @@ export async function processResignation(article: ArticleForReprocess, todayIso:
       }
     }
 
-    if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, person.name)) {
+    // l. review.ts isDuplicate() komment (2026-08-23) — institution-guarded,
+    // hogy ugyanaz a személy egy MÁSIK intézményből való lemondása ne
+    // számítson duplikátumnak.
+    if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, person.name, undefined, person.institution)) {
       lastDiscardReason = 'duplicate';
       continue;
     }

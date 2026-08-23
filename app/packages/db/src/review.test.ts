@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanPositionTitle, decideComplaintTransition, decideStatus, findExistingComplaint, isDuplicate, truncateDescriptionWords } from './review';
+import { cleanPositionTitle, decideComplaintTransition, decideStatus, findExistingComplaint, isDuplicate, isSameComplainant, truncateDescriptionWords } from './review';
 import { isWatchlistPerson, normalizeName } from './watchlist';
 
 // Drizzle's `sql` template tag returns an object tree (StringChunk literals
@@ -112,7 +112,7 @@ describe('US2 auto-publish vs watchlist (combined)', () => {
 
 // US3 — dedup guard (the SQL is mocked; we assert the function's own logic).
 describe('isDuplicate', () => {
-  it('is true when a matching row exists (institution is irrelevant)', async () => {
+  it('is true when a matching row exists (institution ignored when omitted)', async () => {
     const db = { execute: async () => [{ exists: 1 }] };
     expect(await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Kovács Zoltán')).toBe(true);
   });
@@ -148,6 +148,47 @@ describe('isDuplicate', () => {
     const db = { execute: async (query: unknown) => { capturedQuery = query; return []; } };
     await isDuplicate(db, { table: 'AssetRecovery', nameColumn: 'caseLabel' }, 'NKA visszafizetés', 14);
     expect(sqlToText(capturedQuery)).toContain('createdAt');
+  });
+
+  // 2026-08-23 — Lázár János bug report: he resigned as Magyar Teniszszövetség
+  // elnök on 2026-04-12, then separately resigned his országgyűlési képviselő
+  // mandátum on 2026-08-20 — same name, unrelated institutions, but the
+  // name-only check silently discarded the second, much bigger story as a
+  // "duplicate" of the first. isDuplicate() now takes an optional
+  // `institution` — omitted, it's the old name-only behavior (still covered
+  // by the tests above); passed, a match ALSO requires the institution to
+  // reasonably line up.
+  describe('institution-aware guard (2026-08-23 Lázár János fix)', () => {
+    it('does NOT include an institution clause when institution is omitted', async () => {
+      let capturedQuery: unknown;
+      const db = { execute: async (query: unknown) => { capturedQuery = query; return []; } };
+      await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Lázár János');
+      expect(sqlToText(capturedQuery)).not.toContain('institution');
+    });
+
+    it('includes an institution clause when institution is passed', async () => {
+      let capturedQuery: unknown;
+      const db = { execute: async (query: unknown) => { capturedQuery = query; return []; } };
+      await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Lázár János', undefined, 'Országgyűlés');
+      expect(sqlToText(capturedQuery)).toContain('institution');
+    });
+
+    it('a same-name match still counts as duplicate when the mocked query says so (same institution case)', async () => {
+      // The institution-comparison itself happens SQL-side (mocked here) —
+      // this only asserts the function still surfaces true/false from
+      // whatever the query returns, same as before.
+      const db = { execute: async () => [{ exists: 1 }] };
+      expect(await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Lázár János', undefined, 'Magyar Teniszszövetség')).toBe(true);
+    });
+
+    it('a same-name match with a non-matching institution is NOT a duplicate (query returns no rows)', async () => {
+      // Simulates the real bug: the row exists (Teniszszövetség), but the
+      // SQL institution clause excludes it because this call is checking
+      // against 'Országgyűlés' — the mock reflects what Postgres would
+      // actually return, not the function inventing the filter itself.
+      const db = { execute: async () => [] };
+      expect(await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Lázár János', undefined, 'Országgyűlés')).toBe(false);
+    });
   });
 });
 
@@ -189,9 +230,9 @@ describe('findExistingComplaint', () => {
     expect(await findExistingComplaint(db, 'Orbán-kori gyanús közbeszerzések')).toBeNull();
   });
 
-  it('returns the matched row', async () => {
-    const db = { execute: async () => [{ id: 'abc', status: 'nyomozás' }] };
-    expect(await findExistingComplaint(db, 'Orbán-kori gyanús közbeszerzések')).toEqual({ id: 'abc', status: 'nyomozás' });
+  it('returns the matched row, including filerName (2026-08-11: needed to tell a second independent complaint apart from a stale re-report)', async () => {
+    const db = { execute: async () => [{ id: 'abc', status: 'nyomozás', filerName: 'Integritás Hatóság' }] };
+    expect(await findExistingComplaint(db, 'Orbán-kori gyanús közbeszerzések')).toEqual({ id: 'abc', status: 'nyomozás', filerName: 'Integritás Hatóság' });
   });
 
   it('short-circuits on an empty target name without querying', async () => {
@@ -199,6 +240,25 @@ describe('findExistingComplaint', () => {
     const db = { execute: async () => { queried = true; return []; } };
     expect(await findExistingComplaint(db, '   ')).toBeNull();
     expect(queried).toBe(false);
+  });
+});
+
+describe('isSameComplainant (2026-08-11 Gondosóra bug: a second, independent complaint about the same case was silently discarded as stale)', () => {
+  it('true for the same organization written identically', () => {
+    expect(isSameComplainant('Integritás Hatóság', 'Integritás Hatóság')).toBe(true);
+  });
+
+  it('true despite case/accent/whitespace differences', () => {
+    expect(isSameComplainant('integritás hatóság', '  Integritás   Hatóság  ')).toBe(true);
+  });
+
+  it('false for two different filers on the same broader case (Gondosóra: Integritás Hatóság vs. the Ministry)', () => {
+    expect(isSameComplainant('Integritás Hatóság', 'Tudományos és Technológiai Minisztérium')).toBe(false);
+  });
+
+  it('false when either side is empty', () => {
+    expect(isSameComplainant('', 'Integritás Hatóság')).toBe(false);
+    expect(isSameComplainant('Integritás Hatóság', '')).toBe(false);
   });
 });
 
