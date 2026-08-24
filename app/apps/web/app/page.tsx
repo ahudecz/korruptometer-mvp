@@ -426,11 +426,20 @@ const getCachedFeaturedResignations = unstable_cache(
       TOP_RESIGNATION_PRIORITY.map((n) => s`trim(regexp_replace(lower(unaccent(trim(name))), '[^a-z0-9]+', ' ', 'g')) = ${normalizeName(n)}`),
       s` OR `,
     );
+    // ORDER BY resignationDate ASC — ha egy priorizált névre TÖBB (valós,
+    // egymástól független) lemondás is van (pl. Lázár János: 2026-04-12
+    // Teniszszövetség-elnökség ÉS 2026-08-20 OGY-mandátum), a lenti
+    // featuredByName Map "utolsó nyer" logikája emiatt a legfrissebbet
+    // tartja meg — enélkül a DB tetszőleges/beszúrási sorrendje döntött, és
+    // a jóval kevésbé aktuális sztori (Teniszszövetség) jelent meg a "Top
+    // lemondások" kártyán a nagy hír (OGY-mandátum) helyett (user report,
+    // 2026-08-24).
     return db.select().from(schema.politicalResignations)
       .where(andF(
         eqF(schema.politicalResignations.reviewStatus, 'approved'),
         nameMatch,
-      ));
+      ))
+      .orderBy(schema.politicalResignations.resignationDate);
   },
   ['featured-resignations'],
   { revalidate: 300 },
