@@ -240,11 +240,13 @@ export const UGYEK: UgyekConfig[] = [
         date: '2026. június 3.',
       },
       {
+        // 2026-08-24 — user report: az eredeti (Molnár Áron Összeállítások,
+        // ZzNVujJun1Y) videó private-re állt. ATV/AKTUÁL-videóra cserélve.
         type: 'video',
-        id: 'ZzNVujJun1Y',
-        label: 'Molnár Áron Összeállítások',
-        title: 'Ők osztottak szét 17 MILLIÁRD ADÓFIZETŐ FORINTOT',
-        summary: 'Molnár Áron összeállítása azokról, akik az NKA-n keresztül 17 milliárd forint közpénzt osztottak szét — kiknek, milyen indokkal, és miért nem kellett érte felelniük.',
+        id: 'TdD0RdU2Ed0',
+        label: 'ATV',
+        title: 'NKA-botrány: Molnár Áron öt újabb szervezetet nevezett meg',
+        summary: 'Az ATV AKTUÁL című műsorában (2026. augusztus 4.) Molnár Áron öt további, NKA-támogatásban részesült szervezetet nevezett meg — a botrány érintetti köre így tovább bővült.',
       },
       {
         type: 'text',
