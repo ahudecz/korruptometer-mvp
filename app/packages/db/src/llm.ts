@@ -20,6 +20,7 @@ import { eq, sql } from 'drizzle-orm';
 import { db } from './index';
 import { dailyLlmUsage } from './schema';
 import { maybeSendBudgetAlert } from './llm-budget-alert';
+import { maybeSendApiFailureAlert } from './llm-api-failure-alert';
 
 // ── 2026-07-18 — hard daily spend gate ──────────────────────────────────────
 // User report: $28.51 spent month-to-date, all Claude Haiku 4.5, climbing
@@ -217,14 +218,15 @@ export async function llmExtract<T>(opts: {
       provider() === 'anthropic'
         ? await anthropicExtract<T>(opts, model, maxTokens)
         : await openaiCompatExtract<T>(opts, model, maxTokens);
-    await db().transaction((tx) =>
-      recordUsage(tx, model, {
+    await db().transaction(async (tx) => {
+      await recordUsage(tx, model, {
         inputTokens: result.inputTokens,
         outputTokens: result.outputTokens,
         cacheCreationTokens: result.cacheCreationTokens,
         cacheReadTokens: result.cacheReadTokens,
-      }),
-    );
+      });
+      if (result.apiError) await maybeSendApiFailureAlert(tx, todayBudapest(), result.apiError);
+    });
     return { data: result.data, inputTokens: result.inputTokens, outputTokens: result.outputTokens };
   }
 
@@ -254,6 +256,7 @@ export async function llmExtract<T>(opts: {
         cacheCreationTokens: result.cacheCreationTokens,
         cacheReadTokens: result.cacheReadTokens,
       });
+      if (result.apiError) await maybeSendApiFailureAlert(tx, todayBudapest(), result.apiError);
       return { data: result.data, inputTokens: result.inputTokens, outputTokens: result.outputTokens };
     });
   } catch (err) {
@@ -268,7 +271,12 @@ export async function llmExtract<T>(opts: {
   }
 }
 
-type ProviderResult<T> = LlmResult<T> & { cacheCreationTokens: number; cacheReadTokens: number };
+// apiError is set ONLY on a genuine call failure (dead/missing key, credit
+// exhaustion, network error) — l. llm-api-failure-alert.ts. Deliberately
+// NOT part of the public LlmResult<T> (llmExtract()'s return type only
+// ever spreads {data, inputTokens, outputTokens} explicitly), so this stays
+// an internal-only signal and never leaks to the ~40 call sites.
+type ProviderResult<T> = LlmResult<T> & { cacheCreationTokens: number; cacheReadTokens: number; apiError?: string };
 
 // ─── OpenAI-compatible path (LangDock: Gemini / Claude / GPT / Mistral) ───────
 // No prompt-caching support in this path (LangDock's OpenAI-compat endpoint
@@ -360,8 +368,9 @@ async function openaiCompatExtract<T>(
     }
     return { data: null, inputTokens, outputTokens, cacheCreationTokens: 0, cacheReadTokens: 0 };
   } catch (err) {
-    console.error(`[llm] ${model} request failed:`, err instanceof Error ? err.message : err);
-    return { data: null, inputTokens: 0, outputTokens: 0, cacheCreationTokens: 0, cacheReadTokens: 0 };
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[llm] ${model} request failed:`, message);
+    return { data: null, inputTokens: 0, outputTokens: 0, cacheCreationTokens: 0, cacheReadTokens: 0, apiError: message };
   } finally {
     clearTimeout(timer);
   }
@@ -388,7 +397,7 @@ async function anthropicExtract<T>(
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       console.error('[llm] ANTHROPIC_API_KEY is not set — detection pipeline is silently disabled.');
-      return { data: null, inputTokens: 0, outputTokens: 0, cacheCreationTokens: 0, cacheReadTokens: 0 };
+      return { data: null, inputTokens: 0, outputTokens: 0, cacheCreationTokens: 0, cacheReadTokens: 0, apiError: 'ANTHROPIC_API_KEY nincs beállítva' };
     }
     _anthropic = new Anthropic({ apiKey });
   }
@@ -428,7 +437,8 @@ async function anthropicExtract<T>(
     }
     return { data: toolUse.input as T, inputTokens, outputTokens, cacheCreationTokens, cacheReadTokens };
   } catch (err) {
-    console.error(`[llm] anthropic ${model} failed:`, err instanceof Error ? err.message : err);
-    return { data: null, inputTokens: 0, outputTokens: 0, cacheCreationTokens: 0, cacheReadTokens: 0 };
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[llm] anthropic ${model} failed:`, message);
+    return { data: null, inputTokens: 0, outputTokens: 0, cacheCreationTokens: 0, cacheReadTokens: 0, apiError: message };
   }
 }

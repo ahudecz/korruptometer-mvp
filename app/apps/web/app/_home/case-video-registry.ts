@@ -126,3 +126,9 @@ export function getCaseVideo(person: string | null | undefined): CaseVideo | nul
   if (!person) return null;
   return VIDEOS[normPerson(person)] ?? null;
 }
+
+/** For the daily video-health check (check-video-health.ts) — every
+ *  registered videoId + which person key it belongs to, for reporting. */
+export function getAllRegisteredVideoIds(): Array<{ videoId: string; personKey: string }> {
+  return Object.entries(VIDEOS).map(([personKey, v]) => ({ videoId: v.videoId, personKey }));
+}

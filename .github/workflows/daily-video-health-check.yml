@@ -1,0 +1,35 @@
+name: Daily video health check
+
+# 2026-08-24 — user kérés: naponta egyszer ellenőrizze, hogy az oldalon
+# beágyazott YouTube videók (UGYEK, GALERIA, WATCHLIST_DETAIL, adatbázis-
+# személyek, CourtVerdict, PodcastVideo) még lejátszhatók-e, és Telegramra
+# riasszon, ha valamelyik törölve/private-re állítva/beágyazás-tiltva lett
+# (l. apps/web/app/api/cron/check-video-health/route.ts). Ugyanaz a minta,
+# mint a hourly-pipeline.yml — a GitHub Actions hívja meg a Vercel route-ot,
+# ugyanazzal a CRON_SECRET repo-secret-tel.
+#
+# 06:20 UTC — nem ütközik a többi napi cronnal (facebook-sync 05:00,
+# youtube-sync 08:10, hourly-pipeline minden óra 07. perce).
+
+on:
+  schedule:
+    - cron: '20 6 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  check-video-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call /api/cron/check-video-health
+        run: |
+          set -e
+          http_code=$(curl -sS -m 100 -o /tmp/response.json -w '%{http_code}' \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://www.kegyencjarat.hu/api/cron/check-video-health)
+          echo "HTTP status: $http_code"
+          cat /tmp/response.json
+          echo ""
+          if [ "$http_code" != "200" ]; then
+            echo "::error::check-video-health endpoint returned HTTP $http_code"
+            exit 1
+          fi
