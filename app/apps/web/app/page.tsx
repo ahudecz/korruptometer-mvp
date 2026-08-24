@@ -942,7 +942,12 @@ export default async function HomePage() {
               lead: 'A bíróság előzetes letartóztatásba helyezte Konczos Nórát, Hankó Balázs volt kulturális miniszter egykori kabinetfőnökét — ő az NKA-botrány hetedik gyanúsítottja, aki e-mailben kérte a Mága Zoltán-pályázat 500 millió forintos finanszírozását.',
               url: 'https://telex.hu/belfold/2026/07/23/nka-letartoztatas-hanko-kabinetfonok',
             },
-            videoId: 'NRA-QuItdUA',
+            // 2026-08-24 — user report: a korábbi (Molnár Áron, NRA-QuItdUA)
+            // videó private-re állt, nem játszható le. L. ugyek-config.ts
+            // ugyanerre az esetre — a két hely (bigCases itt, UGYEK ott)
+            // szándékosan külön tárolja a videót (l. feedback-ugyek-config-
+            // duplicated-in-page-tsx memória), MINDKETTŐT frissíteni kell.
+            videoId: 'df2GNzmh7pY',
             statusItems: [
               { icon: '🔴', label: 'Őrizetbe vétel', value: '7 személy előzetesben — köztük Bús Balázs (óbudai) és Ughy Attila (XVIII. ker.) volt polgármesterek, valamint Konczos Nóra, Hankó Balázs egykori kabinetfőnöke (júl. 23.)' },
               { icon: '⚖️', label: 'Nyomozás', value: 'NAV — hűtlen kezelés bűntett, 17+ milliárd Ft érintett összeg' },
