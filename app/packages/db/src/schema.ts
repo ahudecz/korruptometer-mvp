@@ -1092,6 +1092,19 @@ export const llmBudgetAlerts = pgTable('LlmBudgetAlert', {
   sentAt: timestamp('sentAt', { withTimezone: true }).notNull().defaultNow(),
 });
 
+// 2026-08-24 — user report: a napi ÖNKÉNT vállalt költséglimit (fenti tábla)
+// és a VALÓDI Anthropic API-hiba (halott kulcs, elfogyott kredit, kvóta) két
+// KÜLÖNBÖZŐ dolog — az előbbire már van riasztás, az utóbbira eddig semmi:
+// anthropicExtract() minden hívási hibát elnyel, csendben console.error-ral,
+// pontosan úgy, mint a 2026-07-12-i "$0 kredit" incidens idején. Ugyanaz a
+// naponta-egyszer-dedup minta, mint LlmBudgetAlert-nél, csak a hibaüzenetet
+// is eltárolja diagnosztikai célból.
+export const llmApiFailureAlerts = pgTable('LlmApiFailureAlert', {
+  day: date('day').notNull().primaryKey(),
+  sentAt: timestamp('sentAt', { withTimezone: true }).notNull().defaultNow(),
+  lastError: text('lastError'),
+});
+
 // 2026-07-22 — a hash-alapú "már ismerjük" szűrő (scrape-news.ts,
 // 2026-07-21) csak a korábban BEILLESZTETT (tier='in' vagy AI-elfogadott)
 // cikkeket ismeri fel újra a NewsArticle.sourceUrlHash-en keresztül. Amit
