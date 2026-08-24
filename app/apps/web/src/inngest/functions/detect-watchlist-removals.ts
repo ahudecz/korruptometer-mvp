@@ -13,6 +13,24 @@ import { inngest } from '../client';
 const CANDIDATE_WINDOW_DAYS = 30;
 const CANDIDATE_LIMIT = 15;
 const MIN_DISTINCT_SOURCES = 2;
+// 2026-08-24 — user report: daily LLM spend had sat at $0.10-0.20 for weeks,
+// then started hitting the $0.50 ceiling by early afternoon. Root cause:
+// this function has NO per-person memoization — every hourly bypass-cron
+// run (see cron-bypass.ts; the native Inngest cron is 6-hourly but the
+// Vercel-cron bypass invokes this HOURLY, same as every other detector)
+// re-asks the LLM about EVERY 'active' WATCH_LIST person who still has
+// ≥MIN_DISTINCT_SOURCES matching articles in the 30-day window — even if
+// NOTHING changed since the last (also negative) check an hour ago. With
+// several CALLED_TO_RESIGN people permanently sitting above the 2-source
+// bar (they're constantly in the news), this alone burns most of the daily
+// budget before the 5 useful article-batch detectors get a turn — worse
+// this week purely because of heavier news volume (more candidates clear
+// the 2-source bar more often), not because anything else changed. Fix:
+// only actually call the LLM if at least one candidate was published within
+// this window since the last check — i.e., there is genuinely NEW evidence.
+// This restores the function's own documented intent ("cron every 6
+// hours") without needing new schema/state — publishedAt is already loaded.
+const RECHECK_WINDOW_HOURS = 6;
 
 // Matches the "2026. júl. 10." display format used across the site (e.g.
 // lemondasok/[id]/page.tsx's fmtDate) — toLocaleDateString('hu-HU') isn't
@@ -88,6 +106,14 @@ export async function runWatchlistRemovalDetectionCore({
       });
 
       if (candidates.length < MIN_DISTINCT_SOURCES) continue;
+
+      // Skip the paid LLM call entirely if nothing NEW has appeared since
+      // the last recheck window — l. RECHECK_WINDOW_HOURS komment fent.
+      const recheckSince = new Date(Date.now() - RECHECK_WINDOW_HOURS * 60 * 60 * 1000);
+      const hasFreshCandidate = candidates.some(
+        (c) => new Date(c.publishedAt as unknown as string) >= recheckSince,
+      );
+      if (!hasFreshCandidate) continue;
 
       const llmCandidates: RemovalCandidateArticle[] = candidates.map((c) => ({
         id: c.id,
