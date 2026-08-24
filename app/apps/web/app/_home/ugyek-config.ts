@@ -109,13 +109,17 @@ export const UGYEK: UgyekConfig[] = [
     articleKeywords: ['NKA', 'Hankó Balázs', 'Nemzeti Kulturális Alap'],
     moreUrl: '/ugyek/nka-botrany',
     summary: 'Hankó Balázs volt kulturális miniszter a 2026-os választások előtt szabálytalanul osztott ki milliárdos NKA-támogatásokat — közel 394 millió forintnyi egyedi miniszteri keretből. A NAV hűtlen kezelés bűntett gyanújával nyomoz, az ügy 17+ milliárd Ft-ot érint. Tarr Zoltán a kifizetések átvizsgálását rendelte el.',
-    videoId: 'NRA-QuItdUA',
-    videoChannel: 'Molnár Áron',
-    videoTitle: 'Megszólal a forrás',
-    videoSummary: 'Egy bennfentes forráson keresztül tárja fel ez a videó, hogyan osztotta ki Hankó Balázs kulturális miniszter a választások előtt a közpénzeket az NKA-n keresztül. Az ügyet elsőként hozó riporter egyenesen a forrástól hallja a részleteket.',
+    // 2026-08-24 — user report: az addigi kiemelt videó (Molnár Áron,
+    // NRA-QuItdUA) private-re állt, nem játszható le. Az ATV/Rónai Egon
+    // videóját emeltük fel helyette a kiemelt helyre (korábban az
+    // additionalVideos között szerepelt) — innen törölve, hogy ne
+    // duplázódjon.
+    videoId: 'df2GNzmh7pY',
+    videoChannel: 'ATV',
+    videoTitle: 'Botrányos kifizetések az NKA-nál',
+    videoSummary: 'Rónai Egon megizzasztotta Hankó Balázs ex-minisztert az NKA-botrány kapcsán — az ATV Egyenes Beszéd műsorában a volt kulturális miniszter szembesült a milliárdos, szabálytalan pályázati kifizetésekkel kapcsolatos kérdésekkel.',
     additionalVideos: [
       { id: 'OfMzRRIJ9WQ', label: 'Telex', title: 'Segélyszervezetnek tűnt, aztán rájöttünk, hogy ez a Fidesz – az NKA-botrány mélyére mentünk' },
-      { id: 'df2GNzmh7pY', label: 'ATV', title: 'Botrányos kifizetések az NKA-nál: Rónai Egon megizzasztotta Hankó Balázs ex-minisztert' },
       { id: 'L8DWqeZp2l4', label: 'Partizán', title: 'Újabb 700 millió Orbán Ráhel lieblingjének, milliárdok a csókosoknak | Közpénzszivattyú az NKA-nál' },
       { id: 'vdNQGR9kzYk', label: 'ATV', title: 'NKA-botrány: Magyar Péter is megszólalt az ügyben' },
       { id: 'zAx4e6GhVQQ', label: 'ATV', title: '"Nagyon sok minden van, amiről nem tudunk" – Az NKA-botrány csak a jéghegy csúcsa?' },
