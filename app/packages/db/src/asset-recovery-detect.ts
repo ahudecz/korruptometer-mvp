@@ -87,14 +87,26 @@ Ide tartozik:
 - Bírósági vagyonelkobzás NER-hez kötött ügyekben
 - Kötelezett kártérítés visszafizetése (pl. NKA-botrány visszafizetés)
 - Lefoglalt és elkobzott vagyon (pl. legyőzött ügyekben állami szervek által lefoglalt összegek)
-- Bírságok, visszatérítések, amelyek az állami kasszába kerülnek
+- Korrupciós/hűtlen kezelési ügyben jogtalanul megszerzett/kicsalt közpénz visszafizetése vagy visszakövetelése
 
 Csak akkor vegyél fel egy bejegyzést, ha:
 - Ténylegesen visszakerül/visszakerült valami a közpénzbe
 - NER-hez kötött ügy (nem általános magánjogi vita)
 - Egyértelmű összeg vagy visszaszerzési esemény
+- A visszakerülő pénz EREDETILEG jogtalanul/korrupt módon került magánkézbe (vagyonvisszaszerzés), NEM egy szabályszegésért utólag kiszabott büntetés
 
 Ne vegyél fel bejegyzést, ha csak ígéret, nyomozás, vagy civil per folyik visszatérítés nélkül.
+
+KRITIKUS — HATÓSÁGI BÍRSÁG NEM VAGYONVISSZASZERZÉS (2026-08-25, user report):
+munkavédelmi, környezetvédelmi, műemlékvédelmi vagy bármilyen más hatósági
+bírság — akkor is, ha a pénz az állami kasszába kerül — SOSEM vagyon-
+visszaszerzés, még ha NER-közeli cégre/személyre szabták is ki. A bírság
+egy SZABÁLYSZEGÉSÉRT kiszabott büntetés, nem korruptan megszerzett közpénz
+visszaszerzése — fogalmilag más kategória. Konkrét példák, amik NEM
+számítanak ide: "X cég Y millió forintos munkavédelmi bírságot kapott",
+"Z akkugyár bírságot fizetett hulladékkezelési szabálysértésért",
+"engedély nélküli bontásért kiszabott bírság". Ha egy cikk ilyesmiről szól,
+NE vegyél fel bejegyzést, még ha NER-hez köthető szereplőt érint is.
 
 KRITIKUS — TÖBB KÜLÖNÁLLÓ ÖSSZEG EGY CIKKBEN: ha a cikk több, egymástól elkülönülő összeget is megnevez (akár ugyanahhoz az átfogó ügyhöz kötődve is, pl. "a 100 milliós Edda-támogatást ÉS a 150 milliós Aréna 2026-os támogatást is visszavonta"), MINDEGYIKET vedd fel a recoveries tömbbe, külön-külön bejegyzésként, külön caseLabellel. Ne vonj össze két elkülönített összeget egybe, és ne válaszd csak az elsőként említettet vagy a legnagyobbat.
 
