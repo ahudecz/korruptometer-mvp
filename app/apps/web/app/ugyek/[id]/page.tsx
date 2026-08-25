@@ -405,6 +405,23 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
 
       <div className="person-body">
 
+        {/* ── Kapcsolódó feljelentések — kiemelt keretes hír, LEGFELÜL
+            (user kérés, 2026-08-25: friss/breaking hírnek a lap tetején a
+            helye). Óvatos megfogalmazás: egy feljelentés önmagában nem
+            jelent felelősséget/ítéletet, ezért "köthető" helyett
+            semlegesebb "érintő" — l. user report. ── */}
+        {relatedComplaints.length > 0 && (
+          <div className="ugy-description" style={{ marginBottom: 40 }}>
+            <h2 className="person-section-title">Kapcsolódó feljelentések</h2>
+            <p className="person-section-note">
+              Nyilvánosan dokumentált feljelentések, amelyek érintik ezt az ügyet — ítélet, felelősség megállapítása nélkül.
+            </p>
+            {relatedComplaints.slice(0, 3).map((c) => (
+              <RelatedComplaintCard key={c.id} complaint={c} />
+            ))}
+          </div>
+        )}
+
         {/* ── Main video ── */}
         {entry.videoId && (
           <div className="person-video-section">
@@ -448,21 +465,6 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
           </div>
         )}
 
-        {/* ── Kapcsolódó feljelentések — kiemelt keretes hír (user kérés,
-            2026-08-25), az ügy-ismertetés ELŐTT: szerkesztőileg jóváhagyott
-            (CriminalComplaint reviewStatus='approved') dokumentált tény, nem
-            nyers hírfolyam-találat, ezért a leírás elé kerül. ── */}
-        {relatedComplaints.length > 0 && (
-          <div className="ugy-description" style={{ marginBottom: 40 }}>
-            <h2 className="person-section-title">Kapcsolódó feljelentések</h2>
-            <p className="person-section-note">
-              Ehhez az ügyhöz köthető, dokumentált feljelentések.
-            </p>
-            {relatedComplaints.slice(0, 3).map((c) => (
-              <RelatedComplaintCard key={c.id} complaint={c} />
-            ))}
-          </div>
-        )}
 
         {/* ── Az ügy ismertetése ── */}
         <div className="ugy-description">
