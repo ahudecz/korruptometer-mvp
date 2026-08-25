@@ -179,6 +179,23 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       </div>
 
       <div className="person-body">
+        {/* Kapcsolódó feljelentések — kiemelt keretes hír, LEGFELÜL (user
+            kérés, 2026-08-25: friss/breaking hírnek a lap tetején a helye,
+            nem a hírfolyam alatt). Óvatos megfogalmazás: egy feljelentés
+            önmagában nem jelent felelősséget/ítéletet, ezért "köthető"
+            helyett semlegesebb "érintő" — l. user report. */}
+        {relatedComplaints.length > 0 && (
+          <div className="person-news" style={{ marginBottom: 40 }}>
+            <h2 className="person-section-title">Kapcsolódó feljelentések</h2>
+            <p className="person-section-note">
+              Nyilvánosan dokumentált feljelentések, amelyek érintik ezt a személyt — ítélet, felelősség megállapítása nélkül.
+            </p>
+            {relatedComplaints.slice(0, 3).map((c) => (
+              <RelatedComplaintCard key={c.id} complaint={c} />
+            ))}
+          </div>
+        )}
+
         {rollup && (
           <Link href={rollup.href} className="adatbazis-promo">
             <div className="adatbazis-promo-eyebrow">Adatbázis · {fmtNumber(rollup.caseCount)} dokumentált ügy</div>
@@ -394,22 +411,6 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                 </Link>
               ))}
             </div>
-          </div>
-        )}
-
-        {/* Kapcsolódó feljelentések — kiemelt keretes hír (user kérés,
-            2026-08-25), a hírfolyam ELŐTT, mert ez szerkesztőileg
-            jóváhagyott (CriminalComplaint reviewStatus='approved'),
-            dokumentált tény, nem nyers hírfolyam-találat. */}
-        {relatedComplaints.length > 0 && (
-          <div className="person-news" style={{ marginBottom: 40 }}>
-            <h2 className="person-section-title">Kapcsolódó feljelentések</h2>
-            <p className="person-section-note">
-              Ehhez a személyhez köthető, dokumentált feljelentések.
-            </p>
-            {relatedComplaints.slice(0, 3).map((c) => (
-              <RelatedComplaintCard key={c.id} complaint={c} />
-            ))}
           </div>
         )}
 
