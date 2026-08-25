@@ -457,7 +457,52 @@ export function decideComplaintTransition(current: ComplaintStatus, next: Compla
 export function isSameComplainant(a: string, b: string): boolean {
   const na = normalizeName(a);
   const nb = normalizeName(b);
-  return na.length > 0 && na === nb;
+  if (na.length === 0 || nb.length === 0) return false;
+  if (na === nb) return true;
+  // 2026-08-25 — user report: recurring duplicate-complaint pattern where
+  // different outlets name the SAME filer with extra context appended —
+  // "Pintér Bence" / "Pintér Bence (Győr polgármestere)", "Miniszterelnökség"
+  // / "Miniszterelnökség (Ruff Bálint)". Substring containment catches this
+  // for free (no AI call) without weakening the Gondosóra-guard above: two
+  // GENUINELY different institutions (e.g. "Integritás Hatóság" vs
+  // "Tudományos és Technológiai Minisztérium") never contain one another.
+  return na.includes(nb) || nb.includes(na);
+}
+
+const SAME_COMPLAINANT_SYSTEM = `Te egy magyar korrupció-figyelő szerkesztő asszisztens vagy. Két megnevezést kapsz, amik egy-egy feljelentés BENYÚJTÓJÁRA utalnak (cikkenként eltérő megfogalmazásban). Döntsd el, hogy UGYANARRA a valós szereplőre utalnak-e — pl. egy minisztérium és az azt A CIKK IDEJÉN vezető miniszter/államtitkár neve ugyanaz a bejelentő, mert a személy a hivatal nevében jár el (pl. "Külügyminisztérium" és "Orbán Anita" ugyanaz, ha ő a külügyminiszter; "a kormány" és egy konkrét minisztérium neve is gyakran ugyanaz). Csak akkor mondj "true"-t, ha ténylegesen ugyanaz a szereplő, ne csak hasonló témában.`;
+
+const SAME_COMPLAINANT_TOOL: LlmToolSpec = {
+  name: 'same_complainant',
+  description: 'Decide whether two filer names/descriptions refer to the same real-world complainant.',
+  schema: {
+    type: 'object',
+    properties: {
+      same: { type: 'boolean', description: 'True only if both names refer to the same real-world person/institution acting as filer.' },
+    },
+    required: ['same'],
+  },
+};
+
+/**
+ * AI fallback for isSameComplainant() — ONLY meant to be called when the
+ * free textual check (exact/substring) already returned false, and ONLY
+ * when a target-name match already suggests the same underlying case (l.
+ * detect-criminal-complaints.ts hívási hely) — így nem szór feleslegesen
+ * AI-hívást minden egyes új feljelentésre, csak a valóban kétséges
+ * esetekre. Bridge-eli azt a rést, amit semmilyen string-hasonlóság nem
+ * tud: "Külügyminisztérium" és "Orbán Anita" szövegszinten nulla átfedés,
+ * mégis ugyanaz a bejelentő (2026-08-25, lélegeztetőgép-ügy, 3 duplikátum
+ * sor jött belőle, mire ez a fallback megépült).
+ */
+export async function isSameComplainantAi(a: string, b: string): Promise<boolean> {
+  const user = `A megnevezés: ${a}\n\nB megnevezés: ${b}`;
+  const { data } = await llmExtract<{ same: boolean }>({
+    system: SAME_COMPLAINANT_SYSTEM,
+    user,
+    tool: SAME_COMPLAINANT_TOOL,
+    maxTokens: 100,
+  });
+  return Boolean(data?.same);
 }
 
 /**

@@ -8,6 +8,7 @@ import {
   findExistingComplaint,
   isPlaceholderName,
   isSameComplainant,
+  isSameComplainantAi,
   isWatchlistPerson,
   markChecked,
   NEAR_MISS_MIN,
@@ -95,9 +96,18 @@ async function processComplaintArticle(
     // the monotonic status state machine) when the filer also matches;
     // otherwise fall through to inserting a new row below. See
     // isSameComplainant()'s doc comment in review.ts for the full story.
-    const existing = existingMatch && isSameComplainant(existingMatch.filerName, complaint.filerName)
-      ? existingMatch
-      : null;
+    //
+    // 2026-08-25 — the free textual check alone still missed real matches
+    // when one outlet names the INSTITUTION and another names the PERSON
+    // currently heading it ("Külügyminisztérium" vs "Orbán Anita" — 3
+    // duplicate rows for the same lélegeztetőgép-feljelentés, user report).
+    // AI fallback ONLY fires here — target already matched, cheap, rare —
+    // never on every new complaint.
+    const sameFiler = existingMatch
+      ? isSameComplainant(existingMatch.filerName, complaint.filerName)
+        || (await isSameComplainantAi(existingMatch.filerName, complaint.filerName))
+      : false;
+    const existing = existingMatch && sameFiler ? existingMatch : null;
 
     if (existing) {
       const transition = decideComplaintTransition(existing.status, status);
