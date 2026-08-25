@@ -8,6 +8,8 @@ import { UGYEK, UGYEK_REDIRECTS, type DescriptionBlock, type BreakingGroupArticl
 import { GALERIA } from '../../_home/galeria-config';
 import { WATCH_LIST } from '../../_home/watchlist-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../_home/cross-promo';
+import { getRelatedComplaintsForUgy } from '@/lib/related-complaints';
+import { RelatedComplaintCard } from '../../_home/related-complaint-card';
 
 export const dynamic = 'force-dynamic';
 
@@ -298,6 +300,12 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
         .limit(30)
     : [];
 
+  // user kérés, 2026-08-25 — az ügyhöz kapcsolódó feljelentések kiemelt
+  // keretes hírként (l. related-complaints.ts). Az articleKeywords-t
+  // (fentebb már a hír-lekérdezéshez is felhasznált lista) újrahasznosítja,
+  // nincs külön karbantartandó kulcsszólista.
+  const relatedComplaints = await getRelatedComplaintsForUgy(entry.articleKeywords ?? []);
+
   const descParagraphs = entry.descriptionBlocks ? [] : entry.description.split('\n\n').filter(Boolean);
   // Konvenció: új breaking-group blokkot mindig a tömb ELEJÉRE kell felvenni
   // (l. ugyek-config.ts), így az első előfordulás mindig a legfrissebb —
@@ -437,6 +445,22 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ── Kapcsolódó feljelentések — kiemelt keretes hír (user kérés,
+            2026-08-25), az ügy-ismertetés ELŐTT: szerkesztőileg jóváhagyott
+            (CriminalComplaint reviewStatus='approved') dokumentált tény, nem
+            nyers hírfolyam-találat, ezért a leírás elé kerül. ── */}
+        {relatedComplaints.length > 0 && (
+          <div className="ugy-description" style={{ marginBottom: 40 }}>
+            <h2 className="person-section-title">Kapcsolódó feljelentések</h2>
+            <p className="person-section-note">
+              Ehhez az ügyhöz köthető, dokumentált feljelentések.
+            </p>
+            {relatedComplaints.slice(0, 3).map((c) => (
+              <RelatedComplaintCard key={c.id} complaint={c} />
+            ))}
           </div>
         )}
 

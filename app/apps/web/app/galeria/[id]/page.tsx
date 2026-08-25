@@ -10,6 +10,8 @@ import { GALERIA, type GaleriaDetention, type GaleriaHair } from '../../_home/ga
 import { UGYEK } from '../../_home/ugyek-config';
 import { getPersonRollup } from '../../_home/person-rollup-config';
 import { CrossLemondosok, CrossMegszunt } from '../../_home/cross-promo';
+import { getRelatedComplaintsForGaleria } from '@/lib/related-complaints';
+import { RelatedComplaintCard } from '../../_home/related-complaint-card';
 
 export const dynamic = 'force-dynamic';
 
@@ -121,6 +123,10 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     : rawArticles.filter(a =>
         !excludeKws.some(kw => a.headline.toLowerCase().includes(kw.toLowerCase()))
       );
+
+  // user kérés, 2026-08-25 — a személyhez kapcsolódó feljelentések kiemelt
+  // keretes hírként (l. related-complaints.ts).
+  const relatedComplaints = await getRelatedComplaintsForGaleria(entry.name, entry.newsKeywords ?? []);
 
   const detentionColors: Record<string, string> = {
     investig: '#c9a800',
@@ -388,6 +394,22 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                 </Link>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Kapcsolódó feljelentések — kiemelt keretes hír (user kérés,
+            2026-08-25), a hírfolyam ELŐTT, mert ez szerkesztőileg
+            jóváhagyott (CriminalComplaint reviewStatus='approved'),
+            dokumentált tény, nem nyers hírfolyam-találat. */}
+        {relatedComplaints.length > 0 && (
+          <div className="person-news" style={{ marginBottom: 40 }}>
+            <h2 className="person-section-title">Kapcsolódó feljelentések</h2>
+            <p className="person-section-note">
+              Ehhez a személyhez köthető, dokumentált feljelentések.
+            </p>
+            {relatedComplaints.slice(0, 3).map((c) => (
+              <RelatedComplaintCard key={c.id} complaint={c} />
+            ))}
           </div>
         )}
 
