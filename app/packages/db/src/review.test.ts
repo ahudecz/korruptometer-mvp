@@ -260,6 +260,20 @@ describe('isSameComplainant (2026-08-11 Gondosóra bug: a second, independent co
     expect(isSameComplainant('', 'Integritás Hatóság')).toBe(false);
     expect(isSameComplainant('Integritás Hatóság', '')).toBe(false);
   });
+
+  // 2026-08-25 — recurring duplicate-complaint pattern: different outlets
+  // name the same filer with extra context appended (Hajtó Péter / Duna
+  // Aszfalt / lélegeztetőgép eset-sorozat).
+  describe('substring containment (2026-08-25 fix — no AI needed for this case)', () => {
+    it('true when one side just adds a parenthetical role/context', () => {
+      expect(isSameComplainant('Pintér Bence', 'Pintér Bence (Győr polgármestere)')).toBe(true);
+      expect(isSameComplainant('Miniszterelnökség', 'Miniszterelnökség (Ruff Bálint)')).toBe(true);
+    });
+
+    it('still false for two genuinely different institutions, even with overlapping generic words', () => {
+      expect(isSameComplainant('Integritás Hatóság', 'Tudományos és Technológiai Minisztérium')).toBe(false);
+    });
+  });
 });
 
 describe('truncateDescriptionWords', () => {
