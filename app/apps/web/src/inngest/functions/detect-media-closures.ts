@@ -3,9 +3,11 @@ import { eq, sql } from 'drizzle-orm';
 
 import { detectMediaClosureFromArticle, type MediaClosureExtraction } from '@korr/db/ai-closures';
 import {
+  articleDateIso,
   decideStatus,
   isDuplicate,
   isPlaceholderName,
+  isSuspiciouslyEarlyDate,
   markChecked,
   NEAR_MISS_MIN,
   truncateDescriptionWords,
@@ -72,7 +74,7 @@ async function processClosureArticle(
   }
 
   // 003-review: media outlets aren't watchlist persons → confidence only.
-  const reviewStatus = decideStatus(result.confidence, false);
+  let reviewStatus = decideStatus(result.confidence, false);
   if (reviewStatus === 'discard') {
     await markChecked(db, {
       articleId: article.id,
@@ -147,6 +149,11 @@ async function processClosureArticle(
     if (isNaN(eventDate.getTime())) eventDate = fallbackDate;
   } catch {
     eventDate = fallbackDate;
+  }
+
+  // 2026-08-25 — l. review.ts isSuspiciouslyEarlyDate() komment (Mandiner-eset).
+  if (reviewStatus === 'approved' && isSuspiciouslyEarlyDate(result.eventDate, articleDateIso(article.publishedAt))) {
+    reviewStatus = 'pending';
   }
 
   const [insertedRow] = await db.insert(schema.mediaClosures).values({

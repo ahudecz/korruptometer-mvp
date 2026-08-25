@@ -3,6 +3,7 @@ import { eq, sql } from 'drizzle-orm';
 
 import { detectResignationFromArticle, type ResignationExtraction } from '@korr/db/ai';
 import {
+  articleDateIso,
   type CandidateArticle,
   type CheckReason,
   cleanPositionTitle,
@@ -12,6 +13,7 @@ import {
   isDuplicate,
   isPlaceholderName,
   isPermanentBreakingPerson,
+  isSuspiciouslyEarlyDate,
   isWatchlistPerson,
   markChecked,
   NEAR_MISS_MIN,
@@ -138,7 +140,7 @@ async function processResignationArticle(
     }
 
     // 003-review: route by confidence + watchlist; discard below the floor.
-    const reviewStatus = decideStatus(person.confidence, isWatchlistPerson(person.name));
+    let reviewStatus = decideStatus(person.confidence, isWatchlistPerson(person.name));
     if (reviewStatus === 'discard') {
       lastDiscardReason = 'low_confidence';
       if (person.confidence >= NEAR_MISS_MIN) {
@@ -205,6 +207,16 @@ async function processResignationArticle(
       if (isNaN(resignationDate.getTime())) resignationDate = fallbackDate;
     } catch {
       resignationDate = fallbackDate;
+    }
+
+    // 2026-08-25 — user report ("Mandiner"-eset, Kohán Mátyás et al.): a
+    // modell 2 hónappal korábbi dátumot extrahált egy "Mai dátum"-mal
+    // explicit ellátott promptból (ismert LLM-gyengeség, l.
+    // isSuspiciouslyEarlyDate() komment) — ez a sor emiatt hibás dátummal
+    // ment élesen a site-ra. Gyanús dátumnál a confidence-től függetlenül
+    // human review-ra kényszerítjük, sose auto-publikáljuk csendben.
+    if (reviewStatus === 'approved' && isSuspiciouslyEarlyDate(person.resignationDate, articleDateIso(article.publishedAt))) {
+      reviewStatus = 'pending';
     }
 
     // 2026-07-26 — a WATCH_LIST-en kívül a PERMANENT_BREAKING_NAMES lista is

@@ -3,10 +3,12 @@ import { eq, sql } from 'drizzle-orm';
 
 import { detectVerdictFromArticle, type VerdictExtraction } from '@korr/db/ai-verdicts';
 import {
+  articleDateIso,
   cleanPositionTitle,
   decideStatus,
   findExistingVerdict,
   isPlaceholderName,
+  isSuspiciouslyEarlyDate,
   isWatchlistPerson,
   markChecked,
   NEAR_MISS_MIN,
@@ -198,6 +200,16 @@ async function processVerdictArticle(
     if (isNaN(verdictDate.getTime())) verdictDate = fallbackDate;
   } catch {
     verdictDate = fallbackDate;
+  }
+
+  // 2026-08-25 — l. review.ts isSuspiciouslyEarlyDate() komment (Mandiner-
+  // eset): ismert LLM-gyengeség, hogy a modell a promptban explicit
+  // megadott "Mai dátum" helyett a saját betanítási vágópontjához közeli
+  // dátumot ad vissza. Csak az INSERT (új sor) ágat érinti — egy meglévő
+  // ítélet lifecycle-frissítése (pl. 'előzetesben' → 'jogerős') már eleve
+  // nem megy reviewStatus-on keresztül.
+  if (!existingVerdict && reviewStatus === 'approved' && isSuspiciouslyEarlyDate(result.verdictDate, articleDateIso(article.publishedAt))) {
+    reviewStatus = 'pending';
   }
 
   let recordId: string;

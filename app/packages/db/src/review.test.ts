@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanPositionTitle, decideComplaintTransition, decideStatus, findExistingComplaint, isDuplicate, isSameComplainant, truncateDescriptionWords } from './review';
+import { cleanPositionTitle, decideComplaintTransition, decideStatus, findExistingComplaint, isDuplicate, isSameComplainant, isSuspiciouslyEarlyDate, truncateDescriptionWords } from './review';
 import { isWatchlistPerson, normalizeName } from './watchlist';
 
 // Drizzle's `sql` template tag returns an object tree (StringChunk literals
@@ -365,5 +365,36 @@ describe('cleanPositionTitle', () => {
 
   it('trims surrounding whitespace', () => {
     expect(cleanPositionTitle('  az IMF-ben betöltött helyettes kormányzó  ')).toBe('helyettes kormányzó');
+  });
+});
+
+// 2026-08-25 — Mandiner-eset (Kohán Mátyás et al.): cikk 2026-08-24, a
+// modell 2026-06-24-i eseménydátumot extrahált — ugyanaz a nap, 2 hónappal
+// korábbra. isSuspiciouslyEarlyDate() erre a mintára figyel.
+describe('isSuspiciouslyEarlyDate', () => {
+  it('flags the real Mandiner case (2 months + same day-of-month)', () => {
+    expect(isSuspiciouslyEarlyDate('2026-06-24', '2026-08-24')).toBe(true);
+  });
+
+  it('does not flag a same-day extraction', () => {
+    expect(isSuspiciouslyEarlyDate('2026-08-24', '2026-08-24')).toBe(false);
+  });
+
+  it('does not flag a few days earlier (plausible — event happened before the article ran)', () => {
+    expect(isSuspiciouslyEarlyDate('2026-08-15', '2026-08-24')).toBe(false);
+  });
+
+  it('does not flag a LATER date than the article (different failure mode, not this check)', () => {
+    expect(isSuspiciouslyEarlyDate('2026-09-01', '2026-08-24')).toBe(false);
+  });
+
+  it('respects a custom threshold', () => {
+    expect(isSuspiciouslyEarlyDate('2026-08-01', '2026-08-24', 20)).toBe(true);
+    expect(isSuspiciouslyEarlyDate('2026-08-01', '2026-08-24', 30)).toBe(false);
+  });
+
+  it('is false (fail-safe, not fail-open-to-block) on unparseable dates', () => {
+    expect(isSuspiciouslyEarlyDate('not-a-date', '2026-08-24')).toBe(false);
+    expect(isSuspiciouslyEarlyDate('2026-08-24', 'not-a-date')).toBe(false);
   });
 });
