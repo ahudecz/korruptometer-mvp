@@ -128,7 +128,10 @@ export function getCaseVideo(person: string | null | undefined): CaseVideo | nul
 }
 
 /** For the daily video-health check (check-video-health.ts) — every
- *  registered videoId + which person key it belongs to, for reporting. */
-export function getAllRegisteredVideoIds(): Array<{ videoId: string; personKey: string }> {
-  return Object.entries(VIDEOS).map(([personKey, v]) => ({ videoId: v.videoId, personKey }));
+ *  registered videoId + which person key it belongs to, for reporting.
+ *  linkOnly is carried through so the checker doesn't flag a deliberately
+ *  non-embeddable (RTL-restricted) video as broken — those already render
+ *  as a plain external link, not an iframe. */
+export function getAllRegisteredVideoIds(): Array<{ videoId: string; personKey: string; linkOnly: boolean }> {
+  return Object.entries(VIDEOS).map(([personKey, v]) => ({ videoId: v.videoId, personKey, linkOnly: v.linkOnly ?? false }));
 }

@@ -29,7 +29,7 @@ import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
  * sorok, azok jelennek meg ténylegesen az oldalon).
  */
 
-type VideoRef = { videoId: string; label: string };
+type VideoRef = { videoId: string; label: string; linkOnly?: boolean };
 
 function collectGaleriaCases(cases: PersonCaseItem[] | undefined, personName: string, path: string): VideoRef[] {
   if (!cases) return [];
@@ -66,8 +66,8 @@ export function collectStaticVideoIds(): VideoRef[] {
     }
   }
 
-  for (const { videoId, personKey } of getAllRegisteredVideoIds()) {
-    refs.push({ videoId, label: `ADATBÁZIS-SZEMÉLY: ${personKey}` });
+  for (const { videoId, personKey, linkOnly } of getAllRegisteredVideoIds()) {
+    refs.push({ videoId, label: `ADATBÁZIS-SZEMÉLY: ${personKey}`, linkOnly });
   }
 
   return refs;
@@ -134,12 +134,16 @@ export async function runVideoHealthCheckCore({
 
   // Dedup videoId → összes hely, ahol előfordul (ugyanaz a videó gyakran
   // több helyen is szerepel — pl. UGYEK fő videó és a hozzá tartozó
-  // CourtVerdict.videoId ugyanaz lehet).
-  const byId = new Map<string, string[]>();
+  // CourtVerdict.videoId ugyanaz lehet). allLinkOnly = true csak akkor, ha
+  // MINDEN hivatkozás linkOnly (nem iframe-ként ágyazza be) — a
+  // beágyazás-tiltás ott szándékos és a UI már ennek megfelelően (plain
+  // linkként) jelenít meg, nem hiba.
+  const byId = new Map<string, { labels: string[]; allLinkOnly: boolean }>();
   for (const r of allRefs) {
-    const list = byId.get(r.videoId) ?? [];
-    list.push(r.label);
-    byId.set(r.videoId, list);
+    const entry = byId.get(r.videoId) ?? { labels: [], allLinkOnly: true };
+    entry.labels.push(r.label);
+    entry.allLinkOnly = entry.allLinkOnly && (r.linkOnly ?? false);
+    byId.set(r.videoId, entry);
   }
   const uniqueIds = [...byId.keys()];
   if (uniqueIds.length === 0) return { checked: 0, broken: 0 };
@@ -149,12 +153,12 @@ export async function runVideoHealthCheckCore({
   const broken: Array<{ videoId: string; reason: string; labels: string[] }> = [];
   for (const id of uniqueIds) {
     const s = statuses.get(id);
-    const labels = byId.get(id) ?? [];
+    const { labels, allLinkOnly } = byId.get(id) ?? { labels: [], allLinkOnly: false };
     if (!s) {
       broken.push({ videoId: id, reason: 'nem található (törölve vagy private)', labels });
     } else if (s.status?.privacyStatus === 'private') {
       broken.push({ videoId: id, reason: 'private', labels });
-    } else if (s.status?.embeddable === false) {
+    } else if (s.status?.embeddable === false && !allLinkOnly) {
       broken.push({ videoId: id, reason: 'a tulajdonos letiltotta a beágyazást', labels });
     }
   }
