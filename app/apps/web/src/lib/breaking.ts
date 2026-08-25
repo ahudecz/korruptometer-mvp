@@ -63,7 +63,14 @@ export async function getActiveBreaking(): Promise<BreakingArticle[]> {
     // LLM-jóváhagyással jött (2026-07-13, user report: Gulyás Gergely
     // lemondása nem jelent meg a breaking csíkban). Ezekre a saját
     // tag-jeinkre bízunk, nem futtatjuk újra az arrest-fókuszú ellenőrzést.
-    const TRUSTED_DETECTOR_TAGS = new Set(['Lemondás', 'Megszűnés', 'Ítélet', 'Vagyonvisszaszerzés']);
+    // 2026-08-25 — 'Feljelentés' felvéve (user kérés): a criminal-complaint
+    // detektor (detect-criminal-complaints.ts) is ide tartozó tag-et rak a
+    // forráscikkre auto-approve esetén, csak eddig nem volt "megbízhatónak"
+    // jelölve itt, ezért egy jóváhagyott feljelentés sosem juthatott át az
+    // isNationallySignificant() kapun keresztül a breaking csíkba, még ha
+    // galéria-/watchlist-személyt érintett is (l. Takács Péter/Szíjjártó
+    // Péter lélegeztetőgép-ügy).
+    const TRUSTED_DETECTOR_TAGS = new Set(['Lemondás', 'Megszűnés', 'Ítélet', 'Vagyonvisszaszerzés', 'Feljelentés']);
     const monitoredNames = await getMonitoredNames();
     // 2026-07-14 — a detector tag alone used to be enough to become the
     // BREAKING pick, so ANY auto-approved detection (a small-town official's
