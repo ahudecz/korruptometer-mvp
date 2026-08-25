@@ -459,3 +459,31 @@ export function isSameComplainant(a: string, b: string): boolean {
   const nb = normalizeName(b);
   return na.length > 0 && na === nb;
 }
+
+/**
+ * 2026-08-25 — user report ("Mandiner"-eset): egy cikk 2026-08-24-i
+ * megjelenéséhez a modell 2026-06-24-i eseménydátumot rendelt — ugyanaz a
+ * nap, pontosan 2 hónappal korábbra, holott a prompt explicit közli a
+ * "Mai dátum"-ot. Ismert LLM-gyengeség: bizonytalan dátum-reasoningnél a
+ * modell hajlamos a saját betanítási vágópontjához közeli dátum felé
+ * húzni, felülírva a promptban explicit megadott kontextust — a user
+ * szerint egy MÁSIK, teljesen független eszköznél (LangDock) is
+ * ugyanezt tapasztalta, ami megerősíti: ez általános LLM-jelenség, nem
+ * egyedi bug.
+ *
+ * NEM minden korai dátum hallucináció — egy cikk tényleg szólhat egy
+ * hetekkel korábbi eseményről —, ezért ez a függvény sosem dob el semmit,
+ * csak jelzi, hogy a hívónak emberi jóváhagyásra kell küldenie (nem
+ * auto-publikálnia), akkor is, ha a confidence egyébként engedné.
+ */
+export function isSuspiciouslyEarlyDate(
+  extractedDateIso: string,
+  articleDateIso: string,
+  thresholdDays: number = 30,
+): boolean {
+  const extracted = new Date(extractedDateIso);
+  const article = new Date(articleDateIso);
+  if (Number.isNaN(extracted.getTime()) || Number.isNaN(article.getTime())) return false;
+  const diffDays = (article.getTime() - extracted.getTime()) / (1000 * 60 * 60 * 24);
+  return diffDays > thresholdDays;
+}

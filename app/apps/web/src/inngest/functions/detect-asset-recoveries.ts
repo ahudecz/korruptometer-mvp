@@ -4,7 +4,9 @@ import { and, gte, sql } from 'drizzle-orm';
 
 import { detectAssetRecoveryFromArticle, type AssetRecoveryExtraction } from '@korr/db/ai-assets';
 import {
+  articleDateIso,
   isPlaceholderName,
+  isSuspiciouslyEarlyDate,
   markChecked,
   NEAR_MISS_MIN,
   slugifyCaseLabel,
@@ -132,6 +134,17 @@ async function processAssetRecoveryArticle(
       recoveredAt = new Date(item.recoveredAt);
       if (isNaN(recoveredAt.getTime())) recoveredAt = fallbackDate;
     } catch {
+      recoveredAt = fallbackDate;
+    }
+
+    // 2026-08-25 — l. review.ts isSuspiciouslyEarlyDate() komment
+    // (Mandiner-eset). Ez a detektor nem ismer reviewStatus/pending
+    // fogalmat (l. fájl fejléce) — nincs mire "lefokozni", ezért itt a
+    // gyanús dátumot egyszerűen a cikk saját dátumára cseréljük (ugyanaz a
+    // fallback, mint egy értelmezhetetlen dátumnál), a Telegram-értesítés
+    // (notifyAutoPublished, lentebb) pedig eleve minden beszúrásnál megy —
+    // az a meglévő "human sees it, visszavonható" védőháló.
+    if (isSuspiciouslyEarlyDate(item.recoveredAt, articleDateIso(article.publishedAt))) {
       recoveredAt = fallbackDate;
     }
 
