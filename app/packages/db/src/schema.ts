@@ -1674,6 +1674,41 @@ export const socialPosts = pgTable(
 export type SocialPost = typeof socialPosts.$inferSelect;
 export type NewSocialPost = typeof socialPosts.$inferInsert;
 
+// ─── Social Post Outbox (KIFELÉ menő, automatikusan generált posztok) ─────────
+//
+// user kérés, 2026-08-30: automatikus Facebook (később TikTok) posztok
+// mérföldkövekhez (feljelentési összeg +1000 Mrd-onként) és breaking
+// eseményekhez (lemondás/megszűnés/ítélet/vagyonvisszaszerzés). NE keverd
+// össze a fenti `SocialPost`-tal — az BEFELÉ jövő (más oldalak posztjai a
+// mi közösségi hírfolyamunkba), ez KIFELÉ megy (a mi generált posztunk egy
+// külső platformra). Telegram-jóváhagyás kötelező mielőtt bármi kimegy
+// élesben (l. check-social-triggers.ts + telegram/webhook route.ts 's' ág).
+export const socialPostOutbox = pgTable(
+  'SocialPostOutbox',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    triggerType: text('triggerType').notNull(), // 'complaint_milestone' | 'resignation' | 'media_closure' | 'court_verdict' | 'asset_recovery'
+    triggerRefId: text('triggerRefId'), // forrás sor id-je (null a milestone-nál)
+    milestoneValueFt: bigint('milestoneValueFt', { mode: 'bigint' }), // csak complaint_milestone-nál
+    headline: text('headline').notNull(),
+    caption: text('caption').notNull(),
+    imagePng: text('imagePng').notNull(), // base64-kódolt PNG
+    platform: text('platform').notNull().default('facebook'),
+    status: text('status').notNull().default('pending_approval'), // pending_approval | approved | rejected | posted | failed
+    externalPostId: text('externalPostId'), // pl. FB post id, sikeres közzététel után
+    telegramMessageId: integer('telegramMessageId'),
+    failureReason: text('failureReason'),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+    postedAt: timestamp('postedAt', { withTimezone: true }),
+  },
+  (t) => ({
+    createdAtIdx: index('SocialPostOutbox_createdAt_idx').on(t.createdAt),
+  }),
+);
+
+export type SocialPostOutbox = typeof socialPostOutbox.$inferSelect;
+export type NewSocialPostOutbox = typeof socialPostOutbox.$inferInsert;
+
 // ─── Podcast Videos (YouTube) ─────────────────────────────────────────────────
 
 export const podcastVideos = pgTable(
