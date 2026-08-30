@@ -11625,6 +11625,48 @@ body:has(.admin-nav) > main {
   }
 }
 
+/* "Legnagyobb feljelentők" — /birosagi-iteletek, a feljelentési
+   értékösszeg-számláló alatt (user kérés, 2026-08-30). Ugyanaz a
+   .megszunt-stats--4 rács, de a kártya tartalma más: egy fő név +
+   2 kis alstatisztika (darabszám, érintett közpénz), nem egyetlen szám. */
+.top-filers {
+  margin-bottom: 40px;
+}
+.top-filers-grid {
+  margin-bottom: 0;
+}
+.top-filer-card {
+  padding: 24px 20px;
+}
+.top-filer-name {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  line-height: 1.25;
+  min-height: 2.5em;
+}
+.top-filer-substats {
+  display: flex;
+  gap: 20px;
+  margin-top: 14px;
+}
+.top-filer-substat-value {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--accent);
+}
+.top-filer-substat-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
 /* ─── Partnerek oldal ─────────────────────────────────────────────── */
 .partner-entry {
   border-top: 1px solid var(--line);
