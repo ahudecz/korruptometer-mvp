@@ -680,10 +680,12 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
               érintett szerződések teljes értéke, aminek egy része teljesült is, de a gyanú szerint
               a túlárazás és más visszaélések miatt ebből is jelentős összeg veszhetett el.
               {' '}A kormányzati szervek által tett feljelentések adatai a kormány hivatalos,
-              önbevallásos nyilvántartásából (kormany.hu/atlathato/feljelentesek) származnak.
-              Adatbázisunk ennél átfogóbb képet nyújt: a kormányzati bejelentéseken túl az összes
-              egyéb, nem kormányzati szereplő — így például az Állami Számvevőszék, a Transparency
-              International és az Integritás Hatóság — feljelentéseit is nyilvántartjuk.
+              önbevallásos nyilvántartásából (
+              <strong><a href="https://kormany.hu/atlathato/feljelentes" target="_blank" rel="noopener noreferrer">kormany.hu/atlathato/feljelentes</a></strong>
+              ) származnak. <strong>A Kegyencjárat adatbázisa ennél átfogóbb képet nyújt: a
+              kormányzati bejelentéseken túl az összes egyéb, nem kormányzati szereplő — így
+              például az Állami Számvevőszék, a Transparency International és az Integritás
+              Hatóság — publikus feljelentéseit is nyilvántartjuk.</strong>
             </p>
           </div>
 
