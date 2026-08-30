@@ -11637,6 +11637,9 @@ body:has(.admin-nav) > main {
 }
 .top-filer-card {
   padding: 24px 20px;
+  min-width: 0; /* grid/flex item alapból min-width:auto, ami kicsúsztatja a
+                   tartalmat egy szűk mobil rácsoszlopból (l. .top-filer-
+                   substat is) */
 }
 .top-filer-name {
   font-family: 'Archivo', sans-serif;
@@ -11646,17 +11649,23 @@ body:has(.admin-nav) > main {
   color: var(--ink);
   line-height: 1.25;
   min-height: 2.5em;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 .top-filer-substats {
   display: flex;
   gap: 20px;
   margin-top: 14px;
 }
+.top-filer-substat {
+  min-width: 0;
+}
 .top-filer-substat-value {
   font-family: 'Archivo', sans-serif;
   font-weight: 800;
   font-size: 20px;
   color: var(--accent);
+  overflow-wrap: break-word;
 }
 .top-filer-substat-label {
   font-size: 11px;
@@ -11665,6 +11674,16 @@ body:has(.admin-nav) > main {
   text-transform: uppercase;
   color: var(--muted);
   margin-top: 2px;
+}
+
+@media (max-width: 640px) {
+  /* Mobilon a kártya keskeny (2 oszlopos rács) — a 2 alstatisztika egymás
+     mellett kicsúszott a képernyőről (user report, 2026-08-30). Egymás alá
+     törve mindkettő biztosan kifér. */
+  .top-filer-substats {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 
 /* ─── Partnerek oldal ─────────────────────────────────────────────── */
