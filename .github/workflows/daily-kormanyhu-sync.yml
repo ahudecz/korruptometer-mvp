@@ -1,0 +1,37 @@
+name: Daily kormany.hu complaint sync
+
+# 2026-08-30 — user kérés: naponta 09:00-kor (Budapest, nyári időszámítás
+# szerint 07:00 UTC) egyeztesse a /birosagi-iteletek kormányzati bejelentőjű
+# feljelentéseit a kormany.hu/atlathato/feljelentes hivatalos oldalával (l.
+# apps/web/src/inngest/functions/sync-kormanyhu-complaints.ts). Ugyanaz a
+# minta, mint a hourly-pipeline.yml / daily-video-health-check.yml — a
+# GitHub Actions hívja meg a Vercel route-ot, ugyanazzal a CRON_SECRET
+# repo-secret-tel.
+#
+# 07:00 UTC — nem ütközik a többi napi cronnal (facebook-sync 05:00,
+# daily-video-health-check 06:20, youtube-sync 08:10, hourly-pipeline
+# minden óra 07. perce). Téli időszámításkor 1 órával korábban (8:00
+# helyett) fut — elfogadható eltérés, a többi cron sem korrigál erre.
+
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  sync-kormanyhu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call /api/cron/sync-kormanyhu
+        run: |
+          set -e
+          http_code=$(curl -sS -m 100 -o /tmp/response.json -w '%{http_code}' \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://www.kegyencjarat.hu/api/cron/sync-kormanyhu)
+          echo "HTTP status: $http_code"
+          cat /tmp/response.json
+          echo ""
+          if [ "$http_code" != "200" ]; then
+            echo "::error::sync-kormanyhu endpoint returned HTTP $http_code"
+            exit 1
+          fi

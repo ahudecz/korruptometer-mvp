@@ -10,6 +10,7 @@ import {
   isSameComplainant,
   isSameComplainantAi,
   isWatchlistPerson,
+  sameApproxComplaintAmount,
   markChecked,
   NEAR_MISS_MIN,
   type CandidateArticle,
@@ -103,9 +104,17 @@ async function processComplaintArticle(
     // duplicate rows for the same lélegeztetőgép-feljelentés, user report).
     // AI fallback ONLY fires here — target already matched, cheap, rare —
     // never on every new complaint.
+    // 2026-08-30 — Fradiváros-eset: egy szurkolói csoport és később a
+    // Belügyminisztérium is "feljelentést tett" ugyanarra a célra, ugyanarra
+    // az összegre (24,947 vs 25 Mrd Ft) — a filer-egyeztetés (szöveges ÉS
+    // AI) sem ismerte fel duplikátumnak, mert a bejelentő ténylegesen más
+    // szereplő. A közel-azonos összeg (l. sameApproxComplaintAmount()
+    // komment) erősebb jel: ha van összeg mindkét oldalon és ≤5%-on belül
+    // egyeznek, akkor duplikátumnak vesszük FÜGGETLENÜL a bejelentőtől.
     const sameFiler = existingMatch
       ? isSameComplainant(existingMatch.filerName, complaint.filerName)
         || (await isSameComplainantAi(existingMatch.filerName, complaint.filerName))
+        || sameApproxComplaintAmount(existingMatch.amountLabel, complaint.amountLabel)
       : false;
     const existing = existingMatch && sameFiler ? existingMatch : null;
 

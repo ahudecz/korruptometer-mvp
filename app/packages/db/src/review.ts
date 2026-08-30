@@ -312,7 +312,7 @@ export async function findExistingVerdict(
 
 export type ComplaintStatus = 'feljelentés' | 'nyomozás' | 'vádemelés' | 'ítélet' | 'elutasítva';
 
-export type ExistingComplaint = { id: string; status: ComplaintStatus; filerName: string };
+export type ExistingComplaint = { id: string; status: ComplaintStatus; filerName: string; amountLabel: string | null };
 
 /** 180 days, not the usual 30 (DEDUP_WINDOW_DAYS) — a complaint can take
  *  months to reach an indictment or verdict (spec Assumptions). */
@@ -390,7 +390,7 @@ export async function findExistingComplaint(
   const key = normalizeName(targetName);
   if (!key) return null;
   const exactRows = (await db.execute(sql`
-    SELECT id, "status", "filerName" FROM "CriminalComplaint"
+    SELECT id, "status", "filerName", "amountLabel" FROM "CriminalComplaint"
     WHERE trim(regexp_replace(lower(unaccent(trim("targetName"))), '[^a-z0-9]+', ' ', 'g')) = ${key}
       AND "createdAt" >= now() - make_interval(days => ${withinDays})
     ORDER BY "eventDate" DESC
@@ -399,7 +399,7 @@ export async function findExistingComplaint(
   if (exactRows[0]) return exactRows[0];
 
   const fuzzyRows = (await db.execute(sql`
-    SELECT id, "status", "filerName", "targetName", word_similarity(${targetName}, "targetName") AS wsim
+    SELECT id, "status", "filerName", "amountLabel", "targetName", word_similarity(${targetName}, "targetName") AS wsim
     FROM "CriminalComplaint"
     WHERE "createdAt" >= now() - make_interval(days => ${withinDays})
     ORDER BY wsim DESC
@@ -407,11 +407,46 @@ export async function findExistingComplaint(
   `)) as unknown as Array<ExistingComplaint & { targetName: string; wsim: number }>;
   const best = fuzzyRows[0];
   if (!best) return null;
-  if (best.wsim >= COMPLAINT_FUZZY_HIGH) return { id: best.id, status: best.status, filerName: best.filerName };
+  if (best.wsim >= COMPLAINT_FUZZY_HIGH) return { id: best.id, status: best.status, filerName: best.filerName, amountLabel: best.amountLabel };
   if (best.wsim < COMPLAINT_FUZZY_LOW) return null;
 
   const same = await isSameComplaintAi(targetName, best.targetName);
-  return same ? { id: best.id, status: best.status, filerName: best.filerName } : null;
+  return same ? { id: best.id, status: best.status, filerName: best.filerName, amountLabel: best.amountLabel } : null;
+}
+
+/**
+ * 2026-08-30 user report (Fradiváros-eset): a Ferenczvárosi C Közép
+ * szurkolói csoport 2026-07-21-én feljelentést tett az ÁSZ-nál a
+ * Fradiváros-projekt ~25 Mrd Ft-os állami támogatása miatt — az ÁSZ ezt a
+ * rendőrséghez továbbította. 2026-08-28-án a Belügyminisztérium (a már
+ * folyamatban lévő ügyet) hivatalosan is bejelentette — UGYANARRA a
+ * célra, UGYANAKKORA (24,947 vs 25 Mrd Ft) összegre. isSameComplainant()/
+ * isSameComplainantAi() ezt duplikátumnak nem ismerte fel, mert a két
+ * "bejelentő" (szurkolói csoport vs minisztérium) valóban különböző
+ * szereplő — de a cél ÉS az összeg gyakorlati azonossága erősebb jel arra,
+ * hogy ez UGYANAZ a feljelentés/ügy, csak két fázisban vált nyilvánossá,
+ * mint amennyire a különböző "bejelentő" külön ügyet jelezne. Ez a NEM a
+ * Gondosóra-mintát írja felül (ott a két feljelentés különböző konkrét
+ * összeget/almenetet érintett) — csak akkor old fel egy filer-mismatch-et,
+ * ha a két összeg egymáshoz képest ≤5%-on belül van, ami erős jele a
+ * ténybeli azonosságnak.
+ */
+export function sameApproxComplaintAmount(a: string | null, b: string | null): boolean {
+  if (!a || !b) return false;
+  const parse = (label: string): number => {
+    let total = 0;
+    for (const m of label.matchAll(/(\d+(?:[.,]\d+)?)\s*(milliárd|millió)(?!\p{L})/giu)) {
+      const value = parseFloat(m[1]!.replace(',', '.'));
+      if (!Number.isFinite(value)) continue;
+      total += value * (m[2]!.toLowerCase() === 'milliárd' ? 1_000_000_000 : 1_000_000);
+    }
+    return total;
+  };
+  const fa = parse(a);
+  const fb = parse(b);
+  if (fa === 0 || fb === 0) return false;
+  const avg = (fa + fb) / 2;
+  return Math.abs(fa - fb) / avg <= 0.05;
 }
 
 const COMPLAINT_STATUS_ORDER: Record<Exclude<ComplaintStatus, 'elutasítva'>, number> = {
