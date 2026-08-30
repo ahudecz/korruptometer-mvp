@@ -5279,6 +5279,13 @@ button {
   line-height: 1.5;
   color: var(--muted);
 }
+.complaint-tracker-note-link {
+  color: inherit;
+  text-decoration: underline;
+}
+.complaint-tracker-note-link:hover {
+  color: #E31937;
+}
 
 /* Lemondott szekció — bal oldali piros csík */
 .lemondott-section-wrap {

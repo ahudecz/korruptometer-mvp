@@ -2,7 +2,7 @@ import 'server-only';
 import { eq } from 'drizzle-orm';
 
 import { fetchKormanyHuComplaints, type KormanyHuComplaint } from '@korr/scrapers/kormanyhu-feljelentes';
-import { isLikelyMatch, looksGovernmentFiled, mapOfficialStatus } from '@korr/db';
+import { looksGovernmentFiled, mapOfficialStatus, matchStrength } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
 import { sendTelegramMessage } from '@/lib/telegram';
 import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
@@ -39,17 +39,24 @@ function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function findBestMatch(item: KormanyHuComplaint, ourRows: OurComplaintRow[]): OurComplaintRow | null {
-  const officialText = `${item.name} ${item.description}`;
+// A legerősebb (nem csak a legelső) egyezést választjuk, és egy sort csak
+// EGYSZER lehet elvinni egy futás alatt (claimedIds) — 2026-08-30-i hiba:
+// az első talált, de csak generikus szavakon (pl. "állami támogatás")
+// egyező sor "ellopta" a hivatalos tételt 4 másik, ténylegesen hozzá tartozó
+// sortól, ráadásul ugyanaz a sor (Fradiváros) 4-szer is "matchelt" volna,
+// minden alkalommal felülírva az előző (helyes) frissítést — l.
+// kormanyhu-match.ts matchStrength().
+function findBestMatch(item: KormanyHuComplaint, ourRows: OurComplaintRow[], claimedIds: Set<string>): OurComplaintRow | null {
+  const official = { name: item.name, description: item.description, url: item.sourceUrl };
   let best: OurComplaintRow | null = null;
+  let bestStrength = 1; // isLikelyMatch küszöbe — ez alatt nem számít egyezésnek
   for (const row of ourRows) {
-    const candidateText = `${row.targetName} ${row.description ?? ''}`;
-    if (isLikelyMatch(officialText, item.sourceUrl, candidateText, row.sourceUrls)) {
-      // Az első jó egyezés is elég — a hivatalos lista 22 tétele és a mi
-      // állományunk mérete miatt (néhány tucat sor) a több egyidejű
-      // találat esélye elhanyagolható; nem versenyeztetünk pontszám szerint.
+    if (claimedIds.has(row.id)) continue;
+    const candidate = { name: row.targetName, description: row.description ?? '', urls: row.sourceUrls };
+    const strength = matchStrength(official, candidate);
+    if (strength >= bestStrength) {
       best = row;
-      break;
+      bestStrength = strength;
     }
   }
   return best;
@@ -79,7 +86,7 @@ export async function runKormanyHuSyncCore({
   const updatedLines: string[] = [];
 
   for (const item of official) {
-    const match = findBestMatch(item, ourRows);
+    const match = findBestMatch(item, ourRows, matchedIds);
 
     if (match) {
       matchedIds.add(match.id);

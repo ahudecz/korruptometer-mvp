@@ -681,7 +681,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
               a túlárazás és más visszaélések miatt ebből is jelentős összeg veszhetett el.
               {' '}A kormányzati szervek által tett feljelentések adatai a kormány hivatalos,
               önbevallásos nyilvántartásából (
-              <strong><a href="https://kormany.hu/atlathato/feljelentes" target="_blank" rel="noopener noreferrer">kormany.hu/atlathato/feljelentes</a></strong>
+              <strong><a href="https://kormany.hu/atlathato/feljelentes" target="_blank" rel="noopener noreferrer" className="complaint-tracker-note-link">kormany.hu/atlathato/feljelentes</a></strong>
               ) származnak. <strong>A Kegyencjárat adatbázisa ennél átfogóbb képet nyújt: a
               kormányzati bejelentéseken túl az összes egyéb, nem kormányzati szereplő — így
               például az Állami Számvevőszék, a Transparency International és az Integritás

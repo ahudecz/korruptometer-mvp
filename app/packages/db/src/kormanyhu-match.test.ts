@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isLikelyMatch, looksGovernmentFiled, mapOfficialStatus, textMatchScore, urlSlugMatchScore } from './kormanyhu-match';
+import { isLikelyMatch, looksGovernmentFiled, mapOfficialStatus, matchStrength, textMatchScore, urlSlugMatchScore } from './kormanyhu-match';
 
 describe('textMatchScore / isLikelyMatch — kormany.hu egyeztetés', () => {
   it('high score for genuinely the same case, differently worded', () => {
@@ -46,6 +46,86 @@ describe('textMatchScore / isLikelyMatch — kormany.hu egyeztetés', () => {
   });
 });
 
+describe('matchStrength — live sync egyeztetés (2026-08-30-i regresszió, dry-run-nel talált hibák)', () => {
+  // A generikus korrupciós-doménszavak ("állami", "támogatás") önmagukban
+  // átbillentették a küszöböt két TELJESEN független ügy között — a "Fradi"
+  // sor 4 más hivatalos tételt is "ellopott" volna élesben.
+  it('does not match two unrelated cases just because both mention "állami támogatás"', () => {
+    const official = {
+      name: 'Kárpát-medencei Tehetséggondozó Nonprofit Kft.',
+      description: 'A Társadalmi Kapcsolatok és Kultúra Minisztérium feljelentést tett a Kárpát-medencei Tehetséggondozó Nonprofit Kft.-nek juttatott állami támogatás ügyében.',
+      url: 'https://kormany.hu/atlathato/feljelentes',
+    };
+    const candidate = {
+      name: 'FTC Fradiváros-projekt — 25 milliárdos állami támogatás felhasználása',
+      description: 'Feljelentés az FTC Fradiváros-projektjére adott csaknem 25 milliárd forintos állami támogatás felhasználása miatt.',
+      urls: ['https://444.hu/2026/08/28/kubatov-gabor-a-fradivarost-erinto-feljelentesrol-a-lelkiismeretunk-tiszta'],
+    };
+    expect(matchStrength(official, candidate)).toBeLessThan(1);
+  });
+
+  // Az átláthatósági LISTAOLDAL saját URL-je (nincs konkrét cikk) rengeteg
+  // tételnél és sorunknál egyaránt előfordul forrásként — ha ezt engednénk
+  // path-szó-egyezésnek számítani, bármelyik ilyen tétel bármelyik ilyen
+  // sorral "egyezne". Élesben: "Gondosóra program" ellopta volna az OMSZ-sort.
+  it('ignores the bare átláthatósági listaoldal URL as a matching signal', () => {
+    const official = {
+      name: 'Gondosóra program',
+      description: 'A jelzőkészülék-program beszerzése.',
+      url: 'https://kormany.hu/atlathato/feljelentes',
+    };
+    const candidate = {
+      name: 'OMSZ mentőjármű-beszerzések',
+      description: 'Az Egészségügyi Minisztérium feljelentést tett az Országos Mentőszolgálat mentőjármű-beszerzései ügyében — a kormany.hu átláthatósági oldala szerint.',
+      urls: ['https://kormany.hu/atlathato/feljelentes'],
+    };
+    expect(matchStrength(official, candidate)).toBeLessThan(1);
+  });
+
+  // A leírás gyakran sokkal hosszabb/narratívabb, mint a név, ami a
+  // teljes-szöveges arányt egy egyébként egyértelmű egyezésnél is a küszöb
+  // alá higíthatja (mért: 0.29 a 0.3-as küszöb alatt) — a NÉV-csak
+  // összevetésnek (0.57) kell megmentenie ezt az egyezést.
+  it('rescues a genuine match via name-only score when the full-text ratio is diluted by a long description', () => {
+    const official = {
+      name: 'Egyiptomi Államvasutak (ENR) - 1300 vasúti kocsi beszerzése (EXIM bank)',
+      description: 'Eximbank Egyiptomi Államvasutak (ENR) - 1300 vasúti kocsi beszerzése. A beszerzésre vállalt kockázat túl magas, lévén, hogy a projektet megvalósító cégek felszámolás alá kerültek, a szerződések sorsa bizonytalan, és a többéves csúszás miatt az egyiptomi fél akár kártérítést is követelhet.',
+      url: 'https://kormany.hu/hirek/1000-milliard-forintos-gyanus-ugyek-miatt-tett-feljelentest-a-gazdasagi-es-energetikai-miniszterium',
+    };
+    const candidate = {
+      name: 'Dunakeszi Járműjavító — egyiptomi vasúti kocsik (Eximbank-hitel)',
+      description: 'A GEM feljelentést tett a Dunakeszi Járműjavítót érintő, 176 milliárd forintos állami hitelből finanszírozott egyiptomi vasúti kocsi projekt (magyar-orosz konzorcium, MÁV) ügyében — hűtlen és hanyag kezelés, valamint csőd gyanújával.',
+      urls: ['https://telex.hu/belfold/2026/07/23/miniszteriumi-feljelentes-negy-ugy-eximbank-macedonia-zambia'],
+    };
+    expect(matchStrength(official, candidate)).toBeGreaterThanOrEqual(1);
+  });
+
+  // "Támogatással visszaélés" — a hivatalos név KIZÁRÓLAG generikus
+  // korrupciós-doménszóból áll (tamogatassal, visszaeles), a normalizeWords
+  // mindent kiszűr belőle, a szó-alapú pontszám ezért mindig 0 marad, MÉG
+  // NÉV-NÉV EGYEZÉS ESETÉN IS. Enélkül ez az egy tétel minden nap újra
+  // beszúrásra kerülne (élesben derült ki, 2026-08-30).
+  it('falls back to substring match when the official name is entirely generic stopword vocabulary', () => {
+    const official = {
+      name: 'Támogatással visszaélés',
+      description: 'Támogatási kérelemmel kapcsolatos visszaélés.',
+      url: 'https://kormany.hu/atlathato/feljelentes',
+    };
+    const candidate = {
+      name: 'Támogatással visszaélés (MÁK)',
+      description: 'A Pénzügyminisztérium (Magyar Államkincstár) feljelentést tett támogatással való visszaélés gyanúja miatt.',
+      urls: ['https://kormany.hu/atlathato/feljelentes'],
+    };
+    expect(matchStrength(official, candidate)).toBeGreaterThanOrEqual(1);
+  });
+
+  it('does not let a short/generic name fragment cause an accidental substring match', () => {
+    const official = { name: 'Kft.', description: 'Feljelentés.', url: 'https://kormany.hu/atlathato/feljelentes' };
+    const candidate = { name: 'Teljesen más ügy Kft. érintettséggel', description: '', urls: [] };
+    expect(matchStrength(official, candidate)).toBeLessThan(1);
+  });
+});
+
 describe('looksGovernmentFiled', () => {
   it('true for ministry/government-style filer names', () => {
     expect(looksGovernmentFiled('Gazdasági és Energetikai Minisztérium')).toBe(true);
@@ -77,8 +157,19 @@ describe('mapOfficialStatus', () => {
     expect(mapOfficialStatus('nincs adat a nyomozó szerv eljárásáról')).toBe('feljelentés');
   });
 
-  it('maps "nem indult" to elutasítva even though it also contains "nyomozás"', () => {
-    expect(mapOfficialStatus('nyomozás még nem indult, az ügy a BRFK-nál')).toBe('elutasítva');
+  // 2026-08-30 — user report: a "Tartalom Előkészítő Osztály" ügy tévesen
+  // 'elutasítva' státuszban jelent meg, pedig a leírás csak annyit mondott,
+  // hogy "nem indult nyomozás" — ez a feljelentés még folyamatban/függőben
+  // lévő státuszát jelenti, NEM elutasítást. Explicit elutasítás-szó kell
+  // (pl. "elutasította", "elévült") ahhoz, hogy 'elutasítva' legyen.
+  it('maps "nem indult" to feljelentés (pending), NOT elutasítva, even though it also contains "nyomozás"', () => {
+    expect(mapOfficialStatus('nyomozás még nem indult, az ügy a BRFK-nál')).toBe('feljelentés');
+    expect(mapOfficialStatus('A feljelentés nyomán nem indult nyomozás.')).toBe('feljelentés');
+  });
+
+  it('maps explicit rejection language to elutasítva', () => {
+    expect(mapOfficialStatus('az ügyészség elutasította a feljelentést')).toBe('elutasítva');
+    expect(mapOfficialStatus('az ügy időközben elévült')).toBe('elutasítva');
   });
 
   it('falls back to feljelentés for null or unrecognized text', () => {
