@@ -677,6 +677,11 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
               ügyekben tettek feljelentést. Ez nem jelenti, hogy ennyi pénzt elloptak — ez az
               érintett szerződések teljes értéke, aminek egy része teljesült is, de a gyanú szerint
               a túlárazás és más visszaélések miatt ebből is jelentős összeg veszhetett el.
+              {' '}A kormányzati feljelentések forrása a kormány saját, hivatalos oldala
+              (kormany.hu/atlathato/feljelentesek). Nálunk ugyanakkor ennél teljesebb lista
+              szerepel, mert ők csak a saját feljelentéseiket listázzák, mi pedig minden nem
+              kormányzati szereplő feljelentését is gyűjtjük, például az Állami Számvevőszékét,
+              a Transparency Internationalét vagy az Integritás Hatóságét.
             </p>
           </div>
 
