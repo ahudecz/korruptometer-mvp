@@ -4,7 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { and, desc, eq, ilike, inArray, sql } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
-import { answerCallbackQuery, editMessageReplyMarkup, sendTelegramMessage, type InlineKeyboardMarkup } from '@/lib/telegram';
+import { answerCallbackQuery, editMessageCaption, editMessageReplyMarkup, sendTelegramMessage, type InlineKeyboardMarkup } from '@/lib/telegram';
+import { postPhotoToPage } from '@/lib/facebook';
 import {
   applyWatchlistRemoval,
   checkWatchlistRemovalForArticle,
@@ -208,7 +209,7 @@ type TelegramUpdate = {
   callback_query?: {
     id: string;
     data?: string;
-    message?: { chat: { id: number }; message_id: number; text?: string };
+    message?: { chat: { id: number }; message_id: number; text?: string; caption?: string };
   };
   message?: {
     chat: { id: number };
@@ -986,6 +987,55 @@ export async function POST(req: Request) {
     } catch (err) {
       await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
       console.error('[telegram-webhook] watchlist-removal action error', err);
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  // ── 2026-08-30 — "Legnagyobb feljelentők"/breaking Social Post Outbox
+  // jóváhagyás. code='a' → jóváhagyás ÉS azonnali kipostolás Facebookra
+  // (l. postPhotoToPage — ha nincs még FACEBOOK_PAGE_ID/TOKEN beállítva,
+  // a sor 'approved' marad, NEM 'failed', hogy egy későbbi retry-vel
+  // kimehessen, amint megvan a token). code='r' → elutasítás, nem posztol.
+  if (action === 's') {
+    if ((code !== 'a' && code !== 'r') || !id) {
+      await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
+      return NextResponse.json({ ok: true });
+    }
+    try {
+      const rows = await getDb().select().from(schema.socialPostOutbox).where(eq(schema.socialPostOutbox.id, id)).limit(1);
+      const outboxRow = rows[0];
+      if (!outboxRow) {
+        await answerCallbackQuery(cq.id, 'A poszt-jelölt már nem található.');
+        return NextResponse.json({ ok: true });
+      }
+
+      let resultText: string;
+      if (code === 'r') {
+        await getDb().update(schema.socialPostOutbox).set({ status: 'rejected' }).where(eq(schema.socialPostOutbox.id, id));
+        resultText = '❌ Elutasítva — nem megy ki.';
+      } else {
+        const imageBuffer = Buffer.from(outboxRow.imagePng, 'base64');
+        const posted = await postPhotoToPage(imageBuffer, outboxRow.caption);
+        if (posted.ok) {
+          await getDb().update(schema.socialPostOutbox)
+            .set({ status: 'posted', externalPostId: posted.postId, postedAt: new Date() })
+            .where(eq(schema.socialPostOutbox.id, id));
+          resultText = '✅ Kiposztolva a Facebookra.';
+        } else if (posted.notConfigured) {
+          await getDb().update(schema.socialPostOutbox).set({ status: 'approved' }).where(eq(schema.socialPostOutbox.id, id));
+          resultText = '⚠️ Jóváhagyva, de a Facebook-fiók még nincs bekötve (FACEBOOK_PAGE_ID/FACEBOOK_PAGE_ACCESS_TOKEN hiányzik) — amint megvan, kézzel újraküldhető.';
+        } else {
+          await getDb().update(schema.socialPostOutbox)
+            .set({ status: 'failed', failureReason: posted.error })
+            .where(eq(schema.socialPostOutbox.id, id));
+          resultText = `❌ Hiba a Facebook-posztolásnál: ${posted.error}`;
+        }
+      }
+      await answerCallbackQuery(cq.id, resultText);
+      await editMessageCaption(cq.message.chat.id, cq.message.message_id, `${cq.message.caption ?? ''}\n\n${resultText}`.trim());
+    } catch (err) {
+      await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
+      console.error('[telegram-webhook] social-post-outbox action error', err);
     }
     return NextResponse.json({ ok: true });
   }

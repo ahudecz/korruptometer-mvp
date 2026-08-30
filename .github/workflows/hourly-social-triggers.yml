@@ -1,0 +1,34 @@
+name: Hourly social post trigger check
+
+# 2026-08-30 — user kérés: óránként nézze meg a /api/cron/check-social-triggers
+# route, van-e új Facebook-poszt-jelölt (feljelentési összeg +1000 Mrd
+# mérföldkő, vagy WATCH_LIST-es személy breaking lemondása) — l.
+# apps/web/src/inngest/functions/check-social-triggers.ts. Mindig csak
+# Telegram-jóváhagyásra vár, sose posztol automatikusan. Ugyanaz a minta,
+# mint a többi cron workflow (hourly-pipeline.yml, daily-kormanyhu-sync.yml).
+#
+# 35. perc — nem ütközik a hourly-pipeline (07. perc) vagy más napi cronok
+# időzítésével.
+
+on:
+  schedule:
+    - cron: '35 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  check-social-triggers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call /api/cron/check-social-triggers
+        run: |
+          set -e
+          http_code=$(curl -sS -m 100 -o /tmp/response.json -w '%{http_code}' \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://www.kegyencjarat.hu/api/cron/check-social-triggers)
+          echo "HTTP status: $http_code"
+          cat /tmp/response.json
+          echo ""
+          if [ "$http_code" != "200" ]; then
+            echo "::error::check-social-triggers endpoint returned HTTP $http_code"
+            exit 1
+          fi
