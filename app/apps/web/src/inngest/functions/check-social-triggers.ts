@@ -6,7 +6,7 @@ import { renderMilestoneImage, renderBreakingImage } from '@/lib/social-image';
 import { milestoneCaption, breakingCaption } from '@/lib/social-caption';
 import { sendTelegramPhoto, type InlineKeyboardMarkup } from '@/lib/telegram';
 import { computeComplaintTotal } from '@app/birosagi-iteletek/complaint-stats';
-import { computeNextMilestone, formatMilliardLabel, formatMilliardLabelShort } from '@/lib/social-milestone';
+import { computeNextMilestone, formatMilliardLabel } from '@/lib/social-milestone';
 import { WATCH_LIST } from '@app/_home/watchlist-config';
 import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
 
@@ -58,9 +58,7 @@ async function buildMilestoneTrigger(db: ReturnType<typeof getDb>): Promise<Outb
 
   const amountLabel = formatMilliardLabel(currentThreshold);
   const subline = 'NER-hez és államigazgatáshoz köthető feljelentések összértéke';
-  // A KÉPEN a kompakt "Mrd Ft" forma (l. social-image.tsx komment) — a
-  // caption/headline továbbra is a teljes "milliárd Ft" alakot kapja.
-  const image = await renderMilestoneImage({ amountLabel: formatMilliardLabelShort(currentThreshold), subline });
+  const image = await renderMilestoneImage({ amountLabel, subline });
   return {
     triggerType: 'complaint_milestone',
     triggerRefId: null,
