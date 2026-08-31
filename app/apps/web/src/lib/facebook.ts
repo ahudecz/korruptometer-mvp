@@ -12,6 +12,21 @@ import 'server-only';
  * "nincs beállítva" Telegram-válaszként jeleníti meg, a SocialPostOutbox
  * sor 'approved' marad (nem 'failed'), hogy a token pótlása után egy
  * későbbi manuális retry ki tudja küldeni ugyanazt a jóváhagyott posztot.
+ *
+ * MOBIL LINK-BUG, user report 2026-08-31: a `permalink_url` Graph API mező
+ * egy olyan profil-ID-t ad vissza (a poszt "story"-jának egy belső azonosítóját),
+ * ami sem mobilon, sem asztali gépen nem nyílt meg senkinek (a userön kívül
+ * 3 barátja is "This isn't available"-t / üres nyitóoldalt kapott). Kiderült:
+ * a Facebook Graph API Page-ID-nk (FACEBOOK_PAGE_ID) egy VALÓDI böngészőben
+ * automatikusan átirányít egy MÁSIK, publikus numerikus azonosítóra
+ * (`facebook.com/{page_id}` → `facebook.com/profile.php?id={public_id}`) —
+ * ez a `FACEBOOK_PAGE_PUBLIC_ID` a ténylegesen működő cím mindenkinek.
+ * Ezért a permalinket MOST MÁR MAGUNK építjük fel ("story.php?story_fbid=
+ * {post-lokális-rész}&id={FACEBOOK_PAGE_PUBLIC_ID}" formában), nem a Graph
+ * API `permalink_url` mezőjére támaszkodva — az korábban egy nem-működő
+ * ID-t adott vissza. Ha FACEBOOK_PAGE_PUBLIC_ID nincs beállítva, visszaesünk
+ * a régi permalink_url-lekérdezésre (jobb egy talán-nem-működő link, mint
+ * a végképp naiv `facebook.com/{post_id}` forma).
  */
 
 const GRAPH_API_VERSION = 'v21.0';
@@ -42,15 +57,23 @@ export async function postPhotoToPage(imagePng: Buffer, caption: string): Promis
     return { ok: false, error: data?.error?.message ?? `HTTP ${res.status}` };
   }
   const postId = data.post_id ?? data.id ?? 'unknown';
+  const postUrl = await buildWorkingPermalink(postId, token, pageId);
+  return { ok: true, postId, postUrl };
+}
 
-  // user report, 2026-08-31: a "https://www.facebook.com/{post_id}" naiv
-  // URL (page_id_postid formátum) NEM egy valós, böngészhető link — a
-  // Facebook "This isn't available"-t dob rá. A tényleges, működő
-  // permalinket ("facebook.com/{story_id}/posts/{post_id}") csak egy
-  // KÜLÖN GET-lekérdezéssel lehet megkapni a `permalink_url` mezőn
-  // keresztül — a /photos POST válasza sose adja vissza automatikusan.
+/**
+ * A ténylegesen mindenkinek megnyíló link felépítése — l. a fájl tetején
+ * lévő MOBIL LINK-BUG megjegyzést. postId formátuma "{page_id}_{story_id}".
+ */
+async function buildWorkingPermalink(postId: string, token: string, pageId: string): Promise<string> {
+  const publicPageId = process.env.FACEBOOK_PAGE_PUBLIC_ID;
+  const storyId = postId.includes('_') ? postId.split('_')[1] : postId;
+  if (publicPageId && storyId) {
+    return `https://www.facebook.com/story.php?story_fbid=${storyId}&id=${publicPageId}`;
+  }
+  // Fallback: a régi (nem mindig megbízható) permalink_url-lekérdezés.
   const permalink = await fetchPermalink(postId, token);
-  return { ok: true, postId, postUrl: permalink ?? `https://www.facebook.com/${postId}` };
+  return permalink ?? `https://www.facebook.com/${pageId}/posts/${storyId}`;
 }
 
 async function fetchPermalink(postId: string, token: string): Promise<string | null> {
