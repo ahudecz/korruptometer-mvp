@@ -7,9 +7,9 @@
 
 export function milestoneCaption(amountLabel: string): string {
   return [
-    `🚨 Elérte a(z) ${amountLabel}-ot a NER-hez és államigazgatáshoz köthető feltételezett bűncselekmények miatt tett feljelentések összértéke.`,
+    `🚨 Elérte a ${amountLabel}-ot a NER-hez és államigazgatáshoz köthető feltételezett bűncselekmények miatt tett feljelentések összértéke.`,
     '',
-    'Ez nem jelenti, hogy ennyi pénzt elloptak — ez az érintett szerződések teljes értéke, aminek egy része teljesült is, de a gyanú szerint jelentős összeg veszhetett el.',
+    'A fenti közpénz összegek a feljelentésekben megfogalmazott becslések, a tényleges vagyoni kár a bírósági eljárásokban szakértők által kerül megállapításra.',
     '',
     'Minden adat, forrás és részlet: kegyencjarat.hu/birosagi-iteletek',
     '#kegyencjarat #korrupció #közpénz',
