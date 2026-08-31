@@ -6,6 +6,7 @@ import { and, desc, eq, ilike, inArray, isNotNull, sql } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { answerCallbackQuery, editMessageCaption, editMessageReplyMarkup, sendTelegramMessage, sendTelegramPhoto, type InlineKeyboardMarkup } from '@/lib/telegram';
 import { postPhotoToPage } from '@/lib/facebook';
+import { postPhotoViaMake } from '@/lib/make-facebook';
 import { regenerateOutboxImage } from '@/lib/social-image';
 import { approvalKeyboard as socialApprovalKeyboard } from '@/inngest/functions/check-social-triggers';
 import {
@@ -1138,22 +1139,47 @@ export async function POST(req: Request) {
         resultText = '❌ Elutasítva — nem megy ki.';
       } else {
         const imageBuffer = Buffer.from(outboxRow.imagePng, 'base64');
-        const posted = await postPhotoToPage(imageBuffer, outboxRow.caption);
-        if (posted.ok) {
+        // user kérés, 2026-08-31: a saját Facebook App-unkon (Graph API,
+        // Standard Access) keresztüli posztolás csak azoknak látszik,
+        // akiknek szerepük van az App-on — a nyilvános láthatósághoz
+        // Advanced Access kellene, ami Business Verificationt igényel
+        // (valódi jogi dokumentumot, ami egy be nem jegyzett civil
+        // projektnél nincs). Ezért az ELSŐDLEGES posztoló út mostantól a
+        // Make.com-on átvezetett, már Advanced Access-es Facebook Pages
+        // integráció (l. make-facebook.ts) — ha az nincs beállítva,
+        // visszaesünk a régi közvetlen Graph API hívásra (postPhotoToPage).
+        const viaMake = await postPhotoViaMake(imageBuffer, outboxRow.caption);
+        if (viaMake.ok) {
           await getDb().update(schema.socialPostOutbox)
-            .set({ status: 'posted', externalPostId: posted.postId, postedAt: new Date() })
+            .set({ status: 'posted', postedAt: new Date() })
             .where(eq(schema.socialPostOutbox.id, id));
-          // user kérés, 2026-08-31: mindig kapjon linket az élő posztra, egy
-          // kattintással megnézhető legyen.
-          resultText = `✅ Kiposztolva a Facebookra.\n${posted.postUrl}`;
-        } else if (posted.notConfigured) {
-          await getDb().update(schema.socialPostOutbox).set({ status: 'approved' }).where(eq(schema.socialPostOutbox.id, id));
-          resultText = '⚠️ Jóváhagyva, de a Facebook-fiók még nincs bekötve (FACEBOOK_PAGE_ID/FACEBOOK_PAGE_ACCESS_TOKEN hiányzik) — amint megvan, kézzel újraküldhető.';
+          const pagePublicId = process.env.FACEBOOK_PAGE_PUBLIC_ID;
+          const pageLink = pagePublicId ? `\nhttps://www.facebook.com/profile.php?id=${pagePublicId}` : '';
+          // A Make-scenario aszinkron dolgozik (pár másodperc), ezért itt
+          // nincs azonnali poszt-permalink — csak az Oldal linkje.
+          resultText = `✅ Elküldve posztolásra (Make.com-on keresztül) — pár másodpercen belül megjelenik az Oldalon.${pageLink}`;
+        } else if (viaMake.notConfigured) {
+          // Make nincs beállítva → visszaesés a közvetlen Graph API hívásra.
+          const posted = await postPhotoToPage(imageBuffer, outboxRow.caption);
+          if (posted.ok) {
+            await getDb().update(schema.socialPostOutbox)
+              .set({ status: 'posted', externalPostId: posted.postId, postedAt: new Date() })
+              .where(eq(schema.socialPostOutbox.id, id));
+            resultText = `✅ Kiposztolva a Facebookra.\n${posted.postUrl}`;
+          } else if (posted.notConfigured) {
+            await getDb().update(schema.socialPostOutbox).set({ status: 'approved' }).where(eq(schema.socialPostOutbox.id, id));
+            resultText = '⚠️ Jóváhagyva, de sem a Make.com, sem a közvetlen Facebook-fiók nincs bekötve — amint megvan, kézzel újraküldhető.';
+          } else {
+            await getDb().update(schema.socialPostOutbox)
+              .set({ status: 'failed', failureReason: posted.error })
+              .where(eq(schema.socialPostOutbox.id, id));
+            resultText = `❌ Hiba a Facebook-posztolásnál: ${posted.error}`;
+          }
         } else {
           await getDb().update(schema.socialPostOutbox)
-            .set({ status: 'failed', failureReason: posted.error })
+            .set({ status: 'failed', failureReason: viaMake.error })
             .where(eq(schema.socialPostOutbox.id, id));
-          resultText = `❌ Hiba a Facebook-posztolásnál: ${posted.error}`;
+          resultText = `❌ Hiba a Facebook-posztolásnál (Make.com): ${viaMake.error}`;
         }
       }
       await answerCallbackQuery(cq.id, resultText);
