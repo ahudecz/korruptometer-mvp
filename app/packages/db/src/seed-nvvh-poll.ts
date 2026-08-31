@@ -276,7 +276,7 @@ const OPTIONS: SeedOption[] = [
     title: 'Lázár János megmagyarázhatatlan vagyonosodása',
     shortDescription:
       'A batidai vadászkastélya körüli földekre és a hozzá vezető útra 3,3 Mrd Ft közpénz ment el, miközben Lázár maga is folyamatosan bővíti a birtokot — eddig legalább 183 M Ft-ot költött földvásárlásra, és egyedüliként ő kap osztalékot a kastélyt birtokló cégből.',
-    amountLabel: '~3,3 Mrd Ft (közpénz) + 183 M Ft (saját vásárlás)',
+    amountLabel: '~3,3 Mrd Ft',
     sourceUrl:
       'https://atlatszo.hu/orszagszerte/2025/01/21/legalabb-183-milliot-koltott-lazar-janos-a-kastelya-melletti-foldek-megvasarlasara/',
     sourceOutlet: 'Átlátszó',
