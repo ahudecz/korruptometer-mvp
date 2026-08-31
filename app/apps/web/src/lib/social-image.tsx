@@ -2,7 +2,7 @@ import 'server-only';
 import { ImageResponse } from 'next/og';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { formatMilliardLabelShort } from './social-milestone';
+import { formatMilliardLabel } from './social-milestone';
 
 /**
  * Márkázott, 1080×1080-as (FB + TikTok fotó-karusszel kompatibilis) PNG
@@ -92,12 +92,13 @@ export async function renderMilestoneImage(
           <div style={{ display: 'flex', color: kickerColor, fontSize: 34, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>
             Mérföldkő
           </div>
-          {/* fontSize 108 + whiteSpace:nowrap — user report, 2026-08-31: a
-              128px-es, "milliárd Ft" hosszú alak a "Ft"-nél új sorba tört.
-              A hívó (check-social-triggers.ts) a kompakt "Mrd Ft" formát
-              (formatMilliardLabelShort) adja ide, a teljes "milliárd Ft"
-              csak a caption/headline szövegében marad. */}
-          <div style={{ display: 'flex', color: ACCENT, fontSize: 108, fontWeight: 900, lineHeight: 1.05, marginTop: 16, whiteSpace: 'nowrap' }}>
+          {/* fontSize 105 + whiteSpace:nowrap — user report, 2026-08-31:
+              128px-en a "milliárd Ft" hosszú alak a "Ft"-nél új sorba
+              tört; a rövidített "Mrd Ft" forma meg túl kicsinek tűnt.
+              105px-nél a TELJES "milliárd Ft" alak is egy sorban fér ki,
+              kényelmes margóval — kipróbálva "2000"-nél és egy jövőbeli
+              5-jegyű "10000 milliárd Ft"-nél is. */}
+          <div style={{ display: 'flex', color: ACCENT, fontSize: 105, fontWeight: 900, lineHeight: 1.05, marginTop: 16, whiteSpace: 'nowrap' }}>
             {params.amountLabel}
           </div>
           <div style={{ display: 'flex', color: sublineColor, fontSize: 44, fontWeight: 600, lineHeight: 1.3, marginTop: 24, maxWidth: 880 }}>
@@ -195,7 +196,7 @@ export async function regenerateOutboxImage(row: {
 }): Promise<Buffer> {
   const variant: ImageVariant = row.imageVariant === 'light' ? 'light' : 'dark';
   if (row.triggerType === 'complaint_milestone') {
-    const amountLabel = row.milestoneValueFt !== null ? formatMilliardLabelShort(row.milestoneValueFt) : '';
+    const amountLabel = row.milestoneValueFt !== null ? formatMilliardLabel(row.milestoneValueFt) : '';
     return renderMilestoneImage({ amountLabel, subline: row.imageText ?? '' }, variant);
   }
   return renderBreakingImage({ kicker: row.kicker ?? '', headline: row.headline, detail: row.imageText || undefined }, variant);
