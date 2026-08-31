@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
 import { pollVoteIpLimiter } from '@korr/shared/ratelimit';
-import { verifyTurnstile } from '@korr/shared/turnstile';
 
 import { getDb } from '@/lib/db';
 import { getPollWithResults, insertVote } from '@/lib/poll-queries';
@@ -37,7 +36,7 @@ export async function POST(req: Request) {
   if (!body || typeof body !== 'object') {
     return NextResponse.json({ error: 'Érvénytelen kérés.' }, { status: 400 });
   }
-  const { questionSlug, optionIds, turnstileToken, honeypot } = body as Record<string, unknown>;
+  const { questionSlug, optionIds, honeypot } = body as Record<string, unknown>;
   if (typeof questionSlug !== 'string' || !questionSlug) {
     return NextResponse.json({ error: 'Hiányzó kérdés-azonosító.' }, { status: 400 });
   }
@@ -80,17 +79,12 @@ export async function POST(req: Request) {
     );
   }
 
-  // 4) Turnstile — a tényleges bot-védelem (FR-013).
-  const turnstile = await verifyTurnstile(
-    typeof turnstileToken === 'string' ? turnstileToken : undefined,
-    ip,
-  );
-  if (!turnstile.success) {
-    return NextResponse.json(
-      { error: 'A bot-ellenőrzés nem sikerült. Frissítsd az oldalt, és próbáld újra.' },
-      { status: 403 },
-    );
-  }
+  // 4) Turnstile — 2026-08-31 óta szándékosan kikapcsolva (user döntés): a
+  // site key domain-regisztrációja megbízhatatlanul hibázott éles
+  // forgalomnál ("bot-ellenőrzés nem sikerült" valós szavazóknak), és a
+  // cookie + IP-küszöb + honeypot réteg önmagában is elegendő védelemnek
+  // lett elfogadva erre a use case-re (l. research.md eredeti "cookie az
+  // elsődleges védelem" döntése — a Turnstile csak kiegészítő volt).
 
   // 5) 1-5 tartomány + minden id valóban a kérdéshez tartozik-e (FR-005).
   const countCheck = checkSelectionCount(optionIds, poll.question.minSelect, poll.question.maxSelect);

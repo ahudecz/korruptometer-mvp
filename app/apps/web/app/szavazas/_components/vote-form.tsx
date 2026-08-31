@@ -1,58 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { OptionCard, type PollOptionCardData } from './option-card';
-
-declare global {
-  interface Window {
-    turnstile?: {
-      render: (
-        el: HTMLElement,
-        opts: { sitekey: string; callback: (token: string) => void },
-      ) => string;
-    };
-  }
-}
-
-/**
- * A `/bejelentes` űrlap ma egy fix `'1x'` dev-tokent küld a Turnstile-mezőben
- * (nincs valódi kliens-oldali widget felhúzva) — ez éles környezetben nem
- * védene semmit, ha a szerver oldali secret nem a Cloudflare dev-bypass
- * kulcsa. Itt a szavazásnál egy tényleg működő widgetet húzunk fel, hogy a
- * FR-013 ("láthatatlan emberi-ellenőrzés") ténylegesen teljesüljön.
- */
-function TurnstileWidget({
-  siteKey,
-  onToken,
-}: {
-  siteKey: string | null;
-  onToken: (token: string) => void;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [scriptLoaded, setScriptLoaded] = useState(false);
-
-  useEffect(() => {
-    if (!siteKey) return;
-    if (window.turnstile) {
-      setScriptLoaded(true);
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
-    script.async = true;
-    script.defer = true;
-    script.onload = () => setScriptLoaded(true);
-    document.head.appendChild(script);
-  }, [siteKey]);
-
-  useEffect(() => {
-    if (!scriptLoaded || !siteKey || !ref.current || !window.turnstile) return;
-    window.turnstile.render(ref.current, { sitekey: siteKey, callback: onToken });
-  }, [scriptLoaded, siteKey, onToken]);
-
-  if (!siteKey) return null;
-  return <div ref={ref} className="poll-turnstile" />;
-}
 
 type SubmitState = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -61,19 +10,16 @@ export function VoteForm({
   minSelect,
   maxSelect,
   options,
-  turnstileSiteKey,
   onVoted,
 }: {
   questionSlug: string;
   minSelect: number;
   maxSelect: number;
   options: PollOptionCardData[];
-  turnstileSiteKey: string | null;
   onVoted: (voteId: string, selectedIds: string[]) => void;
 }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [honeypot, setHoneypot] = useState('');
-  const [turnstileToken, setTurnstileToken] = useState('');
   const [state, setState] = useState<SubmitState>('idle');
   const [error, setError] = useState<string | null>(null);
 
@@ -113,7 +59,6 @@ export function VoteForm({
           body: JSON.stringify({
             questionSlug,
             optionIds: [...selected],
-            turnstileToken,
             honeypot,
           }),
         });
@@ -130,7 +75,7 @@ export function VoteForm({
         setError('Hálózati hiba történt. Próbáld újra.');
       }
     },
-    [selected, minSelect, maxSelect, questionSlug, turnstileToken, honeypot, onVoted],
+    [selected, minSelect, maxSelect, questionSlug, honeypot, onVoted],
   );
 
   if (state === 'success') {
@@ -171,8 +116,6 @@ export function VoteForm({
           onChange={(e) => setHoneypot(e.target.value)}
         />
       </div>
-
-      <TurnstileWidget siteKey={turnstileSiteKey} onToken={setTurnstileToken} />
 
       <div className="poll-vote-submit-bar">
         <span className="poll-vote-count">

@@ -20,7 +20,6 @@ const OPEN_POLL = {
 
 let cookieStore: Map<string, string>;
 let ipLimitResult = { success: true, remaining: 10, reset: 0 };
-let turnstileResult: { success: boolean; reason?: string } = { success: true };
 
 vi.mock('next/headers', () => ({
   cookies: vi.fn(async () => ({
@@ -42,16 +41,11 @@ vi.mock('@korr/shared/ratelimit', () => ({
   pollVoteIpLimiter: vi.fn(() => ({ limit: vi.fn(async () => ipLimitResult) })),
 }));
 
-vi.mock('@korr/shared/turnstile', () => ({
-  verifyTurnstile: vi.fn(async () => turnstileResult),
-}));
-
 vi.mock('next/cache', () => ({ revalidateTag: vi.fn() }));
 
 beforeEach(() => {
   cookieStore = new Map();
   ipLimitResult = { success: true, remaining: 10, reset: 0 };
-  turnstileResult = { success: true };
 });
 
 async function post(body: Record<string, unknown>): Promise<Response> {
@@ -76,12 +70,6 @@ describe('POST /api/poll/vote — abuse guard (US4)', () => {
     ipLimitResult = { success: false, remaining: 0, reset: 0 };
     const res = await post({ questionSlug: 'nvvh-elso-5-ugye', optionIds: ['opt-1'], turnstileToken: 'tok', honeypot: '' });
     expect(res.status).toBe(429);
-  });
-
-  it('rejects when the Turnstile bot check fails', async () => {
-    turnstileResult = { success: false, reason: 'timeout-or-duplicate' };
-    const res = await post({ questionSlug: 'nvvh-elso-5-ugye', optionIds: ['opt-1'], turnstileToken: 'tok', honeypot: '' });
-    expect(res.status).toBe(403);
   });
 
   it('rejects a filled honeypot field before touching the DB', async () => {

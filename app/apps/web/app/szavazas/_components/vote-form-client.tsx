@@ -25,7 +25,6 @@ export function VoteFormClient({
   totalVotes,
   alreadyVoted,
   ownSelectionIds: serverOwnSelectionIds,
-  turnstileSiteKey,
 }: {
   questionSlug: string;
   minSelect: number;
@@ -35,7 +34,6 @@ export function VoteFormClient({
   totalVotes: number;
   alreadyVoted: boolean;
   ownSelectionIds: string[];
-  turnstileSiteKey: string | null;
 }) {
   const shareUrl =
     typeof window !== 'undefined' ? window.location.origin + window.location.pathname : '';
@@ -161,7 +159,6 @@ export function VoteFormClient({
             minSelect={minSelect}
             maxSelect={maxSelect}
             options={options}
-            turnstileSiteKey={turnstileSiteKey}
             onVoted={(_voteId, selectedIds) => {
               setOwnSelectionIds(new Set(selectedIds));
               setJustVoted(true);
