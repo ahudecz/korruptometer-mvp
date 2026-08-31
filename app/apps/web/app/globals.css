@@ -5464,6 +5464,31 @@ button {
   color: #E31937;
 }
 
+/* "Miért nem teljes a kormány listája?" — elkülönített magyarázó blokk a
+   feljelentési összeg-leírás alatt (user kérés, 2026-08-31: designosabb
+   elválasztás legyen, ne csak folyó szöveg). */
+.complaint-tracker-explainer {
+  margin-top: 20px;
+  padding: 18px 20px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+}
+.complaint-tracker-explainer-title {
+  font-family: 'Archivo', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.complaint-tracker-explainer-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
 /* Lemondott szekció — bal oldali piros csík */
 .lemondott-section-wrap {
   position: relative;
