@@ -54,8 +54,8 @@ export function NavMobile() {
           );
         })}
       </nav>
-      <Link href="/bejelentes" className="mobile-nav-cta" onClick={() => setOpen(false)}>
-        Bejelentés tétele →
+      <Link href="/szavazas" className="mobile-nav-cta" onClick={() => setOpen(false)}>
+        SZAVAZZ MOST! →
       </Link>
     </div>
   );

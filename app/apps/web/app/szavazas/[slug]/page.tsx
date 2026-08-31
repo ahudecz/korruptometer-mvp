@@ -14,9 +14,22 @@ export async function generateMetadata({ params }: { params: Params }) {
   const { slug } = await params;
   const poll = await getPollWithResults(getDb(), slug);
   if (!poll) return {};
+  const title = `Szavazás — ${poll.question.questionText}`;
+  const description = `${poll.question.questionText} Szavazz te is a Kegyencjárat közösségi szavazásán!`;
   return {
-    title: `Szavazás — ${poll.question.questionText}`,
-    description: `${poll.question.questionText} Szavazz te is a Kegyencjárat közösségi szavazásán!`,
+    // A gyökér layout.tsx title-template-je ('%s — Kegyencjárat') simán rá-
+    // fűződne erre is — { absolute } kikapcsolja, mint a többi aloldalnál
+    // (hirek, podcastok stb.).
+    title: { absolute: title },
+    description,
+    // FONTOS: az openGraph/twitter mezők NEM öröklődnek automatikusan a
+    // sima title/description-ből — a gyökér layout.tsx saját, generikus
+    // openGraph.title/description-jét használnák megosztáskor (Viber,
+    // Messenger stb. előnézet-kártyája), ha itt külön nem adjuk meg. Az
+    // og:image-et magát a szomszédos opengraph-image.tsx fájl-konvenció
+    // adja, poll-specifikusan — ez a szöveges rész hozzá.
+    openGraph: { title, description },
+    twitter: { title, description },
   };
 }
 

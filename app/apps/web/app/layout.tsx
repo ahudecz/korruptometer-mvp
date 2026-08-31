@@ -70,8 +70,9 @@ export default function RootLayout({
               />
             </Link>
             <NavLinks />
-            <Link href="/bejelentes" className="nav-cta">
-              Bejelentés tétele
+            {/* .nav-cta text-transform:uppercase alul → "SZAVAZZ MOST!" */}
+            <Link href="/szavazas" className="nav-cta">
+              Szavazz most!
             </Link>
             <NavMobile />
           </div>

@@ -13182,7 +13182,7 @@ code {
   font-size: 13px;
   font-weight: 600;
   color: var(--accent);
-  white-space: nowrap;
+  overflow-wrap: break-word;
 }
 
 .poll-option-card-amount--unknown {
@@ -13578,6 +13578,113 @@ code {
   }
 }
 
+/* ─── 011-nvvh-case-poll — nyitóoldali promó-csík (a hero-fejléc és a
+   KPI-kártyák közé ékelve, de szándékosan teljes-szélességben kitörve a
+   hero max-width:1440px konténeréből — a html { overflow-x:hidden }
+   (l. fent) fedezi az ebből adódó esetleges 1px vízszintes túlcsordulást.
+   Szándékosan NEM a breaking-banner mellett/alatt, hogy ne tűnjön úgy,
+   mintha azt váltaná le.) ───────────────────────────────────────────── */
+
+.poll-banner {
+  display: block;
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  padding: 40px var(--pg);
+  margin-top: 48px;
+  margin-bottom: 0;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  transition: background 0.15s;
+}
+
+.poll-banner:hover {
+  background: #c81530;
+}
+
+.poll-banner:hover .poll-banner-cta {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.poll-banner-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.poll-banner-eyebrow {
+  display: block;
+  font-family: 'Archivo', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 14px;
+}
+
+.poll-banner-headline {
+  font-family: 'Archivo Narrow', 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: clamp(26px, 4vw, 44px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0 0 24px;
+}
+
+.poll-banner-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.poll-banner-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.poll-banner-cta {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 16px;
+  padding: 16px 30px;
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.poll-banner-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+@media (max-width: 640px) {
+  .poll-banner {
+    padding: 28px 16px;
+    margin-top: 32px;
+    margin-bottom: 0;
+  }
+  .poll-banner-bottom {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .poll-banner-cta {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
 /* ─── 011-nvvh-case-poll — visszajelzések utáni finomítás ──────────────── */
 
 /* Szólj bele — szekció-fejléc, minden szavazás fölött (layout.tsx) */
@@ -13758,6 +13865,27 @@ code {
   border-color: var(--accent);
   color: var(--accent);
   background: var(--bg);
+}
+
+.poll-share-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.poll-share-manual {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.poll-share-manual-url {
+  display: inline-block;
+  font-weight: 600;
+  color: var(--ink-2);
+  word-break: break-all;
+  user-select: all;
 }
 
 /* Eredmény-fejléc: szavazatszám + "Szavazok" CTA egy sorban */
