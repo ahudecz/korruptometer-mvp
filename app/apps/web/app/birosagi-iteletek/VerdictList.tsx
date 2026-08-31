@@ -679,14 +679,20 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
               ügyekben tettek feljelentést. Ez nem jelenti, hogy ennyi pénzt elloptak — ez az
               érintett szerződések teljes értéke, aminek egy része teljesült is, de a gyanú szerint
               a túlárazás és más visszaélések miatt ebből is jelentős összeg veszhetett el.
-              {' '}A kormányzati szervek által tett feljelentések adatai a kormány hivatalos,
-              önbevallásos nyilvántartásából (
-              <strong><a href="https://kormany.hu/atlathato/feljelentes" target="_blank" rel="noopener noreferrer" className="complaint-tracker-note-link">kormany.hu/atlathato/feljelentes</a></strong>
-              ) származnak. <strong>A Kegyencjárat adatbázisa ennél átfogóbb képet nyújt: a
-              kormányzati bejelentéseken túl az összes egyéb, nem kormányzati szereplő — így
-              például az Állami Számvevőszék, a Transparency International és az Integritás
-              Hatóság — publikus feljelentéseit is nyilvántartjuk.</strong>
             </p>
+
+            <div className="complaint-tracker-explainer">
+              <div className="complaint-tracker-explainer-title">Miért nem teljes a kormány listája?</div>
+              <p className="complaint-tracker-explainer-text">
+                Mert nem csak ők tesznek feljelentést NER-es ügyekben. A kormányzati szervek által
+                tett feljelentések adatai a kormány hivatalos, önbevallásos nyilvántartásából (
+                <strong><a href="https://kormany.hu/atlathato/feljelentes" target="_blank" rel="noopener noreferrer" className="complaint-tracker-note-link">kormany.hu/atlathato/feljelentes</a></strong>
+                ) származnak. <strong>A Kegyencjárat adatbázisa ennél átfogóbb képet nyújt: a
+                kormányzati bejelentéseken túl az összes egyéb, nem kormányzati szereplő — így
+                például a Transparency International, az Állami Számvevőszék, vagy éppen az
+                Integritás Hatóság — publikus feljelentéseit is nyilvántartjuk.</strong>
+              </p>
+            </div>
           </div>
 
           {topFilers.length > 0 && (
