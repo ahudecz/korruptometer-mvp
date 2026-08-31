@@ -63,6 +63,20 @@ export function fmtFt(n: number | bigint, opts?: { short?: boolean }): string {
   return `${value} ${opts?.short ? unitShort : unitLong}`;
 }
 
+// 011-nvvh-case-poll (FR-003) — az opció-kártyák összeg-mezőjéhez: soha nem
+// írhat ki üres mezőt vagy "0 Ft"-ot, ha nincs ellenőrzött összeg. `amountLabel`
+// elsőbbséget élvez (pl. "441 eset / 66 cég" — nem minden ügynél egyetlen
+// Ft-szám a legpontosabb leírás), utána jön a nyers `amountHuf` fmtFt-tel,
+// végül az egységes "Nincs konkrét összeg" felirat.
+export function fmtFtOrUnknown(
+  amountHuf: number | bigint | null | undefined,
+  amountLabel?: string | null,
+): string {
+  if (amountLabel && amountLabel.trim().length > 0) return amountLabel;
+  if (amountHuf !== null && amountHuf !== undefined) return fmtFt(amountHuf);
+  return 'Nincs konkrét összeg';
+}
+
 export function fmtNumber(n: number): string {
   return HU_NUMBER.format(n);
 }
