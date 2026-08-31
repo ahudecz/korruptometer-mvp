@@ -41,10 +41,24 @@ export async function postPhotoToPage(imagePng: Buffer, caption: string): Promis
   if (!res.ok || !data || data.error) {
     return { ok: false, error: data?.error?.message ?? `HTTP ${res.status}` };
   }
-  // user kérés, 2026-08-31: a Telegram-válasz kapjon egy kattintható linket
-  // a most kiposztolt élő bejegyzésre. `post_id` ("PAGEID_POSTID") a
-  // tényleges idővonal-bejegyzés — ha valamiért hiányozna, a puszta `id`
-  // (a fotó saját azonosítója) is felold egy megtekinthető oldalra.
   const postId = data.post_id ?? data.id ?? 'unknown';
-  return { ok: true, postId, postUrl: `https://www.facebook.com/${postId}` };
+
+  // user report, 2026-08-31: a "https://www.facebook.com/{post_id}" naiv
+  // URL (page_id_postid formátum) NEM egy valós, böngészhető link — a
+  // Facebook "This isn't available"-t dob rá. A tényleges, működő
+  // permalinket ("facebook.com/{story_id}/posts/{post_id}") csak egy
+  // KÜLÖN GET-lekérdezéssel lehet megkapni a `permalink_url` mezőn
+  // keresztül — a /photos POST válasza sose adja vissza automatikusan.
+  const permalink = await fetchPermalink(postId, token);
+  return { ok: true, postId, postUrl: permalink ?? `https://www.facebook.com/${postId}` };
+}
+
+async function fetchPermalink(postId: string, token: string): Promise<string | null> {
+  try {
+    const res = await fetch(`https://graph.facebook.com/${GRAPH_API_VERSION}/${postId}?fields=permalink_url&access_token=${token}`);
+    const data = (await res.json().catch(() => null)) as { permalink_url?: string } | null;
+    return data?.permalink_url ?? null;
+  } catch {
+    return null; // sose dobjon hibát emiatt — a fallback URL akkor is jobb, mint a teljes sikertelenség
+  }
 }
