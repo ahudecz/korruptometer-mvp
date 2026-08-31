@@ -83,7 +83,7 @@ export default async function SzavazasPage({ params }: { params: Params }) {
         totalVotes={poll.totalVotes}
         alreadyVoted={!!votedCookie}
         ownSelectionIds={ownSelectionIds}
-        turnstileSiteKey={process.env.TURNSTILE_SITE_KEY ?? null}
+        turnstileSiteKey={process.env.TURNSTILE_SITE_KEY?.trim() || null}
       />
     </>
   );

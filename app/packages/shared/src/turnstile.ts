@@ -14,7 +14,12 @@ export async function verifyTurnstile(
   token: string | undefined,
   remoteIp?: string,
 ): Promise<TurnstileResult> {
-  const secret = process.env.TURNSTILE_SECRET;
+  // .trim() — a Vercel dashboardon bemásolt secret-eknél könnyű véletlenül
+  // egy záró újsor-karaktert is bemásolni; ez a Cloudflare siteverify-t
+  // simán túléli (whitespace a payloadban), de a kliens-oldali sitekey-nél
+  // (l. [slug]/page.tsx) egy záró "\n" a Turnstile widget render()-jét
+  // eldobatja — 2026-08-31, user report: "Application error" a szavazóoldalon.
+  const secret = process.env.TURNSTILE_SECRET?.trim();
   if (!secret) {
     return { success: false, reason: 'TURNSTILE_SECRET missing' };
   }
