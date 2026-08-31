@@ -36,6 +36,8 @@ type OutboxInsert = {
   headline: string;
   caption: string;
   imagePng: Buffer;
+  imageText: string; // a képre írt, "✏️ Módosítás"-sal szerkeszthető szöveg (subline/detail)
+  kicker: string | null; // csak breaking-típusoknál — l. schema.ts komment
 };
 
 async function buildMilestoneTrigger(db: ReturnType<typeof getDb>): Promise<OutboxInsert | null> {
@@ -55,10 +57,8 @@ async function buildMilestoneTrigger(db: ReturnType<typeof getDb>): Promise<Outb
   if (currentThreshold === null) return null;
 
   const amountLabel = formatMilliardLabel(currentThreshold);
-  const image = await renderMilestoneImage({
-    amountLabel,
-    subline: 'NER-hez és államigazgatáshoz köthető feljelentések összértéke',
-  });
+  const subline = 'NER-hez és államigazgatáshoz köthető feljelentések összértéke';
+  const image = await renderMilestoneImage({ amountLabel, subline });
   return {
     triggerType: 'complaint_milestone',
     triggerRefId: null,
@@ -66,6 +66,8 @@ async function buildMilestoneTrigger(db: ReturnType<typeof getDb>): Promise<Outb
     headline: `Mérföldkő: ${amountLabel}`,
     caption: milestoneCaption(amountLabel),
     imagePng: image,
+    imageText: subline,
+    kicker: null,
   };
 }
 
@@ -107,17 +109,22 @@ async function buildResignationTriggers(db: ReturnType<typeof getDb>): Promise<O
       headline,
       caption: breakingCaption(kicker, headline),
       imagePng: image,
+      imageText: '',
+      kicker,
     });
   }
   return out;
 }
 
-function approvalKeyboard(outboxId: string): InlineKeyboardMarkup {
+export function approvalKeyboard(outboxId: string): InlineKeyboardMarkup {
   return {
-    inline_keyboard: [[
-      { text: '✅ Közzététel (Facebook)', callback_data: `s:a:${outboxId}` },
-      { text: '❌ Elutasítás', callback_data: `s:r:${outboxId}` },
-    ]],
+    inline_keyboard: [
+      [{ text: '✅ Közzététel (Facebook)', callback_data: `s:a:${outboxId}` }],
+      [
+        { text: '✏️ Módosítás', callback_data: `s:m:${outboxId}` },
+        { text: '❌ Elutasítás', callback_data: `s:r:${outboxId}` },
+      ],
+    ],
   };
 }
 
@@ -148,6 +155,8 @@ export async function runSocialTriggersCore({
           headline: c.headline,
           caption: c.caption,
           imagePng: c.imagePng.toString('base64'),
+          imageText: c.imageText,
+          kicker: c.kicker,
           status: 'pending_approval',
         })
         .returning({ id: schema.socialPostOutbox.id });

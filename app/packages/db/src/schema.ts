@@ -1698,6 +1698,19 @@ export const socialPostOutbox = pgTable(
     externalPostId: text('externalPostId'), // pl. FB post id, sikeres közzététel után
     telegramMessageId: integer('telegramMessageId'),
     failureReason: text('failureReason'),
+    // 2026-08-31 — user kérés: "✏️ Módosítás" gomb a Telegram-üzeneten.
+    // `pendingEdit` kódolja, hogy a chat KÖVETKEZŐ szöveges üzenetét minek
+    // vegyük (l. telegram/webhook route.ts): 'caption' | 'image_text' |
+    // 'both_caption' (a "Mindkettő" ág — a caption mentése után a kép-
+    // választó gombokat küldi tovább, nem vár újabb szöveget). `imageText`
+    // a képre írt, szerkeszthető szöveg (mérföldkőnél a subline, breakingnél
+    // a detail) — enélkül egy caption-only szerkesztés után elveszne, ha
+    // utána a kép is újragenerálódna. `imageVariant`/`kicker` a "🎨 Új
+    // design" gombhoz és a breaking-kép újragenerálásához kell.
+    pendingEdit: text('pendingEdit'),
+    imageText: text('imageText'),
+    imageVariant: text('imageVariant').notNull().default('dark'),
+    kicker: text('kicker'),
     createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
     postedAt: timestamp('postedAt', { withTimezone: true }),
   },
