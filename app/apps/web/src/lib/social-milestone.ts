@@ -33,3 +33,19 @@ export function formatMilliardLabelShort(ft: bigint): string {
   const mrd = ft / 1_000_000_000n;
   return `${mrd} Mrd Ft`;
 }
+
+// A mérföldkő-kép nagy, piros összegsorának betűmérete a szöveg
+// HOSSZÁTÓL függ, nem fix szám — user report, 2026-08-31: egy statikus
+// méret vagy túl kicsinek tűnt a jelenlegi rövid számokra ("2000 milliárd
+// Ft"), vagy túl szorosan fért volna ki egy jövőbeli, hosszabb (5-jegyű)
+// mérföldkőnél. Az arányt (0.435 px/karakter fontSize-egységenként)
+// próba-renderekkel kalibráltam a social-image.tsx Satori-sablonjához
+// (900-as vastagságú sans-serif) — ha a sablon paddingja/betűtípusa
+// változna, ezt újra kell hangolni ugyanígy: renderelj néhány próba-képet
+// különböző fontSize-okkal, és nézd meg, melyik a legnagyobb, ami még
+// nem lóg túl a jobb margón.
+export function amountFontSize(label: string): number {
+  const AVAILABLE_PX = 800; // a kép szélessége mínusz a padding és egy biztonsági margó
+  const CHAR_WIDTH_RATIO = 0.435;
+  return Math.min(140, Math.max(70, Math.floor(AVAILABLE_PX / (label.length * CHAR_WIDTH_RATIO))));
+}
