@@ -17,7 +17,7 @@ import 'server-only';
 const GRAPH_API_VERSION = 'v21.0';
 
 export type FacebookPostResult =
-  | { ok: true; postId: string }
+  | { ok: true; postId: string; postUrl: string }
   | { ok: false; error: string; notConfigured?: boolean };
 
 export async function postPhotoToPage(imagePng: Buffer, caption: string): Promise<FacebookPostResult> {
@@ -41,5 +41,10 @@ export async function postPhotoToPage(imagePng: Buffer, caption: string): Promis
   if (!res.ok || !data || data.error) {
     return { ok: false, error: data?.error?.message ?? `HTTP ${res.status}` };
   }
-  return { ok: true, postId: data.post_id ?? data.id ?? 'unknown' };
+  // user kérés, 2026-08-31: a Telegram-válasz kapjon egy kattintható linket
+  // a most kiposztolt élő bejegyzésre. `post_id` ("PAGEID_POSTID") a
+  // tényleges idővonal-bejegyzés — ha valamiért hiányozna, a puszta `id`
+  // (a fotó saját azonosítója) is felold egy megtekinthető oldalra.
+  const postId = data.post_id ?? data.id ?? 'unknown';
+  return { ok: true, postId, postUrl: `https://www.facebook.com/${postId}` };
 }

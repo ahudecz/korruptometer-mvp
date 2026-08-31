@@ -1143,7 +1143,9 @@ export async function POST(req: Request) {
           await getDb().update(schema.socialPostOutbox)
             .set({ status: 'posted', externalPostId: posted.postId, postedAt: new Date() })
             .where(eq(schema.socialPostOutbox.id, id));
-          resultText = '✅ Kiposztolva a Facebookra.';
+          // user kérés, 2026-08-31: mindig kapjon linket az élő posztra, egy
+          // kattintással megnézhető legyen.
+          resultText = `✅ Kiposztolva a Facebookra.\n${posted.postUrl}`;
         } else if (posted.notConfigured) {
           await getDb().update(schema.socialPostOutbox).set({ status: 'approved' }).where(eq(schema.socialPostOutbox.id, id));
           resultText = '⚠️ Jóváhagyva, de a Facebook-fiók még nincs bekötve (FACEBOOK_PAGE_ID/FACEBOOK_PAGE_ACCESS_TOKEN hiányzik) — amint megvan, kézzel újraküldhető.';
