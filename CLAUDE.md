@@ -1,6 +1,6 @@
 # corruption-tracker Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-06-28
+Auto-generated from all feature plans. Last updated: 2026-08-31
 
 ## Active Technologies
 

@@ -1801,5 +1801,121 @@ export const watchlistRemovals = pgTable(
 export type WatchlistRemoval = typeof watchlistRemovals.$inferSelect;
 export type NewWatchlistRemoval = typeof watchlistRemovals.$inferInsert;
 
+// ─── NVVH-szavazás (011) ────────────────────────────────────────────────────
+// Egy kérdéses, multiple-choice közösségi szavazás — lásd specs/011-nvvh-case-poll.
+// Anonim részvétel: a "már szavaztál" védelem egy aláírt böngésző-cookie
+// (a PollVote.id-t hordozza), NEM az IP — az IP-alapú Upstash rate-limit csak
+// másodlagos, tömeges-visszaélés elleni védőháló (lásd research.md #1-2).
+// Nyers IP-cím szándékosan nincs ebben a sémában.
+export const pollQuestionStatusEnum = pgEnum('poll_question_status', [
+  'open',
+  'closed',
+]);
+
+export const pollQuestions = pgTable(
+  'PollQuestion',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    slug: text('slug').notNull().unique(),
+    questionText: text('questionText').notNull(),
+    minSelect: integer('minSelect').notNull().default(1),
+    maxSelect: integer('maxSelect').notNull().default(5),
+    status: pollQuestionStatusEnum('status').notNull().default('open'),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+    closedAt: timestamp('closedAt', { withTimezone: true }),
+  },
+  (_t) => ({
+    selectRangeCheck: check(
+      'PollQuestion_select_range',
+      sql`"minSelect" >= 1 AND "minSelect" <= "maxSelect"`,
+    ),
+  }),
+);
+
+export const pollOptions = pgTable(
+  'PollOption',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    pollQuestionId: uuid('pollQuestionId')
+      .notNull()
+      .references(() => pollQuestions.id, { onDelete: 'cascade' }),
+    displayOrder: integer('displayOrder').notNull().default(0),
+    title: text('title').notNull(),
+    shortDescription: text('shortDescription').notNull(),
+    longDescription: text('longDescription'),
+    // NULL = nincs konkrét, ellenőrzött összeg — a UI ilyenkor mindig
+    // "Nincs konkrét összeg"-et ír ki (FR-003), sosem 0-t vagy üres mezőt.
+    amountHuf: bigint('amountHuf', { mode: 'bigint' }),
+    amountLabel: text('amountLabel'),
+    sourceUrl: text('sourceUrl').notNull(),
+    sourceOutlet: text('sourceOutlet').notNull(),
+    isAreaNotCase: boolean('isAreaNotCase').notNull().default(false),
+    touchesEuFunds: boolean('touchesEuFunds').notNull().default(false),
+    alreadyReported: boolean('alreadyReported').notNull().default(false),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    questionOrderIdx: index('PollOption_question_order_idx').on(
+      t.pollQuestionId,
+      t.displayOrder,
+    ),
+    // Idempotencia-kulcs a seed-scripthez (onConflictDoNothing) — ugyanaz a
+    // minta, mint a repó többi writer-jénél (lásd CLAUDE.md).
+    questionTitleUq: uniqueIndex('PollOption_question_title_uq').on(
+      t.pollQuestionId,
+      t.title,
+    ),
+    sourceUrlNotEmpty: check(
+      'PollOption_sourceUrl_not_empty',
+      sql`length(trim("sourceUrl")) > 0`,
+    ),
+  }),
+);
+
+export const pollVotes = pgTable(
+  'PollVote',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    pollQuestionId: uuid('pollQuestionId')
+      .notNull()
+      .references(() => pollQuestions.id, { onDelete: 'cascade' }),
+    votedAt: timestamp('votedAt', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    questionVotedAtIdx: index('PollVote_question_votedAt_idx').on(
+      t.pollQuestionId,
+      t.votedAt,
+    ),
+  }),
+);
+
+// Kapcsolótábla — melyik szavazás melyik opció(ka)t választotta. Az összetett
+// PK garantálja, hogy egy szavazáson belül egy opció csak egyszer szerepelhet;
+// az 1-5 darabszám-korlátot (FR-005) az API route ellenőrzi beszúrás előtt.
+export const pollVoteSelections = pgTable(
+  'PollVoteSelection',
+  {
+    pollVoteId: uuid('pollVoteId')
+      .notNull()
+      .references(() => pollVotes.id, { onDelete: 'cascade' }),
+    pollOptionId: uuid('pollOptionId')
+      .notNull()
+      .references(() => pollOptions.id, { onDelete: 'cascade' }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.pollVoteId, t.pollOptionId] }),
+    optionIdx: index('PollVoteSelection_option_idx').on(t.pollOptionId),
+  }),
+);
+
+export type PollQuestion = typeof pollQuestions.$inferSelect;
+export type NewPollQuestion = typeof pollQuestions.$inferInsert;
+export type PollOption = typeof pollOptions.$inferSelect;
+export type NewPollOption = typeof pollOptions.$inferInsert;
+export type PollVote = typeof pollVotes.$inferSelect;
+export type NewPollVote = typeof pollVotes.$inferInsert;
+export type PollVoteSelection = typeof pollVoteSelections.$inferSelect;
+export type NewPollVoteSelection = typeof pollVoteSelections.$inferInsert;
+
 export type FacebookPage = typeof facebookPages.$inferSelect;
 export type NewFacebookPage = typeof facebookPages.$inferInsert;

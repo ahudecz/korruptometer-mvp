@@ -16,6 +16,7 @@
     "./ai-breaking": "./src/pick-daily-breaking.ts",
     "./ai-watchlist": "./src/watchlist-removal-detect.ts",
     "./ai-complaints": "./src/criminal-complaint-detect.ts",
+    "./ai-verification": "./src/ai-verification.ts",
     "./llm": "./src/llm.ts",
     "./llm-budget-alert": "./src/llm-budget-alert.ts"
   },
@@ -29,6 +30,7 @@
     "db:check": "drizzle-kit check",
     "db:seed": "tsx src/seed.ts",
     "db:seed-scrapers": "tsx src/seed-scrapers.ts",
+    "db:seed-nvvh-poll": "tsx src/seed-nvvh-poll.ts",
     "kmdb:upsert": "tsx src/kmdb-upsert.ts",
     "kmdb:llm-tighten": "tsx src/kmdb-llm-tighten.ts",
     "scrape-now": "tsx src/scrape-now.ts",
