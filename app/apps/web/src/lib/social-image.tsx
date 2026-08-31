@@ -2,7 +2,7 @@ import 'server-only';
 import { ImageResponse } from 'next/og';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { formatMilliardLabel } from './social-milestone';
+import { amountFontSize, formatMilliardLabel } from './social-milestone';
 
 /**
  * Márkázott, 1080×1080-as (FB + TikTok fotó-karusszel kompatibilis) PNG
@@ -92,13 +92,13 @@ export async function renderMilestoneImage(
           <div style={{ display: 'flex', color: kickerColor, fontSize: 34, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>
             Mérföldkő
           </div>
-          {/* fontSize 105 + whiteSpace:nowrap — user report, 2026-08-31:
-              128px-en a "milliárd Ft" hosszú alak a "Ft"-nél új sorba
-              tört; a rövidített "Mrd Ft" forma meg túl kicsinek tűnt.
-              105px-nél a TELJES "milliárd Ft" alak is egy sorban fér ki,
-              kényelmes margóval — kipróbálva "2000"-nél és egy jövőbeli
-              5-jegyű "10000 milliárd Ft"-nél is. */}
-          <div style={{ display: 'flex', color: ACCENT, fontSize: 105, fontWeight: 900, lineHeight: 1.05, marginTop: 16, whiteSpace: 'nowrap' }}>
+          {/* Dinamikus betűméret (l. amountFontSize) + whiteSpace:nowrap —
+              user report, 2026-08-31: egy FIX méret vagy túl kicsi volt a
+              jelenlegi rövid számokra ("2000 milliárd Ft"), vagy túl
+              szoros egy jövőbeli, hosszabb (5-jegyű) mérföldkőre. A szöveg
+              hosszától függően mindig a lehető legnagyobbat választja,
+              ami még biztosan egy sorban fér. */}
+          <div style={{ display: 'flex', color: ACCENT, fontSize: amountFontSize(params.amountLabel), fontWeight: 900, lineHeight: 1.05, marginTop: 16, whiteSpace: 'nowrap' }}>
             {params.amountLabel}
           </div>
           <div style={{ display: 'flex', color: sublineColor, fontSize: 44, fontWeight: 600, lineHeight: 1.3, marginTop: 24, maxWidth: 880 }}>
