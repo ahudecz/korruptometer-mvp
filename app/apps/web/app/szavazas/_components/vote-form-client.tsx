@@ -98,7 +98,12 @@ export function VoteFormClient({
               className={`poll-tab${tab === 'results' ? ' poll-tab--active' : ''}`}
               onClick={() => setTab('results')}
             >
-              Eredmények
+              {/* Ez a tab csak nyitott szavazásnál jelenik meg (l. a
+                  körülötte lévő !votingDone feltételt — zárt szavazásnál
+                  votingDone mindig true, tehát status itt sose 'closed'),
+                  úgyhogy mindig "Szavazás állása" — az "Eredmények" szó a
+                  lezárt szavazás végleges nézetének van fenntartva. */}
+              Szavazás állása
             </button>
           </div>
         )}
@@ -110,7 +115,13 @@ export function VoteFormClient({
               ? 'Így alakul a Kegyencjárat friss szavazása — nézd meg az állást, és szólj hozzá te is!'
               : 'Ez itt a Kegyencjárat friss szavazása — nézd meg, és szólj hozzá te is!'
           }
-          label={showResults ? 'Eredmény megosztása' : 'Szavazás megosztása'}
+          label={
+            showResults
+              ? status === 'closed'
+                ? 'Eredmény megosztása'
+                : 'Szavazás állásának megosztása'
+              : 'Szavazás megosztása'
+          }
         />
       </div>
 
