@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeNextMilestone, formatMilliardLabel, MILESTONE_STEP_FT } from './social-milestone';
+import { computeNextMilestone, formatMilliardLabel, formatMilliardLabelShort, MILESTONE_STEP_FT } from './social-milestone';
 
 describe('computeNextMilestone', () => {
   it('returns null below the first threshold', () => {
@@ -30,5 +30,11 @@ describe('computeNextMilestone', () => {
 describe('formatMilliardLabel', () => {
   it('formats a round milliárd amount', () => {
     expect(formatMilliardLabel(3_000_000_000_000n)).toBe('3000 milliárd Ft');
+  });
+});
+
+describe('formatMilliardLabelShort', () => {
+  it('formats a round milliárd amount with the compact "Mrd" unit', () => {
+    expect(formatMilliardLabelShort(2_000_000_000_000n)).toBe('2000 Mrd Ft');
   });
 });

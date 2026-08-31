@@ -23,3 +23,13 @@ export function formatMilliardLabel(ft: bigint): string {
   const mrd = ft / 1_000_000_000n;
   return `${mrd} milliárd Ft`;
 }
+
+// A képre írt NAGY szám kompakt "Mrd" formája — user report, 2026-08-31:
+// "2000 milliárd Ft" 128px-es betűvel új sorba tört a "Ft"-nél. A caption/
+// cím továbbra is a teljes "milliárd Ft" alakot használja (formatMilliardLabel),
+// csak a képen lévő nagy szám rövidül — ugyanaz a minta, mint a site FtValue
+// komponensének 'short' módja.
+export function formatMilliardLabelShort(ft: bigint): string {
+  const mrd = ft / 1_000_000_000n;
+  return `${mrd} Mrd Ft`;
+}

@@ -12,6 +12,7 @@ export function milestoneCaption(amountLabel: string): string {
     'A fenti közpénz összegek a feljelentésekben megfogalmazott becslések, a tényleges vagyoni kár a bírósági eljárásokban szakértők által kerül megállapításra.',
     '',
     'Minden adat, forrás és részlet: kegyencjarat.hu/birosagi-iteletek',
+    'Kattints és nézd meg, kik a legnagyobb feljelentők a kormány mellett!',
     '#kegyencjarat #korrupció #közpénz',
   ].join('\n');
 }
