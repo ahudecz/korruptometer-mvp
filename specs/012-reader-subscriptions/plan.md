@@ -41,7 +41,7 @@ added to any existing page.
 3000/month. Real audience ceiling ≈ 270 recipients per weekly digest across
 `DIGEST_RESUME_DAYS` (3). Telegram `callback_data` ≤ 64 bytes.
 **Scale/Scope**: Low hundreds of subscribers. Six sections. Six alert-recording call sites.
-Three reader pages, five API routes, three cron routes, two Inngest functions, one GitHub
+Three reader pages, five API routes, three cron routes, three Inngest functions, one GitHub
 Actions workflow.
 
 **No NEEDS CLARIFICATION remains.** Every value the spec left as a name is settled in
@@ -141,7 +141,7 @@ open Constitution Check violation**.*
 | I — Trust posture above convenience | PASS | The reader-facing copy states the IP hash is stored (FR-084, FR-088). The tip form's "Az IP-címedet nem rögzítjük" promise at `app/apps/web/app/page.tsx` is inside the `submission-assurance` block and is scoped to the tip form; this feature adds no claim that contradicts it, and does not edit it. |
 | II — Phased shippability | PASS | Phases 4–5 ship the whole channel promise with no personal data, no provider and no consent record. Phases 6–7 add email. Neither entangles the other. |
 | III — Single Next.js app on the inbox-to-action stack | **PASS — resolved by amendment** | Constitution v1.0.0 named **Resend** in its forbidden-substitutions list. **Amendment v2.0.0, 2026-09-01** removed it from that list and added **Email: Resend** to the locked-in services, with the constraints this feature already designed to: sending only, never a queue or a data store; subdomain sending domain; RFC 8058 one-click unsubscribe headers on every bulk send; addresses encrypted at rest and decrypted only at send time; free-tier caps enforced in the application by the reservation ledger. See Complexity Tracking. |
-| III — no separate worker package | PASS | Both Inngest functions live in `app/apps/web/src/inngest/functions/`; the schedules are Actions-driven cron routes in the same app. |
+| III — no separate worker package | PASS | All three Inngest functions live in `app/apps/web/src/inngest/functions/`; the schedules are Actions-driven cron routes in the same app. |
 | IV — Data minimization and GDPR retention | PASS | No plaintext address at rest (FR-081). No name field (FR-080). Retention pass keeps only the tombstone and the consent record (FR-086). The IP hash is treated as personal data (FR-084). |
 | V — Web request path never recomputes | PASS | The subscribe route enqueues; it does not send. No page recomputes anything. |
 | VI — Edge-first reads, rate-limited writes | PASS with a note | Per-route, per-verb limits are specified (FR-046). Principle VI names Turnstile on `POST /api/submissions`; **that endpoint is out of scope** and is not changed by this feature. Removing Turnstile from *this* feature's own surfaces (A11) does not touch it. |
