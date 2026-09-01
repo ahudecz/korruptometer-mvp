@@ -1,1 +1,3 @@
-{ "feature_directory": "specs/009-criminal-complaint-tracking" }
+{
+  "feature_directory": "specs/012-reader-subscriptions"
+}
