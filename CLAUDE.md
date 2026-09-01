@@ -88,6 +88,8 @@ Config lives in `app/apps/web/.env.local`; template at `app/.env.example`. Group
 - **Upstash / rate limit:** `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `SUBMISSION_RATE_*`
 - **Auth / security:** `WEBAUTHN_*`, `TURNSTILE_*`, `PII_ENC_KEY`, `BOOTSTRAP_ADMIN_EMAIL`
 - **Observability:** `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `BETTER_STACK_TOKEN`, `SLACK_EDITOR_WEBHOOK`
+- **Telegram / cron (already required by the running system):** `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `TELEGRAM_WEBHOOK_SECRET`, `CRON_SECRET`
+- **Reader subscriptions (012):** `TELEGRAM_PUBLIC_CHANNEL_ID` (unset = public-channel kill switch), `RESEND_API_KEY` (unset = email paused), `RESEND_FROM`, `RESEND_WEBHOOK_SECRET`, `RESEND_LOG_RETENTION_DAYS_DECLARED`, `SUBSCRIBER_LINK_SECRET` and `SUBSCRIBER_LINK_SECRET_PREVIOUS` (both `kid:secret`; the second verifies only, and is a different secret from `PII_ENC_KEY`), `DIGEST_DAILY_SEND_CAP`, `SUBSCRIBE_CONFIRM_DAILY_CAP` (a security bound — raising it raises the blast radius of a bot run), `SUBSCRIBE_CONFIRM_RESERVE`, `DIGEST_MIN_ITEMS`, `SUBSCRIBE_IP_DAILY_LIMIT`, `SUBSCRIBE_IP_HOURLY_LIMIT`, `NEXT_PUBLIC_SITE_URL`
 
 ## Ask Before You...
 

@@ -44,6 +44,29 @@ async function checkInngest(): Promise<Result> {
   };
 }
 
+/**
+ * 012-reader-subscriptions — a Resend küldési-napló megőrzése.
+ *
+ * Ugyanaz az alak, mint a `checkInngest()`-é, és ugyanazon okból: a Resend
+ * publikus API-jában NINCS megőrzési mező (2026-09-01-i ellenőrzés). Ha a
+ * szolgáltató kiteszi, egy API-olvasás erősebb mechanizmus, és annak kell
+ * átvennie a helyét.
+ *
+ * A küldési naplók CÍMZETTI CÍMEKET tartalmaznak. Egy az első küldés után
+ * beállított megőrzés nem törli, amit az addigi küldések már beírtak.
+ */
+async function checkResend(): Promise<Result> {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return { platform: 'Resend', days: null, status: 'SKIPPED' };
+  const declared = Number(process.env.RESEND_LOG_RETENTION_DAYS_DECLARED ?? '0');
+  if (!declared) return { platform: 'Resend', days: null, status: 'SKIPPED' };
+  return {
+    platform: 'Resend',
+    days: declared,
+    status: declared <= MAX_DAYS ? 'OK' : 'DRIFT',
+  };
+}
+
 async function checkBetterStack(): Promise<Result> {
   const token = process.env.BETTERSTACK_TOKEN;
   if (!token) return { platform: 'Better Stack', days: null, status: 'SKIPPED' };
@@ -72,7 +95,7 @@ async function checkBetterStack(): Promise<Result> {
 }
 
 async function main() {
-  const results = await Promise.all([checkVercel(), checkInngest(), checkBetterStack()]);
+  const results = await Promise.all([checkVercel(), checkInngest(), checkBetterStack(), checkResend()]);
   let drifted = false;
   for (const r of results) {
     const d = r.days == null ? '—' : `${r.days}d`;

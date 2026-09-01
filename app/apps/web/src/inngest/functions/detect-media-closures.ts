@@ -17,6 +17,7 @@ import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
 import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
 import { createBypassGuardedFunction, runArticleDetectionBatch, type ArticleProcessResult } from '../lib/detector-runner';
+import { recordSubscriberAlert } from '@/lib/notify-subscribers';
 
 const DETECTOR_TYPE = 'media_closure' as const;
 
@@ -191,6 +192,15 @@ async function processClosureArticle(
     });
     return { inserted: true, approved: false };
   }
+
+  // 012-reader-subscriptions FR-018 — 3. hívási hely (média). Csak az
+  // auto-publikált sor riaszt; a 'pending' ág fentebb már kilépett.
+  await recordSubscriberAlert({
+    section: 'media_closure',
+    entityId: insertedRow!.id,
+    title: result.name,
+    detail: coerceClosureEventType(result.eventType),
+  });
 
   return { inserted: true, approved: true };
 }

@@ -21,6 +21,7 @@ import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
 import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
 import { createBypassGuardedFunction, runArticleDetectionBatch, type ArticleProcessResult } from '../lib/detector-runner';
+import { recordSubscriberAlert } from '@/lib/notify-subscribers';
 
 const DETECTOR_TYPE = 'criminal_complaint' as const;
 
@@ -183,6 +184,14 @@ async function processComplaintArticle(
       });
     } else {
       anyApproved = true;
+      // 012-reader-subscriptions FR-018 — 4. hívási hely. Csak az
+      // auto-publikált feljelentés riaszt.
+      await recordSubscriberAlert({
+        section: 'criminal_complaint',
+        entityId: insertedRow!.id,
+        title: complaint.targetName,
+        detail: [complaint.filerName, complaint.amountLabel].filter(Boolean).join(' — '),
+      });
     }
   }
 

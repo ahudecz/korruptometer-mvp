@@ -6,6 +6,8 @@ export * from './turnstile';
 export * from './sealed-box';
 export * from './storage';
 export * from './virus-scan';
+export * from './sections';
+export * from './email';
 export * from './slack';
 export * from './sealed-box-monitor';
 export * from './investigation';

@@ -23,6 +23,7 @@ import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
 import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
 import { createBypassGuardedFunction, runArticleDetectionBatch, type ArticleProcessResult } from '../lib/detector-runner';
+import { recordSubscriberAlert } from '@/lib/notify-subscribers';
 
 const DETECTOR_TYPE = 'resignation' as const;
 
@@ -253,6 +254,16 @@ async function processResignationArticle(
       });
     } else {
       anyApproved = true;
+      // 012-reader-subscriptions FR-018 — 2. hívási hely. Csak az
+      // AUTO-PUBLIKÁLT sor riaszt: egy 'pending' sor még nincs kint az
+      // oldalon, tehát nincs miről szólni az olvasónak.
+      await recordSubscriberAlert({
+        section: 'resignation',
+        entityId: insertedRow!.id,
+        title: person.name,
+        detail: [cleanPositionTitle(person.position), person.institution].filter(Boolean).join(' — '),
+        url: `/lemondasok/${insertedRow!.id}`,
+      });
     }
   }
 

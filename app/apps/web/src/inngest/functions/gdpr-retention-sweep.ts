@@ -8,6 +8,23 @@ import { getDb, schema } from '@/lib/db';
 import { inngest } from '../client';
 
 /**
+ * 012-reader-subscriptions FR-086 — a megőrzési söprés PONTOSAN ezt a négy
+ * oszlopot nullázza.
+ *
+ * SZÁNDÉKOSAN MEGMARAD az `emailHash` (a letiltás-jelölő: egy törölt cím soha
+ * többé nem iratkozhat fel), a `status` és a `consentTextVersion` (a GDPR 7.
+ * cikk (1) szerinti hozzájárulás-bizonyíték). Exportálva, hogy egy teszt
+ * rögzíthesse a listát: egy ide felvett `emailHash` csendben megszüntetné a
+ * letiltást, egy kivett `emailEnc` pedig csendben megtartaná a címet.
+ */
+export const SUBSCRIBER_PURGE_COLUMNS = [
+  'emailEnc',
+  'signupIpHash',
+  'confirmedIpHash',
+  'confirmTokenHash',
+] as const;
+
+/**
  * T118-T125 — gdpr.retention-sweep. Daily worker. Four ordered passes:
  *   1. PII purge for approved/rejected/duplicate past purgePiiAt
  *   2. Orphan-storage hard-delete (>7d, no SubmissionAttachment row)
@@ -127,6 +144,25 @@ export const gdprRetentionSweep = inngest.createFunction(
       return { posted: r.posted, c14, c30 };
     });
 
+    // ── 012-reader-subscriptions FR-086 — a feliratkozók személyes adata. ──
+    //
+    // KÜLÖN lépés, és NEM a fenti `stale-digest`-hez tartozik: az a DETEKCIÓS
+    // összefoglalóról szól (`src/lib/detection-digest.ts`), semmi köze ennek a
+    // feature-nek a `Digest` táblájához. A névütközés véletlen; ne vonja össze
+    // őket senki.
+    const subscriberPurge = await step.run('subscriber-pii-purge', async () => {
+      const db = getDb();
+      const r = await db.execute(sql`
+        UPDATE "Subscriber"
+           SET ${sql.raw(SUBSCRIBER_PURGE_COLUMNS.map((c) => `"${c}" = NULL`).join(', '))}
+         WHERE "purgePiiAt" IS NOT NULL
+           AND "purgePiiAt" < now()
+           AND "emailEnc" IS NOT NULL
+      `);
+      const updated = (r as unknown as { count?: number }).count ?? 0;
+      return { purged: updated };
+    });
+
     const audit = await step.run('partition-retention', async () => {
       const db = getDb();
       const cutoff = new Date(Date.now() - 24 * 30 * 24 * 60 * 60 * 1000);
@@ -145,8 +181,8 @@ export const gdprRetentionSweep = inngest.createFunction(
     logger?.info?.(
       `gdpr.retention-sweep: purged=${purged.purgedRows} attachments=${purged.purgedAttachments} ` +
         `orphans=${orphans.deleted}/${orphans.listed} stale14=${staleDigest.c14} stale30=${staleDigest.c30} ` +
-        `audit=${audit.scrubbed}`,
+        `subscribers=${subscriberPurge.purged} audit=${audit.scrubbed}`,
     );
-    return { purged, orphans, staleDigest, audit };
+    return { purged, orphans, staleDigest, subscriberPurge, audit };
   },
 );

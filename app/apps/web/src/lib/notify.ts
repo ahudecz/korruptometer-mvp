@@ -31,7 +31,10 @@ export type ReviewNeededEvent = {
   recordId?: string;
 };
 
-const DETECTOR_LABELS_HU: Record<ReviewNeededEvent['detectorType'], string> = {
+// 012-reader-subscriptions FR-009 — exportálva a rögzítő teszt kedvéért. NE
+// származtasd újra a SECTION_LABELS_HU-ból, ugyanazon okból, mint a
+// notify-auto-publish.ts TARGET_LABELS_HU térképét.
+export const DETECTOR_LABELS_HU: Record<ReviewNeededEvent['detectorType'], string> = {
   resignation: 'Lemondás/kirúgás',
   media_closure: 'Médium megszűnés',
   court_verdict: 'Bírósági ítélet',

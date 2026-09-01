@@ -18,7 +18,9 @@
     "./ai-complaints": "./src/criminal-complaint-detect.ts",
     "./ai-verification": "./src/ai-verification.ts",
     "./llm": "./src/llm.ts",
-    "./llm-budget-alert": "./src/llm-budget-alert.ts"
+    "./llm-budget-alert": "./src/llm-budget-alert.ts",
+    "./email-send-ledger": "./src/email-send-ledger.ts",
+    "./subscription-health-alert": "./src/subscription-health-alert.ts"
   },
   "scripts": {
     "lint": "eslint src",

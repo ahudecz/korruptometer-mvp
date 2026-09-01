@@ -13,6 +13,22 @@ one, the configured retention, and the audit step at every deploy.
 | Better Stack logs | Source → Retention | ≤7 days | API exposes `attributes.retention_days` per source |
 | Sentry events | Project → Settings → Data Privacy | ≤7 days | screenshot in this folder |
 | Supabase Storage | bucket lifecycle | N/A — orphan-scan owns deletion | `gdpr.retention-sweep` Inngest pass 2 |
+| Resend send logs | Account → Settings → data retention | ≤7 days | `RESEND_LOG_RETENTION_DAYS_DECLARED` env var + dated screenshot SHA |
+
+**Why Resend is a declared value and not an API read.** Better Stack's row can be
+checked over its API because `GET /api/v1/sources` returns
+`attributes.retention_days`. Resend's public API has no equivalent field — checked
+2026-09-01 against the API reference — so Resend falls in the same class as Vercel
+and Inngest: hand-verified, recorded in a `*_DECLARED` env var, evidenced by a dated
+screenshot SHA. Re-check when the provider changes its API; an API read is the
+stronger mechanism and takes precedence the moment one exists.
+
+**Why this row exists at all.** The retention setting is made once, by hand, at
+account creation. A one-time act has no ongoing enforcement: a later
+reconfiguration, a tier change or a new team member would silently undo it. Only a
+row here puts it under the deploy-time check. Resend's send logs carry recipient
+addresses, and a retention setting added after the first send does not delete what
+those sends already wrote.
 
 ## Deploy-time audit
 

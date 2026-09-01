@@ -11,6 +11,7 @@ import { ResignationsSection } from './_home/resignations-section';
 import { MediaClosuresSection } from './_home/media-closures-section';
 import { MiniClosureCard } from './_home/closure-card';
 import { SubmissionCTA } from './_home/submission-cta';
+import { NewsletterCta } from './_home/newsletter-cta';
 import { SocialFeed } from './_home/social-feed';
 import { FtValue } from './_home/ft-value';
 import { CaseRow } from './adatbazis/_components/case-row';
@@ -1323,6 +1324,29 @@ export default async function HomePage() {
           </div>
 
           <SubmissionCTA />
+        </div>
+      </section>
+
+      {/* ───── HÍRLEVÉL (012-reader-subscriptions FR-092) ───── */}
+      <section className="submission" id="hirlevel">
+        <div className="submission-inner">
+          <div className="submission-left">
+            <div className="section-num">10 / Hírlevél</div>
+            <h2>
+              Szólunk, ha <em>történik</em> valami.
+            </h2>
+            <p>
+              Hetente egy levél arról, ki mondott le, kit ítéltek el, melyik médium
+              szűnt meg. Válaszd ki, mi érdekel — a többiről nem küldünk semmit.
+            </p>
+            <div className="submission-assurance">
+              <strong>Csak a cím kell</strong>
+              Nevet nem kérünk. A címedet titkosítva tároljuk, és bármelyik levélből
+              egy kattintással leiratkozhatsz.
+            </div>
+          </div>
+
+          <NewsletterCta />
         </div>
       </section>
 

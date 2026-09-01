@@ -1,0 +1,64 @@
+name: Reader subscriptions (flush, digest, health)
+
+# 012-reader-subscriptions — ez a fájl SZÁNDÉKOSAN a REPÓ GYÖKERÉBEN van.
+#
+# Az `app/.github/workflows/ci.yml` létezik, és a GitHub SOHA nem olvassa: az
+# Actions kizárólag a repó gyökerében lévő `.github/workflows/`-ból tölt be
+# workflow-t. Egy ide szánt ütemezés `app/` alatt néma nem-tüzelés lenne —
+# se hiba, se napló, se futás. Ez a feature signature hibaosztálya (FR-029).
+#
+# A `CRON_SECRET` MÁR LÉTEZŐ repository secret (ugyanaz az érték, mint a
+# Vercel `CRON_SECRET` env változója). Nem kell új titok.
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'        # FLUSH_CRON — /api/cron/flush-alerts
+    - cron: '5 7 * * 1'           # heti összefoglaló — /api/cron/digest
+    - cron: '20 6 * * *'          # őrkutya — /api/cron/subscription-health
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Melyik cron-végpontot hívjuk'
+        type: choice
+        options: [flush-alerts, digest, subscription-health]
+        default: flush-alerts
+
+# A csoport az ÜTEMEZÉSRE kulcsol, nem a fájlra (FR-025).
+#
+# Egy fájl-szintű `group: subscriptions` egy sorba tenné a 15 perces flush-t,
+# a heti összefoglalót és a napi egészség-ellenőrzést. A GitHub csoportonként
+# egy futót és egy várakozót tart, a régebbi várakozót eldobja — így egy
+# éppen futó flush mellé beérkező összefoglalót vagy egészség-futást a
+# következő flush 15 percen belül kilőné. Néma nem-tüzelés, épp az FR-029
+# hibaosztálya, épp az FR-025 védelmén keresztül.
+#
+# A `cancel-in-progress: false` a duplikált nyilvános poszt elleni két
+# védelem egyike; a másik az adatbázis-szintű sor-foglalás.
+concurrency:
+  group: subscriptions-${{ github.event.schedule || github.event.inputs.target || 'dispatch' }}
+  cancel-in-progress: false
+
+jobs:
+  call-endpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call the scheduled subscription endpoint
+        run: |
+          set -e
+          case "${{ github.event.schedule }}" in
+            '*/15 * * * *') path=/api/cron/flush-alerts ;;
+            '5 7 * * 1')    path=/api/cron/digest ;;
+            '20 6 * * *')   path=/api/cron/subscription-health ;;
+            *)              path=/api/cron/${{ inputs.target || 'flush-alerts' }} ;;
+          esac
+          echo "Calling $path"
+          http_code=$(curl -sS -m 280 -o /tmp/response.json -w '%{http_code}' \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "https://www.kegyencjarat.hu$path")
+          echo "HTTP status: $http_code"
+          cat /tmp/response.json
+          echo ""
+          if [ "$http_code" != "200" ]; then
+            echo "::error::$path returned HTTP $http_code"
+            exit 1
+          fi

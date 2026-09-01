@@ -34,6 +34,9 @@ import { investigationOrphanCleanup } from './functions/investigation-orphan-cle
 // 002-investigation-engine addendum 2026-05-19: Damage→Evidence Spine
 import { investigationDamageRecompute } from './functions/investigation-damage-recompute';
 import { investigationDamageBackfill } from './functions/investigation-damage-backfill';
+import { digestDraft } from './functions/digest-draft';
+import { digestSend } from './functions/digest-send';
+import { subscriberConfirmSend } from './functions/subscriber-confirm-send';
 
 export { inngest } from './client';
 
@@ -88,4 +91,8 @@ export const functions = [
   // functions/refresh-daily-breaking.ts-ben, csak nincs regisztrálva —
   // visszakapcsolható egyetlen sor visszaírásával, ha kell.
   detectWatchlistRemovals,
+  // 012-reader-subscriptions — olvasói feliratkozások.
+  digestDraft,
+  digestSend,
+  subscriberConfirmSend,
 ];

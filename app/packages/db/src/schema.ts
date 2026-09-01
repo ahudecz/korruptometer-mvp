@@ -18,6 +18,8 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 
+import { SUBSCRIPTION_SECTIONS } from '@korr/shared/sections';
+
 export const caseStatusEnum = pgEnum('case_status', [
   'Lezárva',
   'Vádemelés',
@@ -1919,3 +1921,179 @@ export type NewPollVoteSelection = typeof pollVoteSelections.$inferInsert;
 
 export type FacebookPage = typeof facebookPages.$inferSelect;
 export type NewFacebookPage = typeof facebookPages.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 012-reader-subscriptions — olvasói feliratkozások (migráció 0056)
+//
+// Négy enum és öt tábla. A `subscription_section` tagjai a
+// `@korr/shared/sections` SUBSCRIPTION_SECTIONS listájából származnak, hogy az
+// adatbázis és az űrlap ne tudjon elcsúszni egymástól (FR-007). Az ára A8
+// szerint: egy HETEDIK szekció felvétele MINDIG két migráció, örökre.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const subscriptionSectionEnum = pgEnum('subscription_section', SUBSCRIPTION_SECTIONS);
+
+export const subscriberStatusEnum = pgEnum('subscriber_status', [
+  'pending',
+  'active',
+  'unsubscribed',
+  'bounced',
+  'complained',
+]);
+
+export const digestCadenceEnum = pgEnum('digest_cadence', ['daily', 'weekly']);
+
+// Nincs 'draft' tag: egy összefoglaló a létrejötte pillanatától
+// 'awaiting_approval', a 'draft' állapotba soha nem lépne be semmi.
+export const digestStatusEnum = pgEnum('digest_status', [
+  'awaiting_approval',
+  'approved',
+  'sending',
+  'sent',
+  'discarded',
+  'expired',
+]);
+
+export const subscribers = pgTable(
+  'Subscriber',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    // sha256(cím.trim().toLowerCase()) — EGYETLEN kanonizálás (FR-082), és
+    // egyben a letiltás-jelölő, ami túléli a megőrzési söprést (FR-086).
+    emailHash: text('emailHash').notNull(),
+    // AES-256-GCM a meglévő PII_ENC_KEY alatt. Csak küldéskor van visszafejtve.
+    // Naplóba és AuditLog.detail-be SOHA nem kerül (FR-081).
+    emailEnc: text('emailEnc'),
+    sections: subscriptionSectionEnum('sections').array().notNull(),
+    cadence: digestCadenceEnum('cadence').notNull().default('weekly'),
+    status: subscriberStatusEnum('status').notNull().default('pending'),
+    confirmTokenHash: text('confirmTokenHash'),
+    confirmTokenExpiresAt: timestamp('confirmTokenExpiresAt', { withTimezone: true }),
+    confirmSentCount: integer('confirmSentCount').notNull().default(0),
+    confirmLastSentAt: timestamp('confirmLastSentAt', { withTimezone: true }),
+    confirmedAt: timestamp('confirmedAt', { withTimezone: true }),
+    confirmedIpHash: text('confirmedIpHash'),
+    // GDPR 7. cikk (1) bizonyíték — TÚLÉLI a söprést (FR-086).
+    consentTextVersion: text('consentTextVersion'),
+    lastDigestSentAt: timestamp('lastDigestSentAt', { withTimezone: true }),
+    lastDigestCursorAt: timestamp('lastDigestCursorAt', { withTimezone: true }),
+    // Álnevesített személyes adat (GDPR 4. cikk (5)), nem anonim (FR-084).
+    signupIpHash: text('signupIpHash'),
+    bounceCount: integer('bounceCount').notNull().default(0),
+    lastBounceAt: timestamp('lastBounceAt', { withTimezone: true }),
+    unsubscribedAt: timestamp('unsubscribedAt', { withTimezone: true }),
+    purgePiiAt: timestamp('purgePiiAt', { withTimezone: true }),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    emailHashUq: uniqueIndex('Subscriber_emailHash_uq').on(t.emailHash),
+    statusCadenceIdx: index('Subscriber_status_cadence_idx').on(t.status, t.cadence),
+    purgeIdx: index('Subscriber_purgePiiAt_idx')
+      .on(t.purgePiiAt)
+      .where(sql`"purgePiiAt" IS NOT NULL`),
+  }),
+);
+
+// A kimenő postaláda. Egy sor = egy frissen publikált tétel, amiről az
+// olvasóknak szólni érdemes.
+export const subscriberAlerts = pgTable(
+  'SubscriberAlert',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    section: subscriptionSectionEnum('section').notNull(),
+    entityId: text('entityId').notNull(),
+    // `${section}:${entityId}` — KIVÉVE a watchlist_removal-t, ami a személyre
+    // kulcsol (FR-015), mert az applyWatchlistRemoval() personId-re konfliktál.
+    dedupeKey: text('dedupeKey').notNull(),
+    title: text('title').notNull(),
+    detail: text('detail'),
+    url: text('url').notNull(),
+    occurredAt: timestamp('occurredAt', { withTimezone: true }).notNull(),
+    // A FOGLALÓ utasítás írja, soha nem egy későbbi UPDATE (FR-023, FR-024).
+    channelSentAt: timestamp('channelSentAt', { withTimezone: true }),
+    revokedAt: timestamp('revokedAt', { withTimezone: true }),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    dedupeKeyUq: uniqueIndex('SubscriberAlert_dedupeKey_uq').on(t.dedupeKey),
+    unsentIdx: index('SubscriberAlert_unsent_idx')
+      .on(t.occurredAt)
+      .where(sql`"channelSentAt" IS NULL AND "revokedAt" IS NULL`),
+    occurredAtIdx: index('SubscriberAlert_occurredAt_idx').on(t.occurredAt),
+  }),
+);
+
+export const digests = pgTable(
+  'Digest',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    // DIGEST_CODE_CHARS = 8. A gomb callback_data-ja ezt viszi, nem teljes
+    // rekord-azonosítót (FR-073).
+    code: text('code').notNull(),
+    cadence: digestCadenceEnum('cadence').notNull(),
+    status: digestStatusEnum('status').notNull().default('awaiting_approval'),
+    periodStart: timestamp('periodStart', { withTimezone: true }).notNull(),
+    periodEnd: timestamp('periodEnd', { withTimezone: true }).notNull(),
+    alertIds: uuid('alertIds').array().notNull(),
+    // MINDEN újragenerálásnál újraíródik (FR-059): ez dönti el, ki számít
+    // "túl újnak" a címzettek közül.
+    draftedAt: timestamp('draftedAt', { withTimezone: true }).notNull(),
+    subjectHu: text('subjectHu').notNull(),
+    bodyHtml: text('bodyHtml').notNull(),
+    bodyText: text('bodyText').notNull(),
+    // A jóváhagyó üzenet azonosítója; a válasz-ág EZZEL párosít (FR-068).
+    // Újrageneráláskor felülíródik, különben a leváltott üzenetre adott válasz
+    // is találna.
+    telegramMessageId: bigint('telegramMessageId', { mode: 'number' }),
+    regenCount: integer('regenCount').notNull().default(0),
+    approvedAt: timestamp('approvedAt', { withTimezone: true }),
+    sentAt: timestamp('sentAt', { withTimezone: true }),
+    sentCount: integer('sentCount').notNull().default(0),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    codeUq: uniqueIndex('Digest_code_uq').on(t.code),
+    statusDraftedIdx: index('Digest_status_draftedAt_idx').on(t.status, t.draftedAt),
+    telegramMessageIdx: index('Digest_telegramMessageId_idx')
+      .on(t.telegramMessageId)
+      .where(sql`"telegramMessageId" IS NOT NULL`),
+  }),
+);
+
+// SZÁMLÁLÓ, nem jelölő. A `day` MINDIG az adatbázis current_date-je (FR-050):
+// az Actions ütemezés UTC, a szerkesztői ritmus budapesti, a szolgáltatói kvóta
+// UTC — egy órának nyernie kell.
+export const emailSendLedger = pgTable('EmailSendLedger', {
+  day: date('day').notNull().primaryKey(),
+  // A kapacitás EGYETLEN bemenete (FR-048). Csak a foglalás korlátoz
+  // párhuzamos küldőket; a sentCount ehhez nem használható.
+  reservedCount: integer('reservedCount').notNull().default(0),
+  sentCount: integer('sentCount').notNull().default(0),
+  updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Jelölő, nem számláló — de KÉT független mezővel.
+//
+// `lastRunAt` a szívverés: MINDEN futásnál íródik, akkor is, ha semmi baj
+// nincs (FR-078). `alertedAt` a napi egyszeri riasztás-jelölő: csak akkor,
+// amikor tényleg ment üzenet (FR-075). Egyetlen mezőben a kettő kioltaná
+// egymást — a feltétel nélküli szívverés elfoglalná a nap sorát, és az
+// `ON CONFLICT (day) DO NOTHING` riasztás aznap soha többé nem tüzelne.
+//
+// Nem használhatja újra a LlmApiFailureAlert-et: ott egy LLM-riasztás
+// elnyomná az egész napra a feliratkozási riasztást (FR-075).
+export const subscriptionHealthAlerts = pgTable('SubscriptionHealthAlert', {
+  day: date('day').notNull().primaryKey(),
+  lastReason: text('lastReason'),
+  alertedAt: timestamp('alertedAt', { withTimezone: true }),
+  lastRunAt: timestamp('lastRunAt', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Subscriber = typeof subscribers.$inferSelect;
+export type NewSubscriber = typeof subscribers.$inferInsert;
+export type SubscriberAlert = typeof subscriberAlerts.$inferSelect;
+export type NewSubscriberAlert = typeof subscriberAlerts.$inferInsert;
+export type Digest = typeof digests.$inferSelect;
+export type NewDigest = typeof digests.$inferInsert;
+export type EmailSendLedgerRow = typeof emailSendLedger.$inferSelect;
+export type SubscriptionHealthAlert = typeof subscriptionHealthAlerts.$inferSelect;
