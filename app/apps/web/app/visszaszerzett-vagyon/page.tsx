@@ -9,8 +9,8 @@ import { computeRecoveryTotal } from './recovery-stats';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: { absolute: 'Visszaszerzett vagyon' },
-  description: 'Nyomon követjük, mennyi NER-korszakban eltűnt közpénz és vagyon térült meg eddig. Kattints, és nézd meg, hol áll a mutató!',
+  title: { absolute: 'Visszaszerzett és visszakövetelt vagyon' },
+  description: 'Nyomon követjük, mennyi NER-korszakban eltűnt közpénz és vagyon térült meg eddig, illetve mekkora összeget követelnek még vissza. Kattints, és nézd meg, hol áll a mutató!',
 };
 
 const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
@@ -71,18 +71,19 @@ export default async function VisszaszerzettVagyonPage({
       <section className="section" id="visszaszerzett-vagyon">
         <div className="section-head">
           <div className="section-num">/ Elszámoltatás</div>
-          <h2 className="section-title">Visszaszerzett vagyon</h2>
+          <h2 className="section-title">Visszaszerzett és visszakövetelt vagyon</h2>
         </div>
 
         <p className="rogues-deck" style={{ marginTop: 24, marginBottom: 40, color: 'var(--ink)' }}>
-          Az eljárások során visszautalt, visszavont vagy visszakövetelt közpénzek nyilvántartása.
-          Összesen: <strong>{totalAll > 0n ? <FtValue n={totalAll} /> : 'folyamatban'}</strong> — frissül
+          A ténylegesen visszautalt vagy visszavont közpénzek, valamint a hatóságok, intézmények
+          és érintett szervek által még csak visszakövetelt — perben vagy más eljárásban egyelőre
+          el nem döntött — összegek nyilvántartása. Összesen: <strong>{totalAll > 0n ? <FtValue n={totalAll} /> : 'folyamatban'}</strong> — frissül
           az ügyek előrehaladásával.
         </p>
 
         <div className="recovery-tracker">
           <div className="recovery-tracker-head">
-            <div className="recovery-tracker-label">Visszaszerzett vagyon számláló</div>
+            <div className="recovery-tracker-label">Visszaszerzett és visszakövetelt vagyon számláló</div>
             <div className="recovery-tracker-goal">Jelképes cél: <FtValue n={RECOVERY_GOAL_FT} mode="long" /></div>
           </div>
           <div className="recovery-tracker-track">

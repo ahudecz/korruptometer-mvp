@@ -7,6 +7,7 @@ export * from './schema';
 export * from './review';
 export * from './watchlist';
 export * from './detection-check';
+export * from './kormanyhu-match';
 
 let cachedClient: ReturnType<typeof drizzle<typeof schema>> | null = null;
 

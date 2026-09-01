@@ -75,3 +75,46 @@ export async function editMessageReplyMarkup(
     }),
   });
 }
+
+// 2026-08-30 — a check-social-triggers.ts KÉPPEL küldi a jóváhagyásra váró
+// posztot (nem sima szöveggel, mint a review-bot többi üzenete), hogy a user
+// egy pillantással lássa, mit posztolnánk ki. Egy fotó-üzenet caption-jét
+// editMessageText NEM tudja szerkeszteni (Telegram API-limit) — ahhoz
+// editMessageCaption kell, külön végpont.
+export async function sendTelegramPhoto(
+  photo: Buffer,
+  caption: string,
+  replyMarkup?: InlineKeyboardMarkup,
+): Promise<number | null> {
+  const base = apiBase();
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!base || !chatId) return null;
+  const form = new FormData();
+  form.append('chat_id', chatId);
+  form.append('caption', caption);
+  if (replyMarkup) form.append('reply_markup', JSON.stringify(replyMarkup));
+  form.append('photo', new Blob([new Uint8Array(photo)], { type: 'image/png' }), 'post.png');
+  const res = await fetch(`${base}/sendPhoto`, { method: 'POST', body: form });
+  const data = (await res.json().catch(() => null)) as { result?: { message_id?: number } } | null;
+  return data?.result?.message_id ?? null;
+}
+
+export async function editMessageCaption(
+  chatId: string | number,
+  messageId: number,
+  caption: string,
+  replyMarkup?: InlineKeyboardMarkup,
+): Promise<void> {
+  const base = apiBase();
+  if (!base) return;
+  await fetch(`${base}/editMessageCaption`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: chatId,
+      message_id: messageId,
+      caption,
+      reply_markup: replyMarkup ?? { inline_keyboard: [] },
+    }),
+  });
+}

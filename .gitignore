@@ -43,3 +43,6 @@ yarn-error.log*
 pnpm-debug.log*
 .vercel
 .env*
+
+# Playwright MCP browser-automation artifacts (screenshots, page snapshots)
+.playwright-mcp/

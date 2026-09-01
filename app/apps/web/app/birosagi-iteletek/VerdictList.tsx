@@ -6,7 +6,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { ComplaintList, type SerializedComplaint } from './ComplaintList';
 import { isReleased, computeVerdictStats } from './verdict-stats';
-import { computeComplaintBarMax, computeComplaintTotal } from './complaint-stats';
+import { computeComplaintBarMax, computeComplaintTotal, computeTopFilers } from './complaint-stats';
 import { FtValue } from '../_home/ft-value';
 import { fmtFtParts } from '@korr/shared/format';
 
@@ -361,6 +361,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
   // .recovery-tracker minta a /visszaszerzett-vagyon oldalon).
   const complaintTotal = useMemo(() => computeComplaintTotal(complaints), [complaints]);
   const complaintBarMax = useMemo(() => computeComplaintBarMax(complaintTotal), [complaintTotal]);
+  const topFilers = useMemo(() => computeTopFilers(complaints), [complaints]);
   const complaintPct = Number(complaintTotal) / Number(complaintBarMax) * 100;
   const complaintBarWidth = complaintTotal > 0n ? Math.min(100, Math.max(complaintPct, 0.6)) : 0;
 
@@ -661,9 +662,10 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
               <div className="complaint-tracker-fill" style={{ width: `${complaintBarWidth}%` }} />
             </div>
             {/* A sáv két végét jelölő skála — 0-tól a jelenlegi felső
-                határig (1000, majd 5000 milliárdnál) —, hogy az utóbbi ne
+                határig (1000, majd 10 000 milliárdnál) —, hogy az utóbbi ne
                 lógjon árván a fejlécben, hanem egyértelműen a sávhoz
-                tartozzon (user kérés, 2026-08-07). */}
+                tartozzon (user kérés, 2026-08-07; felső határ 5000-ről
+                10 000 milliárdra emelve, 2026-08-30). */}
             <div className="complaint-tracker-scale">
               <span>0 Ft</span>
               <span><FtValue n={complaintBarMax} mode="long" /></span>
@@ -678,7 +680,45 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
               érintett szerződések teljes értéke, aminek egy része teljesült is, de a gyanú szerint
               a túlárazás és más visszaélések miatt ebből is jelentős összeg veszhetett el.
             </p>
+
+            <div className="complaint-tracker-explainer">
+              <div className="complaint-tracker-explainer-title">Miért nem teljes a kormány listája?</div>
+              <p className="complaint-tracker-explainer-text">
+                Mert nem csak ők tesznek feljelentést NER-es ügyekben. A kormányzati szervek által
+                tett feljelentések adatai a kormány hivatalos, önbevallásos nyilvántartásából (
+                <strong><a href="https://kormany.hu/atlathato/feljelentes" target="_blank" rel="noopener noreferrer" className="complaint-tracker-note-link">kormany.hu/atlathato/feljelentes</a></strong>
+                ) származnak. <strong>A Kegyencjárat adatbázisa ennél átfogóbb képet nyújt: a
+                kormányzati bejelentéseken túl az összes egyéb, nem kormányzati szereplő — így
+                például a Transparency International, az Állami Számvevőszék, vagy éppen az
+                Integritás Hatóság — publikus feljelentéseit is nyilvántartjuk.</strong>
+              </p>
+            </div>
           </div>
+
+          {topFilers.length > 0 && (
+            <div className="top-filers">
+              <div className="complaint-tracker-head">
+                <div className="complaint-tracker-label">Legnagyobb feljelentők</div>
+              </div>
+              <div className="megszunt-stats megszunt-stats--4 top-filers-grid">
+                {topFilers.map(f => (
+                  <div className="megszunt-stat top-filer-card" key={f.name}>
+                    <div className="top-filer-name">{f.name}</div>
+                    <div className="top-filer-substats">
+                      <div className="top-filer-substat">
+                        <div className="top-filer-substat-value">{f.count}</div>
+                        <div className="top-filer-substat-label">Feljelentés</div>
+                      </div>
+                      <div className="top-filer-substat">
+                        <div className="top-filer-substat-value"><FtValue n={f.amount} mode="short" /></div>
+                        <div className="top-filer-substat-label">Közpénz érintettség</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {filteredComplaints.length === 0 ? (
             <div style={{ padding: '24px 0', color: '#888', fontSize: 13 }}>

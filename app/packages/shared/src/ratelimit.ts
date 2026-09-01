@@ -75,3 +75,12 @@ export function submissionDayLimiter(): Limiter {
 }
 
 export const presignLimiter = getOrCreate('pre', 30, '1 h', 60 * 60_000);
+
+// 011-nvvh-case-poll — csak másodlagos, tömeges-visszaélés elleni védőháló;
+// az elsődleges "már szavaztál" védelem egy böngésző-cookie, ezért a küszöb
+// szándékosan nagyvonalú (shared-NAT: munkahely, egyetem, közös Wi-Fi ne
+// ütközzön bele). A tényleges bot-védelmet a Turnstile adja, nem ez a szám.
+export function pollVoteIpLimiter(): Limiter {
+  const max = Number(process.env.POLL_VOTE_IP_DAILY_LIMIT ?? 75);
+  return getOrCreate('pollv', max, '1 d', 24 * 60 * 60_000);
+}

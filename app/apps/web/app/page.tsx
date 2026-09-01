@@ -6,6 +6,7 @@ import { PERMANENT_BREAKING_NAMES } from '@korr/db';
 import { Pie3D, type PieSlice } from '@korr/ui/pie3d';
 import { Mugshot } from '@korr/ui/mugshot';
 
+import { PollBanner } from './_home/poll-banner';
 import { ResignationsSection } from './_home/resignations-section';
 import { MediaClosuresSection } from './_home/media-closures-section';
 import { MiniClosureCard } from './_home/closure-card';
@@ -719,6 +720,9 @@ export default async function HomePage() {
             </Link>
           </div>
         </div>
+
+        {/* ───── NVVH-SZAVAZÁS PROMÓ-CSÍK (011) ───── */}
+        <PollBanner />
 
         <div className="stat-grid">
           <div className="stat-card">

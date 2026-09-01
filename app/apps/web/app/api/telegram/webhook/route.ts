@@ -1,10 +1,14 @@
 import 'server-only';
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
-import { and, desc, eq, ilike, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, ilike, inArray, isNotNull, sql } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
-import { answerCallbackQuery, editMessageReplyMarkup, sendTelegramMessage, type InlineKeyboardMarkup } from '@/lib/telegram';
+import { answerCallbackQuery, editMessageCaption, editMessageReplyMarkup, sendTelegramMessage, sendTelegramPhoto, type InlineKeyboardMarkup } from '@/lib/telegram';
+import { postPhotoToPage } from '@/lib/facebook';
+import { postPhotoViaMake } from '@/lib/make-facebook';
+import { regenerateOutboxImage } from '@/lib/social-image';
+import { approvalKeyboard as socialApprovalKeyboard } from '@/inngest/functions/check-social-triggers';
 import {
   applyWatchlistRemoval,
   checkWatchlistRemovalForArticle,
@@ -208,7 +212,7 @@ type TelegramUpdate = {
   callback_query?: {
     id: string;
     data?: string;
-    message?: { chat: { id: number }; message_id: number; text?: string };
+    message?: { chat: { id: number }; message_id: number; text?: string; caption?: string };
   };
   message?: {
     chat: { id: number };
@@ -640,6 +644,58 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true }); // ismeretlen chat — csendben eldobva
     }
 
+    // ── 2026-08-31 — "✏️ Módosítás" gomb utáni szöveges válasz (Social Post
+    // Outbox). MINDEN egyéb logika (URL-detektálás, visszavon-parancs) ELŐTT
+    // fut: ha van függőben lévő szerkesztés, a beérkező szöveg AZ, nem egy
+    // link vagy parancs — ellenkező esetben egy beírt leírás-szöveg
+    // véletlenül revoke-parancsként vagy hírbejelentésként értelmeződne.
+    // Egyetlen operátoros admin-bot, ezért nem kell chat/user-szintű
+    // munkamenet-azonosító — a legfrissebb pendingEdit-es sor a mérvadó.
+    if (msg.text) {
+      const pendingRows = await getDb()
+        .select()
+        .from(schema.socialPostOutbox)
+        .where(isNotNull(schema.socialPostOutbox.pendingEdit))
+        .orderBy(desc(schema.socialPostOutbox.createdAt))
+        .limit(1);
+      const pendingRow = pendingRows[0];
+      if (pendingRow) {
+        try {
+          if (pendingRow.pendingEdit === 'caption' || pendingRow.pendingEdit === 'both_caption') {
+            const wasBoth = pendingRow.pendingEdit === 'both_caption';
+            await getDb().update(schema.socialPostOutbox).set({ caption: msg.text, pendingEdit: null }).where(eq(schema.socialPostOutbox.id, pendingRow.id));
+            if (wasBoth) {
+              await sendTelegramMessage('✅ Leírás mentve. Mit csináljunk a képpel?', {
+                inline_keyboard: [
+                  [{ text: '✍️ Szöveg a képen', callback_data: `s:mis:${pendingRow.id}` }],
+                  [{ text: '🎨 Új design', callback_data: `s:mid:${pendingRow.id}` }],
+                ],
+              });
+            } else {
+              await sendTelegramPhoto(
+                Buffer.from(pendingRow.imagePng, 'base64'),
+                `📢 Frissített poszt-jelölt\n\n${msg.text}`,
+                socialApprovalKeyboard(pendingRow.id),
+              );
+            }
+            return NextResponse.json({ ok: true });
+          }
+          if (pendingRow.pendingEdit === 'image_text') {
+            const newImage = await regenerateOutboxImage({ ...pendingRow, imageText: msg.text });
+            await getDb().update(schema.socialPostOutbox)
+              .set({ imagePng: newImage.toString('base64'), imageText: msg.text, pendingEdit: null })
+              .where(eq(schema.socialPostOutbox.id, pendingRow.id));
+            await sendTelegramPhoto(newImage, `📢 Frissített poszt-jelölt\n\n${pendingRow.caption}`, socialApprovalKeyboard(pendingRow.id));
+            return NextResponse.json({ ok: true });
+          }
+        } catch (err) {
+          console.error('[telegram-webhook] social-post-outbox text-edit error', err);
+          await sendTelegramMessage('⚠️ Hiba történt a szerkesztés mentésekor, próbáld újra.');
+          return NextResponse.json({ ok: true });
+        }
+      }
+    }
+
     // Az URL-detektálás MINDIG előbb fut, mint a revoke-parancs parseolása:
     // a REVOKE_TRIGGER (/visszavon/i) a nyers szövegre illeszkedik, és egy
     // beküldött URL slugja (pl. ".../hegedus-zsolt-...-visszavonas-okfo")
@@ -986,6 +1042,151 @@ export async function POST(req: Request) {
     } catch (err) {
       await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
       console.error('[telegram-webhook] watchlist-removal action error', err);
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  // ── 2026-08-30/31 — "Legnagyobb feljelentők"/breaking Social Post Outbox
+  // jóváhagyás. code='a' → jóváhagyás ÉS azonnali kipostolás Facebookra
+  // (l. postPhotoToPage — ha nincs még FACEBOOK_PAGE_ID/TOKEN beállítva,
+  // a sor 'approved' marad, NEM 'failed', hogy egy későbbi retry-vel
+  // kimehessen, amint megvan a token). code='r' → elutasítás, nem posztol.
+  // code='m'/'mc'/'mi'/'mb'/'mis'/'mid' → "✏️ Módosítás" almenü (user
+  // kérés, 2026-08-31): a tényleges szöveg-mentés a fenti szöveges-üzenet
+  // ágban történik (pendingEdit mező jelöli, mire vár a bot).
+  if (action === 's') {
+    if (!id) {
+      await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
+      return NextResponse.json({ ok: true });
+    }
+
+    if (code === 'm') {
+      await answerCallbackQuery(cq.id);
+      await sendTelegramMessage('Mit módosítsunk?', {
+        inline_keyboard: [
+          [{ text: '📝 Szöveg (leírás)', callback_data: `s:mc:${id}` }],
+          [{ text: '🖼️ Kép', callback_data: `s:mi:${id}` }],
+          [{ text: '🔀 Mindkettő', callback_data: `s:mb:${id}` }],
+        ],
+      });
+      return NextResponse.json({ ok: true });
+    }
+
+    if (code === 'mc' || code === 'mb') {
+      await getDb().update(schema.socialPostOutbox)
+        .set({ pendingEdit: code === 'mb' ? 'both_caption' : 'caption' })
+        .where(eq(schema.socialPostOutbox.id, id));
+      await answerCallbackQuery(cq.id);
+      await sendTelegramMessage('Írd meg üzenetben az új leírás (caption) szövegét.');
+      return NextResponse.json({ ok: true });
+    }
+
+    if (code === 'mi') {
+      await answerCallbackQuery(cq.id);
+      await sendTelegramMessage('Mit csináljunk a képpel?', {
+        inline_keyboard: [
+          [{ text: '✍️ Szöveg a képen', callback_data: `s:mis:${id}` }],
+          [{ text: '🎨 Új design', callback_data: `s:mid:${id}` }],
+        ],
+      });
+      return NextResponse.json({ ok: true });
+    }
+
+    if (code === 'mis') {
+      await getDb().update(schema.socialPostOutbox).set({ pendingEdit: 'image_text' }).where(eq(schema.socialPostOutbox.id, id));
+      await answerCallbackQuery(cq.id);
+      await sendTelegramMessage('Írd meg üzenetben, milyen szöveg legyen a képen.');
+      return NextResponse.json({ ok: true });
+    }
+
+    if (code === 'mid') {
+      try {
+        const rows = await getDb().select().from(schema.socialPostOutbox).where(eq(schema.socialPostOutbox.id, id)).limit(1);
+        const row = rows[0];
+        if (!row) {
+          await answerCallbackQuery(cq.id, 'A poszt-jelölt már nem található.');
+          return NextResponse.json({ ok: true });
+        }
+        const newVariant = row.imageVariant === 'light' ? 'dark' : 'light';
+        const newImage = await regenerateOutboxImage({ ...row, imageVariant: newVariant });
+        await getDb().update(schema.socialPostOutbox)
+          .set({ imagePng: newImage.toString('base64'), imageVariant: newVariant })
+          .where(eq(schema.socialPostOutbox.id, id));
+        await answerCallbackQuery(cq.id, '🎨 Design frissítve.');
+        await sendTelegramPhoto(newImage, `📢 Frissített poszt-jelölt\n\n${row.caption}`, socialApprovalKeyboard(id));
+      } catch (err) {
+        await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
+        console.error('[telegram-webhook] social-post-outbox design-toggle error', err);
+      }
+      return NextResponse.json({ ok: true });
+    }
+
+    if (code !== 'a' && code !== 'r') {
+      await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
+      return NextResponse.json({ ok: true });
+    }
+    try {
+      const rows = await getDb().select().from(schema.socialPostOutbox).where(eq(schema.socialPostOutbox.id, id)).limit(1);
+      const outboxRow = rows[0];
+      if (!outboxRow) {
+        await answerCallbackQuery(cq.id, 'A poszt-jelölt már nem található.');
+        return NextResponse.json({ ok: true });
+      }
+
+      let resultText: string;
+      if (code === 'r') {
+        await getDb().update(schema.socialPostOutbox).set({ status: 'rejected' }).where(eq(schema.socialPostOutbox.id, id));
+        resultText = '❌ Elutasítva — nem megy ki.';
+      } else {
+        const imageBuffer = Buffer.from(outboxRow.imagePng, 'base64');
+        // user kérés, 2026-08-31: a saját Facebook App-unkon (Graph API,
+        // Standard Access) keresztüli posztolás csak azoknak látszik,
+        // akiknek szerepük van az App-on — a nyilvános láthatósághoz
+        // Advanced Access kellene, ami Business Verificationt igényel
+        // (valódi jogi dokumentumot, ami egy be nem jegyzett civil
+        // projektnél nincs). Ezért az ELSŐDLEGES posztoló út mostantól a
+        // Make.com-on átvezetett, már Advanced Access-es Facebook Pages
+        // integráció (l. make-facebook.ts) — ha az nincs beállítva,
+        // visszaesünk a régi közvetlen Graph API hívásra (postPhotoToPage).
+        const viaMake = await postPhotoViaMake(imageBuffer, outboxRow.caption);
+        if (viaMake.ok) {
+          await getDb().update(schema.socialPostOutbox)
+            .set({ status: 'posted', postedAt: new Date() })
+            .where(eq(schema.socialPostOutbox.id, id));
+          const pagePublicId = process.env.FACEBOOK_PAGE_PUBLIC_ID;
+          const pageLink = pagePublicId ? `\nhttps://www.facebook.com/profile.php?id=${pagePublicId}` : '';
+          // A Make-scenario aszinkron dolgozik (pár másodperc), ezért itt
+          // nincs azonnali poszt-permalink — csak az Oldal linkje.
+          resultText = `✅ Elküldve posztolásra (Make.com-on keresztül) — pár másodpercen belül megjelenik az Oldalon.${pageLink}`;
+        } else if (viaMake.notConfigured) {
+          // Make nincs beállítva → visszaesés a közvetlen Graph API hívásra.
+          const posted = await postPhotoToPage(imageBuffer, outboxRow.caption);
+          if (posted.ok) {
+            await getDb().update(schema.socialPostOutbox)
+              .set({ status: 'posted', externalPostId: posted.postId, postedAt: new Date() })
+              .where(eq(schema.socialPostOutbox.id, id));
+            resultText = `✅ Kiposztolva a Facebookra.\n${posted.postUrl}`;
+          } else if (posted.notConfigured) {
+            await getDb().update(schema.socialPostOutbox).set({ status: 'approved' }).where(eq(schema.socialPostOutbox.id, id));
+            resultText = '⚠️ Jóváhagyva, de sem a Make.com, sem a közvetlen Facebook-fiók nincs bekötve — amint megvan, kézzel újraküldhető.';
+          } else {
+            await getDb().update(schema.socialPostOutbox)
+              .set({ status: 'failed', failureReason: posted.error })
+              .where(eq(schema.socialPostOutbox.id, id));
+            resultText = `❌ Hiba a Facebook-posztolásnál: ${posted.error}`;
+          }
+        } else {
+          await getDb().update(schema.socialPostOutbox)
+            .set({ status: 'failed', failureReason: viaMake.error })
+            .where(eq(schema.socialPostOutbox.id, id));
+          resultText = `❌ Hiba a Facebook-posztolásnál (Make.com): ${viaMake.error}`;
+        }
+      }
+      await answerCallbackQuery(cq.id, resultText);
+      await editMessageCaption(cq.message.chat.id, cq.message.message_id, `${cq.message.caption ?? ''}\n\n${resultText}`.trim());
+    } catch (err) {
+      await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
+      console.error('[telegram-webhook] social-post-outbox action error', err);
     }
     return NextResponse.json({ ok: true });
   }

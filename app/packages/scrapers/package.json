@@ -8,6 +8,7 @@
     ".": "./src/index.ts",
     "./types": "./src/types.ts",
     "./http": "./src/http.ts",
+    "./kormanyhu-feljelentes": "./src/kormanyhu-feljelentes.ts",
     "./canonicalize": "./src/canonicalize.ts",
     "./parse": "./src/parse.ts",
     "./adapters": "./src/adapters.ts"
