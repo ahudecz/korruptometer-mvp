@@ -161,3 +161,30 @@ export function isPermanentBreakingPerson(extractedName: string): boolean {
     (parts) => parts.length > 0 && parts.every((part) => n.includes(part)),
   );
 }
+
+const CALLED_TO_RESIGN_TOKENS = CALLED_TO_RESIGN.map((p) =>
+  normalizeName(p)
+    .split(' ')
+    .filter((t) => t.length > 2),
+);
+
+/**
+ * True for the narrower 8-person CALLED_TO_RESIGN set specifically (a
+ * subset of isWatchlistPerson()'s WATCHLIST_PERSONS) — used to route these
+ * 8 constitutional office holders differently from the broader watchlist:
+ * 2026-09-01 user report (Polt Péter): a mandátum-megszűnésük a
+ * detect-watchlist-removals.ts külön, 2-forrásos crontja miatt AMÚGY IS
+ * auto-publikál (l. notify-auto-publish.ts), de a detect-resignations.ts
+ * generikus, 1-cikkes ága eddig a decideStatus() "watchlist sosem auto-
+ * publikál" szabálya miatt ezt a sort is örökre 'pending'-ben hagyta — és
+ * arra a queue-ra ("azt a jóváhagyást nem nézi senki", user szó szerint)
+ * senki nem reagált időben. A GALLERY_PERSONS/MINISTER_PERSONS (a
+ * WATCHLIST_PERSONS többi tagja) NEM kap ilyen kivételt — nincs párhuzamos,
+ * szigorú auto-publikáló pályájuk, és sokkal nagyobb/zajosabb a halmaz.
+ */
+export function isCalledToResignPerson(extractedName: string): boolean {
+  const n = normalizeName(extractedName);
+  return CALLED_TO_RESIGN_TOKENS.some(
+    (parts) => parts.length > 0 && parts.every((part) => n.includes(part)),
+  );
+}

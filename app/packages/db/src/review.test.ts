@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cleanPositionTitle, decideComplaintTransition, decideStatus, findExistingComplaint, isDuplicate, isSameComplainant, isSuspiciouslyEarlyDate, sameApproxComplaintAmount, truncateDescriptionWords } from './review';
-import { isWatchlistPerson, normalizeName } from './watchlist';
+import { isCalledToResignPerson, isWatchlistPerson, normalizeName } from './watchlist';
 
 // Drizzle's `sql` template tag returns an object tree (StringChunk literals
 // interleaved with params/nested SQL), not a plain string — this walks it
@@ -71,6 +71,28 @@ describe('isWatchlistPerson', () => {
   it('does not match unrelated people', () => {
     expect(isWatchlistPerson('Kovács Zoltán')).toBe(false);
     expect(isWatchlistPerson('Bedros J. Róbert')).toBe(false);
+  });
+});
+
+// 2026-09-01 — Polt Péter user report: isCalledToResignPerson() routes the
+// narrower 8-fő set to the auto-publish+notify path (detect-resignations.ts),
+// unlike the broader isWatchlistPerson() (still pending-gated for gallery/
+// miniszterek).
+describe('isCalledToResignPerson', () => {
+  it('matches the 8 called-to-resign office holders', () => {
+    expect(isCalledToResignPerson('Polt Péter')).toBe(true);
+    expect(isCalledToResignPerson('Sulyok Tamás')).toBe(true);
+    expect(isCalledToResignPerson('Dr. Polt Péter legfőbb ügyész')).toBe(true);
+  });
+
+  it('does NOT match the broader gallery/miniszter watchlist persons', () => {
+    expect(isCalledToResignPerson('Orbán Viktor')).toBe(false);
+    expect(isCalledToResignPerson('Mészáros Lőrinc')).toBe(false);
+    expect(isCalledToResignPerson('Magyar Péter')).toBe(false);
+  });
+
+  it('does not match unrelated people', () => {
+    expect(isCalledToResignPerson('Kovács Zoltán')).toBe(false);
   });
 });
 
@@ -240,6 +262,44 @@ describe('findExistingComplaint', () => {
     const db = { execute: async () => { queried = true; return []; } };
     expect(await findExistingComplaint(db, '   ')).toBeNull();
     expect(queried).toBe(false);
+  });
+});
+
+// 2026-09-01 bug report: a criminal_complaint.detect a 444.hu Eximbank-cikkből
+// két hamis duplikátumot szúrt be — l. delete-eximbank-duplicate-complaints-
+// 2026-09-01.ts a teljes gyökérok-elemzésért. A régi kód a top-1 pg_trgm
+// word_similarity()-t vette "best"-nek, stopword-szűrés és összeg-jel nélkül;
+// az alábbi két teszt a valós DB-ből visszafejtett jelöltekkel reprodukálja
+// mindkét hibát, és igazolja, hogy a javított findExistingComplaint() jól dönt.
+describe('findExistingComplaint — 2026-09-01 fix (Eximbank/Tiborcz duplikátumok)', () => {
+  it('egy pontosan egyező összeg felülírja a puszta szóátfedést (a valódi Sofitel-sor nyer a magasabb szóátfedésű, de más összegű Duna Aszfalt-sorral szemben)', async () => {
+    const rows = [
+      {
+        id: 'wrong', status: 'nyomozás', filerName: 'Gazdasági és Energetikai Minisztérium', amountLabel: '63 milliárd Ft',
+        targetName: 'Szíjj László / Duna Aszfalt — Zambia–Kongó útépítés (Eximbank-hitel)',
+      },
+      {
+        id: 'right', status: 'nyomozás', filerName: 'Gazdasági és Energetikai Minisztérium', amountLabel: '60 milliárd Ft',
+        targetName: 'Tiborcz István-közeli cég (Sofitel szálloda) — Eximbank gyorsdöntés',
+      },
+    ];
+    let call = 0;
+    const db = { execute: async () => (call++ === 0 ? [] : rows) };
+    const match = await findExistingComplaint(db, 'Tiborcz-érdekeltségnek villámgyorsan adott hitel - Eximbank', '60 milliárd Ft');
+    expect(match?.id).toBe('right');
+  });
+
+  it('a puszta generikus jogi kifejezés (összeg-jel nélkül) nem match-el egy független üggyel', async () => {
+    const rows = [
+      {
+        id: 'unrelated', status: 'nyomozás', filerName: 'Hadházy Ákos', amountLabel: null,
+        targetName: 'Simonka György — hivatali visszaélés ügye',
+      },
+    ];
+    let call = 0;
+    const db = { execute: async () => (call++ === 0 ? [] : rows) };
+    const match = await findExistingComplaint(db, 'Eximbank ellen nyomozás - hivatali visszaélés és hűtlen kezelés', '239,2 millió Ft');
+    expect(match).toBeNull();
   });
 });
 

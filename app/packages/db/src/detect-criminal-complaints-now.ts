@@ -191,7 +191,8 @@ async function main() {
       }
 
       const status = complaint.status as ComplaintStatus;
-      const existing = await findExistingComplaint(db, complaint.targetName);
+      // amountLabel átadva — l. review.ts findExistingComplaint() 2026-09-01 fixje.
+      const existing = await findExistingComplaint(db, complaint.targetName, complaint.amountLabel);
 
       if (existing) {
         const transition = decideComplaintTransition(existing.status, status);

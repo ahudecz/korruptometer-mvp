@@ -16,6 +16,7 @@ import {
   findExistingComplaint,
   findExistingVerdict,
   hasIndividualResignationForInstitution,
+  isCalledToResignPerson,
   isCollectiveEntityName,
   isDuplicate,
   isPermanentBreakingPerson,
@@ -29,6 +30,7 @@ import {
 } from '@korr/db';
 import { getDb, schema } from './db';
 import { notifyReviewNeeded } from './notify';
+import { notifyAutoPublished } from './notify-auto-publish';
 import { sendTelegramMessage } from './telegram';
 import { inngest } from '../inngest/client';
 import { coerceResignationType, coerceSector } from '../inngest/functions/detect-resignations';
@@ -134,9 +136,13 @@ export async function processResignation(article: ArticleForReprocess, todayIso:
       continue;
     }
 
+    // 2026-09-01 — l. detect-resignations.ts azonos fixje: a CALLED_TO_RESIGN
+    // 8 fő itt (kézi Telegram-újrafuttatásnál) is a sima konfidencia-szabályt
+    // kapja, ne a "watchlist sosem auto-publikál" blokkolót.
+    const calledToResign = isCalledToResignPerson(person.name);
     let reviewStatus: 'approved' | 'pending' | 'discard' = 'approved';
     if (!bypassConfidenceGate) {
-      reviewStatus = decideStatus(person.confidence, isWatchlistPerson(person.name));
+      reviewStatus = decideStatus(person.confidence, isWatchlistPerson(person.name) && !calledToResign);
       if (reviewStatus === 'discard') {
         lastDiscardReason = 'low_confidence';
         if (person.confidence >= NEAR_MISS_MIN) {
@@ -186,6 +192,15 @@ export async function processResignation(article: ArticleForReprocess, todayIso:
       await notifyReviewNeeded({ type: 'pending', detectorType: 'resignation', name: person.name, confidence: person.confidence, articleUrl: article.sourceUrl ?? '', articleId: article.id, recordId: row!.id });
     } else {
       approvedIds.push(row!.id);
+      if (calledToResign) {
+        await notifyAutoPublished({
+          target: 'resignation',
+          recordId: row!.id,
+          name: person.name,
+          detail: `${coerceResignationType(person.resignationType)} — ${person.institution}`,
+          articleUrl: article.sourceUrl ?? '',
+        });
+      }
     }
   }
 
@@ -529,7 +544,8 @@ export async function processCriminalComplaint(article: ArticleForReprocess, tod
     }
 
     const status = complaint.status as ComplaintStatus;
-    const existing = await findExistingComplaint(db, complaint.targetName);
+    // amountLabel átadva — l. review.ts findExistingComplaint() 2026-09-01 fixje.
+    const existing = await findExistingComplaint(db, complaint.targetName, complaint.amountLabel);
     const eventDate = resolveDate(undefined, article.publishedAt);
 
     if (existing) {
