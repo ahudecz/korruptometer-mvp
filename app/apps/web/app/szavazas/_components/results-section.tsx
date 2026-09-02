@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { ResultBars, type ResultBarOption } from './result-bars';
+import { TwoCasesPromo } from './two-cases-promo';
 
 type PollApiResponse = {
   totalVotes: number;
@@ -48,11 +49,17 @@ export function ResultsSection({
   }, [questionSlug]);
 
   return (
-    <ResultBars
-      options={data.options}
-      totalVotes={data.totalVotes}
-      ownSelectionIds={ownSelectionIds}
-      onWantToVote={onWantToVote}
-    />
+    <>
+      {/* Mobile-first: ez az eredmény-nézet első eleme, hogy szavazás után
+          azonnal, görgetés nélkül látszódjon (user report, 2026-09-02 —
+          99% bounce rate szavazás után). */}
+      <TwoCasesPromo />
+      <ResultBars
+        options={data.options}
+        totalVotes={data.totalVotes}
+        ownSelectionIds={ownSelectionIds}
+        onWantToVote={onWantToVote}
+      />
+    </>
   );
 }

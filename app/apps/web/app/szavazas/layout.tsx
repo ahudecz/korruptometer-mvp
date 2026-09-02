@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { getDb } from '@/lib/db';
 import { listPolls } from '@/lib/poll-queries';
 import { PollSidebar } from './_components/poll-sidebar';
+import { PollBottomPromo } from './_components/poll-bottom-promo';
 
 export const metadata = {
   title: 'Szólj bele — Kegyencjárat',
@@ -27,6 +28,7 @@ export default async function SzavazasLayout({ children }: { children: ReactNode
         <PollSidebar polls={polls} />
         <div className="poll-content">{children}</div>
       </div>
+      <PollBottomPromo />
     </main>
   );
 }
