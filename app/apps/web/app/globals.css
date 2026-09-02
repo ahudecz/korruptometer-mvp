@@ -1367,6 +1367,183 @@ button {
   }
 }
 
+/* ── Podcasts — spotlight sáv + teljes szélességű kiemelés ──
+   (2026-07-26, user jóváhagyással: a /podcastok végtelen 3-as rácsa
+   egyhangú volt — ez a ritmus töri meg 6 elemenként egy nagyobb,
+   váltakozó irányú spotlighttal, időnként egy teljes szélességű
+   kiemeléssel. A pozíciót/kiválasztást a rankPodcastVideos() rangsora
+   dönti el, l. podcast-ranking.ts. */
+.podcast-spotlight {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 40px;
+  align-items: center;
+  margin: 56px 0;
+  padding: 36px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.podcast-spotlight--flip {
+  grid-template-columns: 1fr 1.35fr;
+}
+.podcast-spotlight--flip .podcast-spotlight-media { order: 2; }
+.podcast-spotlight--flip .podcast-spotlight-text { order: 1; }
+/* A nyitó spotlight — ugyanaz a nyelvezet, de nagyobb léptékben és felső
+   szegély nélkül, mert semmi nem előzi meg a lapon. */
+.podcast-spotlight--lead {
+  margin: 0 0 56px;
+  padding: 0 0 40px;
+  border-top: none;
+  gap: 48px;
+}
+.podcast-spotlight-video-wrap {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  background: #111;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.podcast-spotlight-video-wrap iframe {
+  position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block;
+}
+/* A spotlight-sávok nagyobb videói nagyobb play-gombot is kapnak, mint a
+   sima rács-kártyák (56px) — a nyitó spotlight a legnagyobbat. */
+.podcast-spotlight-media .podcast-play-icon {
+  width: 64px;
+  height: 64px;
+  font-size: 22px;
+}
+.podcast-spotlight--lead .podcast-play-icon {
+  width: 72px;
+  height: 72px;
+  font-size: 26px;
+}
+.podcast-spotlight-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.podcast-spotlight-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  color: var(--ink);
+  margin: 0 0 12px;
+}
+.podcast-spotlight--lead .podcast-spotlight-title {
+  font-size: 32px;
+}
+.podcast-spotlight-desc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0 0 18px;
+  max-width: 46ch;
+}
+.podcast-spotlight-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.podcast-spotlight-foot .podcast-channel,
+.podcast-spotlight-foot .podcast-time {
+  margin-top: 0;
+}
+.podcast-spotlight-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: none;
+  border: none;
+  border-bottom: 2px solid var(--accent);
+  padding: 0 0 3px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.podcast-spotlight-cta:hover { color: var(--accent); }
+
+/* A szekció egésze már eleve --surface (szürke) hátterű
+   (.podcast-section-wrap), ezért a kiemelésnek NEM ugyanaz a szín kell,
+   különben láthatatlan a "keret" — fehér kártya, jól látható szegéllyel,
+   hogy tényleg elkülönüljön a körülötte lévő szürke sávtól. */
+.podcast-feature-full {
+  margin: 56px 0;
+  padding: 32px;
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+}
+.podcast-feature-full-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+.podcast-feature-full-video-wrap {
+  position: relative;
+  width: 100%;
+  padding-bottom: 42.85%; /* ~21:9 */
+  background: #111;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.podcast-feature-full-video-wrap iframe {
+  position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block;
+}
+.podcast-feature-full-caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+.podcast-feature-full-title {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  color: var(--ink);
+  margin: 0;
+  max-width: 26ch;
+}
+.podcast-feature-full-side {
+  text-align: right;
+  flex-shrink: 0;
+}
+.podcast-feature-full-side .podcast-channel,
+.podcast-feature-full-side .podcast-time {
+  display: block;
+  margin-top: 0;
+}
+.podcast-feature-full-side .podcast-time { margin-top: 2px; }
+
+@media (max-width: 780px) {
+  .podcast-spotlight,
+  .podcast-spotlight--flip,
+  .podcast-spotlight--lead {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .podcast-spotlight--flip .podcast-spotlight-media,
+  .podcast-spotlight--flip .podcast-spotlight-text {
+    order: initial;
+  }
+  .podcast-spotlight--lead .podcast-spotlight-title { font-size: 24px; }
+  .podcast-feature-full { margin: 40px 0; padding: 24px 20px; }
+  .podcast-feature-full-caption { flex-direction: column; align-items: flex-start; }
+  .podcast-feature-full-side { text-align: left; }
+}
+
 /* ============ MOBILE PREVIEW ============ */
 .mobile-section {
   background: var(--ink);
