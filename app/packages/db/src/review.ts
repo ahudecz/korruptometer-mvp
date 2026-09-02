@@ -7,6 +7,7 @@
 import { sql } from 'drizzle-orm';
 import { normalizeName } from './watchlist';
 import { llmExtract, type LlmToolSpec } from './llm';
+import { textMatchScore } from './kormanyhu-match';
 
 export type ReviewDecision = 'approved' | 'pending' | 'discard';
 
@@ -334,8 +335,26 @@ export const COMPLAINT_DEDUP_WINDOW_DAYS = 180;
 // megnézünk, mert itt (ellentétben a cross-source cikk-dedupnál) nem egy
 // friss beszúrás elé állított, szűk időablakos QUERY fut, hanem a teljes
 // 180 napos dedup-ablak — több valódi jelölt is lehet.
-const COMPLAINT_FUZZY_LOW = 0.15;
-const COMPLAINT_FUZZY_HIGH = 0.27;
+//
+// 2026-09-01 fix (Eximbank/Tiborcz duplikátumok — l.
+// delete-eximbank-duplicate-complaints-2026-09-01.ts): a fenti bekezdés
+// szándéka sosem valósult meg — a lekérdezés `ORDER BY wsim DESC LIMIT 3`
+// volt, de a kód utána feltétel nélkül a `[0]`-t (a legjobb pg_trgm-
+// pontszámút) vette "best"-nek, a másik két jelöltet meg sem nézte. A nyers
+// pg_trgm word_similarity() ráadásul stopword-szűrés NÉLKÜL fut — egy
+// szinte MINDEN sorban előforduló generikus szó (pl. "Eximbank", "hivatali
+// visszaélés") simán a VALÓDI találat fölé emelhet egy teljesen független
+// sort. Ugyanez a hibaosztály, mint amit kormanyhu-match.ts
+// STOPWORD_ROOTS-ja 2026-08-30-án már kivédett — csak az a fix sosem lett
+// ide átültetve. A megoldás most: (1) a dedup-ablakon belüli ÖSSZES sort
+// JS-ben pontozzuk a kormanyhu-match.ts-ből ismert, stopword-tudatos
+// textMatchScore()-ral (mindkét irányból, a magasabbik számít) a nyers
+// pg_trgm helyett; (2) az összeg-egyezés (amountCloseness, l. lentebb) mint
+// FOLYTONOS jel eleve beleszámít a rangsorolásba, nem csak utólagos
+// szűrésként — egy PONTOSAN egyező összeg ("60 milliárd Ft" = "60 milliárd
+// Ft") erősebb jel, mint egy csak hasonló szavú, de más összegű sor.
+const COMPLAINT_MATCH_HIGH = 1.0; // efölött automatikus match, AI-döntőbíró nélkül
+const COMPLAINT_MATCH_LOW = 0.34; // ez alatt nem is jelölt — nincs elég közös jel
 
 const SAME_COMPLAINT_SYSTEM = `Te egy magyar korrupció-figyelő szerkesztő asszisztens vagy. Két feljelentés/nyomozás cél-leírását kapod. Döntsd el, hogy UGYANARRÓL a valós ügyről/esetről szólnak-e (akkor is, ha más szavakkal, más hangsúllyal írják le — pl. ugyanaz a szoftverrendszer-botrány, csak az egyik a közbeszerzést, a másik az érintett céget emeli ki), vagy két KÜLÖNBÖZŐ ügyről van szó.`;
 
@@ -367,17 +386,26 @@ async function isSameComplaintAi(a: string, b: string): Promise<boolean> {
 
 /**
  * Finds the most recent CriminalComplaint row for a target/case within the
- * dedup window, if any. Matches on `targetName` (the case/target), NOT
- * `filerName` — a follow-up article about the same case ("a rendőrség
+ * dedup window, if any. Matches primarily on `targetName` (the case/target),
+ * NOT `filerName` — a follow-up article about the same case ("a rendőrség
  * nyomozást indított") often doesn't re-name the original filer, but the
- * target/case name stays stable. Mirrors findExistingVerdict()'s
+ * target/case name stays stable; the CALLER is responsible for the separate
+ * filer-match check (isSameComplainant/isSameComplainantAi/
+ * sameApproxComplaintAmount) that decides whether this is really an update
+ * to the SAME complaint or a second, independent one — see
+ * isSameComplainant()'s doc comment below. Mirrors findExistingVerdict()'s
  * personName-based matching, applied to the complaint's target instead of
  * the defendant, since here there's no single "accused" until an indictment
  * exists.
  *
+ * `amountLabel` (the NEW complaint's forint amount, if any) is optional but
+ * should always be passed when known — see amountCloseness() below for why
+ * it materially changes which candidate wins.
+ *
  * Two-tier match: (1) exact normalized-string equality (cheap, catches a
- * literal re-run); (2) if that misses, pg_trgm word_similarity() against
- * every candidate in the dedup window — a "duplicate"-tier score returns
+ * literal re-run); (2) if that misses, every candidate in the dedup window
+ * is scored (stopword-aware text overlap + amount closeness, see
+ * COMPLAINT_MATCH_HIGH/LOW above) — a "duplicate"-tier score returns
  * immediately, an "ambiguous"-tier score gets one cheap AI tie-break call
  * against the single best-scoring candidate (same pattern as
  * same-story.ts's cross-source article dedup).
@@ -385,6 +413,7 @@ async function isSameComplaintAi(a: string, b: string): Promise<boolean> {
 export async function findExistingComplaint(
   db: Executable,
   targetName: string,
+  amountLabel: string | null = null,
   withinDays: number = COMPLAINT_DEDUP_WINDOW_DAYS,
 ): Promise<ExistingComplaint | null> {
   const key = normalizeName(targetName);
@@ -398,17 +427,28 @@ export async function findExistingComplaint(
   `)) as unknown as ExistingComplaint[];
   if (exactRows[0]) return exactRows[0];
 
-  const fuzzyRows = (await db.execute(sql`
-    SELECT id, "status", "filerName", "amountLabel", "targetName", word_similarity(${targetName}, "targetName") AS wsim
-    FROM "CriminalComplaint"
+  // Minden ablakon belüli sort lekérünk (a tábla kicsi — l. a
+  // sync-kormanyhu-complaints.ts azonos mintáját, ami feltétel nélkül a
+  // TELJES táblát tölti be), és JS-ben pontozzuk — l. a COMPLAINT_MATCH_*
+  // fenti kommentjét, hogy miért nem a nyers pg_trgm ORDER BY/LIMIT.
+  const candidates = (await db.execute(sql`
+    SELECT id, "status", "filerName", "amountLabel", "targetName" FROM "CriminalComplaint"
     WHERE "createdAt" >= now() - make_interval(days => ${withinDays})
-    ORDER BY wsim DESC
-    LIMIT 3
-  `)) as unknown as Array<ExistingComplaint & { targetName: string; wsim: number }>;
-  const best = fuzzyRows[0];
+  `)) as unknown as Array<ExistingComplaint & { targetName: string }>;
+  if (candidates.length === 0) return null;
+
+  let best: (ExistingComplaint & { targetName: string; score: number }) | null = null;
+  for (const row of candidates) {
+    const textScore = Math.max(
+      textMatchScore(targetName, row.targetName),
+      textMatchScore(row.targetName, targetName),
+    );
+    const score = textScore + amountCloseness(amountLabel, row.amountLabel);
+    if (!best || score > best.score) best = { ...row, score };
+  }
   if (!best) return null;
-  if (best.wsim >= COMPLAINT_FUZZY_HIGH) return { id: best.id, status: best.status, filerName: best.filerName, amountLabel: best.amountLabel };
-  if (best.wsim < COMPLAINT_FUZZY_LOW) return null;
+  if (best.score >= COMPLAINT_MATCH_HIGH) return { id: best.id, status: best.status, filerName: best.filerName, amountLabel: best.amountLabel };
+  if (best.score < COMPLAINT_MATCH_LOW) return null;
 
   const same = await isSameComplaintAi(targetName, best.targetName);
   return same ? { id: best.id, status: best.status, filerName: best.filerName, amountLabel: best.amountLabel } : null;
@@ -431,22 +471,43 @@ export async function findExistingComplaint(
  * ha a két összeg egymáshoz képest ≤5%-on belül van, ami erős jele a
  * ténybeli azonosságnak.
  */
+function parseComplaintAmountFt(label: string): number {
+  let total = 0;
+  for (const m of label.matchAll(/(\d+(?:[.,]\d+)?)\s*(milliárd|millió)(?!\p{L})/giu)) {
+    const value = parseFloat(m[1]!.replace(',', '.'));
+    if (!Number.isFinite(value)) continue;
+    total += value * (m[2]!.toLowerCase() === 'milliárd' ? 1_000_000_000 : 1_000_000);
+  }
+  return total;
+}
+
 export function sameApproxComplaintAmount(a: string | null, b: string | null): boolean {
   if (!a || !b) return false;
-  const parse = (label: string): number => {
-    let total = 0;
-    for (const m of label.matchAll(/(\d+(?:[.,]\d+)?)\s*(milliárd|millió)(?!\p{L})/giu)) {
-      const value = parseFloat(m[1]!.replace(',', '.'));
-      if (!Number.isFinite(value)) continue;
-      total += value * (m[2]!.toLowerCase() === 'milliárd' ? 1_000_000_000 : 1_000_000);
-    }
-    return total;
-  };
-  const fa = parse(a);
-  const fb = parse(b);
+  const fa = parseComplaintAmountFt(a);
+  const fb = parseComplaintAmountFt(b);
   if (fa === 0 || fb === 0) return false;
   const avg = (fa + fb) / 2;
   return Math.abs(fa - fb) / avg <= 0.05;
+}
+
+/**
+ * Continuous 0..1 "how close are these two forint amounts" signal, used by
+ * findExistingComplaint() to rank candidates — 1.0 for an exact match,
+ * decaying linearly down to ~0 right at sameApproxComplaintAmount()'s ≤5%
+ * relative-difference bar, 0 outside it (or if either side has no parseable
+ * amount). An EXACT match must outrank a merely-close one: 2026-09-01 bug —
+ * "60 milliárd Ft" (exact) vs. two OTHER unrelated Eximbank cases at "63
+ * milliárd Ft" / "640 milliárd Ft" — the 63 mrd row is ALSO within the 5%
+ * bar (~4.9% off) but is a much weaker signal than the exact 60 mrd match,
+ * and a plain boolean can't tell the two apart.
+ */
+export function amountCloseness(a: string | null, b: string | null): number {
+  if (!sameApproxComplaintAmount(a, b)) return 0;
+  const fa = parseComplaintAmountFt(a!);
+  const fb = parseComplaintAmountFt(b!);
+  const avg = (fa + fb) / 2;
+  const relDiff = Math.abs(fa - fb) / avg;
+  return 1 - relDiff / 0.05;
 }
 
 const COMPLAINT_STATUS_ORDER: Record<Exclude<ComplaintStatus, 'elutasítva'>, number> = {
@@ -479,7 +540,7 @@ export function decideComplaintTransition(current: ComplaintStatus, next: Compla
  * the program's named director, weeks after the Integritás Hatóság's
  * original filing — was silently discarded as 'stale_status'. Root cause:
  * findExistingComplaint()'s fuzzy targetName match (built to collapse
- * DIFFERENT WORDING of the SAME complaint, see COMPLAINT_FUZZY_* above)
+ * DIFFERENT WORDING of the SAME complaint, see COMPLAINT_MATCH_* above)
  * correctly found the same case, but decideComplaintTransition() then saw
  * two 'feljelentés' entries and treated the new one as non-advancing —
  * there was no signal that this was a SECOND, separate complaint rather

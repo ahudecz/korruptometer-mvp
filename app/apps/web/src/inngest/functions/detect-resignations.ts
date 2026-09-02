@@ -9,6 +9,7 @@ import {
   cleanPositionTitle,
   decideStatus,
   hasIndividualResignationForInstitution,
+  isCalledToResignPerson,
   isCollectiveEntityName,
   isDuplicate,
   isPlaceholderName,
@@ -21,6 +22,7 @@ import {
 } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
+import { notifyAutoPublished } from '@/lib/notify-auto-publish';
 import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
 import { createBypassGuardedFunction, runArticleDetectionBatch, type ArticleProcessResult } from '../lib/detector-runner';
 
@@ -140,7 +142,14 @@ async function processResignationArticle(
     }
 
     // 003-review: route by confidence + watchlist; discard below the floor.
-    let reviewStatus = decideStatus(person.confidence, isWatchlistPerson(person.name));
+    // 2026-09-01 fix (Polt Péter user report — l. notify-auto-publish.ts
+    // fejléce): a CALLED_TO_RESIGN 8 fő (isCalledToResignPerson) mostantól
+    // a SIMA konfidencia-szabályt kapja (mintha nem watchlist-es lenne),
+    // NEM a "watchlist sosem auto-publikál" blokkoló szabályt — a pending
+    // sor eddig senki által nem nézett queue-ban ült. A tágabb
+    // WATCHLIST_PERSONS (gallery/miniszterek) VÁLTOZATLANUL mindig pending.
+    const calledToResign = isCalledToResignPerson(person.name);
+    let reviewStatus = decideStatus(person.confidence, isWatchlistPerson(person.name) && !calledToResign);
     if (reviewStatus === 'discard') {
       lastDiscardReason = 'low_confidence';
       if (person.confidence >= NEAR_MISS_MIN) {
@@ -253,6 +262,20 @@ async function processResignationArticle(
       });
     } else {
       anyApproved = true;
+      // 2026-09-01 — a CALLED_TO_RESIGN 8 fő auto-publikált sora mostantól
+      // egy "🟢 AUTOMATIKUSAN PUBLIKÁLVA" + Visszavonás-gombos FYI-t kap
+      // (l. notify-auto-publish.ts), NEM egy approve-kérést — így nem
+      // marad senki által nem nézett pending sor, de a hiba utólag még
+      // egy gombnyomással visszavonható marad.
+      if (calledToResign) {
+        await notifyAutoPublished({
+          target: 'resignation',
+          recordId: insertedRow!.id,
+          name: person.name,
+          detail: `${coerceResignationType(person.resignationType)} — ${person.institution}`,
+          articleUrl: article.sourceUrl ?? '',
+        });
+      }
     }
   }
 

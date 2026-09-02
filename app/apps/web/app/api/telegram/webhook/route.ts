@@ -38,14 +38,14 @@ const DETECTOR_BY_CODE: Record<string, DetectorType> = {
 };
 
 // 2026-07-14 — codes for the "auto-published, revertible" notification
-// (notify-auto-publish.ts). Deliberately excludes 'resignation': watchlist
-// people now always go through the pending-review flow (decideStatus fix),
-// and non-watchlist resignations are exactly the noise the user doesn't
-// want a Telegram ping for (e.g. a small-town spa director resigning).
-const AUTO_PUBLISH_CODE_TABLE: Record<string, 'court_verdict' | 'asset_recovery' | 'watchlist_removal'> = {
+// (notify-auto-publish.ts). 2026-09-01: 'resignation' (code 'r') added —
+// scoped to the CALLED_TO_RESIGN 8 fő only (isCalledToResignPerson), NOT
+// every watchlist person — see notify-auto-publish.ts's header for why.
+const AUTO_PUBLISH_CODE_TABLE: Record<string, 'court_verdict' | 'asset_recovery' | 'watchlist_removal' | 'resignation'> = {
   c: 'court_verdict',
   x: 'asset_recovery',
   w: 'watchlist_removal',
+  r: 'resignation',
 };
 
 const DETECTOR_LABELS_HU: Record<DetectorType, string> = {
@@ -796,6 +796,8 @@ export async function POST(req: Request) {
           await getDb().delete(schema.courtVerdicts).where(eq(schema.courtVerdicts.id, id));
         } else if (target === 'asset_recovery') {
           await getDb().delete(schema.assetRecoveries).where(eq(schema.assetRecoveries.id, id));
+        } else if (target === 'resignation') {
+          await getDb().delete(schema.politicalResignations).where(eq(schema.politicalResignations.id, id));
         } else {
           // 2026-07-18 — applyWatchlistRemoval() (Telegram "🏛️
           // Tisztségviselő-eltávolítás" gomb) mindig ír egy párosított
