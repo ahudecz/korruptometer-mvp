@@ -88,7 +88,10 @@ async function processComplaintArticle(
     }
 
     const status = complaint.status as ComplaintStatus;
-    const existingMatch = await findExistingComplaint(db, complaint.targetName);
+    // amountLabel átadva — l. review.ts findExistingComplaint()/amountCloseness()
+    // 2026-09-01 fixje: egy pontosan egyező összeg erősebb jel, mint a puszta
+    // szóátfedés (Eximbank/Tiborcz duplikátum-bug).
+    const existingMatch = await findExistingComplaint(db, complaint.targetName, complaint.amountLabel);
     // 2026-08-11 fix: the fuzzy case-match can correctly find the same
     // broader case while this article is actually reporting a SECOND,
     // independent complaint (different filer) — e.g. the Ministry filing
