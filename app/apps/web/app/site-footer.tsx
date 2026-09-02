@@ -40,7 +40,7 @@ export function SiteFooter() {
       <div>
         <h4>Kapcsolat</h4>
         <ul>
-          <li><Link href="/hirlevel">Hírlevél</Link></li>
+          <li><Link href="/hirlevel">Értesítések</Link></li>
           <li><Link href="/bejelentes">Bejelentés tétele</Link></li>
           <li><Link href="/whistleblower">Whistleblower védelem</Link></li>
           <li><Link href="/sajto">Sajtókapcsolat</Link></li>

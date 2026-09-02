@@ -1,7 +1,8 @@
 import { NewsletterCta } from '@app/_home/newsletter-cta';
+import { TelegramChannelCard } from '@app/_home/telegram-channel-card';
 
 export const metadata = {
-  title: 'Hírlevél',
+  title: 'Értesítések',
   description: 'Kérj értesítést a lemondásokról, ítéletekről és megszűnt médiumokról.',
 };
 
@@ -15,17 +16,34 @@ export default function HirlevelPage() {
     <div className="news-section-wrap">
       <section className="section" id="hirlevel">
         <div className="section-head">
-          <div className="section-num">/ Hírlevél</div>
+          <div className="section-num">/ Értesítések</div>
           <h2 className="section-title">Szólunk, ha történik valami.</h2>
         </div>
 
         <p className="section-lead">
-          Hetente egy levél arról, ki mondott le, kit ítéltek el, melyik médium
-          szűnt meg. Válaszd ki, mi érdekel. A cím megerősítéséig semmit nem
-          küldünk, és bármelyik levélből egy kattintással leiratkozhatsz.
+          Amikor lemond vagy távozik egy NER-vezető, ítélet születik,
+          feljelentés megy be, vagy megszűnik egy médium — arról szólunk. Nem
+          hírlevél, nem reklám: csak az, ami felkerül az oldalra. Két úton
+          kérheted; válassz egyet, vagy mindkettőt.
         </p>
 
-        <NewsletterCta />
+        <TelegramChannelCard />
+
+        <div className="chan">
+          <div className="chan-head">
+            <span className="chan-title">E-mail összefoglaló</span>
+            <span className="chan-when">Hetente</span>
+          </div>
+          <div className="chan-body">
+            <p>
+              Egy levél hetente, csak a kipipált témákról. Minden levelet
+              szerkesztő néz át, mielőtt kimegy. A cím megerősítéséig semmit
+              nem küldünk, és bármelyik levélből egy kattintással
+              leiratkozhatsz.
+            </p>
+            <NewsletterCta />
+          </div>
+        </div>
 
         <div className="modszertan-body">
           <h3 className="modszertan-h3">Mit tárolunk rólad?</h3>
