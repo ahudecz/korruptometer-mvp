@@ -11442,11 +11442,6 @@ body:has(.admin-nav) > main {
   margin-bottom: 40px;
 }
 
-.megszunt-stats--1 {
-  grid-template-columns: 1fr;
-  max-width: 260px;
-}
-
 .megszunt-stats--3 {
   grid-template-columns: repeat(3, 1fr);
 }
