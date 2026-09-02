@@ -1,5 +1,7 @@
+import Link from 'next/link';
 import { fmtFtOrUnknown } from '@korr/shared/format';
 import { sortByVotesDesc } from '@/lib/poll-results';
+import { POLL_OPTION_LINKS } from './poll-option-links';
 
 export type ResultBarOption = {
   id: string;
@@ -81,6 +83,11 @@ export function ResultBars({
                 <span>{option.votes} szavazat</span>
                 <span>{fmtFtOrUnknown(amountHuf, option.amountLabel)}</span>
               </div>
+              {POLL_OPTION_LINKS[option.title] && (
+                <Link href={POLL_OPTION_LINKS[option.title]!} className="poll-result-row-link">
+                  Nézd meg az ügy legfrissebb híreit →
+                </Link>
+              )}
             </li>
           );
         })}

@@ -1,8 +1,15 @@
 import { ImageResponse } from 'next/og';
 import { WATCH_LIST } from '../../_home/watchlist-config';
 import { LOGO_BADGE_DATA_URI } from '../../_og/logo-badge';
+import { getDb } from '@/lib/db';
+import { resolveWatchListPersonStatus } from '@/lib/watchlist-status';
 
-export const runtime = 'edge';
+// Node.js futtatókörnyezet (nem 'edge') — a dinamikus WatchlistRemoval-
+// lekérdezéshez (postgres-js, nyers TCP-socket) edge-en nem működne
+// megbízhatóan (l. a szavazás opengraph-image.tsx-ének azonos jegyzetét).
+// Enélkül ez a kép a statikus (elavult) WATCH_LIST.status-t mutatta volna
+// örökre "Hivatalban van"-ként azoknak, akik azóta ténylegesen távoztak.
+export const runtime = 'nodejs';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -17,8 +24,11 @@ function statusColor(status: string): string {
   return '#e31937';
 }
 
-export default function OGImage({ params }: { params: { id: string } }) {
-  const person = WATCH_LIST.find((p) => p.id === params.id);
+export default async function OGImage({ params }: { params: { id: string } }) {
+  const staticPerson = WATCH_LIST.find((p) => p.id === params.id);
+  const person = staticPerson
+    ? (await resolveWatchListPersonStatus(getDb(), staticPerson.id)) ?? staticPerson
+    : undefined;
 
   const name = person?.name ?? 'Ismeretlen';
   const institution = person?.institution ?? '';

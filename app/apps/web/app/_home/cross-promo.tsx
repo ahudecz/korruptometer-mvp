@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
+import { resolveWatchListPersons } from '@/lib/watchlist-status';
 import { UGYEK } from './ugyek-config';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './galeria-config';
-import { WATCH_LIST } from './watchlist-config';
 import { getFeaturedPeople, getTotalDamage } from './featured-persons';
 import { FtValue } from './ft-value';
 import { Mugshot } from '@korr/ui/mugshot';
@@ -166,7 +166,8 @@ const GONE_LABEL: Record<string, string> = {
   resigned: 'LEMONDOTT',
 };
 
-export function CrossFelszolitottak() {
+export async function CrossFelszolitottak() {
+  const persons = await resolveWatchListPersons(getDb());
   return (
     <div className="cross-promo">
       <h2 className="cross-promo-title">Lemondásra felszólított személyek</h2>
@@ -174,7 +175,7 @@ export function CrossFelszolitottak() {
         Magyar Péter nyolc NER-intézményvezető lemondását követeli — kövesd nyomon, ki ment és ki maradt.
       </p>
       <div className="person-more-grid cross-watch-grid">
-        {WATCH_LIST.map(p => {
+        {persons.map(p => {
           const isGone = p.status !== 'active';
           return (
             <Link key={p.id} href={`/lemondasok/${p.id}`} className={`person-more-card${isGone ? ' person-more-card--gone' : ''}`}>
