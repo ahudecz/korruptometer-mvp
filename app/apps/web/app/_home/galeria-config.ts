@@ -208,11 +208,18 @@ export const GALERIA: GaleriaEntry[] = [
         sourceLabel: '444',
       },
       {
-        title: 'Fiktív szerződések a III. kerületi önkormányzatnál',
-        description: 'Rogán Antal 2006–2014 között Budapest III. kerületének (Óbuda–Békásmegyer) polgármestere volt. A K-Monitor adatbázisa 77 cikket dokumentál a kerületi önkormányzathoz köthető fiktív szerződések ügyéről, amelyek Rogán polgármesteri ciklusai idején köttetnek. Az ügyek közt találhatók túlszámlázott közbeszerzések, politikai alapon elosztott megbízások és átláthatatlan tenderek.',
-        crimeTypes: ['Fiktív szerződések', 'Közbeszerzési visszaélés', 'Hivatali visszaélés'],
-        sourceUrl: 'https://adatbazis.k-monitor.hu/adatbazis/cimkek/fiktiv-szerzodesek-a-iii-keruleti-onkormanyzatnal',
-        sourceLabel: 'K-Monitor',
+        // 2026-09-02 user report: a korábbi "Fiktív szerződések a III.
+        // kerületi önkormányzatnál" tétel téves párosítás volt — Rogán Antal
+        // ténylegesen az V. kerület (Belváros-Lipótváros) polgármestere
+        // volt 2006–2014 között, a III. kerület (Óbuda–Békásmegyer) MÁS
+        // személyhez tartozik. A ScandalCatalog-ban ellenőrzött, valódi
+        // Rogán-ügyre cserélve (id: rogan-v-kerulet-cegvasarlas).
+        title: 'V. kerületi cégvásárlási ügy',
+        description: 'Rogán Antal 2006–2014 között Budapest V. kerületének (Belváros-Lipótváros) polgármestere volt. A K-Monitor adatbázisa egy, a kerületi önkormányzathoz köthető cégvásárlási ügyet dokumentál, pénzmosás gyanújával, mintegy 1,5 milliárd forint érintett összeggel.',
+        estimatedDamage: '~1,5 milliárd Ft',
+        crimeTypes: ['Pénzmosás (gyanú)', 'Önkormányzati vagyonügylet'],
+        sourceUrl: 'https://444.hu/2026/06/24/meszaros-lorinctol-roganon-at-lazar-janosig-kiket-es-miket-vizsgalhat-a-vagyonvisszaszerzesi-hivatal',
+        sourceLabel: '444',
       },
     ],
   },
