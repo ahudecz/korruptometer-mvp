@@ -11619,6 +11619,11 @@ body:has(.admin-nav) > main {
   margin-bottom: 40px;
 }
 
+.megszunt-stats--1 {
+  grid-template-columns: 1fr;
+  max-width: 260px;
+}
+
 .megszunt-stats--3 {
   grid-template-columns: repeat(3, 1fr);
 }
@@ -12588,7 +12593,17 @@ body:has(.admin-nav) > main {
   padding: 2px 8px;
   font-size: 11px;
   font-weight: 600;
-  white-space: nowrap;
+  /* 2026-09-02 user report: egy szokatlanul hosszú bűncselekmény-név
+     ("közfeladatot ellátó személy eljárásában elkövetett bántalmazás") a
+     korábbi white-space:nowrap miatt kitört a .vrow-crimes 220px-es
+     konténeréből, és desktopon egybefolyt a szomszédos bíróság/dátum és a
+     státusz-badge szöveggel. A .vrow-crimes flex-wrap:wrap csak a
+     TAG-ek egymáshoz képesti sortörését kezelte, egy-egy tag SAJÁT
+     szövegét nem — ua. a hibaosztály, mint a kártya-címeknél (l.
+     feedback-card-name-hyphenation.md), csak itt a badge-re alkalmazva. */
+  white-space: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .vrow-court { font-size: 12px; color: #666; white-space: nowrap; flex-shrink: 0; }

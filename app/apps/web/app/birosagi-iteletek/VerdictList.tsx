@@ -384,12 +384,23 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
 
   return (
     <>
-      {/* Stats */}
-      <div className="megszunt-stats megszunt-stats--5">
-        <div className="megszunt-stat">
-          <div className="megszunt-stat-value">{filteredComplaints.length}</div>
-          <div className="megszunt-stat-label">Feljelentések száma</div>
+      {/* Stats — 2026-09-02 user report: az 5 doboz korábban EGY sorban
+          keverte a feljelentés-darabszámot (CriminalComplaint tábla) a
+          bírósági eljárás-statisztikákkal (CourtVerdict tábla) — két
+          teljesen független adathalmaz, mégis úgy nézett ki, mintha a 4
+          jobb oldali doboznak összegződnie kellene a bal szélsőbe (pl. „ha
+          41 feljelentés van, honnan jön a 22/2/2/2?"). A feljelentés-
+          darabszám lejjebb, a „Feljelentések" szekció saját fejléce alá
+          költözött (l. lentebb), itt csak a bírósági eljárás 4 doboza
+          maradt, egyértelmű alcímmel. */}
+      {complaints.length > 0 && (
+        <div style={{ marginBottom: 8 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62' }}>
+            Bírósági eljárások
+          </span>
         </div>
+      )}
+      <div className="megszunt-stats megszunt-stats--4">
         <div className="megszunt-stat">
           <div className="megszunt-stat-value megszunt-stat-value--red">{pretrialCount}</div>
           <div className="megszunt-stat-label">Előzetesben van</div>
@@ -652,6 +663,13 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
               NER-hez, államigazgatáshoz vagy NER-hez kapcsolódó gazdasági szereplőkhöz köthető
               feljelentések — a megelőző stádium, mielőtt bírósági eljárás indulna.
             </p>
+          </div>
+
+          <div className="megszunt-stats megszunt-stats--1" style={{ marginBottom: 24 }}>
+            <div className="megszunt-stat">
+              <div className="megszunt-stat-value">{filteredComplaints.length}</div>
+              <div className="megszunt-stat-label">Feljelentések száma</div>
+            </div>
           </div>
 
           <div className="complaint-tracker">
