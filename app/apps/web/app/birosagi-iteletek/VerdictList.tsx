@@ -698,7 +698,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
           {topFilers.length > 0 && (
             <div className="top-filers">
               <div className="complaint-tracker-head">
-                <div className="complaint-tracker-label">Legnagyobb feljelentők</div>
+                <div className="complaint-tracker-label">Legnagyobb intézményi feljelentők</div>
               </div>
               <div className="megszunt-stats megszunt-stats--4 top-filers-grid">
                 {topFilers.map(f => (
