@@ -15,6 +15,11 @@ export function PollQuestion({
           ? `Pontosan ${maxSelect} ügyre adható le szavazat.`
           : `Maximum ${maxSelect} ügyre adható le szavazat.`}
       </p>
+      <p className="poll-question-disclaimer">
+        A szavazásnak nem célja megmondani az NVVH-nak, mivel kezdje a munkáját, és nyomást sem
+        kíván rá gyakorolni — egyszerű közvélemény-kutatás arról, mely ügyek foglalkoztatják
+        leginkább az embereket.
+      </p>
       <dl className="poll-legend">
         <div className="poll-legend-item">
           <dt><span className="poll-option-card-tag poll-option-card-tag--marquee">Kiemelt</span></dt>
