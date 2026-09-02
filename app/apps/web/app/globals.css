@@ -13143,6 +13143,14 @@ code {
   margin: 0;
 }
 
+.poll-question-disclaimer {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--muted);
+  margin: 8px 0 0;
+  max-width: 62ch;
+}
+
 .poll-option-grid {
   display: flex;
   flex-direction: column;
