@@ -13148,7 +13148,6 @@ code {
   font-style: italic;
   color: var(--muted);
   margin: 8px 0 0;
-  max-width: 62ch;
 }
 
 .poll-option-grid {
