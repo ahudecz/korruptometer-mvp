@@ -79,8 +79,60 @@ export const presignLimiter = getOrCreate('pre', 30, '1 h', 60 * 60_000);
 // 011-nvvh-case-poll — csak másodlagos, tömeges-visszaélés elleni védőháló;
 // az elsődleges "már szavaztál" védelem egy böngésző-cookie, ezért a küszöb
 // szándékosan nagyvonalú (shared-NAT: munkahely, egyetem, közös Wi-Fi ne
-// ütközzön bele). A tényleges bot-védelmet a Turnstile adja, nem ez a szám.
+// ütközzön bele).
+//
+// 2026-08-31 (d5f66a9) óta NINCS harmadik réteg: a Turnstile lekerült a
+// szavazási folyamatról, mert a Cloudflare-oldali domain-engedélyezés valódi
+// forgalom alatt megbízhatatlanul utasított el valódi szavazókat. A szavazás
+// tehát ma két réteggel véd, nem hárommal. Ez tudatosan vállalt csere, nem
+// figyelmetlenség — de aki ezt a számot olvassa, ne higgye, hogy áll mögötte
+// még valami.
+//
+// A 012-reader-subscriptions feliratkozó űrlapja SZÁNDÉKOSAN nem ezt
+// használja, hanem a lentebbi, külön és szigorúbb subscribeIpLimiter-t: sem
+// a böngésző-cookie-t nem örökli (az egy háztartásban a második embert
+// utasítaná el), sem a Turnstile-t, és a végpont LEVELET KÜLD.
 export function pollVoteIpLimiter(): Limiter {
   const max = Number(process.env.POLL_VOTE_IP_DAILY_LIMIT ?? 75);
   return getOrCreate('pollv', max, '1 d', 24 * 60 * 60_000);
 }
+
+// ── 012-reader-subscriptions (FR-046, FR-093) ───────────────────────────────
+//
+// Mind az öt a modul-privát `getOrCreate` gyárból épül. Egy route NEM építhet
+// saját limitert: a gyár az EGYETLEN út, ami viszi a memóriabeli visszaesést
+// egy Upstash nélküli környezetre, tehát egy saját limiter minden helyi és
+// preview-környezetben CSENDBEN nyitva hagyná a kaput.
+
+/** Feliratkozás: 3 / IP / óra. */
+export function subscribeIpHourLimiter(): Limiter {
+  const max = Number(process.env.SUBSCRIBE_IP_HOURLY_LIMIT ?? 3);
+  return getOrCreate('subh', max, '1 h', 60 * 60_000);
+}
+
+/**
+ * Feliratkozás: 20 / IP / nap.
+ *
+ * Az előtag `subsd` és nem `subd`: a `subd`-t a `submissionDayLimiter()`
+ * (:72-75) MÁR HASZNÁLJA, és a kettő ugyanabban a Redis-névtérben osztozna —
+ * egy bejelentés-beküldés fogyasztaná a feliratkozási keretet, és fordítva.
+ */
+export function subscribeIpLimiter(): Limiter {
+  const max = Number(process.env.SUBSCRIBE_IP_DAILY_LIMIT ?? 20);
+  return getOrCreate('subsd', max, '1 d', 24 * 60 * 60_000);
+}
+
+// A token-szerinti kulcs KÖTELEZŐ: egy közös vállalati kimenő IP-cím
+// hatástalanítja a cím-szerinti kulcsot (FR-046).
+/** Megerősítés/leiratkozás beküldés: 5 / token / óra. */
+export function confirmTokenLimiter(): Limiter {
+  return getOrCreate('cfmt', 5, '1 h', 60 * 60_000);
+}
+
+/** Megerősítés/leiratkozás beküldés: 60 / IP / óra. */
+export function confirmIpLimiter(): Limiter {
+  return getOrCreate('cfmi', 60, '1 h', 60 * 60_000);
+}
+
+/** A megerősítő és leiratkozó OLDALAK lekérése: 240 / IP / óra. */
+export const subscribePageLimiter = getOrCreate('subpg', 240, '1 h', 60 * 60_000);

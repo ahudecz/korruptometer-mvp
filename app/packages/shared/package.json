@@ -10,6 +10,8 @@
     "./relative-time": "./src/relative-time.ts",
     "./cursor": "./src/cursor.ts",
     "./ratelimit": "./src/ratelimit.ts",
+    "./sections": "./src/sections.ts",
+    "./email": "./src/email.ts",
     "./encryption": "./src/encryption.ts",
     "./turnstile": "./src/turnstile.ts",
     "./sealed-box": "./src/sealed-box.ts",

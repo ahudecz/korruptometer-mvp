@@ -11,6 +11,8 @@ import { ResignationsSection } from './_home/resignations-section';
 import { MediaClosuresSection } from './_home/media-closures-section';
 import { MiniClosureCard } from './_home/closure-card';
 import { SubmissionCTA } from './_home/submission-cta';
+import { NewsletterCta } from './_home/newsletter-cta';
+import { TelegramChannelCard } from './_home/telegram-channel-card';
 import { SocialFeed } from './_home/social-feed';
 import { FtValue } from './_home/ft-value';
 import { CaseRow } from './adatbazis/_components/case-row';
@@ -1323,6 +1325,51 @@ export default async function HomePage() {
           </div>
 
           <SubmissionCTA />
+        </div>
+      </section>
+
+      {/* ───── ÉRTESÍTÉSEK (012-reader-subscriptions FR-092) ─────
+          A szekció NEM hírlevél-ajánlat: a feature riasztásokat küld arról,
+          ami felkerül az oldalra. A korábbi szöveg heti hírlevelet ígért, és
+          elhallgatta a nyilvános Telegram-csatornát — pedig az a két olvasói
+          csatorna egyike (User Story 2), és az egyetlen, amihez az olvasónak
+          semmit nem kell megadnia. Az útvonal és az API marad `/hirlevel`. */}
+      <section className="submission" id="hirlevel">
+        <div className="submission-inner">
+          <div className="submission-left">
+            <div className="section-num">10 / Értesítések</div>
+            <h2>
+              Szólunk, ha <em>történik</em> valami.
+            </h2>
+            <p>
+              Amikor lemond vagy távozik egy NER-vezető, ítélet születik,
+              feljelentés megy be, vagy megszűnik egy médium — arról szólunk.
+              Nem hírlevél, nem reklám: csak az, ami felkerül az oldalra.
+            </p>
+            <div className="submission-assurance">
+              <strong>Két út, válassz egyet</strong>
+              A Telegram-csatornához nem adsz meg semmit, és mindent megkapsz.
+              Az e-mailnél te választod ki a témákat, cserébe a címedet
+              titkosítva tároljuk.
+            </div>
+          </div>
+
+          <div>
+            <TelegramChannelCard />
+            <div className="chan">
+              <div className="chan-head">
+                <span className="chan-title">E-mail összefoglaló</span>
+                <span className="chan-when">Hetente</span>
+              </div>
+              <div className="chan-body">
+                <p>
+                  Egy levél hetente, csak a kipipált témákról. Minden levelet
+                  szerkesztő néz át, mielőtt kimegy.
+                </p>
+                <NewsletterCta />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

@@ -98,6 +98,11 @@ export type Events = {
   'facebook.sync': { data: Record<string, never> };
   'breaking.recompute': { data: { reason: string } };
   'youtube.sync': { data: Record<string, never> };
+  // 012-reader-subscriptions — a megerősítő levél SORBA kerül, nem a kérés
+  // útvonalán megy ki: a szolgáltatói hívás így soha nem lassítja vagy
+  // buktatja el a feliratkozó űrlapot.
+  'subscriber.confirm-send': { data: { subscriberId: string } };
+  'digest.send': { data: { digestId: string } };
 };
 
 export const inngest = new Inngest({

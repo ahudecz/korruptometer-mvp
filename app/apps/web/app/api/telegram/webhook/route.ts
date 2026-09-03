@@ -1,7 +1,7 @@
 import 'server-only';
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
-import { and, desc, eq, ilike, inArray, isNotNull, sql } from 'drizzle-orm';
+import { and, desc, eq, ilike, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 import { answerCallbackQuery, editMessageCaption, editMessageReplyMarkup, sendTelegramMessage, sendTelegramPhoto, type InlineKeyboardMarkup } from '@/lib/telegram';
@@ -17,6 +17,14 @@ import {
   type ArticleForReprocess,
 } from '@/lib/telegram-review-actions';
 import type { DetectorType } from '@korr/db';
+import { ALERT_ON_EDITOR_CONFIRM } from '@/lib/notify-auto-publish';
+import { recordAlertsForRecordIds, recordSubscriberAlert, revokeSubscriberAlert } from '@/lib/notify-subscribers';
+import {
+  approvalKeyboard as digestApprovalKeyboard,
+  DIGEST_MAX_REGEN,
+  renderTemplateBody as renderDigestTemplateBody,
+} from '@/lib/digest-build';
+import { inngest } from '@/inngest/client';
 import { canonicalUrl, clipExcerpt, dedupHash, fetchArticleBodyTransient, fetchPrimaryArticle, getAdapter, routeOutletByUrl } from '@korr/scrapers';
 import { WATCH_LIST, type WatchPerson } from '@app/_home/watchlist-config';
 
@@ -198,6 +206,28 @@ async function searchRevokeCandidates(nameQuery: string, categoryCode: string | 
   return all.flat().slice(0, 8);
 }
 
+/**
+ * 012-reader-subscriptions — a szerkesztő javított szövegének HTML-párja.
+ *
+ * A szerkesztő sima szöveget ír a Telegramba. A `<` és a `&` elszökik, a
+ * sorközök bekezdéssé válnak — semmi több. A szerkesztő szövege NEM
+ * olvasói bemenet, de a levélbe kerülő HTML akkor sem lehet nyers.
+ */
+function correctedTextToHtml(text: string): string {
+  const escaped = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  return escaped
+    .split(/\n{2,}/)
+    .map((para) => `<p>${para.replace(/\n/g, '<br />')}</p>`)
+    .join('\n');
+}
+
+// 012-reader-subscriptions FR-019 — a törlés visszavonja a hozzá tartozó
+// olvasói riasztást is. A watchlist-eltávolítás dedup-kulcsa a SZEMÉLYRE
+// épül, ezért a törlésnek vissza kell adnia a personId-t: a sor azonosítója
+// önmagában nem tudná újraépíteni a kulcsot.
 async function deleteByCode(target: DetectorType | 'watchlist_removal', id: string): Promise<void> {
   const db = getDb();
   if (target === 'resignation') await db.delete(schema.politicalResignations).where(eq(schema.politicalResignations.id, id));
@@ -205,7 +235,15 @@ async function deleteByCode(target: DetectorType | 'watchlist_removal', id: stri
   else if (target === 'court_verdict') await db.delete(schema.courtVerdicts).where(eq(schema.courtVerdicts.id, id));
   else if (target === 'asset_recovery') await db.delete(schema.assetRecoveries).where(eq(schema.assetRecoveries.id, id));
   else if (target === 'criminal_complaint') await db.delete(schema.criminalComplaints).where(eq(schema.criminalComplaints.id, id));
-  else await db.delete(schema.watchlistRemovals).where(eq(schema.watchlistRemovals.id, id));
+  else {
+    const [removed] = await db
+      .delete(schema.watchlistRemovals)
+      .where(eq(schema.watchlistRemovals.id, id))
+      .returning({ personId: schema.watchlistRemovals.personId });
+    if (removed) await revokeSubscriberAlert('watchlist_removal', removed.personId);
+    return;
+  }
+  await revokeSubscriberAlert(target, id);
 }
 
 type TelegramUpdate = {
@@ -216,6 +254,11 @@ type TelegramUpdate = {
   };
   message?: {
     chat: { id: number };
+    // 012-reader-subscriptions FR-068 — a javított szövegű válasz EZEKEN
+    // párosít. A `callback_query.message` tagon már van `message_id`; a sima
+    // üzenet tagján eddig nem volt, ezért a válasz-ág nem is létezhetett.
+    message_id: number;
+    reply_to_message?: { message_id: number };
     text?: string;
   };
 };
@@ -611,9 +654,16 @@ async function crossCheckOtherCategories(article: ArticleForReprocess, handledTy
   for (const type of otherTypes) {
     if (checkedSet.has(type)) continue;
     const outcome = await DETECTOR_PROCESSORS[type](article, todayIso, false);
+    // 012-reader-subscriptions FR-012 / FR-016 — a kereszt-ellenőrzés is
+    // publikál sorokat, tehát riasztania kell rájuk. A kapuhalmaz két
+    // szekciója viszont KIMARAD: erre a kategóriára a szerkesztő nem nyomott
+    // gombot, és FR-016 pont ezt tiltja.
+    const crossCheckMayAlert = !(ALERT_ON_EDITOR_CONFIRM as ReadonlySet<string>).has(type);
     if (outcome.status === 'inserted' || outcome.status === 'updated') {
+      if (crossCheckMayAlert) await recordAlertsForRecordIds(type, [outcome.recordId]);
       notes.push(`✅ Automatikusan felvéve: ${DETECTOR_LABELS_HU[type]}`);
     } else if (outcome.status === 'inserted_multi') {
+      if (crossCheckMayAlert) await recordAlertsForRecordIds(type, outcome.recordIds);
       notes.push(`✅ Automatikusan felvéve (${outcome.recordIds.length}/${outcome.total} fő): ${DETECTOR_LABELS_HU[type]}`);
     } else if (outcome.status === 'pending_notified') {
       notes.push(`🔔 Jelezve (jóváhagyásra vár): ${DETECTOR_LABELS_HU[type]}`);
@@ -642,6 +692,79 @@ export async function POST(req: Request) {
     const allowedChatId = process.env.TELEGRAM_CHAT_ID;
     if (!allowedChatId || String(msg.chat.id) !== allowedChatId) {
       return NextResponse.json({ ok: true }); // ismeretlen chat — csendben eldobva
+    }
+
+    // ── 012-reader-subscriptions FR-068…FR-072 — javított hírlevél-szöveg. ──
+    //
+    // Ez az ág MINDEN más szöveges kezelés ELŐTT fut, két külön okból:
+    //
+    // 1. Az URL-detektálás (:firstUrl) elé kell kerülnie, mert egy javított
+    //    hírlevél-törzs LINKEKET tartalmaz az oldalra. A régi sorrend
+    //    hírbejelentésként nyelné le, és egy ötgombos review-billentyűzettel
+    //    válaszolna a szerkesztőnek (FR-069).
+    // 2. A SocialPostOutbox "pendingEdit" ág elé is kell kerülnie: az a
+    //    legfrissebb, szerkesztésre váró sorra illeszt, és NEM nézi a
+    //    reply_to_message-t — egy függő poszt-szerkesztés mellett a javított
+    //    hírlevél csendben Facebook-képaláírásként mentődne.
+    //
+    // Ez az ág PONTOSAN párosít, a `reply_to_message.message_id`-n. Ami nem
+    // párosít, az érintetlenül esik tovább a meglévő kezelésre (FR-070).
+    const replyToId = msg.reply_to_message?.message_id;
+    if (msg.text && replyToId) {
+      const [digest] = await getDb()
+        .select({
+          id: schema.digests.id,
+          code: schema.digests.code,
+          status: schema.digests.status,
+          regenCount: schema.digests.regenCount,
+        })
+        .from(schema.digests)
+        .where(eq(schema.digests.telegramMessageId, replyToId))
+        .limit(1);
+
+      if (digest) {
+        if (digest.status !== 'awaiting_approval') {
+          // FR-071 — semmit nem változtat, magyarul megmondja, miért.
+          await sendTelegramMessage(
+            'Ez a hírlevél már elment vagy el lett vetve — a javítás nem került bele.',
+          );
+          return NextResponse.json({ ok: true });
+        }
+        if (digest.regenCount >= DIGEST_MAX_REGEN) {
+          // FR-072 — a javított szöveg UGYANAZT az egy újragenerálási keretet
+          // fogyasztja, mint a "🔄 Újragenerálás" gomb.
+          await sendTelegramMessage(
+            'Ehhez a hírlevélhez már volt egy átírás. Vagy ez megy ki, vagy vesd el.',
+          );
+          return NextResponse.json({ ok: true });
+        }
+
+        const corrected = msg.text;
+        await getDb()
+          .update(schema.digests)
+          .set({
+            bodyText: corrected,
+            bodyHtml: correctedTextToHtml(corrected),
+            regenCount: digest.regenCount + 1,
+            // FR-059 — az újragenerálás a piszkozat idejét is újraírja, mert az
+            // dönti el, ki számít "túl újnak" a címzettek közül.
+            draftedAt: new Date(),
+          })
+          .where(eq(schema.digests.id, digest.id));
+
+        const messageId = await sendTelegramMessage(
+          ['📬 Heti hírlevél — javított szöveggel', '', corrected.slice(0, 3000)].join('\n'),
+          digestApprovalKeyboard(digest.code),
+        );
+        if (messageId) {
+          // FR-068 — a leváltott üzenetre adott válasz többé nem találhat.
+          await getDb()
+            .update(schema.digests)
+            .set({ telegramMessageId: messageId })
+            .where(eq(schema.digests.id, digest.id));
+        }
+        return NextResponse.json({ ok: true });
+      }
     }
 
     // ── 2026-08-31 — "✏️ Módosítás" gomb utáni szöveges válasz (Social Post
@@ -774,6 +897,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true }); // not a button press we care about
   }
 
+  // ── 012-reader-subscriptions FR-005 — a gombnyomás EREDETÉNEK ellenőrzése.
+  // A szöveges üzenetek ága (:641) régóta whitelistel, a callback_query ága
+  // eddig NEM: bárki, aki egy továbbított gombos üzenetre rátalált, tudott
+  // rekordot törölni vagy publikálni. Ez a feature ugyanezt a botot teszi
+  // először NYILVÁNOS csatorna elé, ezért itt záródik be az ablak.
+  //
+  // A `!allowedChatId` ág teherviselő, nem dísz: ha a változó nincs beállítva,
+  // a közvetlen `String(...) !== process.env.TELEGRAM_CHAT_ID` összehasonlítás
+  // `undefined`-dal hasonlítana, ami MINDIG egyenlőtlen — így minden szerkesztői
+  // gomb csendben, magyarázat nélkül elromlana. Így viszont explicit a szabály:
+  // provisioning nélkül egyetlen gombnyomás sem ír adatbázist.
+  const allowedCallbackChatId = process.env.TELEGRAM_CHAT_ID;
+  if (!allowedCallbackChatId || String(cq.message.chat.id) !== allowedCallbackChatId) {
+    console.log('[telegram-webhook] callback_query from unauthorised chat', cq.message.chat.id);
+    return NextResponse.json({ ok: true });
+  }
+
   const [action, code, id] = cq.data.split(':');
 
   // ── 2026-07-14 — "auto-publikálva, visszavonható" gombok (CourtVerdict /
@@ -782,6 +922,117 @@ export async function POST(req: Request) {
   // itt a sor MÁR élő — "Visszavonás" törli (nem reviewStatus='rejected',
   // l. setPendingStatus komment: a törlés nem blokkolja 30 napig a valódi
   // jövőbeli újradetektálást), "OK, marad" csak nyugtáz. ──
+  // ── 012-reader-subscriptions FR-056, FR-059, FR-068 — hírlevél-gombok. ──
+  //
+  // A gomb-adat a NYOLC KARAKTERES rövid kódot viszi, soha nem a rekord
+  // azonosítóját: `dg:a:{code}` 13 bájt a Telegram 64 bájtos korlátjából.
+  //
+  // A "Kimehet" NEM küld helyben. Eseményt tüzel, és azonnal nyugtáz: egy
+  // több százas kiküldés egy callback-kezelőn belül időtúllépéssel járna,
+  // miközben a Telegram vár — és egy félbeszakadt küldés már kiadott
+  // keretfoglalásokkal pontosan az a szivárgás, amit az egészség-ellenőrzés
+  // keres.
+  if (action === 'dg') {
+    if (!id || !code) {
+      await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
+      return NextResponse.json({ ok: true });
+    }
+    try {
+      const [digest] = await getDb()
+        .select({
+          id: schema.digests.id,
+          status: schema.digests.status,
+          regenCount: schema.digests.regenCount,
+          alertIds: schema.digests.alertIds,
+          periodStart: schema.digests.periodStart,
+          periodEnd: schema.digests.periodEnd,
+        })
+        .from(schema.digests)
+        .where(eq(schema.digests.code, id))
+        .limit(1);
+
+      if (!digest) {
+        await answerCallbackQuery(cq.id, 'Ez a hírlevél már nem található.');
+        return NextResponse.json({ ok: true });
+      }
+      if (digest.status !== 'awaiting_approval') {
+        await answerCallbackQuery(cq.id, 'Ez a hírlevél már elment vagy el lett vetve.');
+        return NextResponse.json({ ok: true });
+      }
+
+      let resultText: string;
+      if (code === 'a') {
+        await getDb()
+          .update(schema.digests)
+          .set({ status: 'approved', approvedAt: new Date() })
+          .where(eq(schema.digests.id, digest.id));
+        await inngest.send({ name: 'digest.send', data: { digestId: digest.id } });
+        resultText = 'Kimehet — kiküldés folyamatban.';
+      } else if (code === 'x') {
+        // FR-065 — az elvetés EGYETLEN olvasó kurzorát sem lépteti előre, így
+        // az időszak nem vész el: a következő összefoglaló lefedi.
+        await getDb()
+          .update(schema.digests)
+          .set({ status: 'discarded' })
+          .where(eq(schema.digests.id, digest.id));
+        resultText = '🗑️ Elvetve — egyetlen olvasó sem esik el az időszaktól.';
+      } else if (code === 'r') {
+        if (digest.regenCount >= DIGEST_MAX_REGEN) {
+          await answerCallbackQuery(cq.id, 'Ehhez a hírlevélhez már volt egy átírás.');
+          return NextResponse.json({ ok: true });
+        }
+        const alertRows = digest.alertIds.length
+          ? await getDb()
+              .select({
+                id: schema.subscriberAlerts.id,
+                section: schema.subscriberAlerts.section,
+                title: schema.subscriberAlerts.title,
+                detail: schema.subscriberAlerts.detail,
+                url: schema.subscriberAlerts.url,
+                occurredAt: schema.subscriberAlerts.occurredAt,
+              })
+              .from(schema.subscriberAlerts)
+              .where(and(
+                inArray(schema.subscriberAlerts.id, digest.alertIds),
+                isNull(schema.subscriberAlerts.revokedAt),
+              ))
+          : [];
+        const body = renderDigestTemplateBody(alertRows.map((r) => ({ ...r })));
+        const messageId = await sendTelegramMessage(
+          ['📬 Heti hírlevél — újragenerálva', '', body.text.slice(0, 3000)].join('\n'),
+          digestApprovalKeyboard(id),
+        );
+        await getDb()
+          .update(schema.digests)
+          .set({
+            bodyText: body.text,
+            bodyHtml: body.html,
+            regenCount: digest.regenCount + 1,
+            // FR-059 — a piszkozat ideje ÚJRAÍRÓDIK: ez dönti el, ki számít
+            // túl újnak a címzettek közül. Egy elavult érték csendben
+            // változtatná meg a közönséget két jóváhagyó üzenet között.
+            draftedAt: new Date(),
+            // FR-068 — a leváltott üzenetre adott válasz többé nem találhat.
+            ...(messageId ? { telegramMessageId: messageId } : {}),
+          })
+          .where(eq(schema.digests.id, digest.id));
+        await answerCallbackQuery(cq.id, '🔄 Újragenerálva.');
+        return NextResponse.json({ ok: true });
+      } else {
+        await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
+        return NextResponse.json({ ok: true });
+      }
+
+      await answerCallbackQuery(cq.id, resultText);
+      const finalText = [cq.message.text ?? '', resultText].filter(Boolean).join('\n\n');
+      await editMessageReplyMarkup(cq.message.chat.id, cq.message.message_id, finalText);
+    } catch (err) {
+      await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
+      console.error('[telegram-webhook] digest action error', err);
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   if (action === 'v' || action === 'k') {
     const target = code ? AUTO_PUBLISH_CODE_TABLE[code] : undefined;
     if (!target || !id) {
@@ -791,14 +1042,44 @@ export async function POST(req: Request) {
     try {
       let resultText: string;
       if (action === 'k') {
+        // 012-reader-subscriptions FR-016 / FR-018 — 5. hívási hely. Az "OK,
+        // marad" gomb MAGA a szerkesztői kapu. Csak a kapuhalmaz két
+        // szekciója riaszt itt: a bírósági ítélet már a detektor
+        // beszúrásánál riasztott (A2), és a dedup-kulcs úgyis elnyelné.
+        if (ALERT_ON_EDITOR_CONFIRM.has(target)) {
+          if (target === 'watchlist_removal') {
+            const [row] = await getDb()
+              .select({ personId: schema.watchlistRemovals.personId, lead: schema.watchlistRemovals.lead })
+              .from(schema.watchlistRemovals)
+              .where(eq(schema.watchlistRemovals.id, id))
+              .limit(1);
+            const person = row ? WATCH_LIST.find((p) => p.id === row.personId) : undefined;
+            if (row && person) {
+              await recordSubscriberAlert({
+                section: 'watchlist_removal',
+                entityId: row.personId,
+                title: person.name,
+                detail: row.lead ?? person.institution ?? null,
+              });
+            }
+          } else {
+            await recordAlertsForRecordIds(target, [id]);
+          }
+        }
         resultText = '✅ OK, marad.';
       } else {
         if (target === 'court_verdict') {
           await getDb().delete(schema.courtVerdicts).where(eq(schema.courtVerdicts.id, id));
+          await revokeSubscriberAlert('court_verdict', id);
         } else if (target === 'asset_recovery') {
           await getDb().delete(schema.assetRecoveries).where(eq(schema.assetRecoveries.id, id));
+          await revokeSubscriberAlert('asset_recovery', id);
         } else if (target === 'resignation') {
           await getDb().delete(schema.politicalResignations).where(eq(schema.politicalResignations.id, id));
+          // FR-019 — a visszavonásnak MINDKÉT törlési úton vissza kell vonnia
+          // a riasztást. A main-ről érkező új 'resignation' ág enélkül némán
+          // kint hagyna egy riasztást egy már törölt sorra.
+          await revokeSubscriberAlert('resignation', id);
         } else {
           // 2026-07-18 — applyWatchlistRemoval() (Telegram "🏛️
           // Tisztségviselő-eltávolítás" gomb) mindig ír egy párosított
@@ -810,6 +1091,9 @@ export async function POST(req: Request) {
             .delete(schema.watchlistRemovals)
             .where(eq(schema.watchlistRemovals.id, id))
             .returning({ personId: schema.watchlistRemovals.personId, sourceUrl: schema.watchlistRemovals.sourceUrl });
+          // FR-019 — a visszavonás a személyre kulcsolt riasztást vonja
+          // vissza, nem a soréra: a dedup-kulcs a personId-ből épül.
+          if (removed) await revokeSubscriberAlert('watchlist_removal', removed.personId);
           const person = removed ? WATCH_LIST.find((p) => p.id === removed.personId) : undefined;
           if (person) {
             await getDb()
@@ -1036,6 +1320,20 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true });
       }
       await applyWatchlistRemoval(person, article, checked.check);
+      // 012-reader-subscriptions FR-017 / FR-018 — 6. hívási hely, KAPU
+      // NÉLKÜL: ez a gombnyomás MAGA a szerkesztői kapu (A1). Kézi
+      // eltávolításnál soha nincs auto-publikálási értesítés, tehát ha erre
+      // várnánk, ez a szekció sosem riasztana.
+      //
+      // A kulcs a SZEMÉLY, nem a sor: az applyWatchlistRemoval a personId-ra
+      // konfliktál, és a párosított PoliticalResignation sort SZÁNDÉKOSAN
+      // nem riasztjuk külön — egy eltávolításról egy üzenet megy ki.
+      await recordSubscriberAlert({
+        section: 'watchlist_removal',
+        entityId: person.id,
+        title: person.name,
+        detail: person.institution,
+      });
       revalidatePublicPaths();
       const resultText = '✅ Eltávolítás rögzítve.';
       await answerCallbackQuery(cq.id, resultText);
@@ -1231,6 +1529,11 @@ export async function POST(req: Request) {
     if (pending) {
       // ── pending: already-inserted row, just flip reviewStatus ──
       await setPendingStatus(detectorType, id, action === 'a' ? 'approved' : 'rejected');
+      // 012-reader-subscriptions FR-018 — 4. hívási hely. A jóváhagyással a
+      // sor MOST kerül ki az oldalra, tehát most keletkezik a riasztás. Az
+      // elutasítás törli a sort, ezért a hozzá tartozó riasztást visszavonja.
+      if (action === 'a') await recordAlertsForRecordIds(detectorType, [id]);
+      else await revokeSubscriberAlert(detectorType, id);
       revalidatePublicPaths();
       resultText = action === 'a' ? '✅ Jóváhagyva.' : '❌ Elutasítva.';
 
@@ -1258,10 +1561,14 @@ export async function POST(req: Request) {
       const outcome = await DETECTOR_PROCESSORS[detectorType](detectArticle, todayIso, true);
 
       if (outcome.status === 'inserted' || outcome.status === 'updated') {
+        // FR-018 — 4. hívási hely, near-miss ág: a szerkesztő gombnyomására
+        // ÚJ sor keletkezett, tehát riasztunk rá.
+        await recordAlertsForRecordIds(detectorType, [outcome.recordId]);
         revalidatePublicPaths();
         resultText = '✅ Jóváhagyva és felvéve.';
         extraNotes = await crossCheckOtherCategories(detectArticle, detectorType);
       } else if (outcome.status === 'inserted_multi') {
+        await recordAlertsForRecordIds(detectorType, outcome.recordIds);
         revalidatePublicPaths();
         resultText = `✅ Jóváhagyva — ${outcome.recordIds.length}/${outcome.total} fő felvéve.`;
         extraNotes = await crossCheckOtherCategories(detectArticle, detectorType);

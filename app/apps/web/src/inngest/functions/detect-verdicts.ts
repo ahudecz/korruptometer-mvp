@@ -20,6 +20,7 @@ import { notifyReviewNeeded } from '@/lib/notify';
 import { notifyAutoPublished } from '@/lib/notify-auto-publish';
 import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
 import { createBypassGuardedFunction, runArticleDetectionBatch, type ArticleProcessResult } from '../lib/detector-runner';
+import { recordSubscriberAlert } from '@/lib/notify-subscribers';
 
 const DETECTOR_TYPE = 'court_verdict' as const;
 
@@ -310,6 +311,18 @@ async function processVerdictArticle(
       name: result.personName,
       detail: `${verdictType}${result.sentenceLabel ? ` — ${result.sentenceLabel}` : ''}`,
       articleUrl: article.sourceUrl ?? '',
+    });
+
+    // 012-reader-subscriptions FR-018 — 1. hívási hely. A bírósági ítélet
+    // EXTRA kapu nélkül riaszt (A2): a detektor beszúrása nem üríti helyben a
+    // postaládát, ezért a szerkesztőnek LEGALÁBB a flush-időköz jut a
+    // Visszavonás megnyomására. Egy késve induló ütemezett futás csak
+    // hosszabbítja ezt az ablakot, ami a biztonságos irány.
+    await recordSubscriberAlert({
+      section: 'court_verdict',
+      entityId: recordId,
+      title: result.personName,
+      detail: `${verdictType}${result.sentenceLabel ? ` — ${result.sentenceLabel}` : ''}`,
     });
   }
 

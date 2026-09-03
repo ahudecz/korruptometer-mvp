@@ -12,6 +12,27 @@
 
 const MAX_DAYS = 7;
 
+/**
+ * Szolgáltatónkénti felső határ. Az alapérték a MAX_DAYS — az a MI állításunk
+ * arról, amit be TUDUNK állítani.
+ *
+ * A Resend kivétel, és tudatosan az: 2026-09-03-án ellenőrizve a megőrzés a
+ * Free, a Pro és a Scale csomagon egyaránt 30 nap, és sehol nem konfigurálható
+ * (csak az Enterprise "Flexible"). Ez tehát nem választott beállítás, hanem a
+ * szolgáltató plafonja. A 012-es specifikáció P3 előfeltétele emiatt módosult,
+ * a döntést a karbantartó hozta meg (2026-09-03), és az /adatvedelem oldal a
+ * 30 napot mondja ki.
+ *
+ * Ez a küszöb NEM emelhető azért, hogy egy drift zöldre váltson. Ha a Resend
+ * kitesz egy megőrzési mezőt az API-jában, az API-olvasás az erősebb
+ * mechanizmus, és annak kell átvennie a helyét.
+ */
+const PLATFORM_MAX_DAYS: Record<string, number> = { Resend: 30 };
+
+function maxDaysFor(platform: string): number {
+  return PLATFORM_MAX_DAYS[platform] ?? MAX_DAYS;
+}
+
 type Result = { platform: string; days: number | null; status: 'OK' | 'DRIFT' | 'SKIPPED' };
 
 async function checkVercel(): Promise<Result> {
@@ -44,6 +65,29 @@ async function checkInngest(): Promise<Result> {
   };
 }
 
+/**
+ * 012-reader-subscriptions — a Resend küldési-napló megőrzése.
+ *
+ * Ugyanaz az alak, mint a `checkInngest()`-é, és ugyanazon okból: a Resend
+ * publikus API-jában NINCS megőrzési mező (2026-09-01-i ellenőrzés). Ha a
+ * szolgáltató kiteszi, egy API-olvasás erősebb mechanizmus, és annak kell
+ * átvennie a helyét.
+ *
+ * A küldési naplók CÍMZETTI CÍMEKET tartalmaznak. Egy az első küldés után
+ * beállított megőrzés nem törli, amit az addigi küldések már beírtak.
+ */
+async function checkResend(): Promise<Result> {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return { platform: 'Resend', days: null, status: 'SKIPPED' };
+  const declared = Number(process.env.RESEND_LOG_RETENTION_DAYS_DECLARED ?? '0');
+  if (!declared) return { platform: 'Resend', days: null, status: 'SKIPPED' };
+  return {
+    platform: 'Resend',
+    days: declared,
+    status: declared <= maxDaysFor('Resend') ? 'OK' : 'DRIFT',
+  };
+}
+
 async function checkBetterStack(): Promise<Result> {
   const token = process.env.BETTERSTACK_TOKEN;
   if (!token) return { platform: 'Better Stack', days: null, status: 'SKIPPED' };
@@ -72,7 +116,7 @@ async function checkBetterStack(): Promise<Result> {
 }
 
 async function main() {
-  const results = await Promise.all([checkVercel(), checkInngest(), checkBetterStack()]);
+  const results = await Promise.all([checkVercel(), checkInngest(), checkBetterStack(), checkResend()]);
   let drifted = false;
   for (const r of results) {
     const d = r.days == null ? '—' : `${r.days}d`;
@@ -80,7 +124,13 @@ async function main() {
     if (r.status === 'DRIFT') drifted = true;
   }
   if (drifted) {
-    console.error(`\nDRIFT: at least one platform exceeds the ${MAX_DAYS}-day promise.`);
+    // Platformonkénti küszöb — a Resendé 30, a többié MAX_DAYS. Egy közös
+    // szám kiírása félrevezető lenne (l. PLATFORM_MAX_DAYS).
+    const over = results
+      .filter((r) => r.status === 'DRIFT')
+      .map((r) => `${r.platform} ${r.days}d > ${maxDaysFor(r.platform)}d`)
+      .join(', ');
+    console.error(`\nDRIFT: ${over}.`);
     process.exit(1);
   }
 }

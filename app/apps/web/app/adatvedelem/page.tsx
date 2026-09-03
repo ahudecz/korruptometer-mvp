@@ -82,6 +82,51 @@ export default function AdatvedelemPage() {
             tároljuk, és harmadik félnek nem adjuk át.
           </p>
 
+          <h3 className="modszertan-h3">Hírlevél-feliratkozás</h3>
+
+          <p>
+            A hírlevélre feliratkozáskor három adatot tárolunk: az e-mail címet
+            titkosítva; a kiválasztott témákat; és a feliratkozás, illetve a
+            megerősítés hálózati címének (IP) egy visszafejthetetlen
+            azonosítóját, egy hash-t. Ez a hash a GDPR 4. cikk (5) bekezdése
+            szerint álnevesített személyes adat, nem anonim adat, ezért ugyanúgy
+            törlésre kerül, mint maga a cím. Nevet és semmilyen más szabad
+            szöveges mezőt nem kérünk.
+          </p>
+
+          <p>
+            <strong>Jogalap:</strong> az Ön hozzájárulása (GDPR 6. cikk (1)
+            bekezdés a) pont). A hozzájárulást a címére küldött megerősítő
+            levélben adja meg; addig egyetlen levelet sem küldünk azon kívül.
+            Bizonyítékként a megerősítés időpontját, az akkori hálózati cím
+            hash-ét és a megjelenített hozzájárulási szöveg verzióját tároljuk
+            (GDPR 7. cikk (1) bekezdés).
+          </p>
+
+          <p>
+            <strong>Megőrzés:</strong> leiratkozás után 30 nappal töröljük a
+            titkosított e-mail címet, mindkét hálózati cím-hash-t és a
+            megerősítő tokent. Megmarad az e-mail cím hash-e — ez a letiltási
+            jelölő, ami megakadályozza, hogy a cím újra felkerüljön a listára —,
+            az állapot és a hozzájárulási szöveg verziója.
+          </p>
+
+          <p>
+            <strong>Törlés kérése:</strong> minden levélben van egy
+            egykattintásos leiratkozó link. Azonnali törlést a{' '}
+            <a href="mailto:hello@kegyencjarat.hu">hello@kegyencjarat.hu</a>{' '}
+            címen kérhet — ilyenkor a fenti 30 napos várakozás elmarad, és a
+            következő söprés azonnal töröl.
+          </p>
+
+          <p>
+            <strong>Adatfeldolgozó:</strong> a leveleket a Resend
+            (Plus Five Five, Inc.) küldi ki, ír országi (eu-west-1) régióból. A
+            szolgáltató küldési naplói 30 napig őrzik a címzetti címeket. Ez a
+            Resend minden elérhető csomagján 30 nap, és nem állítható
+            rövidebbre; ezért ennyi, nem azért, mert így választottuk.
+          </p>
+
           <h3 className="modszertan-h3">Google Analytics</h3>
 
           <p>

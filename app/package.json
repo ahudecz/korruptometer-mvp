@@ -12,7 +12,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "db:sync-from-live": "bash scripts/db-sync-from-live.sh",
     "kmdb:extract": "test -x /tmp/kmdb-venv/bin/python3 || (echo 'run: python3 -m venv /tmp/kmdb-venv && /tmp/kmdb-venv/bin/pip install duckdb' && exit 1) && KMDB_OUT=/tmp/kmdb-out/persons.jsonl /tmp/kmdb-venv/bin/python3 scripts/kmdb/import.py",
-    "kmdb:import": "mkdir -p /tmp/kmdb-out && pnpm kmdb:extract && pnpm --filter @korr/db kmdb:upsert"
+    "kmdb:import": "mkdir -p /tmp/kmdb-out && pnpm kmdb:extract && pnpm --filter @korr/db kmdb:upsert",
+    "migrate": "pnpm --filter @korr/db run migrate"
   },
   "devDependencies": {
     "@types/node": "^20.14.10",

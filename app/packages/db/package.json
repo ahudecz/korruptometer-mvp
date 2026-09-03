@@ -18,7 +18,9 @@
     "./ai-complaints": "./src/criminal-complaint-detect.ts",
     "./ai-verification": "./src/ai-verification.ts",
     "./llm": "./src/llm.ts",
-    "./llm-budget-alert": "./src/llm-budget-alert.ts"
+    "./llm-budget-alert": "./src/llm-budget-alert.ts",
+    "./email-send-ledger": "./src/email-send-ledger.ts",
+    "./subscription-health-alert": "./src/subscription-health-alert.ts"
   },
   "scripts": {
     "lint": "eslint src",
@@ -65,7 +67,8 @@
     "add-facebook-pages": "tsx src/add-facebook-pages.ts",
     "fb-sync-apify": "tsx src/fb-sync-apify.ts",
     "backfill-social-images": "tsx src/backfill-social-images.ts",
-    "bulk-case-content": "tsx src/bulk-case-content.ts"
+    "bulk-case-content": "tsx src/bulk-case-content.ts",
+    "migrate": "tsx src/apply-migrations.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.2",

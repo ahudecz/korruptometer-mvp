@@ -19,12 +19,19 @@ function apiBase(): string | null {
   return token ? `https://api.telegram.org/bot${token}` : null;
 }
 
-export async function sendTelegramMessage(
+/**
+ * 012-reader-subscriptions T014 — a cím szerint paraméterezhető küldő.
+ *
+ * A chat azonosítója az ELSŐ argumentum, nem a harmadik: a `replyMarkup` a
+ * meglévő `sendTelegramMessage()`-ben a második paraméter, és nagyjából
+ * negyven hívási hely támaszkodik erre. Egy harmadik paraméter csapda lenne.
+ */
+export async function sendTelegramMessageTo(
+  chatId: string,
   text: string,
   replyMarkup?: InlineKeyboardMarkup,
 ): Promise<number | null> {
   const base = apiBase();
-  const chatId = process.env.TELEGRAM_CHAT_ID;
   if (!base || !chatId) return null; // not provisioned — silent no-op
   const res = await fetch(`${base}/sendMessage`, {
     method: 'POST',
@@ -33,6 +40,17 @@ export async function sendTelegramMessage(
   });
   const data = (await res.json().catch(() => null)) as { result?: { message_id?: number } } | null;
   return data?.result?.message_id ?? null;
+}
+
+export async function sendTelegramMessage(
+  text: string,
+  replyMarkup?: InlineKeyboardMarkup,
+): Promise<number | null> {
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!chatId) return null; // not provisioned — silent no-op
+  // A visszatérő message_id-t a 012 összefoglaló-válasz ága használja, ezért a
+  // delegálás NEM nyelheti el.
+  return sendTelegramMessageTo(chatId, text, replyMarkup);
 }
 
 export async function answerCallbackQuery(callbackQueryId: string, text?: string): Promise<void> {

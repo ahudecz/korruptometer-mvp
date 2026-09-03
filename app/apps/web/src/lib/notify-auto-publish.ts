@@ -25,6 +25,23 @@ import { pinChatMessage, sendTelegramMessage, type InlineKeyboardMarkup } from '
  */
 export type AutoPublishTarget = 'court_verdict' | 'asset_recovery' | 'watchlist_removal' | 'resignation';
 
+/**
+ * 012-reader-subscriptions FR-016 / FR-008 — a szerkesztői megerősítésre váró
+ * szekciók halmaza.
+ *
+ * A vagyonvisszaszerzés és a tisztségviselő-eltávolítás CSAK szerkesztői
+ * művelet után riaszt. A bírósági ítélet nincs benne (A2): az már a detektor
+ * beszúrásánál riaszt, és a visszavonási ablak a flush-időköz.
+ *
+ * Ez az EGYETLEN engedett kivétel az FR-007 alól: az `AutoPublishTarget` egy
+ * másik, HÁROMÉRTÉKŰ unió, nem a `SubscriptionSection`. Egy rögzítő teszt
+ * szegezi le a tartalmát.
+ */
+export const ALERT_ON_EDITOR_CONFIRM: ReadonlySet<AutoPublishTarget> = new Set([
+  'asset_recovery',
+  'watchlist_removal',
+]);
+
 export type NotifyAutoPublishedEvent = {
   target: AutoPublishTarget;
   /** The row's own id in its table — what "Visszavonás" deletes. */
@@ -35,7 +52,11 @@ export type NotifyAutoPublishedEvent = {
   articleUrl: string;
 };
 
-const TARGET_LABELS_HU: Record<AutoPublishTarget, string> = {
+// 012-reader-subscriptions FR-009 — exportálva a rögzítő teszt kedvéért. NE
+// származtasd újra a SECTION_LABELS_HU-ból: ez a szerkesztő SAJÁT értesítő
+// szövege, más szavakkal, és az újraszármaztatás csendben átírná az élő
+// Telegram-üzeneteket.
+export const TARGET_LABELS_HU: Record<AutoPublishTarget, string> = {
   court_verdict: 'Bírósági ítélet',
   asset_recovery: 'Vagyonvisszaszerzés',
   watchlist_removal: 'Lemondásra felszólított — mandátum megszűnt',

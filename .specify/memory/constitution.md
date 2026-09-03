@@ -1,6 +1,64 @@
 <!--
 Sync Impact Report
 ==================
+Version change: 1.0.0 → 2.0.0
+Date: 2026-09-01
+Bump rationale: MAJOR. The versioning policy below grades "stack substitutions
+covered by Principle III" as MAJOR. This amendment performs one: it removes
+Resend from the Principle III forbidden-substitutions list and admits it to the
+locked-in services as the email sender. It is not MINOR — MINOR covers a new
+principle or expanded guidance, not a change to the locked stack.
+
+Modified principles:
+  - III. Single Next.js App on the Inbox-to-Action Stack
+      * Locked-in services: new "Email" entry naming Resend, with its
+        constraints (transactional and bulk sending only, never a queue or a
+        data store; subdomain sending domain; RFC 8058 one-click unsubscribe
+        headers on every bulk send; subscriber addresses encrypted at rest and
+        decrypted only at send time; free-tier caps 100/day and 3,000/month
+        enforced in the application by a shared reservation ledger).
+      * Locked-in services: "Hosting" enumeration gains Resend.
+      * Forbidden substitutions: "Resend" removed. The list now reads
+        "(Neon, Fly, R2, BullMQ, Prisma, NextAuth)". The other six are intact.
+      * New "Amendment record — Resend admitted" paragraph carrying the
+        rationale the amendment procedure requires.
+
+Added sections: none (the amendment record sits inside Principle III).
+Removed sections: none.
+
+Trigger: feature 012-reader-subscriptions. Its plan logged this as its sole
+Constitution Check violation; Phase 7 (email) could not merge without this
+amendment.
+
+Templates and dependent artifacts:
+  - .specify/templates/plan-template.md — ✅ no edit needed. Its Constitution
+    Check section is a dynamic placeholder ("[Gates determined based on
+    constitution file]") and names no service.
+  - .specify/templates/spec-template.md — ✅ no edit needed. No
+    principle-specific or stack-specific content.
+  - .specify/templates/tasks-template.md — ✅ no edit needed. Generic phase and
+    user-story scaffolding; it names no service and no principle.
+  - .specify/templates/commands/*.md — ⚠ not present in this repo (skipped).
+  - app/docs/*.md runbooks — ✅ no edit needed at this version. No runbook
+    enumerates the locked-in services. app/docs/deploy-ops-runbook.md is a
+    provisioning list of already-executed tasks; the Resend account and DNS
+    records are maintainer preconditions P3/P4 of 012-reader-subscriptions and
+    are provisioned there, not here.
+  - specs/012-reader-subscriptions/plan.md — ✅ updated. Constitution Check and
+    Complexity Tracking now record this amendment as landed.
+
+Follow-up TODOs:
+  - TODO(log-retention): Principle I gates Phase 2 on Vercel + Inngest + Better
+    Stack access-log retention at ≤ 7 days, audited via app/docs/log-retention.md.
+    Resend keeps its own send logs, which carry recipient addresses. When Phase 7
+    of 012-reader-subscriptions provisions the account, add a Resend row to
+    app/docs/log-retention.md with its configured retention. This amendment does
+    not provision anything, so no row is added yet.
+-->
+
+<!--
+Sync Impact Report (superseded — kept for history)
+==================
 Version change: TEMPLATE (placeholders only) → 1.0.0
 Bump rationale: First concrete fill of the constitution; per semver guidance, the
 initial published version of a previously empty/template document is 1.0.0.
@@ -128,8 +186,23 @@ Locked-in services (the inbox-to-action stack):
   Better Stack alert is the DLQ-equivalent.
 - **Rate limiting**: Upstash Redis (`@upstash/ratelimit`) — rate-limit only.
   Redis MUST NOT be used as a queue broker or cache at any phase.
+- **Email**: Resend — transactional and bulk reader mail only, called over
+  native `fetch`. Resend MUST NOT be used as a queue, a scheduler, or a data
+  store; the subscriber list of record lives in Postgres, and the provider is
+  a send path only. The sending domain MUST be a subdomain
+  (`mail.kegyencjarat.hu`), never the apex, so the apex domain's existing mail
+  forwarding and sending reputation are unaffected by this traffic. Every bulk
+  send MUST carry RFC 8058 one-click unsubscribe headers — `List-Unsubscribe`
+  with both an `https:` and a `mailto:` value, plus `List-Unsubscribe-Post:
+  List-Unsubscribe=One-Click`. Subscriber addresses are encrypted at rest with
+  the existing personal-data encryption helper and decrypted only at the moment
+  a message is addressed; a plaintext address MUST NOT reach a log line or an
+  audit-record detail field. The free-tier limits (100 messages/day,
+  3,000/month) MUST be enforced **in the application** by a shared reservation
+  ledger keyed on the database's `current_date`, never assumed to be enforced
+  by the provider.
 - **Hosting**: Vercel (web + Inngest endpoint), Supabase (Postgres + Auth +
-  Storage), Inngest Cloud, Upstash, Sentry, Better Stack.
+  Storage), Inngest Cloud, Upstash, Resend, Sentry, Better Stack.
 
 Connection pooling is enforced: every runtime path uses `DATABASE_URL`
 (Supabase session-pooled, `?pgbouncer=true&connection_limit=1`); `DIRECT_URL`
@@ -137,9 +210,32 @@ is reserved for `drizzle-kit` and `supabase db push` migrations only. Both
 URLs are documented in `.env.example` with comments explaining which is for
 runtime vs migrations.
 
-Stack substitutions (Neon, Fly, R2, BullMQ, Prisma, NextAuth, Resend) MUST
+Stack substitutions (Neon, Fly, R2, BullMQ, Prisma, NextAuth) MUST
 NOT be reintroduced; an exception requires a constitution amendment with
 recorded rationale.
+
+**Amendment record — Resend admitted (v2.0.0, 2026-09-01).** Resend was on the
+forbidden-substitutions list above until this amendment. The recorded rationale:
+
+- The product has no way to reach a reader who does not use Telegram. The
+  locked-in stack contained no email sender of any kind, so that capability
+  could not be built without adding one.
+- Supabase Auth's mail path is for authentication only. It sends magic links
+  to editors; it is not a bulk sender and has no bounce or complaint webhook.
+- Resend is the maintainer's explicit choice, signed off on 2026-09-01 together
+  with its DNS records (feature `012-reader-subscriptions`, spec assumption A3).
+- Alternatives considered and rejected: **ship Telegram-only** — rejected
+  because it excludes every reader who does not use Telegram, which is the
+  whole point of the feature; **pick a provider the forbidden list merely fails
+  to name** — rejected because it respects the letter of the rule while
+  defeating its purpose, which is that the stack changes by amendment and not
+  by omission.
+
+The constraints in the **Email** entry above are the price of this admission.
+They are enforceable rules, not a permission slip: a send path that drops the
+one-click unsubscribe headers, sends from the apex domain, holds a plaintext
+address at rest, or trusts the provider to enforce the free-tier caps is a
+Principle III violation, exactly as Redis-as-a-queue is.
 
 ### IV. Data Minimization & GDPR Retention by Default
 
@@ -442,4 +538,4 @@ in-flight implementation reference; where the plan and this constitution
 disagree on a principle, this constitution wins, and the plan is updated to
 match in the same PR.
 
-**Version**: 1.0.0 | **Ratified**: 2026-04-30 | **Last Amended**: 2026-04-30
+**Version**: 2.0.0 | **Ratified**: 2026-04-30 | **Last Amended**: 2026-09-01
