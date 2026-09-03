@@ -45,7 +45,7 @@ const QUIZ = {
   slug: 'mnb-bankrablas',
   title: 'Lehetnél te a Vagyonvisszaszerzési Hivatal legfőbb ügyésze?',
   intro:
-    'Nézzük, mennyit tudsz az MNB-alapítványi botrányról — a Matolcsy-kör körüli ügyről, amiben eddig kiderült sztorik szerint milliárdok tűntek el nyomtalanul, rejtélyes befektetésekben és külföldi kitérőkön. 10 kérdés, egyre nehezebb — kezdjük!',
+    'Nézzük, mennyit tudsz az MNB-alapítványi botrányról — a Matolcsy-kör körüli ügyről, amiben eddig kiderült sztorik szerint milliárdok tűntek el nyomtalanul, rejtélyes befektetésekben és külföldi kitérőkön. 10 kérdés — nagy meglepetések, kezdjük!',
   coverImageUrl: '/images/persons/matolcsy-gyorgy.png',
   coverImageCaption: 'Matolcsy György',
   tiers: [
