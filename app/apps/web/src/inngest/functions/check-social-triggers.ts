@@ -8,7 +8,7 @@ import { sendTelegramPhoto, type InlineKeyboardMarkup } from '@/lib/telegram';
 import { computeComplaintTotal } from '@app/birosagi-iteletek/complaint-stats';
 import { computeNextMilestone, formatMilliardLabel } from '@/lib/social-milestone';
 import { UGYEK } from '@app/_home/ugyek-config';
-import { toAsciiId } from '@app/_home/case-detail-config';
+import { toAsciiId, autoDisplayTitle, RETIRED_SCANDAL_IDS } from '@app/_home/case-detail-config';
 import { listPolls, getPollWithResults } from '@/lib/poll-queries';
 import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
 
@@ -412,6 +412,14 @@ async function buildCatalogHighlightTrigger(db: ReturnType<typeof getDb>): Promi
   };
 }
 
+type ScandalCatalogRow = { id: string; name: string; person: string | null; institution: string | null; summary: string | null; damageHuf: string | null };
+
+/** A `/adatbazis/[id]` NEM a Drizzle `cases` ("Case") táblát olvassa —
+ *  hanem egy Drizzle-en kívüli, csak nyers SQL-lel elért "ScandalCatalog"
+ *  táblát (l. adatbazis/[id]/page.tsx). Korábban itt tévedésből a `cases`
+ *  táblából választottunk, ami garantált 404-hez vezetett (user report,
+ *  2026-09-03: "K. Zoltán", kamunak tűnő, linkje 404). Ugyanazokat az
+ *  oszlopokat kérdezzük, mint a valódi oldal, hogy a link biztosan éljen. */
 async function buildGalleryHighlightTrigger(db: ReturnType<typeof getDb>): Promise<OutboxInsert | null> {
   const cooldownSince = new Date(Date.now() - CATALOG_COOLDOWN_DAYS * 24 * 60 * 60 * 1000);
   const recentlyPosted = await db
@@ -421,29 +429,49 @@ async function buildGalleryHighlightTrigger(db: ReturnType<typeof getDb>): Promi
       eq(schema.socialPostOutbox.triggerType, 'gallery_highlight'),
       gt(schema.socialPostOutbox.createdAt, cooldownSince),
     ));
-  const recentIds = new Set(recentlyPosted.map((r) => r.triggerRefId));
+  const recentIds = new Set(recentlyPosted.map((r) => r.triggerRefId).filter((v): v is string => v !== null));
+  const excludeIds = [...recentIds, ...RETIRED_SCANDAL_IDS];
 
-  const allCases = await db
-    .select({ id: schema.cases.id, name: schema.cases.name, position: schema.cases.position, amount: schema.cases.amount, sentenceYears: schema.cases.sentenceYears })
-    .from(schema.cases);
-  const candidates = allCases.filter((c) => !recentIds.has(c.id));
-  const pool = candidates.length > 0 ? candidates : allCases;
+  const rows = (await db.execute(sql`
+    SELECT sc.id, sc.name, sc.person, sc.institution, sc.summary, sc.damage_huf AS "damageHuf"
+    FROM "ScandalCatalog" sc
+    WHERE sc.summary IS NOT NULL AND length(trim(sc.summary)) > 0
+      AND sc.id NOT IN (${sql.join(excludeIds.length > 0 ? excludeIds.map((v) => sql`${v}`) : [sql`''`], sql`, `)})
+  `)) as unknown as ScandalCatalogRow[];
+
+  let pool = rows;
+  if (pool.length === 0) {
+    // Ha a cooldown mindent kizárt, essünk vissza a teljes (RETIRED nélküli) készletre.
+    const fallbackRows = (await db.execute(sql`
+      SELECT sc.id, sc.name, sc.person, sc.institution, sc.summary, sc.damage_huf AS "damageHuf"
+      FROM "ScandalCatalog" sc
+      WHERE sc.summary IS NOT NULL AND length(trim(sc.summary)) > 0
+        AND sc.id NOT IN (${sql.join(RETIRED_SCANDAL_IDS.length > 0 ? RETIRED_SCANDAL_IDS.map((v) => sql`${v}`) : [sql`''`], sql`, `)})
+    `)) as unknown as ScandalCatalogRow[];
+    pool = fallbackRows;
+  }
   if (pool.length === 0) return null;
   const pick = pool[Math.floor(Math.random() * pool.length)];
   if (!pick) return null;
 
   const kicker = 'ADATBÁZIS';
-  const headline = `${pick.name}: ${pick.position}`;
-  const detail = `Ítélet: ${pick.sentenceYears} év, ${formatFtLabel(pick.amount)}`;
-  const image = await renderBreakingImage({ kicker, headline, detail });
+  const headline = autoDisplayTitle(pick.name, pick.person) || pick.name;
+  const detailParts = [pick.summary ?? ''];
+  if (pick.damageHuf) {
+    const dmg = BigInt(pick.damageHuf);
+    if (dmg > 0n) detailParts.push(`Érintett összeg: ${formatFtLabel(dmg)}`);
+  }
+  const detail = detailParts.filter(Boolean).join(' — ');
+  const trimmedDetail = detail.length > 220 ? detail.slice(0, 217) + '…' : detail;
+  const image = await renderBreakingImage({ kicker, headline, detail: trimmedDetail });
   return {
     triggerType: 'gallery_highlight',
     triggerRefId: pick.id,
     milestoneValueFt: null,
     headline,
-    caption: breakingCaption(kicker, headline, detail, `/adatbazis/${toAsciiId(pick.id)}`),
+    caption: breakingCaption(kicker, headline, trimmedDetail, `/adatbazis/${toAsciiId(pick.id)}`),
     imagePng: image,
-    imageText: detail,
+    imageText: trimmedDetail,
     kicker,
   };
 }
