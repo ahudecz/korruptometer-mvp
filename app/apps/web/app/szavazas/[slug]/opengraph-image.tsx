@@ -7,6 +7,14 @@ import { getPollWithResults } from '@/lib/poll-queries';
 // nyers TCP-socket) a dinamikus kérdésszöveg lekérdezéséhez edge-en nem
 // működne megbízhatóan.
 export const runtime = 'nodejs';
+// A postgres-js (nyers TCP) DB-hívást a Next.js nem tudja automatikusan
+// dinamikusként felismerni (csak a fetch()-eket figyeli) — enélkül a
+// route STATIKUSAN gettelődött volna be a build/első-kérés
+// pillanatában, és Cache-Control: immutable, max-age=1 év fejléccel
+// örökre azt a snapshotot szolgálta volna ki (l. a kvíz azonos
+// opengraph-image.tsx-ének 2026-09-04-i bugfix-jegyzetét, ahol ez
+// ténylegesen elő is fordult).
+export const dynamic = 'force-dynamic';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 

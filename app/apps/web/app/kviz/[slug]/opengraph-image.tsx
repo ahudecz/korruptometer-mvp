@@ -8,6 +8,15 @@ import { getQuizWithQuestions } from '@/lib/quiz-queries';
 // működne megbízhatóan (l. a szavazás opengraph-image.tsx-ének azonos
 // jegyzetét).
 export const runtime = 'nodejs';
+// A postgres-js (nyers TCP) DB-hívást a Next.js nem tudja automatikusan
+// dinamikusként felismerni (csak a fetch()-eket figyeli) — enélkül a
+// route STATIKUSAN gettelődött volna be a build/első-kérés
+// pillanatában, és Cache-Control: immutable, max-age=1 év fejléccel
+// örökre azt a snapshotot szolgálta volna ki, akárhányszor frissül is
+// utána a DB (user report, 2026-09-04: a kvíz-cím frissítése az oldalon
+// azonnal látszott, az OG-képen nem — l. [slug]/page.tsx azonos
+// dynamic='force-dynamic' jegyzetét).
+export const dynamic = 'force-dynamic';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
