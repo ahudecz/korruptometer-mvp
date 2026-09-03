@@ -38,6 +38,8 @@ export default async function KvizPage({ params }: { params: Params }) {
       title={quiz.title}
       intro={quiz.intro}
       tiers={quiz.tiers}
+      coverImageUrl={quiz.coverImageUrl}
+      coverImageCaption={quiz.coverImageCaption}
       outroVideoId={quiz.outroVideoId}
       outroVideoIntro={quiz.outroVideoIntro}
       questions={quiz.questions}

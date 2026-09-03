@@ -1932,6 +1932,11 @@ export const quizzes = pgTable('Quiz', {
   // szabható pontszám-kategóriák (user kérés, 011-nvvh-case-poll melletti
   // kvíz-feature).
   tiers: jsonb('tiers').notNull(),
+  // A kvíz nyitóoldalán (Kezdés-gomb előtt) megjelenő borítókép (opcionális)
+  // — player.hu-mintájú kvíz-hero, user report 2026-09-03: "nincs az első
+  // oldalon kép".
+  coverImageUrl: text('coverImageUrl'),
+  coverImageCaption: text('coverImageCaption'),
   // A kvíz VÉGÉN, az eredmény-képernyőn megjelenő, pontszámtól független
   // lezáró videó (opcionális) — user kérés: "akármi is az eredményed,
   // nézd meg hol tart az ügy".

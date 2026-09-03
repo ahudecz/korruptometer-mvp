@@ -33,6 +33,8 @@ export type QuizWithQuestions = {
   title: string;
   intro: string;
   tiers: QuizTier[];
+  coverImageUrl: string | null;
+  coverImageCaption: string | null;
   outroVideoId: string | null;
   outroVideoIntro: string | null;
   questions: QuizQuestionData[];
@@ -63,6 +65,8 @@ export async function getQuizWithQuestions(
     title: quiz.title,
     intro: quiz.intro,
     tiers: quiz.tiers as QuizTier[],
+    coverImageUrl: quiz.coverImageUrl,
+    coverImageCaption: quiz.coverImageCaption,
     outroVideoId: quiz.outroVideoId,
     outroVideoIntro: quiz.outroVideoIntro,
     questions: rawQuestions.map((q) => ({
