@@ -10805,9 +10805,24 @@ body:has(.admin-nav) > main {
 .ugy-breaking-update-source:hover { text-decoration: underline; }
 
 @media (max-width: 640px) {
-  .ugy-breaking-update-table { font-size: 12px; }
+  .ugy-breaking-update-table { font-size: 12px; table-layout: fixed; }
   .ugy-breaking-update-table th,
-  .ugy-breaking-update-table td { padding: 8px 12px; }
+  .ugy-breaking-update-table td { padding: 8px 8px; }
+  /* Cég-oszlop szélesebb (hogy pl. "TMT Technics Kft." egy sorba férjen),
+     a Beszerzési ár-oszlop keskenyebb — user kérés, 2026-09-03. */
+  .ugy-breaking-update-table th:nth-child(1),
+  .ugy-breaking-update-table td:nth-child(1) { width: 30%; }
+  .ugy-breaking-update-table th:nth-child(2),
+  .ugy-breaking-update-table td:nth-child(2) { width: 15%; white-space: normal; }
+  .ugy-breaking-update-table th:nth-child(3),
+  .ugy-breaking-update-table td:nth-child(3) { width: 17%; white-space: normal; }
+  .ugy-breaking-update-table th:nth-child(4),
+  .ugy-breaking-update-table td:nth-child(4) { width: 19%; white-space: normal; }
+  .ugy-breaking-update-table th:nth-child(5),
+  .ugy-breaking-update-table td:nth-child(5) { width: 19%; white-space: normal; }
+  /* A zárójeles rész (pl. "(1208 gép)") mindig saját sorba törik — l.
+     page.tsx splitParen(). */
+  .ugy-breaking-update-paren { display: block; color: var(--ink-2); font-size: 11px; }
 }
 
 /* BigCasesSection breaking alert */

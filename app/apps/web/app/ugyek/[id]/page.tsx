@@ -59,6 +59,15 @@ function fmtDate(d: Date): string {
   return `${d.getFullYear()}. ${HU_MONTHS[d.getMonth()]} ${d.getDate()}.`;
 }
 
+// Breaking-update táblázat "24,4 M EUR (1208 gép)" alakú celláinak szétvágása
+// — a zárójeles rész mindig saját sorba kerül (user kérés, 2026-09-03),
+// nem a CSS-re bízva (a white-space:nowrap más celláknál kell, itt viszont
+// megbízhatóbb a JSX-szintű törés, mint egy törékeny regex-alapú CSS-trükk).
+function splitParen(value: string): { main: string; detail: string | null } {
+  const m = value.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+  return m ? { main: m[1]!, detail: m[2]! } : { main: value, detail: null };
+}
+
 // 2026-07-22 — l. adatbazis/_components/desc-block.tsx fejléce: csak a
 // blokk-tömb ELSŐ (legfrissebb) 'breaking-group'-ja marad piros BREAKING,
 // minden korábbi automatikusan sima szürke article-card-listává
@@ -453,7 +462,12 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
                         {c.name}
                         {c.note && <span className="ugy-breaking-update-table-note"> ({c.note})</span>}
                       </td>
-                      <td>{c.purchasePrice}</td>
+                      <td>
+                        {splitParen(c.purchasePrice).main}
+                        {splitParen(c.purchasePrice).detail && (
+                          <span className="ugy-breaking-update-paren"> ({splitParen(c.purchasePrice).detail})</span>
+                        )}
+                      </td>
                       <td>{c.received}</td>
                       <td>{c.profit}</td>
                       <td>{c.revenueGrowth ?? '—'}</td>
