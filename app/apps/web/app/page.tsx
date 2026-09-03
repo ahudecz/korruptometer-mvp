@@ -715,7 +715,7 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* ───── NVVH-SZAVAZÁS PROMÓ-CSÍK (011) ───── */}
+        {/* ───── KVÍZ PROMÓ-CSÍK (2026-09-03 óta kvíz, korábban NVVH-szavazás) ───── */}
         <PollBanner />
 
         <div className="stat-grid">
