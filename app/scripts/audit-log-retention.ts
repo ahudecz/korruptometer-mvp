@@ -124,7 +124,13 @@ async function main() {
     if (r.status === 'DRIFT') drifted = true;
   }
   if (drifted) {
-    console.error(`\nDRIFT: at least one platform exceeds the ${MAX_DAYS}-day promise.`);
+    // Platformonkénti küszöb — a Resendé 30, a többié MAX_DAYS. Egy közös
+    // szám kiírása félrevezető lenne (l. PLATFORM_MAX_DAYS).
+    const over = results
+      .filter((r) => r.status === 'DRIFT')
+      .map((r) => `${r.platform} ${r.days}d > ${maxDaysFor(r.platform)}d`)
+      .join(', ');
+    console.error(`\nDRIFT: ${over}.`);
     process.exit(1);
   }
 }
