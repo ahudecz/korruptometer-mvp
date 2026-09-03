@@ -14292,21 +14292,18 @@ code {
   font-size: clamp(26px, 4vw, 44px);
   line-height: 1.15;
   letter-spacing: -0.01em;
+  margin: 0 0 10px;
+}
+
+/* 2026-09-03 — kvíz-promó alcím (a headline alatt, kisebb betűvel) —
+   l. poll-banner.tsx fejléce a tartalmi csere indoklásáért. */
+.poll-banner-subheadline {
+  font-size: clamp(14px, 1.6vw, 17px);
+  font-weight: 500;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.85);
   margin: 0 0 24px;
-}
-
-.poll-banner-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.poll-banner-count {
-  font-size: 14px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
+  max-width: 640px;
 }
 
 .poll-banner-cta {
@@ -14335,11 +14332,6 @@ code {
     padding: 28px 16px;
     margin-top: 32px;
     margin-bottom: 0;
-  }
-  .poll-banner-bottom {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 14px;
   }
   .poll-banner-cta {
     justify-content: center;

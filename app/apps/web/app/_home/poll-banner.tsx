@@ -1,52 +1,33 @@
-import { unstable_cache } from 'next/cache';
 import Link from 'next/link';
-
-import { fmtNumber } from '@korr/shared/format';
 
 /**
  * Teljes szélességű, kitört promó-csík a hero fejléc/KPI-blokkja és a
  * KPI-kártyarács között (l. page.tsx) — szándékosan NEM a breaking-banner
  * mellett/alatt, hogy ne tűnjön úgy, mintha azt váltaná le (user report,
- * 2026-08-31). Az egész csík link a /szavazas-ra.
+ * 2026-08-31).
+ *
+ * 2026-09-03 user kérés: a korábbi szavazás-promó (feljelentés-hivatal
+ * ügyeire szavaztatás, szavazatszámmal) helyett most a kvíz-rendszer
+ * promója — a fájl/komponens neve (poll-banner/PollBanner) történeti okból
+ * maradt, hogy ne kelljen az importot is átírni page.tsx-ben egy tisztán
+ * tartalmi cseréért. A "/kviz" a legfrissebb kvízre irányít
+ * (kviz/page.tsx), nem egy konkrét slug van belőgetve, hogy egy jövőbeli
+ * új kvíznél ne kelljen itt is módosítani.
  */
-const getCachedPollTotalVotes = unstable_cache(
-  async () => {
-    const { getDb } = await import('@/lib/db');
-    const { getPollWithResults } = await import('@/lib/poll-queries');
-    const poll = await getPollWithResults(getDb(), 'nvvh-elso-5-ugye');
-    return poll?.totalVotes ?? 0;
-  },
-  ['poll-total-votes'],
-  { tags: ['poll-results'], revalidate: 60 },
-);
-
 export async function PollBanner() {
-  let totalVotes = 0;
-  try {
-    totalVotes = await getCachedPollTotalVotes();
-  } catch {
-    // ha a lekérdezés hibázik, a csík akkor is megjelenik szám nélkül
-  }
-
   return (
-    <Link href="/szavazas" className="poll-banner">
+    <Link href="/kviz" className="poll-banner">
       <div className="poll-banner-inner">
-        <span className="poll-banner-eyebrow">Szavazás</span>
+        <span className="poll-banner-eyebrow">Kvíz</span>
         <p className="poll-banner-headline">
-          Szavazz: mi legyen az első 5 ügy, amit a Vagyonvisszaszerzési Hivatal kivizsgál?
+          Lehetnél te a Vagyonvisszaszerzési Hivatal legfőbb ügyésze?
         </p>
-        <div className="poll-banner-bottom">
-          {totalVotes > 0 ? (
-            <span className="poll-banner-count">{fmtNumber(totalVotes)} szavazat eddig</span>
-          ) : (
-            <span className="poll-banner-count">Légy te az első szavazó</span>
-          )}
-          {/* span, nem külön link — a teljes csík már link, egy beágyazott
-              <a> érvénytelen HTML lenne */}
-          <span className="poll-banner-cta">
-            Szavazok <span aria-hidden="true">→</span>
-          </span>
-        </div>
+        <p className="poll-banner-subheadline">
+          Nézzük, mennyit tudsz az MNB-alapítványi botrányról, töltsd ki a kvízt most!
+        </p>
+        <span className="poll-banner-cta">
+          Kitöltöm a kvízt <span aria-hidden="true">→</span>
+        </span>
       </div>
     </Link>
   );
