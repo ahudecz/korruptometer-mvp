@@ -14428,6 +14428,42 @@ code {
   min-height: 0;
 }
 
+/* Állapot-hangnemek (2026-09-03, tesztelői visszajelzés). A siker, a
+   szünetel és a hiba eddig EGYFORMÁN nézett ki. Mindhárom saját színt és
+   saját bal élt kap, hogy egy pillantásból elkülönüljön — és hogy a siker
+   ne legyen elnézhető egy halvány sorként. */
+.newsletter-cta-status.is-ok,
+.newsletter-cta-status.is-warn,
+.newsletter-cta-status.is-err {
+  margin-top: 4px;
+  padding: 14px 16px;
+  border-left: 3px solid currentColor;
+  border-radius: 0 4px 4px 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.newsletter-cta-status.is-ok {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.newsletter-cta-status.is-warn {
+  color: var(--warn);
+  background: #fff8ec;
+}
+.newsletter-cta-status.is-err {
+  color: var(--crit);
+  background: #fdecef;
+}
+
+/* A "kész" gomb NEM halványul el, pedig le van tiltva: itt a letiltás azt
+   jelenti, hogy nincs több teendő az űrlapon, nem azt, hogy nem elérhető. */
+.newsletter-cta-btn.is-done {
+  background: var(--accent);
+  opacity: 1;
+  cursor: default;
+}
+
 /* ── Csatornaválasztó: Telegram + e-mail (012-reader-subscriptions, US2) ──
    A két olvasói csatorna EGY vizuális rendszerben. A Telegram-kártya és az
    e-mail-kártya ugyanaz a doboz; a különbség a tartalmuk, nem a stílusuk —

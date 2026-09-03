@@ -135,11 +135,42 @@ export function NewsletterCta() {
         <a href="/adatvedelem">adatvédelmi tájékoztatóban</a>.
       </p>
 
-      <button className="newsletter-cta-btn" type="submit" disabled={state.kind === 'sending'}>
-        {state.kind === 'sending' ? 'Küldés…' : 'Feliratkozom'}
+      {/*
+        2026-09-03, tesztelői visszajelzés: a sikerüzenet egy halvány sor volt
+        a gomb ALATT, a gomb közben változatlanul "Feliratkozom" maradt — az
+        olvasó nem vette észre, hogy sikerült. Két dolgot javítunk:
+
+        1. A GOMB maga mondja meg, mi a következő lépés. Ez a legnagyobb elem
+           az űrlapon, és a szem eleve ott van, mert épp odakattintott.
+        2. Az állapotsor hangnemet kap. Eddig a siker, a szünetel és a hiba
+           EGYFORMÁN nézett ki — egy 14px-es szürkés sor. Egy hibát nem volt
+           mivel megkülönböztetni egy sikertől.
+      */}
+      <button
+        className={`newsletter-cta-btn${state.kind === 'ok' ? ' is-done' : ''}`}
+        type="submit"
+        disabled={state.kind === 'sending' || state.kind === 'ok'}
+      >
+        {state.kind === 'sending'
+          ? 'Küldés…'
+          : state.kind === 'ok'
+            ? 'Nézd meg az e-mailjeid'
+            : 'Feliratkozom'}
       </button>
 
-      <p className="newsletter-cta-status" role="status" aria-live="polite">
+      <p
+        className={`newsletter-cta-status${
+          state.kind === 'ok'
+            ? ' is-ok'
+            : state.kind === 'paused'
+              ? ' is-warn'
+              : state.kind === 'error'
+                ? ' is-err'
+                : ''
+        }`}
+        role="status"
+        aria-live="polite"
+      >
         {state.kind === 'ok' || state.kind === 'paused' || state.kind === 'error'
           ? state.message
           : ''}
