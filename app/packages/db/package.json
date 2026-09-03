@@ -31,6 +31,7 @@
     "db:seed": "tsx src/seed.ts",
     "db:seed-scrapers": "tsx src/seed-scrapers.ts",
     "db:seed-nvvh-poll": "tsx src/seed-nvvh-poll.ts",
+    "db:seed-mnb-quiz": "tsx src/seed-mnb-quiz.ts",
     "kmdb:upsert": "tsx src/kmdb-upsert.ts",
     "kmdb:llm-tighten": "tsx src/kmdb-llm-tighten.ts",
     "scrape-now": "tsx src/scrape-now.ts",
