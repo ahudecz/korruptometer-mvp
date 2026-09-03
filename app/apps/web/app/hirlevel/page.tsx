@@ -1,5 +1,5 @@
 import { NewsletterCta } from '@app/_home/newsletter-cta';
-import { TelegramChannelCard } from '@app/_home/telegram-channel-card';
+import { TelegramChannelCard, hasTelegramChannel } from '@app/_home/telegram-channel-card';
 
 export const metadata = {
   title: 'Értesítések',
@@ -20,11 +20,14 @@ export default function HirlevelPage() {
           <h2 className="section-title">Szólunk, ha történik valami.</h2>
         </div>
 
+        {/* A "két út" csak akkor igaz, ha a csatorna tényleg létezik. Amíg
+            a TelegramChannelCard el van rejtve, ez a mondat olyan választást
+            ígérne, amit az olvasó nem lát sehol. */}
         <p className="section-lead">
           Amikor lemond vagy távozik egy NER-vezető, ítélet születik,
           feljelentés megy be, vagy megszűnik egy médium — arról szólunk. Nem
-          hírlevél, nem reklám: csak az, ami felkerül az oldalra. Két úton
-          kérheted; válassz egyet, vagy mindkettőt.
+          hírlevél, nem reklám: csak az, ami felkerül az oldalra.
+          {hasTelegramChannel() ? ' Két úton kérheted; válassz egyet, vagy mindkettőt.' : ''}
         </p>
 
         <TelegramChannelCard />
@@ -56,8 +59,10 @@ export default function HirlevelPage() {
           <p>
             A leveleket a Resend küldi ki. A küldési naplóikban a címed 30
             napig megmarad — ennyi a szolgáltató minden csomagján, és nem
-            állítható rövidebbre. A Telegram-csatornánál ilyen nincs, mert ott
-            semmit nem adsz meg.
+            állítható rövidebbre.
+            {hasTelegramChannel()
+              ? ' A Telegram-csatornánál ilyen nincs, mert ott semmit nem adsz meg.'
+              : ''}
           </p>
           <p>
             A jogalap a hozzájárulásod (GDPR 6. cikk (1) a) pont), amit a

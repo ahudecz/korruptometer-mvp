@@ -8,7 +8,7 @@ import React from 'react';
 // dolga.
 (globalThis as unknown as { React: typeof React }).React = React;
 
-import { TelegramChannelCard } from '../../app/_home/telegram-channel-card';
+import { TelegramChannelCard, hasTelegramChannel } from '../../app/_home/telegram-channel-card';
 
 afterEach(() => {
   delete process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_URL;
@@ -37,5 +37,22 @@ describe('TelegramChannelCard', () => {
     const tree = JSON.stringify(TelegramChannelCard());
     expect(tree).not.toContain('input');
     expect(tree).toContain('semmit nem tárolunk rólad');
+  });
+});
+
+/**
+ * A "két út" ígéret és a kártya EGY forrásból dönt. Ha ez szétcsúszik, az
+ * oldal olyan választást ígér, amit az olvasó nem lát sehol — pontosan ez
+ * ment ki élesbe 2026-09-03-án.
+ */
+describe('hasTelegramChannel', () => {
+  it('hamis, amíg a csatorna címe nincs beállítva', () => {
+    expect(hasTelegramChannel()).toBe(false);
+  });
+
+  it('igaz, ha be van állítva — és ilyenkor a kártya is megjelenik', () => {
+    process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_URL = 'https://t.me/pelda';
+    expect(hasTelegramChannel()).toBe(true);
+    expect(TelegramChannelCard()).not.toBeNull();
   });
 });

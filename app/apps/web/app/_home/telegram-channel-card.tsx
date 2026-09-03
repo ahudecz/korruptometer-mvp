@@ -18,6 +18,15 @@
  * kikapcsoló-logika, mint a küldésnél (FR-022): fél kész csatornára nem
  * küldünk olvasót.
  */
+/**
+ * Van-e egyáltalán csatorna, amire mutathatunk. EGY forrás, hogy a kártya és
+ * a rá hivatkozó SZÖVEGEK ne tudjanak szétcsúszni: amíg nincs csatorna, egy
+ * oldal sem ígérhet "két utat".
+ */
+export function hasTelegramChannel(): boolean {
+  return Boolean(process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_URL);
+}
+
 export function TelegramChannelCard() {
   // A `NEXT_PUBLIC_` előtagú változót a Next a fordításkor behelyettesíti, akár
   // modulszinten, akár itt olvassuk. A komponensen BELÜL olvassuk, hogy a

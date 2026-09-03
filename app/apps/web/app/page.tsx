@@ -12,7 +12,7 @@ import { MediaClosuresSection } from './_home/media-closures-section';
 import { MiniClosureCard } from './_home/closure-card';
 import { SubmissionCTA } from './_home/submission-cta';
 import { NewsletterCta } from './_home/newsletter-cta';
-import { TelegramChannelCard } from './_home/telegram-channel-card';
+import { TelegramChannelCard, hasTelegramChannel } from './_home/telegram-channel-card';
 import { SocialFeed } from './_home/social-feed';
 import { FtValue } from './_home/ft-value';
 import { CaseRow } from './adatbazis/_components/case-row';
@@ -1346,12 +1346,23 @@ export default async function HomePage() {
               feljelentés megy be, vagy megszűnik egy médium — arról szólunk.
               Nem hírlevél, nem reklám: csak az, ami felkerül az oldalra.
             </p>
-            <div className="submission-assurance">
-              <strong>Két út, válassz egyet</strong>
-              A Telegram-csatornához nem adsz meg semmit, és mindent megkapsz.
-              Az e-mailnél te választod ki a témákat, cserébe a címedet
-              titkosítva tároljuk.
-            </div>
+            {/* Amíg nincs Telegram-csatorna, nincs "két út" sem — ilyenkor
+                az e-mailről szóló, IGAZ doboz megy ki. Egy forrás dönt
+                mindkettőről: hasTelegramChannel(). */}
+            {hasTelegramChannel() ? (
+              <div className="submission-assurance">
+                <strong>Két út, válassz egyet</strong>
+                A Telegram-csatornához nem adsz meg semmit, és mindent megkapsz.
+                Az e-mailnél te választod ki a témákat, cserébe a címedet
+                titkosítva tároljuk.
+              </div>
+            ) : (
+              <div className="submission-assurance">
+                <strong>Csak a cím kell</strong>
+                Nevet nem kérünk. A címedet titkosítva tároljuk, és bármelyik
+                levélből egy kattintással leiratkozhatsz.
+              </div>
+            )}
           </div>
 
           <div>
