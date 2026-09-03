@@ -591,7 +591,7 @@ Kerényi György, a Klub Rádió újságírója 2020-ban már részletesen megí
     estimatedDamage: '~300 milliárd Ft — EU legdrágább lélegeztetőgép-vásárlása',
     responsiblePersons: ['Takács Péter — volt belügyminiszter-helyettes', 'Fourcardinal Kft. tulajdonosi köre — Orbán-tanácsadó fivérével'],
     crimeTypes: ['Közbeszerzési visszaélés', 'Hűtlen kezelés (gyanú)', 'Bennfentes kereskedelem (gyanú)'],
-    relatedPersonIds: ['takacs-peter', 'orban-viktor'],
+    relatedPersonIds: ['takacs-peter', 'orban-viktor', 'szijjarto-peter'],
     articleKeywords: ['lélegeztetőgép'],
     pinnedNews: [
       {
