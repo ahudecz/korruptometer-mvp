@@ -13843,12 +13843,42 @@ code {
    (poll-page/poll-layout/poll-sidebar osztályokat használja, l. fentebb)
    ═══════════════════════════════════════════════════════ */
 
+.quiz-intro,
+.quiz-question-view,
+.quiz-result {
+  /* A .nav sticky fejléc (z-index:100) a scroll-pozíció 0-nál eltakarja a
+     tartalom tetejét — scrollIntoView({block:'start'}) enélkül pontosan a
+     fejléc mögé görgetett volna, így úgy tűnt, "nem ugrik fel az oldal
+     teteje" (2026-09-03 user report: köv. kérdésnél nem látszott a
+     kérdés). A scroll-margin-top a natív scrollIntoView-t is figyelembe
+     véve hagy helyet a sticky navnak. */
+  scroll-margin-top: 110px;
+}
+
 .quiz-intro {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 14px;
   max-width: 640px;
+}
+.quiz-intro-hero {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.quiz-intro-hero img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.quiz-intro-hero figcaption {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 8px 12px;
+  background: var(--surface);
 }
 .quiz-intro-title {
   font-family: 'Archivo Narrow', 'Archivo', sans-serif;

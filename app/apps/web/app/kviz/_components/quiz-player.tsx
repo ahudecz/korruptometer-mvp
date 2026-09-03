@@ -42,6 +42,8 @@ export function QuizPlayer({
   title,
   intro,
   tiers,
+  coverImageUrl,
+  coverImageCaption,
   outroVideoId,
   outroVideoIntro,
   questions,
@@ -49,6 +51,8 @@ export function QuizPlayer({
   title: string;
   intro: string;
   tiers: QuizTier[];
+  coverImageUrl?: string | null;
+  coverImageCaption?: string | null;
   outroVideoId: string | null;
   outroVideoIntro: string | null;
   questions: QuizQuestionData[];
@@ -101,6 +105,13 @@ export function QuizPlayer({
   if (phase === 'intro') {
     return (
       <div ref={topRef} className="quiz-intro">
+        {coverImageUrl && (
+          <figure className="quiz-intro-hero">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={coverImageUrl} alt="" />
+            {coverImageCaption && <figcaption>{coverImageCaption}</figcaption>}
+          </figure>
+        )}
         <h1 className="quiz-intro-title">{title}</h1>
         <p className="quiz-intro-text">{intro}</p>
         <p className="quiz-intro-meta">{total} kérdés · kb. {Math.max(1, Math.round(total * 0.3))} perc</p>

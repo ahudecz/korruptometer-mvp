@@ -46,6 +46,8 @@ const QUIZ = {
   title: 'Lehetnél te a Vagyonvisszaszerzési Hivatal legfőbb ügyésze?',
   intro:
     'Nézzük, mennyit tudsz az MNB-alapítványi botrányról — a Matolcsy-kör körüli ügyről, amiben eddig kiderült sztorik szerint milliárdok tűntek el nyomtalanul, rejtélyes befektetésekben és külföldi kitérőkön. 10 kérdés, egyre nehezebb — kezdjük!',
+  coverImageUrl: '/images/persons/matolcsy-gyorgy.png',
+  coverImageCaption: 'Matolcsy György',
   tiers: [
     { minScore: 0, maxScore: 3, title: 'Sajnos elbuknál egy felvételin', description: 'Ne aggódj, a Hivatalnak is kellenek irodai dolgozók.' },
     { minScore: 4, maxScore: 6, title: 'Nyomozónak felvennének', description: 'Van benned gyanakvás, csak még csiszolódnod kell.' },
@@ -53,7 +55,7 @@ const QUIZ = {
     { minScore: 10, maxScore: 10, title: 'Tökéletes főügyész-jelölt', description: 'Mindent tudsz. Az NVVH-nak szüksége van rád.' },
   ],
   outroVideoId: 'bgA0PTDFKlY',
-  outroVideoIntro: 'Akármi is az eredményed, nézd meg másfél év után, hol tart az ügy:',
+  outroVideoIntro: 'Akármi is az eredményed, nézd meg, hogy hol tart az ügy másfél év után:',
 };
 
 type SeedQuestion = {
@@ -183,6 +185,8 @@ async function main() {
         title: QUIZ.title,
         intro: QUIZ.intro,
         tiers: QUIZ.tiers,
+        coverImageUrl: QUIZ.coverImageUrl,
+        coverImageCaption: QUIZ.coverImageCaption,
         outroVideoId: QUIZ.outroVideoId,
         outroVideoIntro: QUIZ.outroVideoIntro,
       })
