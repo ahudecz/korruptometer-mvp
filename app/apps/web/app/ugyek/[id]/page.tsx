@@ -443,15 +443,20 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
                     <th>Beszerzési ár</th>
                     <th>KKM fizetett</th>
                     <th>Haszon / túlárazás</th>
+                    <th>Árbevétel-változás</th>
                   </tr>
                 </thead>
                 <tbody>
                   {entry.breakingUpdate.companies.map((c, i) => (
                     <tr key={i}>
-                      <td>{c.name}{c.note && <span className="ugy-breaking-update-table-note"> ({c.note})</span>}</td>
+                      <td>
+                        {c.name}
+                        {c.note && <span className="ugy-breaking-update-table-note"> ({c.note})</span>}
+                      </td>
                       <td>{c.purchasePrice}</td>
                       <td>{c.received}</td>
                       <td>{c.profit}</td>
+                      <td>{c.revenueGrowth ?? '—'}</td>
                     </tr>
                   ))}
                 </tbody>

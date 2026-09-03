@@ -32,6 +32,9 @@ export type BreakingUpdateCompanyRow = {
   purchasePrice: string;
   received: string;
   profit: string;
+  /** Árbevétel-változás a beszerzés előtti évhez képest, ha a forrás
+   *  cégenkénti bontásban közli — pl. "113 M → 18,6 Mrd Ft (~165×)". */
+  revenueGrowth?: string;
   note?: string;
 };
 export interface BreakingUpdate {
@@ -628,16 +631,17 @@ Kerényi György, a Klub Rádió újságírója 2020-ban már részletesen megí
     moreUrl: '/ugyek/lelegeztetogep',
     breakingUpdate: {
       dateLabel: '2026. szept. 3.',
-      headline: 'Velkey szerint legalább 155 milliárd forintos volt a túlárazás',
-      lead: 'Velkey György László államtitkár szerint csak hat, a lélegeztetőgép- és koronavírus-védőeszköz-beszerzésekben résztvevő cégnél összesen 15,5 milliárd forintos volt a kimutatott túlárazás — a teljes, még fel nem tárt összeg szerinte jóval magasabb, legalább 155 milliárd forint. Számos közvetítő cég korábban nem foglalkozott egészségügyi eszközökkel, több közülük kifejezetten a járvány idején, 2020-ban alakult. A Külügyminisztérium összesen 300 milliárd forintért vásárolt 16 ezer lélegeztetőgépet, amelyek nagy része Kínából érkezett és máig raktárban áll.',
+      headline: 'Velkey: hat cégnél 15,5 milliárd forintos volt a kimutatott túlárazás',
+      lead: 'Velkey György László külügyi államtitkár Facebook-bejegyzésben tett közzé konkrét, forintra pontos adatokat a lélegeztetőgép- és védőeszköz-beszerzésekről: a Külügyminisztérium (KKM) nem közvetlenül a gyártóktól, hanem magyar és külföldi közvetítő cégeken keresztül vásárolt — ezek túlnyomó többsége korábban nem foglalkozott egészségügyi eszközökkel, néhányat kifejezetten 2020-ban alapítottak. Egy Orbán Viktor nemzetközi főtanácsadójának köréhez és Takács Péter sógorához köthető, korábban csak tanácsadással foglalkozó cég a járvány alatt 93 milliárd forintos árbevételt ért el, ebből 18 milliárd forintot osztalékként ki is vettek a tulajdonosok. Egy malajziai közvetítő 6000+ lélegeztetőgépet szállított 180 milliárd forintért — ennek egy részét a KKM a cégtulajdonos személyes számlájára utalta. Az alábbi hat cégnél a beszerzési és a KKM által fizetett ár különbsége forintra kimutatható — összesen 15,5 milliárd forint, a teljes, minden közvetítőre kiterjedő összeg ennél jóval magasabb.',
       companies: [
-        { name: 'TMT Technics Kft.', purchasePrice: '24,4 M EUR (1208 gép)', received: '35,5 M EUR', profit: '11 M EUR (~4 Mrd Ft)' },
-        { name: 'Pro Concept Tanácsadó Kft.', purchasePrice: '32 M EUR', received: '49 M EUR', profit: '17 M EUR (~6,2 Mrd Ft)' },
-        { name: 'OTT-ONE Nyrt.', purchasePrice: '13 M USD (500 gép)', received: '14,5 M USD', profit: '1,5 M USD (~506 M Ft)' },
-        { name: 'Gyömrői-sarok Projekt Szolgáltató Kft.', purchasePrice: '25,1 M USD', received: '27,7 M USD', profit: '2,6 M USD (~876 M Ft)' },
-        { name: 'Speciál 99 Külkereskedelmi Kft.', purchasePrice: '186 ezer USD (30 ezer teszt)', received: '570 ezer USD', profit: '384 ezer USD (~130 M Ft)', note: 'koronavírus-teszt, nem lélegeztetőgép' },
+        { name: 'TMT Technics Kft.', purchasePrice: '24,4 M EUR (1208 gép)', received: '35,5 M EUR', profit: '11 M EUR (~4 Mrd Ft)', revenueGrowth: '113 M Ft → 18,6 Mrd Ft (~165×)', note: '864 M Ft osztalékelőleg; kényszertörlés alatt' },
+        { name: 'Pro Concept Tanácsadó Kft.', purchasePrice: '32 M EUR', received: '49 M EUR', profit: '17 M EUR (~6,2 Mrd Ft)', revenueGrowth: '3,8 Mrd Ft → 35 Mrd Ft (~9,2×)', note: '2021-re vissza 3,8 Mrd Ft-ra' },
+        { name: 'OTT-ONE Nyrt.', purchasePrice: '13 M USD (500 gép)', received: '14,5 M USD', profit: '1,5 M USD (~506 M Ft)', revenueGrowth: '3 Mrd Ft → 12 Mrd Ft (4×)', note: '2021-ben is 6 Mrd Ft' },
+        { name: 'Gyömrői-sarok Projekt Szolgáltató Kft.', purchasePrice: '25,1 M USD', received: '27,7 M USD', profit: '2,6 M USD (~876 M Ft)', revenueGrowth: '155 M Ft → 13 Mrd Ft (~84×)', note: '~1 Mrd Ft osztalék; 2021-re vissza 170 M Ft-ra' },
+        { name: 'Speciál 99 Külkereskedelmi Kft.', purchasePrice: '186 ezer USD (30 ezer gyorsteszt)', received: '570 ezer USD', profit: '384 ezer USD (~130 M Ft)', revenueGrowth: '256 M Ft → 631 M Ft (~2,5×)', note: 'koronavírus-gyorsteszt, nem lélegeztetőgép' },
+        { name: 'MAROSPORT Kereskedelmi Kft.', purchasePrice: '12,1 M USD', received: '17,6 M USD', profit: '5,5 M USD (~1,8 Mrd Ft)', revenueGrowth: '230 M Ft → 50 Mrd Ft (~217×)', note: '2021-ben is 43 Mrd Ft' },
       ],
-      companiesNote: 'A cikk nem közöl cégenkénti árbevétel-növekedési adatot — Velkey csak összesítve és szövegesen fogalmaz: több cég "megtöbbszörözte a beszerzéseket megelőző árbevételét", a feladatra szerződött, azóta megszűnt magyar cégek pedig a járvány idején összesen mintegy 86 milliárd forint árbevételt és kb. 21 milliárd forint osztalékot realizáltak.',
+      companiesNote: 'A hat cégen kívüli összes közvetítőt is beleszámítva a feladatra szerződött, azóta megszűnt magyar cégek a járvány idején összesen mintegy 86 milliárd forint árbevételt és körülbelül 21 milliárd forint osztalékot realizáltak.',
       sourceUrl: 'https://444.hu/2026/09/03/velkey-szerint-szijjartoek-legalabb-155-milliard-forintos-tularazassal-vettek-lelegeztetogepeket',
       sourceLabel: '444',
     },
