@@ -10789,7 +10789,7 @@ body:has(.admin-nav) > main {
      jelezte: "nem látok változást" a max-width 260->300px után). A
      min-width ténylegesen garantálja, hogy pl. "TMT Technics Kft." egy
      sorba férjen (~150-180px kellene neki 13px, bold szedésnél). */
-  min-width: 160px;
+  min-width: 150px;
 }
 .ugy-breaking-update-table tr:last-child td { border-bottom: none; }
 /* Zebra-csíkozás — ua. minta, mint a .db-table-nél (user kérés: legyen
