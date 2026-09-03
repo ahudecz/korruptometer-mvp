@@ -41,6 +41,42 @@ Phase-4 sealed-box columns have backfilled.
 * App code drops the fallback path.
 * Deploy.
 
+## Applying migrations (the runner)
+
+Migrations 0048–0055 were applied by hand, one `psql -f` at a time. That left
+no record of what had run, no way to notice a landed migration being edited
+afterwards, and no way for anyone without the live connection string to apply
+anything. `packages/db/src/apply-migrations.ts` replaces it.
+
+```sh
+pnpm migrate                    # dry run: what is pending, nothing is written
+pnpm migrate -- --apply         # apply the pending ones, in order
+pnpm migrate -- --baseline 0055 --apply   # one-off: mark up to 0055 as already
+                                          # applied WITHOUT running them
+```
+
+The target comes from `MIGRATION_DATABASE_URL` in `app/.env.migrations.local`
+(gitignored). Use the **direct** connection string, not the transaction pooler.
+A deliberately separate variable from `DATABASE_URL`, so a migration never
+depends on which env file happens to be loaded.
+
+What it guarantees:
+
+* A ledger table, `_applied_migration`, records filename, SHA-256 and time. The
+  database itself now says what has run.
+* Editing a migration that already ran is refused. The fix for a landed
+  migration is a new migration, never an edit.
+* Dry run is the default; `--apply` is required to write.
+* A non-local target also needs `ALLOW_PROD_WRITE=1`, the same rule
+  `packages/db/src/guard.ts` applies to maintenance scripts.
+* Each migration runs in its own transaction. A failure rolls that one back and
+  stops before the rest.
+
+**On a fresh live database the baseline step comes first.** Live already
+carries 0001–0055 from the manual era; running them again would be noise at
+best. `--baseline 0055 --apply` writes them into the ledger without executing
+them, and from then on only genuinely new files run.
+
 ## Running locally
 
 ```sh

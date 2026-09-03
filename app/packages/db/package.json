@@ -67,7 +67,8 @@
     "add-facebook-pages": "tsx src/add-facebook-pages.ts",
     "fb-sync-apify": "tsx src/fb-sync-apify.ts",
     "backfill-social-images": "tsx src/backfill-social-images.ts",
-    "bulk-case-content": "tsx src/bulk-case-content.ts"
+    "bulk-case-content": "tsx src/bulk-case-content.ts",
+    "migrate": "tsx src/apply-migrations.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.2",
