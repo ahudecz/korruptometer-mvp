@@ -121,8 +121,10 @@ export default function AdatvedelemPage() {
 
           <p>
             <strong>Adatfeldolgozó:</strong> a leveleket a Resend
-            (Plus Five Five, Inc.) küldi ki. A szolgáltató küldési naplói
-            legfeljebb hét napig őrzik a címzetti címeket.
+            (Plus Five Five, Inc.) küldi ki, ír országi (eu-west-1) régióból. A
+            szolgáltató küldési naplói 30 napig őrzik a címzetti címeket. Ez a
+            Resend minden elérhető csomagján 30 nap, és nem állítható
+            rövidebbre; ezért ennyi, nem azért, mert így választottuk.
           </p>
 
           <h3 className="modszertan-h3">Google Analytics</h3>

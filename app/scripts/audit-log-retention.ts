@@ -12,6 +12,27 @@
 
 const MAX_DAYS = 7;
 
+/**
+ * Szolgáltatónkénti felső határ. Az alapérték a MAX_DAYS — az a MI állításunk
+ * arról, amit be TUDUNK állítani.
+ *
+ * A Resend kivétel, és tudatosan az: 2026-09-03-án ellenőrizve a megőrzés a
+ * Free, a Pro és a Scale csomagon egyaránt 30 nap, és sehol nem konfigurálható
+ * (csak az Enterprise "Flexible"). Ez tehát nem választott beállítás, hanem a
+ * szolgáltató plafonja. A 012-es specifikáció P3 előfeltétele emiatt módosult,
+ * a döntést a karbantartó hozta meg (2026-09-03), és az /adatvedelem oldal a
+ * 30 napot mondja ki.
+ *
+ * Ez a küszöb NEM emelhető azért, hogy egy drift zöldre váltson. Ha a Resend
+ * kitesz egy megőrzési mezőt az API-jában, az API-olvasás az erősebb
+ * mechanizmus, és annak kell átvennie a helyét.
+ */
+const PLATFORM_MAX_DAYS: Record<string, number> = { Resend: 30 };
+
+function maxDaysFor(platform: string): number {
+  return PLATFORM_MAX_DAYS[platform] ?? MAX_DAYS;
+}
+
 type Result = { platform: string; days: number | null; status: 'OK' | 'DRIFT' | 'SKIPPED' };
 
 async function checkVercel(): Promise<Result> {
@@ -63,7 +84,7 @@ async function checkResend(): Promise<Result> {
   return {
     platform: 'Resend',
     days: declared,
-    status: declared <= MAX_DAYS ? 'OK' : 'DRIFT',
+    status: declared <= maxDaysFor('Resend') ? 'OK' : 'DRIFT',
   };
 }
 

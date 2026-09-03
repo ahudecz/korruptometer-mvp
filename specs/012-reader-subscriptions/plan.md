@@ -335,7 +335,7 @@ TELEGRAM_PUBLIC_CHANNEL_ID=      # unset = channel kill switch (FR-022)
 RESEND_API_KEY=                  # unset = email paused (FR-044, FR-047)
 RESEND_FROM=                     # e.g. "Kegyencjárat <hirlevel@mail.kegyencjarat.hu>"
 RESEND_WEBHOOK_SECRET=           # Svix signing secret, "whsec_…"
-RESEND_LOG_RETENTION_DAYS_DECLARED=7   # hand-verified provider send-log retention, read by audit-log-retention.ts
+RESEND_LOG_RETENTION_DAYS_DECLARED=30  # Resend's own ceiling, not a chosen setting (P3, amended 2026-09-03)
 SUBSCRIBER_LINK_SECRET=          # "kid:secret" — signs AND verifies
 SUBSCRIBER_LINK_SECRET_PREVIOUS= # "kid:secret" — verifies ONLY, never signs
 DIGEST_DAILY_SEND_CAP=90
@@ -1035,7 +1035,7 @@ consumes it. Only a row there puts the setting under recurring check.
 
 | Platform | Setting | Configured | Verified-by |
 |----------|---------|-----------|-------------|
-| Resend send logs | Account → Settings → data retention | ≤7 days | `RESEND_LOG_RETENTION_DAYS_DECLARED` env var + dated screenshot SHA, stored beside the Sentry row's screenshot in `app/docs/` |
+| Resend send logs | Provider ceiling — not configurable below Enterprise | 30 days | `RESEND_LOG_RETENTION_DAYS_DECLARED` env var + dated screenshot SHA, stored beside the Sentry row's screenshot in `app/docs/` (P3 amended 2026-09-03) |
 
 **Why a declared value and not an API read.** Better Stack's row can be checked over its API
 because its `GET /api/v1/sources` returns `attributes.retention_days`. **Resend's public API has
@@ -1049,7 +1049,7 @@ screenshot SHA. **Re-check at implementation time** — if the provider has sinc
 field, prefer the API read, which is the stronger mechanism.
 
 **The code:** add `checkResend()` to `app/scripts/audit-log-retention.ts`, shaped exactly like
-`checkInngest()` — read `RESEND_LOG_RETENTION_DAYS_DECLARED`, compare against `MAX_DAYS = 7`,
+`checkInngest()` — read `RESEND_LOG_RETENTION_DAYS_DECLARED`, compare against `PLATFORM_MAX_DAYS.Resend = 30`,
 return `OK` / `DRIFT` / `SKIPPED`, and add it to the `Promise.all` in `main()`. The file's
 existing rule carries over unchanged: `SKIPPED` is an acceptable degraded mode for local dev,
 **never for a production deploy**.

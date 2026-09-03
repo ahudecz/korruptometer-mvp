@@ -13,7 +13,7 @@ one, the configured retention, and the audit step at every deploy.
 | Better Stack logs | Source → Retention | ≤7 days | API exposes `attributes.retention_days` per source |
 | Sentry events | Project → Settings → Data Privacy | ≤7 days | screenshot in this folder |
 | Supabase Storage | bucket lifecycle | N/A — orphan-scan owns deletion | `gdpr.retention-sweep` Inngest pass 2 |
-| Resend send logs | Account → Settings → data retention | ≤7 days | `RESEND_LOG_RETENTION_DAYS_DECLARED` env var + dated screenshot SHA |
+| Resend send logs | Provider ceiling — not configurable below Enterprise | 30 days | `RESEND_LOG_RETENTION_DAYS_DECLARED` env var + dated screenshot SHA. Verified 2026-09-03: Free, Pro and Scale all show 30 days on resend.com/pricing; only Enterprise is "Flexible". Maintainer accepted 30 days rather than change provider; `/adatvedelem` states 30 days. |
 
 **Why Resend is a declared value and not an API read.** Better Stack's row can be
 checked over its API because `GET /api/v1/sources` returns

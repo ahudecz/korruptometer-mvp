@@ -54,6 +54,12 @@ export default function HirlevelPage() {
             ugyanúgy törlődik. Nevet és semmilyen más szabad szöveget nem kérünk.
           </p>
           <p>
+            A leveleket a Resend küldi ki. A küldési naplóikban a címed 30
+            napig megmarad — ennyi a szolgáltató minden csomagján, és nem
+            állítható rövidebbre. A Telegram-csatornánál ilyen nincs, mert ott
+            semmit nem adsz meg.
+          </p>
+          <p>
             A jogalap a hozzájárulásod (GDPR 6. cikk (1) a) pont), amit a
             megerősítő levélben adsz meg. Leiratkozás után 30 nappal töröljük a
             címedet és a hálózati azonosítókat. Csak annak a bizonyítéka marad
