@@ -110,7 +110,10 @@ export default async function OGImage({ params }: { params: Promise<{ slug: stri
             <div
               style={{
                 position: 'absolute',
-                inset: 0,
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
                 background: 'linear-gradient(90deg, #171a20 0%, rgba(23,26,32,0) 22%)',
                 display: 'flex',
               }}
