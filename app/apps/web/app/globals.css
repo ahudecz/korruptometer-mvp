@@ -10566,10 +10566,16 @@ body:has(.admin-nav) > main {
 }
 .ugy-breaking-update-table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   background: #fff;
   /* Kis levegő a piros keretes lead-doboz és a táblázat teteje között —
      user kérés, korábban közvetlenül egymáshoz ért a kettő. */
   padding-top: 10px;
+}
+.ugy-breaking-update-table-wrap::-webkit-scrollbar { height: 3px; }
+.ugy-breaking-update-table-wrap::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 2px;
 }
 .ugy-breaking-update-table {
   width: 100%;
@@ -10594,7 +10600,6 @@ body:has(.admin-nav) > main {
 .ugy-breaking-update-table td:first-child {
   font-weight: 700;
   color: var(--ink);
-  white-space: normal;
 }
 .ugy-breaking-update-table tr:last-child td { border-bottom: none; }
 /* Zebra-csíkozás — ua. minta, mint a .db-table-nél (user kérés: legyen
@@ -10628,23 +10633,23 @@ body:has(.admin-nav) > main {
 .ugy-breaking-update-source:hover { text-decoration: underline; }
 
 @media (max-width: 640px) {
-  .ugy-breaking-update-table { font-size: 12px; table-layout: fixed; }
+  .ugy-breaking-update-table { font-size: 12px; }
   .ugy-breaking-update-table th,
-  .ugy-breaking-update-table td { padding: 8px 8px; }
-  /* Cég-oszlop szélesebb (hogy pl. "TMT Technics Kft." egy sorba férjen),
-     a Beszerzési ár-oszlop keskenyebb — user kérés, 2026-09-03. */
-  .ugy-breaking-update-table th:nth-child(1),
-  .ugy-breaking-update-table td:nth-child(1) { width: 30%; }
-  .ugy-breaking-update-table th:nth-child(2),
-  .ugy-breaking-update-table td:nth-child(2) { width: 15%; white-space: normal; }
-  .ugy-breaking-update-table th:nth-child(3),
-  .ugy-breaking-update-table td:nth-child(3) { width: 17%; white-space: normal; }
-  .ugy-breaking-update-table th:nth-child(4),
-  .ugy-breaking-update-table td:nth-child(4) { width: 19%; white-space: normal; }
-  .ugy-breaking-update-table th:nth-child(5),
-  .ugy-breaking-update-table td:nth-child(5) { width: 19%; white-space: normal; }
-  /* A zárójeles rész (pl. "(1208 gép)") mindig saját sorba törik — l.
-     page.tsx splitParen(). */
+  .ugy-breaking-update-table td { padding: 8px 12px; }
+  /* 2026-09-03 user report: a korábbi table-layout:fixed + %-os
+     oszlopszélesség szétnyomta a cellákat ("összecsúsznak az oszlopok").
+     A user által kért, már bevált minta a .res-table-wrap-é (nyitóoldal,
+     "Legfrissebb lemondások"): a táblázat TERMÉSZETES (auto) layout-tal
+     szélesebb lehet a képernyőnél, oldalra görgethető, a jobb szélén
+     halványuló maszkkal jelezve, hogy van még adat — nem próbáljuk minden
+     oszlopot belepréselni a viewport szélességébe. Ugyanez a technika itt. */
+  .ugy-breaking-update-table-wrap {
+    overscroll-behavior-x: contain;
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 36px), transparent 100%);
+    mask-image: linear-gradient(to right, black calc(100% - 36px), transparent 100%);
+  }
+  /* A zárójeles rész (pl. "(1208 gép)") mindig saját sorba törik, hogy
+     rövidebb legyen a szükséges görgetési táv — l. page.tsx splitParen(). */
   .ugy-breaking-update-paren { display: block; color: var(--ink-2); font-size: 11px; }
 }
 
