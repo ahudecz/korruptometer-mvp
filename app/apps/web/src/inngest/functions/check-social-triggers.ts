@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, desc, eq, gt, ne, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, sql } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 import { renderMilestoneImage, renderBreakingImage, renderSummaryImage } from '@/lib/social-image';
@@ -22,11 +22,16 @@ import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
  * jóváhagyott lemondás/megszűnés/ítélet/vagyonvisszaszerzés/feljelentés,
  * NEM csak WATCH_LIST — user kérés 2026-09-03, korábban itt watchlist-szűrés
  * volt), (3) aktív szavazás napi állásáról. Napi max. TARGET_PER_DAY (3)
- * poszt-jelölt kerül Telegramra — ha ennyi friss esemény nincs egy napon,
- * a nap egy rögzített órájában (FALLBACK_HOUR_BUDAPEST) a hiányzó helyeket
- * három tartalék-típus FELVÁLTVA tölti ki (l. buildFallbackTrigger):
- * összesítő statisztika / kiemelt ügy felidézése / galéria-profil
- * felidézése — sose ugyanaz mindig, l. fallbackRotationForToday().
+ * TÉNYLEGESEN KIPOSTOLT (status='posted') bejegyzés a cél — egy még
+ * elbírálatlan vagy elutasított jelölt NEM foglalja a napi keretet (user
+ * report, 2026-09-03: egy sose jóváhagyott jelölt tévesen "betelt a nap"-ot
+ * eredményezett), ezért egy nap akár 3-nál TÖBB jelölt is kimehet
+ * Telegramra, ha korábbiak elutasításra/válasz nélkül maradtak. Ha a
+ * ténylegesen kiposztolt darabszám egy napon nem éri el a 3-at, a nap egy
+ * rögzített órájában (FALLBACK_HOUR_BUDAPEST) a hiányzó helyeket három
+ * tartalék-típus FELVÁLTVA tölti ki (l. buildFallbackTrigger): összesítő
+ * statisztika / kiemelt ügy felidézése / galéria-profil felidézése — sose
+ * ugyanaz mindig, l. fallbackRotationForToday().
  *
  * SOSEM posztol közvetlenül — mindig SocialPostOutbox sort ír
  * 'pending_approval' státusszal, és egy KÉPES Telegram-üzenetet küld
@@ -72,16 +77,18 @@ async function alreadyPostedRefIds(db: ReturnType<typeof getDb>, triggerType: st
   return new Set(rows.map((r) => r.triggerRefId).filter((v): v is string => v !== null));
 }
 
-/** Ma (UTC nap-határ — a pontos budapesti éjfél itt nem kritikus) hány,
- *  nem elutasított jelölt ment már ki Telegramra. Ez a napi TARGET_PER_DAY
- *  sapka alapja. */
+/** Ma (UTC nap-határ — a pontos budapesti éjfél itt nem kritikus) hány
+ *  TÉNYLEGESEN kipostolt (status='posted') bejegyzés van. A sapka a valódi
+ *  posztokat számolja, NEM a Telegramra kiküldött jelölteket — user report,
+ *  2026-09-03: egy még el sem bírált vagy elutasított jelölt ne foglaljon
+ *  helyet a napi keretből, amíg ténylegesen ki nem ment. */
 async function countTodayQueued(db: ReturnType<typeof getDb>): Promise<number> {
   const [row] = await db
     .select({ c: sql<number>`count(*)::int` })
     .from(schema.socialPostOutbox)
     .where(and(
       sql`"createdAt" >= date_trunc('day', now())`,
-      ne(schema.socialPostOutbox.status, 'rejected'),
+      eq(schema.socialPostOutbox.status, 'posted'),
     ));
   return row?.c ?? 0;
 }
