@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { and, asc, eq, isNull, or, sql } from 'drizzle-orm';
+import { and, asc, eq, isNull, lte, or, sql } from 'drizzle-orm';
 
 import { runSubscriberConfirmSendCore } from '@/inngest/functions/subscriber-confirm-send';
 import { getDb, schema } from '@/lib/db';
@@ -61,7 +61,11 @@ export async function drainPendingConfirmations({
         sql`${schema.subscribers.confirmSentCount} < ${CONFIRM_MAX_SENDS}`,
         or(
           isNull(schema.subscribers.confirmLastSentAt),
-          sql`${schema.subscribers.confirmLastSentAt} <= ${cooldownCutoff}`,
+          // `lte()`, NEM nyers `sql` interpoláció: egy JS Date a raw
+          // template-ben szövegként próbálna kódolódni, és a route
+          // 500-zal állt meg ("Received an instance of Date"). Az operátor
+          // ismeri az oszlop típusát, és helyesen paraméterez.
+          lte(schema.subscribers.confirmLastSentAt, cooldownCutoff),
         ),
       ),
     )
