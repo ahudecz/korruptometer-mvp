@@ -19,6 +19,34 @@ export interface BigCaseRef {
 
 export type BreakingGroupArticle = { source: string; headline: string; lead?: string; url: string; date?: string };
 
+/**
+ * 2026-09-03 user kérés — egy friss, ügyoldalon kiemelt "breaking" frissítés:
+ * rövid összefoglaló + cégenkénti táblázat. Fizikailag a "Kapcsolódó
+ * feljelentések" ÉS a fő videó KÖZÉ kerül a renderben (l. [id]/page.tsx),
+ * NEM a descriptionBlocks-ba (ami a lap alján, "Az ügy ismertetése" alatt
+ * jelenik meg) — ezért külön mező, nem a meglévő breaking-box/breaking-group
+ * blokktípus.
+ */
+export type BreakingUpdateCompanyRow = {
+  name: string;
+  purchasePrice: string;
+  received: string;
+  profit: string;
+  note?: string;
+};
+export interface BreakingUpdate {
+  dateLabel: string;
+  headline: string;
+  lead: string;
+  companies: BreakingUpdateCompanyRow[];
+  /** Amit a forrás NEM közöl cégenkénti bontásban (pl. árbevétel-növekedés
+   *  %-ban) — csak összesítve/kvalitatívan, hogy ne kelljen hiányzó
+   *  adatot kitalálni a táblázatba. */
+  companiesNote?: string;
+  sourceUrl: string;
+  sourceLabel: string;
+}
+
 export type DescriptionBlock =
   | { type: 'text'; heading?: string; content: string }
   | { type: 'video'; id: string; label?: string; title?: string; summary?: string }
@@ -70,6 +98,7 @@ export interface UgyekConfig {
   moreUrl?: string;
   sourceRefs?: BigCaseRef[];
   statusItems: BigCaseStatus[];
+  breakingUpdate?: BreakingUpdate;
 }
 
 // FONTOS JOGI KORLÁTOZÁS:
@@ -597,6 +626,21 @@ Kerényi György, a Klub Rádió újságírója 2020-ban már részletesen megí
       },
     ],
     moreUrl: '/ugyek/lelegeztetogep',
+    breakingUpdate: {
+      dateLabel: '2026. szept. 3.',
+      headline: 'Velkey szerint legalább 155 milliárd forintos volt a túlárazás',
+      lead: 'Velkey György László államtitkár szerint csak hat, a lélegeztetőgép- és koronavírus-védőeszköz-beszerzésekben résztvevő cégnél összesen 15,5 milliárd forintos volt a kimutatott túlárazás — a teljes, még fel nem tárt összeg szerinte jóval magasabb, legalább 155 milliárd forint. Számos közvetítő cég korábban nem foglalkozott egészségügyi eszközökkel, több közülük kifejezetten a járvány idején, 2020-ban alakult. A Külügyminisztérium összesen 300 milliárd forintért vásárolt 16 ezer lélegeztetőgépet, amelyek nagy része Kínából érkezett és máig raktárban áll.',
+      companies: [
+        { name: 'TMT Technics Kft.', purchasePrice: '24,4 M EUR (1208 gép)', received: '35,5 M EUR', profit: '11 M EUR (~4 Mrd Ft)' },
+        { name: 'Pro Concept Tanácsadó Kft.', purchasePrice: '32 M EUR', received: '49 M EUR', profit: '17 M EUR (~6,2 Mrd Ft)' },
+        { name: 'OTT-ONE Nyrt.', purchasePrice: '13 M USD (500 gép)', received: '14,5 M USD', profit: '1,5 M USD (~506 M Ft)' },
+        { name: 'Gyömrői-sarok Projekt Szolgáltató Kft.', purchasePrice: '25,1 M USD', received: '27,7 M USD', profit: '2,6 M USD (~876 M Ft)' },
+        { name: 'Speciál 99 Külkereskedelmi Kft.', purchasePrice: '186 ezer USD (30 ezer teszt)', received: '570 ezer USD', profit: '384 ezer USD (~130 M Ft)', note: 'koronavírus-teszt, nem lélegeztetőgép' },
+      ],
+      companiesNote: 'A cikk nem közöl cégenkénti árbevétel-növekedési adatot — Velkey csak összesítve és szövegesen fogalmaz: több cég "megtöbbszörözte a beszerzéseket megelőző árbevételét", a feladatra szerződött, azóta megszűnt magyar cégek pedig a járvány idején összesen mintegy 86 milliárd forint árbevételt és kb. 21 milliárd forint osztalékot realizáltak.',
+      sourceUrl: 'https://444.hu/2026/09/03/velkey-szerint-szijjartoek-legalabb-155-milliard-forintos-tularazassal-vettek-lelegeztetogepeket',
+      sourceLabel: '444',
+    },
     summary: '2020-ban a magyar kormány az EU legdrágábban vásárolta a kínai lélegeztetőgépeket — 17 ezer darabot, egységenként 17–20 millió forintért, miközben az EU-s átlag 4 millió volt. A 300 milliárdos ügyletből Orbán főtanácsadójának fivére és Takács Péter sógora milliárdokat vett fel osztalékként. Büntetőeljárás mind a mai napig nincs.',
     videoId: 'DrHUAmHMZBM',
     videoChannel: 'Puzser Robert',
