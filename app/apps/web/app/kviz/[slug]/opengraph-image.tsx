@@ -52,6 +52,7 @@ export default async function OGImage({ params }: { params: Promise<{ slug: stri
         >
           <div
             style={{
+              display: 'flex',
               color: '#e31937',
               fontSize: 16,
               fontWeight: 700,
@@ -66,6 +67,7 @@ export default async function OGImage({ params }: { params: Promise<{ slug: stri
 
           <div
             style={{
+              display: 'flex',
               color: '#ffffff',
               fontSize: coverImageUrl ? 46 : 52,
               fontWeight: 900,
@@ -81,6 +83,7 @@ export default async function OGImage({ params }: { params: Promise<{ slug: stri
 
           <div
             style={{
+              display: 'flex',
               color: '#8b9099',
               fontSize: 26,
               fontFamily: 'system-ui',
@@ -90,7 +93,7 @@ export default async function OGImage({ params }: { params: Promise<{ slug: stri
           </div>
         </div>
 
-        {coverImageUrl && (
+        {coverImageUrl !== null ? (
           <div
             style={{
               position: 'relative',
@@ -119,7 +122,7 @@ export default async function OGImage({ params }: { params: Promise<{ slug: stri
               }}
             />
           </div>
-        )}
+        ) : null}
 
         <div
           style={{
@@ -141,6 +144,7 @@ export default async function OGImage({ params }: { params: Promise<{ slug: stri
 
         <div
           style={{
+            display: 'flex',
             position: 'absolute',
             left: 64,
             bottom: 60,
