@@ -420,7 +420,7 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
             jelent felelősséget/ítéletet, ezért "köthető" helyett
             semlegesebb "érintő" — l. user report. ── */}
         {relatedComplaints.length > 0 && (
-          <div className="ugy-description" style={{ marginBottom: 40 }}>
+          <div className="ugy-description" style={{ marginBottom: entry.breakingUpdate ? 16 : 40 }}>
             <h2 className="person-section-title">Kapcsolódó feljelentések</h2>
             <p className="person-section-note">
               Nyilvánosan dokumentált feljelentések, amelyek érintik ezt az ügyet — ítélet, felelősség megállapítása nélkül.
