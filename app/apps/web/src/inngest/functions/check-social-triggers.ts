@@ -326,14 +326,15 @@ async function buildPollStatusTriggers(db: ReturnType<typeof getDb>): Promise<Ou
 
     const kicker = 'SZAVAZÁS';
     const headline = `Már ${full.totalVotes} szavazat érkezett — itt a jelenlegi állás`;
-    const detail = top3.map((o, i) => `${i + 1}. ${o.title} (${o.votes})`).join('\n');
-    const image = await renderBreakingImage({ kicker, headline, detail });
+    const detailLines = top3.map((o, i) => `${i + 1}. ${o.title} (${o.votes})`);
+    const detail = detailLines.join('\n'); // imageText-be flat sztringként megy, l. regenerateOutboxImage split()-je
+    const image = await renderBreakingImage({ kicker, headline, detail: detailLines });
     out.push({
       triggerType: 'poll_status',
       triggerRefId: pollId,
       milestoneValueFt: null,
       headline,
-      caption: breakingCaption(kicker, headline, detail, `/szavazas/${poll.slug}`),
+      caption: breakingCaption(kicker, headline, detail, `/szavazas/${poll.slug}`, '👉 Szavazz te is, ha még nem tetted!'),
       imagePng: image,
       imageText: detail,
       kicker,

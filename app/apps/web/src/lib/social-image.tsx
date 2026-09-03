@@ -114,15 +114,20 @@ export async function renderMilestoneImage(
   return Buffer.from(await img.arrayBuffer());
 }
 
-/** Breaking-poszt: konkrét esemény (lemondás/megszűnés/ítélet/vagyonvisszaszerzés). */
+/** Breaking-poszt: konkrét esemény (lemondás/megszűnés/ítélet/vagyonvisszaszerzés).
+ *  `detail` sztringként VAGY sorok tömbjeként adható — a Satori (next/og)
+ *  nem tördeli a "\n"-t egy szövegdobozon belül (user report, 2026-09-03:
+ *  a szavazás-poszton a top 3 egybefolyt), ezért egy tömb minden eleme
+ *  külön <div>-be kerül, ami valódi sortörést ad. */
 export async function renderBreakingImage(
   params: {
     kicker: string; // pl. "LEMONDÁS" / "ÍTÉLET" / "MEGSZŰNÉS" / "VAGYONVISSZASZERZÉS"
     headline: string;
-    detail?: string;
+    detail?: string | string[];
   },
-  variant: ImageVariant = 'light',
+  variant: ImageVariant = 'dark',
 ): Promise<Buffer> {
+  const detailLines = params.detail == null ? [] : Array.isArray(params.detail) ? params.detail : [params.detail];
   const dark = variant === 'dark';
   const bg = dark ? INK : '#ffffff';
   const headlineColor = dark ? '#ffffff' : INK;
@@ -165,9 +170,13 @@ export async function renderBreakingImage(
           <div style={{ display: 'flex', color: headlineColor, fontSize: 72, fontWeight: 900, lineHeight: 1.15, marginTop: 24 }}>
             {params.headline}
           </div>
-          {params.detail && (
-            <div style={{ display: 'flex', color: detailColor, fontSize: 38, fontWeight: 500, lineHeight: 1.35, marginTop: 28, maxWidth: 880 }}>
-              {params.detail}
+          {detailLines.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 28, maxWidth: 880 }}>
+              {detailLines.map((line, i) => (
+                <div key={i} style={{ display: 'flex', color: detailColor, fontSize: 38, fontWeight: 500, lineHeight: 1.35 }}>
+                  {line}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -251,5 +260,8 @@ export async function regenerateOutboxImage(row: {
     const stats = row.imageText ? (JSON.parse(row.imageText) as Array<{ label: string; value: string }>) : [];
     return renderSummaryImage({ stats }, variant);
   }
-  return renderBreakingImage({ kicker: row.kicker ?? '', headline: row.headline, detail: row.imageText || undefined }, variant);
+  // imageText több soros tartalomnál (pl. szavazás top 3) "\n"-nel elválasztva
+  // tárolódik — split()-elve adjuk át, hogy renderBreakingImage valódi
+  // sortöréssel rajzolja (l. a függvény fejléce).
+  return renderBreakingImage({ kicker: row.kicker ?? '', headline: row.headline, detail: row.imageText ? row.imageText.split('\n') : undefined }, variant);
 }

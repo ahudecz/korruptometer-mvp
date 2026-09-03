@@ -17,7 +17,13 @@ export function milestoneCaption(amountLabel: string): string {
   ].join('\n');
 }
 
-export function breakingCaption(kicker: string, headline: string, detail?: string, linkPath?: string): string {
+// user kérés, 2026-09-03: minden posztba kell CTA (call-to-action) — a
+// legtöbb típusnál egy általános "olvasd el a friss híreket"-féle sor, a
+// szavazásnál viszont ("Szavazz te is!") a hívó (check-social-triggers.ts)
+// felülírja explicit cta paraméterrel.
+const DEFAULT_BREAKING_CTA = '👉 Kattints és olvasd el a legfrissebb híreket!';
+
+export function breakingCaption(kicker: string, headline: string, detail?: string, linkPath?: string, cta: string = DEFAULT_BREAKING_CTA): string {
   return [
     `🚨 ${kicker}`,
     '',
@@ -25,6 +31,7 @@ export function breakingCaption(kicker: string, headline: string, detail?: strin
     detail ? `\n${detail}` : null,
     '',
     `Részletek: kegyencjarat.hu${linkPath ?? ''}`,
+    cta,
     '#kegyencjarat #korrupció',
   ].filter((l) => l !== null).join('\n');
 }
@@ -32,13 +39,14 @@ export function breakingCaption(kicker: string, headline: string, detail?: strin
 // Napi tartalék-poszt (nincs elég friss esemény aznapra) — futó összesítő
 // számok, mindig kegyencjarat.hu-s linkkel. l. check-social-triggers.ts
 // buildSummaryStatsTrigger.
-export function summaryCaption(lines: string[], linkPath: string): string {
+export function summaryCaption(lines: string[], linkPath: string, cta: string = '👉 Nézd meg a teljes adatbázist!'): string {
   return [
     '📊 EDDIG A KEGYENCJÁRATON',
     '',
     ...lines,
     '',
     `Minden adat, forrás és részlet: kegyencjarat.hu${linkPath}`,
+    cta,
     '#kegyencjarat #korrupció',
   ].join('\n');
 }
