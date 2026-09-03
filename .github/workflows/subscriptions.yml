@@ -10,8 +10,13 @@ name: Reader subscriptions (flush, digest, health)
 # A `CRON_SECRET` MÁR LÉTEZŐ repository secret (ugyanaz az érték, mint a
 # Vercel `CRON_SECRET` env változója). Nem kell új titok.
 
+# A megerősítő levél 5 PERCENKÉNT ürül, nem 15-önként. Ez az EGYETLEN levél,
+# amire egy ember élőben vár: beírta a címét, és az űrlap azt mondta neki,
+# hogy jön a levél. Tizenöt perc várakozás után feladja, vagy másodszor is
+# feliratkozik. A többi ütemezés gépnek dolgozik, ez emberi türelemnek.
 on:
   schedule:
+    - cron: '*/5 * * * *'         # megerősítő levelek — /api/cron/confirm-send
     - cron: '*/15 * * * *'        # FLUSH_CRON — /api/cron/flush-alerts
     - cron: '5 7 * * 1'           # heti összefoglaló — /api/cron/digest
     - cron: '20 6 * * *'          # őrkutya — /api/cron/subscription-health
@@ -20,7 +25,7 @@ on:
       target:
         description: 'Melyik cron-végpontot hívjuk'
         type: choice
-        options: [flush-alerts, digest, subscription-health]
+        options: [confirm-send, flush-alerts, digest, subscription-health]
         default: flush-alerts
 
 # A csoport az ÜTEMEZÉSRE kulcsol, nem a fájlra (FR-025).
@@ -46,6 +51,7 @@ jobs:
         run: |
           set -e
           case "${{ github.event.schedule }}" in
+            '*/5 * * * *')  path=/api/cron/confirm-send ;;
             '*/15 * * * *') path=/api/cron/flush-alerts ;;
             '5 7 * * 1')    path=/api/cron/digest ;;
             '20 6 * * *')   path=/api/cron/subscription-health ;;
