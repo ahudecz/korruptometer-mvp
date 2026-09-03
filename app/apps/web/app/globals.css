@@ -10728,6 +10728,80 @@ body:has(.admin-nav) > main {
   background: #fff8f9;
 }
 
+/* Breaking update (ügyoldal — kapcsolódó feljelentések és a fő videó között,
+   l. ugyek-config.ts BreakingUpdate / [id]/page.tsx, 2026-09-03) */
+.ugy-breaking-update {
+  margin: 24px 0 40px;
+  border: 1.5px solid var(--accent, #e31937);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.ugy-breaking-update-header {
+  padding: 20px 24px 16px;
+  background: #fff0f2;
+  border-bottom: 1px solid #f8c4cc;
+}
+.ugy-breaking-update-table-wrap {
+  overflow-x: auto;
+  background: #fff;
+}
+.ugy-breaking-update-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.ugy-breaking-update-table th,
+.ugy-breaking-update-table td {
+  padding: 10px 16px;
+  text-align: left;
+  border-bottom: 1px solid #f0e0e2;
+  white-space: nowrap;
+}
+.ugy-breaking-update-table th {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  background: #fafafa;
+}
+.ugy-breaking-update-table td:first-child {
+  font-weight: 700;
+  color: var(--ink);
+  white-space: normal;
+}
+.ugy-breaking-update-table tr:last-child td { border-bottom: none; }
+.ugy-breaking-update-table-note {
+  font-weight: 400;
+  color: var(--ink-2);
+  font-size: 11px;
+}
+.ugy-breaking-update-footnote {
+  margin: 0;
+  padding: 14px 24px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  background: #fafafa;
+  border-top: 1px solid #f0e0e2;
+}
+.ugy-breaking-update-source {
+  display: block;
+  padding: 12px 24px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent, #e31937);
+  text-decoration: none;
+  border-top: 1px solid #f0e0e2;
+}
+.ugy-breaking-update-source:hover { text-decoration: underline; }
+
+@media (max-width: 640px) {
+  .ugy-breaking-update-table { font-size: 12px; }
+  .ugy-breaking-update-table th,
+  .ugy-breaking-update-table td { padding: 8px 12px; }
+}
+
 /* BigCasesSection breaking alert */
 .big-case-breaking-alert {
   display: block;

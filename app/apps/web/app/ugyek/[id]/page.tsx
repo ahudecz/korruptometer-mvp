@@ -422,6 +422,55 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
           </div>
         )}
 
+        {/* ── Breaking frissítés — fizikailag a kapcsolódó feljelentések és
+            a fő videó KÖZÖTT (user kérés, 2026-09-03), NEM a lap alján
+            futó descriptionBlocks-ban. */}
+        {entry.breakingUpdate && (
+          <div className="ugy-breaking-update">
+            <div className="ugy-breaking-update-header">
+              <div className="ugy-breaking-box-label">
+                <span className="ugy-breaking-box-dot" />
+                BREAKING · {entry.breakingUpdate.dateLabel}
+              </div>
+              <div className="ugy-breaking-group-headline">{entry.breakingUpdate.headline}</div>
+              <p className="ugy-breaking-box-lead">{entry.breakingUpdate.lead}</p>
+            </div>
+            <div className="ugy-breaking-update-table-wrap">
+              <table className="ugy-breaking-update-table">
+                <thead>
+                  <tr>
+                    <th>Cég</th>
+                    <th>Beszerzési ár</th>
+                    <th>KKM fizetett</th>
+                    <th>Haszon / túlárazás</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {entry.breakingUpdate.companies.map((c, i) => (
+                    <tr key={i}>
+                      <td>{c.name}{c.note && <span className="ugy-breaking-update-table-note"> ({c.note})</span>}</td>
+                      <td>{c.purchasePrice}</td>
+                      <td>{c.received}</td>
+                      <td>{c.profit}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {entry.breakingUpdate.companiesNote && (
+              <p className="ugy-breaking-update-footnote">{entry.breakingUpdate.companiesNote}</p>
+            )}
+            <a
+              href={entry.breakingUpdate.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ugy-breaking-update-source"
+            >
+              Forrás: {entry.breakingUpdate.sourceLabel} →
+            </a>
+          </div>
+        )}
+
         {/* ── Main video ── */}
         {entry.videoId && (
           <div className="person-video-section">
