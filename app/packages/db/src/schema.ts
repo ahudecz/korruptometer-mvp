@@ -1919,6 +1919,69 @@ export type NewPollVote = typeof pollVotes.$inferInsert;
 export type PollVoteSelection = typeof pollVoteSelections.$inferSelect;
 export type NewPollVoteSelection = typeof pollVoteSelections.$inferInsert;
 
+// Kvíz-rendszer — több kvízt támogató, skálázható feleletválasztós játék, a
+// szavazás (PollQuestion) mintáját követve: saját slug/URL kvízenként, hogy
+// bármikor jöhessen második, harmadik kvíz. Nincs "már kitöltötted"
+// perzisztencia (ellentétben a szavazással) — ez egy játék, nem egy
+// egyszeri döntés, bárki bármennyiszer újrajátszhatja; ezért nincs is
+// eredmény-tábla, a kitöltés teljes egészében kliens-oldali állapot.
+export const quizzes = pgTable('Quiz', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  slug: text('slug').notNull().unique(),
+  title: text('title').notNull(),
+  intro: text('intro').notNull(),
+  // [{ minScore, maxScore, title, description }] — kvízenként testre
+  // szabható pontszám-kategóriák (user kérés, 011-nvvh-case-poll melletti
+  // kvíz-feature).
+  tiers: jsonb('tiers').notNull(),
+  // A kvíz VÉGÉN, az eredmény-képernyőn megjelenő, pontszámtól független
+  // lezáró videó (opcionális) — user kérés: "akármi is az eredményed,
+  // nézd meg hol tart az ügy".
+  outroVideoId: text('outroVideoId'),
+  outroVideoIntro: text('outroVideoIntro'),
+  createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const quizQuestions = pgTable(
+  'QuizQuestion',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    quizId: uuid('quizId')
+      .notNull()
+      .references(() => quizzes.id, { onDelete: 'cascade' }),
+    displayOrder: integer('displayOrder').notNull().default(0),
+    questionText: text('questionText').notNull(),
+    // Pontosan 3 elemű string-tömb — az app-rétegben ellenőrizve, nem
+    // DB check-kel (jsonb-n nehézkes lenne).
+    options: jsonb('options').notNull(),
+    correctIndex: integer('correctIndex').notNull(),
+    // Alapértelmezett magyarázat-szöveg (bármelyik válaszra). Ha
+    // "explanationWrong" is ki van töltve, az felülírja EZT hibás válasz
+    // esetén, és "explanation" ilyenkor a helyes-válasz-utáni szöveggé
+    // válik (l. a Bánki Erik-es "meglepő helyes válasz" kérdést).
+    explanation: text('explanation'),
+    explanationWrong: text('explanationWrong'),
+    imageUrl: text('imageUrl'),
+    imageCaption: text('imageCaption'),
+    linkUrl: text('linkUrl'),
+    linkLabel: text('linkLabel'),
+    videoId: text('videoId'),
+    videoIntro: text('videoIntro'),
+  },
+  (t) => ({
+    quizOrderIdx: index('QuizQuestion_quiz_order_idx').on(t.quizId, t.displayOrder),
+    correctIndexCheck: check(
+      'QuizQuestion_correctIndex_range',
+      sql`"correctIndex" >= 0 AND "correctIndex" <= 2`,
+    ),
+  }),
+);
+
+export type Quiz = typeof quizzes.$inferSelect;
+export type NewQuiz = typeof quizzes.$inferInsert;
+export type QuizQuestion = typeof quizQuestions.$inferSelect;
+export type NewQuizQuestion = typeof quizQuestions.$inferInsert;
+
 export type FacebookPage = typeof facebookPages.$inferSelect;
 export type NewFacebookPage = typeof facebookPages.$inferInsert;
 
