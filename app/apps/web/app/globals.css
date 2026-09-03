@@ -10731,7 +10731,7 @@ body:has(.admin-nav) > main {
 /* Breaking update (ügyoldal — kapcsolódó feljelentések és a fő videó között,
    l. ugyek-config.ts BreakingUpdate / [id]/page.tsx, 2026-09-03) */
 .ugy-breaking-update {
-  margin: 24px 0 40px;
+  margin: 8px 0 16px;
   border: 1.5px solid var(--accent, #e31937);
   border-radius: 10px;
   overflow: hidden;
@@ -10744,6 +10744,9 @@ body:has(.admin-nav) > main {
 .ugy-breaking-update-table-wrap {
   overflow-x: auto;
   background: #fff;
+  /* Kis levegő a piros keretes lead-doboz és a táblázat teteje között —
+     user kérés, korábban közvetlenül egymáshoz ért a kettő. */
+  padding-top: 10px;
 }
 .ugy-breaking-update-table {
   width: 100%;
@@ -10771,6 +10774,11 @@ body:has(.admin-nav) > main {
   white-space: normal;
 }
 .ugy-breaking-update-table tr:last-child td { border-bottom: none; }
+/* Zebra-csíkozás — ua. minta, mint a .db-table-nél (user kérés: legyen
+   nyilvánvalóbb, hogy ez táblázat, főleg mobilon). */
+.ugy-breaking-update-table tbody tr:nth-child(even) {
+  background: var(--surface);
+}
 .ugy-breaking-update-table-note {
   font-weight: 400;
   color: var(--ink-2);
