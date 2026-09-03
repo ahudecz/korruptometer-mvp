@@ -17,14 +17,28 @@ export function milestoneCaption(amountLabel: string): string {
   ].join('\n');
 }
 
-export function breakingCaption(kicker: string, headline: string, detail?: string): string {
+export function breakingCaption(kicker: string, headline: string, detail?: string, linkPath?: string): string {
   return [
     `🚨 ${kicker}`,
     '',
     headline,
     detail ? `\n${detail}` : null,
     '',
-    'Részletek: kegyencjarat.hu',
+    `Részletek: kegyencjarat.hu${linkPath ?? ''}`,
     '#kegyencjarat #korrupció',
   ].filter((l) => l !== null).join('\n');
+}
+
+// Napi tartalék-poszt (nincs elég friss esemény aznapra) — futó összesítő
+// számok, mindig kegyencjarat.hu-s linkkel. l. check-social-triggers.ts
+// buildSummaryStatsTrigger.
+export function summaryCaption(lines: string[], linkPath: string): string {
+  return [
+    '📊 EDDIG A KEGYENCJÁRATON',
+    '',
+    ...lines,
+    '',
+    `Minden adat, forrás és részlet: kegyencjarat.hu${linkPath}`,
+    '#kegyencjarat #korrupció',
+  ].join('\n');
 }

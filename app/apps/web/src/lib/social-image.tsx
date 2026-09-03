@@ -180,6 +180,53 @@ export async function renderBreakingImage(
   return Buffer.from(await img.arrayBuffer());
 }
 
+/** Napi tartalék "összesítő" poszt: 3-4 futó számláló egy kártyán. */
+export async function renderSummaryImage(
+  params: { stats: Array<{ label: string; value: string }> },
+  variant: ImageVariant = 'dark',
+): Promise<Buffer> {
+  const dark = variant === 'dark';
+  const bg = dark ? INK : '#ffffff';
+  const kickerColor = dark ? '#9a9ca3' : '#5c5e62';
+  const labelColor = dark ? SURFACE : INK;
+  const footerColor = dark ? '#9a9ca3' : '#5c5e62';
+
+  const img = new ImageResponse(
+    (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          background: bg,
+          padding: '80px 90px',
+          fontFamily: 'sans-serif',
+        }}
+      >
+        <LogoChip width={380} dark={dark} />
+
+        <div style={{ display: 'flex', color: kickerColor, fontSize: 34, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', marginTop: 48 }}>
+          Eddig a Kegyencjáraton
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center', gap: 28, marginTop: 8 }}>
+          {params.stats.map((s, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 20 }}>
+              <div style={{ display: 'flex', color: ACCENT, fontSize: 64, fontWeight: 900, whiteSpace: 'nowrap' }}>{s.value}</div>
+              <div style={{ display: 'flex', color: labelColor, fontSize: 34, fontWeight: 600 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', color: footerColor, fontSize: 32, fontWeight: 600 }}>kegyencjarat.hu</div>
+      </div>
+    ),
+    SIZE,
+  );
+  return Buffer.from(await img.arrayBuffer());
+}
+
 /**
  * Egy SocialPostOutbox sor jelenlegi mezőiből újragenerálja a képet — a
  * Telegram "✏️ Módosítás" gomb (kép-szöveg csere, "🎨 Új design" váltás)
@@ -198,6 +245,11 @@ export async function regenerateOutboxImage(row: {
   if (row.triggerType === 'complaint_milestone') {
     const amountLabel = row.milestoneValueFt !== null ? formatMilliardLabel(row.milestoneValueFt) : '';
     return renderMilestoneImage({ amountLabel, subline: row.imageText ?? '' }, variant);
+  }
+  if (row.triggerType === 'summary_stats') {
+    // imageText: JSON.stringify(Array<{label,value}>) — l. buildSummaryStatsTrigger.
+    const stats = row.imageText ? (JSON.parse(row.imageText) as Array<{ label: string; value: string }>) : [];
+    return renderSummaryImage({ stats }, variant);
   }
   return renderBreakingImage({ kicker: row.kicker ?? '', headline: row.headline, detail: row.imageText || undefined }, variant);
 }
