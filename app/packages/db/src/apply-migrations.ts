@@ -62,6 +62,11 @@ function parseArgs(argv: string[]): Args {
  * van betöltve.
  */
 function resolveTarget(): string {
+  // A környezeti változó ELSŐBBSÉGET élvez a fájllal szemben: így egy futtatás
+  // egyszeri jelleggel máshova irányítható (pl. a helyi homokozóra), anélkül,
+  // hogy az éles célt tartalmazó fájlt szerkeszteni kellene.
+  const fromEnvFirst = process.env.MIGRATION_DATABASE_URL;
+  if (fromEnvFirst) return fromEnvFirst;
   if (existsSync(SECRETS_FILE)) {
     for (const line of readFileSync(SECRETS_FILE, 'utf8').split('\n')) {
       const t = line.trim();
@@ -76,8 +81,6 @@ function resolveTarget(): string {
       if (v) return v;
     }
   }
-  const fromEnv = process.env.MIGRATION_DATABASE_URL;
-  if (fromEnv) return fromEnv;
   throw new Error(
     `No migration target. Put one line in ${SECRETS_FILE}:\n` +
       `  MIGRATION_DATABASE_URL=postgresql://…\n` +
@@ -126,17 +129,27 @@ async function main() {
   const sql = postgres(url, { max: 1, onnotice: () => {} });
 
   try {
-    await sql`
-      CREATE TABLE IF NOT EXISTS ${sql(LEDGER)} (
-        "filename"  text PRIMARY KEY,
-        "sha256"    text NOT NULL,
-        "appliedAt" timestamptz NOT NULL DEFAULT now()
-      )
-    `;
+    // A főkönyvet CSAK írásnál hozzuk létre. Egy próbafutás nem nyúlhat az
+    // adatbázishoz — különben a "nothing is written" ígéret hazugság lenne,
+    // és élesen az első ártalmatlan `pnpm migrate` is táblát csinálna.
+    if (args.apply) {
+      await sql`
+        CREATE TABLE IF NOT EXISTS ${sql(LEDGER)} (
+          "filename"  text PRIMARY KEY,
+          "sha256"    text NOT NULL,
+          "appliedAt" timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+    }
 
-    const rows = await sql<{ filename: string; sha256: string }[]>`
-      SELECT "filename", "sha256" FROM ${sql(LEDGER)}
+    const ledgerExists = await sql<{ exists: boolean }[]>`
+      SELECT to_regclass(${LEDGER}) IS NOT NULL AS exists
     `;
+    const rows = ledgerExists[0]?.exists
+      ? await sql<{ filename: string; sha256: string }[]>`
+          SELECT "filename", "sha256" FROM ${sql(LEDGER)}
+        `
+      : [];
     const applied = new Map(rows.map((r) => [r.filename, r.sha256]));
 
     const files = migrationFiles();
