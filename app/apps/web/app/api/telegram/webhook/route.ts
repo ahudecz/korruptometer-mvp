@@ -804,9 +804,28 @@ export async function POST(req: Request) {
             return NextResponse.json({ ok: true });
           }
           if (pendingRow.pendingEdit === 'image_text') {
-            const newImage = await regenerateOutboxImage({ ...pendingRow, imageText: msg.text });
+            // user report, 2026-09-04: a renderBreakingImage sablon egy NAGY
+            // headline sor + alatta egy kisebb detail sor — korábban ez az ág
+            // csak a detail-t (imageText) cserélte, a headline (a nagyobb,
+            // feltűnőbb szöveg) változatlan maradt. A user "✍️ Szöveg a
+            // képen" alatt a TELJES látható szöveg cseréjét várja, nem egy
+            // kiegészítő alsó sort — ezért itt (complaint_milestone és
+            // summary_stats KIVÉTELÉVEL, ahol a headline nem szabad szöveg,
+            // hanem a mérföldkő-összeg / a stat-számok) a headline-t is a
+            // beírt szövegre cseréljük, a régi detailt pedig töröljük, hogy
+            // ne maradjon alatta a korábbi tartalom.
+            const isFreeHeadline = pendingRow.triggerType !== 'complaint_milestone' && pendingRow.triggerType !== 'summary_stats';
+            const updatedRow = isFreeHeadline
+              ? { ...pendingRow, headline: msg.text, imageText: '' }
+              : { ...pendingRow, imageText: msg.text };
+            const newImage = await regenerateOutboxImage(updatedRow);
             await getDb().update(schema.socialPostOutbox)
-              .set({ imagePng: newImage.toString('base64'), imageText: msg.text, pendingEdit: null })
+              .set({
+                imagePng: newImage.toString('base64'),
+                imageText: updatedRow.imageText,
+                headline: updatedRow.headline,
+                pendingEdit: null,
+              })
               .where(eq(schema.socialPostOutbox.id, pendingRow.id));
             await sendTelegramPhoto(newImage, `📢 Frissített poszt-jelölt\n\n${pendingRow.caption}`, socialApprovalKeyboard(pendingRow.id));
             return NextResponse.json({ ok: true });
