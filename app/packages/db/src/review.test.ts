@@ -1,5 +1,14 @@
-import { describe, expect, it } from 'vitest';
-import { cleanPositionTitle, decideComplaintTransition, decideStatus, findExistingComplaint, isDuplicate, isSameComplainant, isSuspiciouslyEarlyDate, sameApproxComplaintAmount, truncateDescriptionWords } from './review';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Only the two Waberer's/MNB regression tests below (2026-09-07) exercise the
+// AI tie-break path (isSameComplaintAi) — every other findExistingComplaint
+// test in this file is deliberately built to land in the HIGH (auto-match)
+// or below-LOW (null) tier, never invoking this mock. See review.ts's
+// isSameComplaintAi() doc for what it's mocking.
+vi.mock('./llm', () => ({ llmExtract: vi.fn() }));
+
+import { cleanPositionTitle, complaintMatchScore, COMPLAINT_MATCH_HIGH, COMPLAINT_MATCH_LOW, decideComplaintTransition, decideStatus, findExistingComplaint, findFragmentNameMatch, isBlacklistedComplaintFiler, isDuplicate, isSameComplainant, isSameEntity, isSuspiciouslyEarlyDate, sameApproxComplaintAmount, truncateDescriptionWords } from './review';
+import { llmExtract } from './llm';
 import { isCalledToResignPerson, isWatchlistPerson, normalizeName } from './watchlist';
 
 // Drizzle's `sql` template tag returns an object tree (StringChunk literals
@@ -336,6 +345,23 @@ describe('isSameComplainant (2026-08-11 Gondosóra bug: a second, independent co
   });
 });
 
+// 2026-09-07 user kérés: a Mi Hazánk feljelentéseit nem vesszük fel
+// (duplikátum-eset: két Mi Hazánk-sor ugyanarról az aug. 20-i
+// rendezvény-közbeszerzésről, eltérő megfogalmazás miatt a fuzzy
+// case/filer-matching sem fogta össze őket).
+describe('isBlacklistedComplaintFiler', () => {
+  it('true for "Mi Hazánk" regardless of case/accent/suffix', () => {
+    expect(isBlacklistedComplaintFiler('Mi Hazánk')).toBe(true);
+    expect(isBlacklistedComplaintFiler('mi hazánk')).toBe(true);
+    expect(isBlacklistedComplaintFiler('Mi Hazánk Mozgalom')).toBe(true);
+  });
+
+  it('false for unrelated filers', () => {
+    expect(isBlacklistedComplaintFiler('Integritás Hatóság')).toBe(false);
+    expect(isBlacklistedComplaintFiler('Miniszterelnökség')).toBe(false);
+  });
+});
+
 // 2026-08-30 — Fradiváros-eset: egy szurkolói csoport (25 Mrd) és később a
 // Belügyminisztérium (24,947 Mrd) is "feljelentést tett" ugyanarra a
 // célra — a filer eltér, de az összeg gyakorlatilag azonos.
@@ -493,5 +519,222 @@ describe('isSuspiciouslyEarlyDate', () => {
   it('is false (fail-safe, not fail-open-to-block) on unparseable dates', () => {
     expect(isSuspiciouslyEarlyDate('not-a-date', '2026-08-24')).toBe(false);
     expect(isSuspiciouslyEarlyDate('2026-08-24', 'not-a-date')).toBe(false);
+  });
+});
+
+// 2026-09-07 user report: két VALÓS duplikátum-pár csúszott át élesben — l.
+// merge-duplicate-complaints-2026-09-07.ts a teljes gyökérok-elemzésért és a
+// takarításért. Az alábbi tesztek a valós DB-ből visszafejtett stringekkel
+// reprodukálják mindkét hibát, és igazolják, hogy a fix (COMPLAINT_MATCH_LOW
+// csökkentve + filerName kontextus az AI-döntőbírónak) valóban kezeli őket.
+describe('complaintMatchScore — 2026-09-07 fix (Waberer\'s/MFB és MNB duplikátumok)', () => {
+  it("a Waberer's-pár pontszáma a RÉGI 0.34-es küszöb alatt volt (ez okozta a bugot: az AI-döntőbíró meg sem kapta a jelöltet)", () => {
+    const score = complaintMatchScore(
+      "Waberer's — állami kölcsön Tiborcz Istvánhoz kötött cégnek",
+      "Magyar Fejlesztési Bank 77 milliárdos kötvényvásárlása a Waberer's-től",
+      null,
+      '77 milliárd Ft',
+    );
+    expect(score).toBeCloseTo(0.25, 2);
+    expect(score).toBeLessThan(0.34); // a régi küszöb — ezért nem jutott el az AI-ig
+    expect(score).toBeGreaterThanOrEqual(COMPLAINT_MATCH_LOW); // az ÚJ küszöb — most már eljut
+    expect(score).toBeLessThan(COMPLAINT_MATCH_HIGH); // nem elég magas az auto-matchhez, AI dönt
+  });
+
+  it('az MNB-pár pontszáma MÁR a régi küszöb fölött is az ambiguous sávban volt — itt az AI-döntőbíró rossz ítélete volt a hiba, nem a küszöb', () => {
+    const score = complaintMatchScore(
+      'MNB jegybanki ingatlanügyek — csalás és hűtlen kezelés',
+      'MNB-Ingatlan Kft. — ingatlanhasznosítási visszaélések',
+      null,
+      null,
+    );
+    expect(score).toBeCloseTo(0.5, 2);
+    expect(score).toBeGreaterThanOrEqual(COMPLAINT_MATCH_LOW);
+    expect(score).toBeLessThan(COMPLAINT_MATCH_HIGH);
+  });
+});
+
+describe('findExistingComplaint — AI tie-break receives filerName context (2026-09-07 MNB fix)', () => {
+  beforeEach(() => {
+    vi.mocked(llmExtract).mockClear();
+  });
+
+  it('passes both filer names to the AI prompt when a candidate is in the ambiguous score range', async () => {
+    vi.mocked(llmExtract).mockResolvedValueOnce({ data: { same: true }, inputTokens: 0, outputTokens: 0 });
+    const rows = [{
+      id: 'mnb-row', status: 'feljelentés', filerName: 'MNB (Magyar Nemzeti Bank)', amountLabel: null,
+      targetName: 'MNB jegybanki ingatlanügyek — csalás és hűtlen kezelés',
+    }];
+    let call = 0;
+    const db = { execute: async () => (call++ === 0 ? [] : rows) };
+
+    const match = await findExistingComplaint(
+      db,
+      'MNB-Ingatlan Kft. — ingatlanhasznosítási visszaélések',
+      null,
+      'Magyar Nemzeti Bank',
+    );
+
+    expect(match?.id).toBe('mnb-row');
+    expect(llmExtract).toHaveBeenCalledTimes(1);
+    const promptArg = vi.mocked(llmExtract).mock.calls[0]![0] as { user: string };
+    expect(promptArg.user).toContain('Magyar Nemzeti Bank');
+    expect(promptArg.user).toContain('MNB (Magyar Nemzeti Bank)');
+  });
+
+  it('a Waberer\'s-pár most már eléri az AI-döntőbírót (a régi küszöbnél nem jutott volna el idáig)', async () => {
+    vi.mocked(llmExtract).mockResolvedValueOnce({ data: { same: true }, inputTokens: 0, outputTokens: 0 });
+    const rows = [{
+      id: 'waberer-row', status: 'feljelentés', filerName: 'Gazdasági és Energetikai Minisztérium', amountLabel: '77 milliárd Ft',
+      targetName: "Magyar Fejlesztési Bank 77 milliárdos kötvényvásárlása a Waberer's-től",
+    }];
+    let call = 0;
+    const db = { execute: async () => (call++ === 0 ? [] : rows) };
+
+    const match = await findExistingComplaint(
+      db,
+      "Waberer's — állami kölcsön Tiborcz Istvánhoz kötött cégnek",
+      null,
+      'Kapitány István gazdasági miniszter',
+    );
+
+    expect(match?.id).toBe('waberer-row');
+    expect(llmExtract).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not merge two genuinely unrelated candidates in the ambiguous score band just because the AI happens to be asked — a "different" verdict still returns null', async () => {
+    // "Tiborcz" gives this pair a real (0.33) score in the ambiguous band —
+    // exercises the actual AI-call branch, not the below-LOW short-circuit.
+    vi.mocked(llmExtract).mockResolvedValueOnce({ data: { same: false }, inputTokens: 0, outputTokens: 0 });
+    const rows = [{
+      id: 'unrelated-row', status: 'feljelentés', filerName: 'Hadházy Ákos', amountLabel: null,
+      targetName: "Waberer's — állami kölcsön Tiborcz Istvánhoz kötött cégnek",
+    }];
+    let call = 0;
+    const db = { execute: async () => (call++ === 0 ? [] : rows) };
+
+    const match = await findExistingComplaint(db, 'Tiborcz-érdekeltségű cég adóügye', null, 'Valaki más');
+    expect(llmExtract).toHaveBeenCalledTimes(1); // valóban az AI-ágon futott át, nem a küszöb alatt szűrődött ki
+    expect(match).toBeNull();
+  });
+});
+
+describe('findExistingComplaint — Tier 0: deterministic filer+targetEntity match (2026-09-07 user kérés)', () => {
+  beforeEach(() => {
+    vi.mocked(llmExtract).mockClear();
+  });
+
+  it('matches immediately on filer+entity agreement, WITHOUT any AI call, even if the case-label wording is wildly different', async () => {
+    const rows = [{
+      id: 'entity-row', status: 'feljelentés', filerName: 'Gazdasági és Energetikai Minisztérium', amountLabel: '77 milliárd Ft',
+      targetName: 'Egy teljesen máshogy megfogalmazott, a szó-átfedéses pontozót becsapó ügy-címke',
+      targetEntity: "Waberer's",
+    }];
+    let call = 0;
+    const db = { execute: async () => (call++ === 0 ? [] : rows) };
+
+    const match = await findExistingComplaint(
+      db,
+      'Egy másik, semmilyen közös szót nem tartalmazó megfogalmazás',
+      null,
+      'Gazdasági és Energetikai Minisztérium',
+      "Waberer's Zrt.", // isSameEntity substring-tolerálja a "Zrt." toldalékot
+    );
+
+    expect(match?.id).toBe('entity-row');
+    expect(llmExtract).not.toHaveBeenCalled(); // determinisztikus — nincs AI-hívás
+  });
+
+  it('does NOT match on entity alone if the filer differs (still a real independent-complaint guard)', async () => {
+    const rows = [{
+      id: 'other-filer-row', status: 'feljelentés', filerName: 'Hadházy Ákos', amountLabel: null,
+      targetName: "Waberer's ügye", targetEntity: "Waberer's",
+    }];
+    let call = 0;
+    const db = { execute: async () => (call++ === 0 ? [] : rows) };
+
+    const match = await findExistingComplaint(
+      db,
+      'Teljesen más ügy-leírás, nulla szó-átfedéssel',
+      null,
+      'Egy harmadik, független bejelentő',
+      "Waberer's",
+    );
+
+    // Tier 0 nem talál (más a bejelentő), és a nulla szóátfedés miatt Tier 2
+    // sem talál semmit — az AI-döntőbíróig sem jut el.
+    expect(match).toBeNull();
+    expect(llmExtract).not.toHaveBeenCalled();
+  });
+
+  it('falls through to the fuzzy/AI path when the new complaint has no targetEntity (old-style call)', async () => {
+    vi.mocked(llmExtract).mockResolvedValueOnce({ data: { same: true }, inputTokens: 0, outputTokens: 0 });
+    const rows = [{
+      id: 'fuzzy-row', status: 'feljelentés', filerName: 'Gazdasági és Energetikai Minisztérium', amountLabel: '77 milliárd Ft',
+      targetName: "Magyar Fejlesztési Bank 77 milliárdos kötvényvásárlása a Waberer's-től", targetEntity: "Waberer's",
+    }];
+    let call = 0;
+    const db = { execute: async () => (call++ === 0 ? [] : rows) };
+
+    // targetEntity paraméter nélkül hívva (mint a régi, migráció előtti hívók)
+    const match = await findExistingComplaint(
+      db,
+      "Waberer's — állami kölcsön Tiborcz Istvánhoz kötött cégnek",
+      null,
+      'Kapitány István gazdasági miniszter',
+    );
+
+    expect(match?.id).toBe('fuzzy-row');
+    expect(llmExtract).toHaveBeenCalledTimes(1); // Tier 0 kimaradt, a fuzzy+AI út futott
+  });
+});
+
+describe('isSameEntity', () => {
+  it('mirrors isSameComplainant\'s substring-tolerant matching', () => {
+    expect(isSameEntity("Waberer's", "Waberer's Zrt.")).toBe(true);
+    expect(isSameEntity('MNB', 'Magyar Nemzeti Bank')).toBe(false); // "MNB" túl rövid ahhoz, hogy önmagában megkülönböztető legyen — l. normalizeName
+    expect(isSameEntity('Integritás Hatóság', 'Tudományos és Technológiai Minisztérium')).toBe(false);
+  });
+
+  it('is false when either side is null/undefined/empty', () => {
+    expect(isSameEntity(null, 'Waberer\'s')).toBe(false);
+    expect(isSameEntity('Waberer\'s', undefined)).toBe(false);
+    expect(isSameEntity('', 'Waberer\'s')).toBe(false);
+  });
+});
+
+// 2026-09-07 user report: Császár Attila (PoliticalResignation) és Páger Pál
+// Attila (ugyanaz) élesben duplikálódott, mert a pontos (intézmény-
+// egyeztetett) dedup az intézmény-szöveg eltérése miatt nem ismerte fel a
+// második sort. A user kérése: "ha van egyezés, akár csak töredékre" —
+// findFragmentNameMatch() ezt a biztonsági hálót adja, a teljes táblán,
+// bármely állapotú sorra, ablak és intézmény-egyeztetés nélkül.
+describe('findFragmentNameMatch (2026-09-07 user kérés — Császár Attila/Páger Pál Attila eset)', () => {
+  it('matches when the new name is a superstring of an existing (shorter) name — a "Páger Pál" → "Páger Pál Attila" eset', async () => {
+    const rows = [{ id: 'existing-1', name: 'Páger Pál', sourceUrl: 'https://example.com/eredeti' }];
+    const db = { execute: async () => rows };
+    const match = await findFragmentNameMatch(db, 'PoliticalResignation', 'name', 'Páger Pál Attila');
+    expect(match).toEqual({ id: 'existing-1', name: 'Páger Pál', sourceUrl: 'https://example.com/eredeti' });
+  });
+
+  it('matches when the new name is a SHORTER substring of an existing (longer) name', async () => {
+    const rows = [{ id: 'existing-2', name: 'Páger Pál Attila', sourceUrl: 'https://example.com/eredeti' }];
+    const db = { execute: async () => rows };
+    const match = await findFragmentNameMatch(db, 'PoliticalResignation', 'name', 'Páger Pál');
+    expect(match?.id).toBe('existing-2');
+  });
+
+  it('returns null when there is no overlap at all', async () => {
+    const db = { execute: async () => [] };
+    const match = await findFragmentNameMatch(db, 'PoliticalResignation', 'name', 'Valaki Teljesen Más');
+    expect(match).toBeNull();
+  });
+
+  it('does not query for a very short (< 4 char normalized) name, to avoid over-broad matches', async () => {
+    let queried = false;
+    const db = { execute: async () => { queried = true; return []; } };
+    const match = await findFragmentNameMatch(db, 'PoliticalResignation', 'name', 'Ede');
+    expect(match).toBeNull();
+    expect(queried).toBe(false);
   });
 });

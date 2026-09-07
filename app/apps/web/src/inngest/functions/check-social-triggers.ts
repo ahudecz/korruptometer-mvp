@@ -314,7 +314,7 @@ async function buildAssetRecoveryTriggers(db: ReturnType<typeof getDb>): Promise
 async function buildComplaintTriggers(db: ReturnType<typeof getDb>): Promise<OutboxInsert[]> {
   const since = new Date(Date.now() - BREAKING_LOOKBACK_HOURS * 60 * 60 * 1000);
   const recent = await db
-    .select({ id: schema.criminalComplaints.id, targetName: schema.criminalComplaints.targetName, filerName: schema.criminalComplaints.filerName, amountLabel: schema.criminalComplaints.amountLabel })
+    .select({ id: schema.criminalComplaints.id, targetName: schema.criminalComplaints.targetName, targetEntity: schema.criminalComplaints.targetEntity, filerName: schema.criminalComplaints.filerName, amountLabel: schema.criminalComplaints.amountLabel })
     .from(schema.criminalComplaints)
     .where(and(
       eq(schema.criminalComplaints.reviewStatus, 'approved'),
@@ -328,7 +328,20 @@ async function buildComplaintTriggers(db: ReturnType<typeof getDb>): Promise<Out
   for (const c of recent) {
     if (alreadyPostedIds.has(c.id)) continue;
     const kicker = 'FELJELENTÉS';
-    const rawHeadline = `${c.filerName} feljelentést tett ${c.targetName} ellen`;
+    // 2026-09-07 user report: "${filerName} feljelentést tett ${targetName}
+    // ellen" élesen értelmetlen mondatot adott ki ("...tett Magyar
+    // Fejlesztési Bank 77 milliárdos kötvényvásárlása a Waberer's-től
+    // ellen") — a targetName egy szabad szöveges ÜGY-LEÍRÁS (l.
+    // criminal-complaint-detect.ts targetName mezőjének doksija), NEM egy
+    // önálló főnév, amire az "ellen" névutó ráépíthető. Ha van targetEntity
+    // (l. migráció 0060 — a feljelentett fél rövid, önálló neve), az "ellen"
+    // forma vele biztonságos és természetesebb; ha nincs (régi sor, vagy
+    // "ismeretlen tettes" eset), a kettőspontos forma (mint
+    // resignationHeadline() a lemondásoknál) tetszőleges szabad szövegre
+    // biztonságos, sose igényel egyeztetést.
+    const rawHeadline = c.targetEntity
+      ? `${c.filerName} feljelentést tett ${c.targetEntity} ellen`
+      : `${c.filerName} feljelentést tett: ${c.targetName}`;
     const rawDetail = c.amountLabel ? `Érintett összeg: ${c.amountLabel}` : undefined;
     const hookLine = hookFor('criminal_complaint', c.id);
     const polished = await polishSocialCopy({ triggerType: 'criminal_complaint', headline: rawHeadline, detail: rawDetail });

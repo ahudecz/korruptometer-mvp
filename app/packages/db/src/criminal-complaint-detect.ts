@@ -9,6 +9,7 @@ export type ComplaintStatusExtracted = 'feljelentés' | 'nyomozás' | 'vádemel�
 
 export type ComplaintEvent = {
   targetName: string;
+  targetEntity: string;
   filerName: string;
   description: string;
   amountLabel: string;
@@ -44,7 +45,12 @@ const TOOL: LlmToolSpec = {
             targetName: {
               type: 'string',
               description:
-                'Short, specific, stable Hungarian label for the CASE or TARGET the complaint is about (e.g. "Orbán-kori gyanús közbeszerzések", "281 milliárdos állami befektetés — Mészáros/Tiborcz/Nagy Márton érdekkör", "Tiborczhoz köthető cégek Alteo-részvény akciója"). This is the matching key used to link follow-up articles about the SAME case — keep it specific enough to not collide with an unrelated case against the same institution, but do not bake a person\'s name in as the sole label if the case is really about an institution/scheme.',
+                'Short, specific, stable Hungarian label for the CASE or TOPIC the complaint is about (e.g. "Orbán-kori gyanús közbeszerzések", "281 milliárdos állami befektetés — Mészáros/Tiborcz/Nagy Márton érdekkör", "Tiborczhoz köthető cégek Alteo-részvény akciója"). This is the matching key used to link follow-up articles about the SAME case — keep it specific enough to not collide with an unrelated case against the same institution, but do not bake a person\'s name in as the sole label if the case is really about an institution/scheme. This is a CASE LABEL, not a name — it may be a full descriptive phrase, and must NEVER be used as the grammatical object of a sentence (it is not always a plain noun).',
+            },
+            targetEntity: {
+              type: 'string',
+              description:
+                'The SHORT, CANONICAL name (1-4 words) of the SPECIFIC person, company, or institution the complaint is filed AGAINST (the accused) — e.g. "Waberer\'s", "Tiborcz István", "MNB-Ingatlan Kft.", "Mészáros Lőrinc". This is DIFFERENT from targetName above: targetEntity is a bare proper name suitable for exact matching and for use as the object of a Hungarian sentence ("X feljelentést tett Y ellen"), never a full case description. If several parties are named as accused, pick the single most specific/primary one. If the complaint is filed against "ismeretlen tettes" (unknown perpetrator) or no specific named party is identified, use an empty string — do NOT guess or invent a name.',
             },
             filerName: {
               type: 'string',
@@ -71,7 +77,7 @@ const TOOL: LlmToolSpec = {
               description: 'Confidence 0–1 that THIS SPECIFIC entry is a real criminal complaint meeting the relevance criteria.',
             },
           },
-          required: ['targetName', 'filerName', 'description', 'amountLabel', 'status', 'confidence'],
+          required: ['targetName', 'targetEntity', 'filerName', 'description', 'amountLabel', 'status', 'confidence'],
         },
       },
     },
@@ -115,7 +121,14 @@ Ha a cikk csak összesítve említi a számot konkrét ügyek nélkül, egyetlen
 
 FONTOS — a "status" mező: mindig a cikkben TÉNYLEGESEN megerősített legmagasabb
 fázist add meg. Ha a cikk csak a feljelentés megtételéről szól, "feljelentés"
-a helyes érték — ne feltételezz további fejleményt, amit a cikk nem állít.`;
+a helyes érték — ne feltételezz további fejleményt, amit a cikk nem állít.
+
+FONTOS — targetName vs. targetEntity: a targetName egy hosszabb ÜGY-CÍMKE
+(lehet egész mondat/kifejezés), a targetEntity viszont egy RÖVID, ÖNÁLLÓ NÉV
+(a feljelentett fél — max. 4 szó). A kettő gyakran különbözik: pl. targetName
+= "Magyar Fejlesztési Bank 77 milliárdos kötvényvásárlása a Waberer's-től",
+targetEntity = "Waberer's". SOSE cseréld fel őket, és a targetEntity mezőt
+sose töltsd ki a teljes ügy-leírással.`;
 
 /** See resignation-detect.ts for why this returns the full LlmResult. */
 export async function detectCriminalComplaintFromArticle(

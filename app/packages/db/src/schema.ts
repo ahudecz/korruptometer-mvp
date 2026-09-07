@@ -1507,6 +1507,15 @@ export const criminalComplaints = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     targetName: text('targetName').notNull(),
+    // 2026-09-07 — a feljelentés TÁRGYÁNAK (a feljelentett fél — személy/
+    // cég/intézmény) rövid, kanonikus neve, elkülönítve a fenti targetName
+    // hosszabb ügy-címkéjétől (l. migráció 0060 kommentje). Nullable — régi
+    // sorok nem kapják meg visszamenőleg, a dedup ilyenkor a fuzzy útra esik
+    // vissza. NEM a publikus oldal elsődleges megjelenítési mezője (az
+    // marad targetName) — kizárólag dedup-egyeztetéshez és a Facebook-
+    // poszt-caption "${filerName} feljelentést tett ${targetEntity} ellen"
+    // grammatikailag biztonságos szerkesztéséhez.
+    targetEntity: text('targetEntity'),
     filerName: text('filerName').notNull(),
     description: text('description'),
     // Rövid magyar címke (pl. "106 milliárd Ft") — NULL, ha a feljelentés nem
@@ -1543,6 +1552,7 @@ export const criminalComplaints = pgTable(
   (t) => ({
     eventDateIdx: index('CriminalComplaint_eventDate_idx').on(t.eventDate),
     targetNameIdx: index('CriminalComplaint_targetName_idx').on(t.targetName),
+    targetEntityIdx: index('CriminalComplaint_targetEntity_idx').on(t.targetEntity),
     reviewStatusIdx: index('CriminalComplaint_reviewStatus_idx').on(t.reviewStatus),
     statusIdx: index('CriminalComplaint_status_idx').on(t.status),
   }),

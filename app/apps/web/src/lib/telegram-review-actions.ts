@@ -20,6 +20,7 @@ import {
   isCollectiveEntityName,
   isDuplicate,
   isPermanentBreakingPerson,
+  isBlacklistedComplaintFiler,
   isPlaceholderName,
   isTransientLlmFailure,
   isWatchlistPerson,
@@ -525,6 +526,12 @@ export async function processCriminalComplaint(article: ArticleForReprocess, tod
       continue;
     }
 
+    // 2026-09-07 user kérés — l. isBlacklistedComplaintFiler() (review.ts).
+    if (isBlacklistedComplaintFiler(complaint.filerName)) {
+      lastDiscardReason = 'blacklisted_filer';
+      continue;
+    }
+
     let reviewStatus: 'approved' | 'pending' | 'discard' = 'approved';
     if (!bypassConfidenceGate) {
       const isWatchlist = isWatchlistPerson(complaint.filerName) || isWatchlistPerson(complaint.targetName);
@@ -545,7 +552,7 @@ export async function processCriminalComplaint(article: ArticleForReprocess, tod
 
     const status = complaint.status as ComplaintStatus;
     // amountLabel átadva — l. review.ts findExistingComplaint() 2026-09-01 fixje.
-    const existing = await findExistingComplaint(db, complaint.targetName, complaint.amountLabel);
+    const existing = await findExistingComplaint(db, complaint.targetName, complaint.amountLabel, complaint.filerName, complaint.targetEntity || null);
     const eventDate = resolveDate(undefined, article.publishedAt);
 
     if (existing) {
@@ -557,6 +564,7 @@ export async function processCriminalComplaint(article: ArticleForReprocess, tod
       await db.update(schema.criminalComplaints).set({
         status,
         eventDate,
+        targetEntity: existing.targetEntity ?? (complaint.targetEntity.slice(0, 200) || null),
         sourceUrls: sql`array_append("sourceUrls", ${article.sourceUrl})`,
         sourceNames: sql`array_append("sourceNames", ${article.sourceName ?? ''})`,
         sourceHeadlines: sql`array_append("sourceHeadlines", ${article.headline.slice(0, 500)})`,
@@ -575,6 +583,7 @@ export async function processCriminalComplaint(article: ArticleForReprocess, tod
 
     const [row] = await db.insert(schema.criminalComplaints).values({
       targetName: complaint.targetName.slice(0, 200),
+      targetEntity: complaint.targetEntity.slice(0, 200) || null,
       filerName: complaint.filerName.slice(0, 200),
       description: complaint.description.slice(0, 1000) || null,
       amountLabel: complaint.amountLabel.slice(0, 200) || null,

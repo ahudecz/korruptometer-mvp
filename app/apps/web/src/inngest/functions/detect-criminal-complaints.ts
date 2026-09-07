@@ -6,6 +6,8 @@ import {
   decideComplaintTransition,
   decideStatus,
   findExistingComplaint,
+  findFragmentNameMatch,
+  isBlacklistedComplaintFiler,
   isPlaceholderName,
   isSameComplainant,
   isSameComplainantAi,
@@ -65,9 +67,31 @@ async function processComplaintArticle(
       continue;
     }
 
+    // 2026-09-07 user kérés: a Mi Hazánk feljelentéseit nem vesszük fel —
+    // l. isBlacklistedComplaintFiler() doc commentje (review.ts) a duplikátum
+    // előzményért.
+    if (isBlacklistedComplaintFiler(complaint.filerName)) {
+      lastDiscardReason = 'blacklisted_filer';
+      continue;
+    }
+
     const isWatchlist = isWatchlistPerson(complaint.filerName) || isWatchlistPerson(complaint.targetName);
-    const reviewStatus = decideStatus(complaint.confidence, isWatchlist);
-    if (reviewStatus === 'discard') {
+    // 2026-09-07 user kérés — hét dokumentált duplikátum-incidens (Neptun/
+    // Kréta, Eximbank, Fradiváros, Gondosóra, Mi Hazánk, Waberer's, MNB)
+    // után a user explicit bejelentette, hogy NEM bízik az automatikus
+    // feljelentés-dedupban: "abból nincs olyan sok, ott egyesével akarok
+    // mindent jóváhagyni". `baseReviewStatus` az EREDETI (konfidencia-
+    // alapú) döntés — ez marad a MEGLÉVŐ feljelentés státusz-frissítés
+    // (lásd lent, `existing` ág) jóváhagyás-döntésének alapja,
+    // VÁLTOZATLANUL, mert annak "Elutasítom" gombja jelenleg az EGÉSZ,
+    // már korábban jóváhagyott sort TÖRLI (l. telegram/webhook/route.ts
+    // setPendingStatus() — nem csak a státuszváltást vonja vissza) — ezt
+    // itt kényszerpályára állítani adatvesztés-kockázatot jelentene.
+    // `reviewStatus` (lent) csak az ÚJ sor beszúrásához kényszerít
+    // pending-et — ott a "Elutasítom" biztonságos (a sor sose volt
+    // publikus, törlése nem veszélyeztet meglévő adatot).
+    const baseReviewStatus = decideStatus(complaint.confidence, isWatchlist);
+    if (baseReviewStatus === 'discard') {
       lastDiscardReason = 'low_confidence';
       if (complaint.confidence >= NEAR_MISS_MIN) {
         await notifyReviewNeeded({
@@ -81,6 +105,9 @@ async function processComplaintArticle(
       }
       continue;
     }
+    // Csak 'approved' | 'pending' érhet ide (a 'discard' fentebb continue-olt) —
+    // az ÚJ sor beszúrásához mindig 'pending'-re kényszerítve.
+    const reviewStatus = 'pending' as const;
 
     if (!article.sourceUrl) {
       lastDiscardReason = 'missing_source';
@@ -91,7 +118,7 @@ async function processComplaintArticle(
     // amountLabel átadva — l. review.ts findExistingComplaint()/amountCloseness()
     // 2026-09-01 fixje: egy pontosan egyező összeg erősebb jel, mint a puszta
     // szóátfedés (Eximbank/Tiborcz duplikátum-bug).
-    const existingMatch = await findExistingComplaint(db, complaint.targetName, complaint.amountLabel);
+    const existingMatch = await findExistingComplaint(db, complaint.targetName, complaint.amountLabel, complaint.filerName, complaint.targetEntity || null);
     // 2026-08-11 fix: the fuzzy case-match can correctly find the same
     // broader case while this article is actually reporting a SECOND,
     // independent complaint (different filer) — e.g. the Ministry filing
@@ -130,6 +157,10 @@ async function processComplaintArticle(
       await db.update(schema.criminalComplaints).set({
         status,
         eventDate,
+        // targetEntity csak akkor íródik, ha a meglévő sornak még nincs
+        // (régi, migráció 0060 előtti sor) — sose írja felül egy már
+        // kitöltött mezőt egy esetleg gyengébb minőségű újabb kinyeréssel.
+        targetEntity: existing.targetEntity ?? (complaint.targetEntity.slice(0, 200) || null),
         sourceUrls: sql`array_append("sourceUrls", ${article.sourceUrl})`,
         sourceNames: sql`array_append("sourceNames", ${article.sourceName ?? ''})`,
         sourceHeadlines: sql`array_append("sourceHeadlines", ${article.headline.slice(0, 500)})`,
@@ -140,7 +171,10 @@ async function processComplaintArticle(
       anyHandled = true;
       handledNames.push(complaint.targetName);
 
-      if (reviewStatus === 'pending') {
+      // Szándékosan `baseReviewStatus` (NEM a fent kényszerített `reviewStatus`) —
+      // l. a fenti komment: a "❌ Elutasítom" gomb erre a rekordra a TELJES,
+      // már élő sort törölné, nem csak a státuszváltást vonná vissza.
+      if (baseReviewStatus === 'pending') {
         await notifyReviewNeeded({
           type: 'pending',
           detectorType: DETECTOR_TYPE,
@@ -156,8 +190,19 @@ async function processComplaintArticle(
       continue;
     }
 
+    // 2026-09-07 user kérés — l. review.ts findFragmentNameMatch() doksija.
+    // `reviewStatus` itt már úgyis mindig 'pending' (l. fent) — a
+    // fragmentMatch itt csak azért fut, hogy a lenti Telegram-üzenet meg
+    // tudja mutatni, MELYIK meglévő névvel/cikkel egyezik töredékesen, ha
+    // egyezik. Csak akkor fut, ha van targetEntity (nincs mihez
+    // viszonyítani egy üres stringnél).
+    const fragmentMatch = complaint.targetEntity
+      ? await findFragmentNameMatch(db, 'CriminalComplaint', 'targetEntity', complaint.targetEntity)
+      : null;
+
     const [insertedRow] = await db.insert(schema.criminalComplaints).values({
       targetName: complaint.targetName.slice(0, 200),
+      targetEntity: complaint.targetEntity.slice(0, 200) || null,
       filerName: complaint.filerName.slice(0, 200),
       description: complaint.description.slice(0, 1000) || null,
       amountLabel: complaint.amountLabel.slice(0, 200) || null,
@@ -183,6 +228,7 @@ async function processComplaintArticle(
         articleUrl: article.sourceUrl ?? '',
         articleId: article.id,
         recordId: insertedRow!.id,
+        conflictingMatch: fragmentMatch ? { name: fragmentMatch.name, sourceUrl: fragmentMatch.sourceUrl } : undefined,
       });
     } else {
       anyApproved = true;

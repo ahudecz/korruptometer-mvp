@@ -7,6 +7,7 @@ import {
   cleanPositionTitle,
   decideStatus,
   findExistingVerdict,
+  findFragmentNameMatch,
   isPlaceholderName,
   isSuspiciouslyEarlyDate,
   isWatchlistPerson,
@@ -212,6 +213,17 @@ async function processVerdictArticle(
     reviewStatus = 'pending';
   }
 
+  // 2026-09-07 user kérés — l. review.ts findFragmentNameMatch() doksija
+  // (Császár Attila/Páger Pál Attila élesben duplikálódott eset). Csak a
+  // friss-beszúrás ágon fut (findExistingVerdict fentebb már lefedi a 30
+  // napon belüli, ugyanarra a névre történő lifecycle-frissítést) — egy
+  // 30 napnál régebbi vagy más néven belépő töredék-egyezésre extra
+  // biztonsági háló.
+  const fragmentMatch = !existingVerdict ? await findFragmentNameMatch(db, 'CourtVerdict', 'personName', result.personName) : null;
+  if (fragmentMatch && reviewStatus === 'approved') {
+    reviewStatus = 'pending';
+  }
+
   let recordId: string;
   if (existingVerdict) {
     await db.update(schema.courtVerdicts).set({
@@ -296,6 +308,7 @@ async function processVerdictArticle(
       articleUrl: article.sourceUrl ?? '',
       articleId: article.id,
       recordId,
+      conflictingMatch: fragmentMatch ? { name: fragmentMatch.name, sourceUrl: fragmentMatch.sourceUrl } : undefined,
     });
   }
 

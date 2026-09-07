@@ -8,6 +8,7 @@ import {
   type CheckReason,
   cleanPositionTitle,
   decideStatus,
+  findFragmentNameMatch,
   hasIndividualResignationForInstitution,
   isCalledToResignPerson,
   isCollectiveEntityName,
@@ -176,6 +177,17 @@ async function processResignationArticle(
       continue;
     }
 
+    // 2026-09-07 user kérés — Császár Attila élesben duplikálódott, mert az
+    // intézmény-szöveg eltért ("MTVA" vs "köztévé (MTV)") a fenti pontos
+    // dedup számára. Töredék-egyezés (l. findFragmentNameMatch doksija)
+    // sose auto-publikál csendben — kényszerített emberi jóváhagyás, a
+    // Telegram-üzenet mindkét cikket (az újat ÉS a már kint lévő nevéhez
+    // tartozó forrást) mutatja.
+    const fragmentMatch = await findFragmentNameMatch(db, 'PoliticalResignation', 'name', person.name);
+    if (fragmentMatch && reviewStatus === 'approved') {
+      reviewStatus = 'pending';
+    }
+
     // A collective/testületi name ("MÁV igazgatósága") is redundant noise if
     // the same institution's members were already named individually — the
     // by-name dedup above can't catch this since "MÁV igazgatósága" doesn't
@@ -259,6 +271,7 @@ async function processResignationArticle(
         articleUrl: article.sourceUrl ?? '',
         articleId: article.id,
         recordId: insertedRow!.id,
+        conflictingMatch: fragmentMatch ? { name: fragmentMatch.name, sourceUrl: fragmentMatch.sourceUrl } : undefined,
       });
     } else {
       anyApproved = true;

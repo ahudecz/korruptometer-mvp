@@ -29,6 +29,12 @@ export type ReviewNeededEvent = {
    *  three reviewStatus-bearing tables). Lets the webhook flip
    *  reviewStatus directly instead of re-extracting. */
   recordId?: string;
+  /** 2026-09-07 user kérés — ha a pending oka egy TÖREDÉK névegyezés
+   *  (l. findFragmentNameMatch, review.ts), a Telegram-üzenet mutassa meg
+   *  MELYIK már meglévő névvel/cikkel ütközik, hogy a user egy pillantással
+   *  össze tudja hasonlítani a kettőt "ugyanaz-e" eldöntéséhez — ne kelljen
+   *  külön rákeresnie. */
+  conflictingMatch?: { name: string; sourceUrl: string | null };
 };
 
 const DETECTOR_LABELS_HU: Record<ReviewNeededEvent['detectorType'], string> = {
@@ -55,6 +61,9 @@ export async function notifyReviewNeeded(event: ReviewNeededEvent): Promise<void
     const message = [
       `🔔 ${typeLabel} — ${DETECTOR_LABELS_HU[event.detectorType]}`,
       `${event.name} (bizonyosság: ${(event.confidence * 100).toFixed(0)}%)`,
+      ...(event.conflictingMatch
+        ? [`⚠️ Töredékesen egyezik egy már meglévő névvel: "${event.conflictingMatch.name}" — nézd meg, nem ugyanarról van-e szó!`]
+        : []),
     ].join('\n');
     console.log(`[notify] ${event.type} (${event.detectorType}): ${event.name} — confidence ${event.confidence.toFixed(2)} — ${event.articleUrl}`);
 
@@ -62,7 +71,8 @@ export async function notifyReviewNeeded(event: ReviewNeededEvent): Promise<void
     const actionId = event.recordId ?? event.articleId;
     const replyMarkup: InlineKeyboardMarkup = {
       inline_keyboard: [
-        ...(event.articleUrl ? [[{ text: '📄 Cikk megnyitása', url: event.articleUrl }]] : []),
+        ...(event.articleUrl ? [[{ text: event.conflictingMatch ? '📄 Új cikk megnyitása' : '📄 Cikk megnyitása', url: event.articleUrl }]] : []),
+        ...(event.conflictingMatch?.sourceUrl ? [[{ text: '📄 Meglévő cikk megnyitása (ütköző)', url: event.conflictingMatch.sourceUrl }]] : []),
         [
           { text: '✅ Jóváhagyom', callback_data: `a:${code}:${actionId}` },
           { text: '❌ Elutasítom', callback_data: `r:${code}:${actionId}` },

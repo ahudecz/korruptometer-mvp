@@ -192,7 +192,7 @@ async function main() {
 
       const status = complaint.status as ComplaintStatus;
       // amountLabel átadva — l. review.ts findExistingComplaint() 2026-09-01 fixje.
-      const existing = await findExistingComplaint(db, complaint.targetName, complaint.amountLabel);
+      const existing = await findExistingComplaint(db, complaint.targetName, complaint.amountLabel, complaint.filerName, complaint.targetEntity || null);
 
       if (existing) {
         const transition = decideComplaintTransition(existing.status, status);
@@ -205,6 +205,7 @@ async function main() {
         await db.update(schema.criminalComplaints).set({
           status,
           eventDate: publishedAtDate,
+          targetEntity: existing.targetEntity ?? (complaint.targetEntity.slice(0, 200) || null),
           sourceUrls: dsql`array_append("sourceUrls", ${article.sourceUrl})`,
           sourceNames: dsql`array_append("sourceNames", ${article.sourceName ?? ''})`,
           sourceHeadlines: dsql`array_append("sourceHeadlines", ${article.headline.slice(0, 500)})`,
@@ -225,6 +226,7 @@ async function main() {
 
       const [row] = await db.insert(schema.criminalComplaints).values({
         targetName: complaint.targetName.slice(0, 200),
+        targetEntity: complaint.targetEntity.slice(0, 200) || null,
         filerName: complaint.filerName.slice(0, 200),
         description: complaint.description.slice(0, 1000) || null,
         amountLabel: complaint.amountLabel.slice(0, 200) || null,

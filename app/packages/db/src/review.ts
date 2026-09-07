@@ -215,6 +215,54 @@ export async function isDuplicate(
   return rows.length > 0;
 }
 
+export type FragmentNameMatch = { id: string; name: string; sourceUrl: string | null };
+
+/**
+ * 2026-09-07 user kérés — két valós duplikátum ment ki élesen egy nap alatt
+ * (Császár Attila: "MTVA" vs "köztévé (MTV)" intézmény-szöveg eltérése miatt
+ * a pontos isDuplicate() intézmény-egyeztetése nem fogta meg; Páger Pál
+ * Attila: az extraktor rossz személyt azonosított "kirúgottként" egy
+ * több-szereplős cikkből). A user döntése: mostantól MINDEN név, mielőtt
+ * kikerül, essen át egy TÖREDÉK-egyezés kereső ellenőrzésen is — "ha van
+ * egyezés, akár csak töredékre, például Páger Pál van benne és te Páger Pál
+ * Attilát akarsz kirakni" — a teljes táblán, BÁRMELY állapotú sorra
+ * (approved/pending/rejected), az intézménytől/pozíciótól FÜGGETLENÜL.
+ *
+ * Ez NEM helyettesíti a pontos (intézmény-egyeztetett) dedupot fent —
+ * amíg az discard/update dönt, ez a függvény addig nem is fut (a hívó csak
+ * akkor hívja, ha a pontos dedup MÁR NEM blokkolta). Ez egy UTÓLAGOS
+ * biztonsági háló: ha bármi átcsúszik a pontos szűrőn, ez kényszeríti ki az
+ * emberi jóváhagyást (reviewStatus='pending'), a user kérése szerint SOSE
+ * auto-publikálva egy töredékesen egyező nevet.
+ *
+ * Substring-tolerő, MINDKÉT irányban (a rövidebb benne van-e a hosszabban,
+ * vagy fordítva) — ugyanaz az elv, mint isSameComplainant()/isSameEntity(),
+ * csak a teljes táblára, ablak nélkül. 4 karakternél rövidebb normalizált
+ * névre nem fut (elkerülve, hogy egy majdnem üres/hibás kinyerés mindenkivel
+ * "egyezzen").
+ */
+export async function findFragmentNameMatch(
+  db: Executable,
+  table: 'PoliticalResignation' | 'CourtVerdict' | 'CriminalComplaint',
+  nameColumn: 'name' | 'personName' | 'targetEntity',
+  name: string,
+): Promise<FragmentNameMatch | null> {
+  const key = normalizeName(name);
+  if (!key || key.length < 4) return null;
+  const tableId = sql.identifier(table);
+  const nameCol = sql.identifier(nameColumn);
+  const rows = (await db.execute(sql`
+    SELECT id, ${nameCol} AS name, "sourceUrls"[1] AS "sourceUrl" FROM ${tableId}
+    WHERE ${nameCol} IS NOT NULL AND length(trim(${nameCol})) > 0
+      AND (
+        trim(regexp_replace(lower(unaccent(trim(${nameCol}))), '[^a-z0-9]+', ' ', 'g')) LIKE '%' || ${key} || '%'
+        OR ${key} LIKE '%' || trim(regexp_replace(lower(unaccent(trim(${nameCol}))), '[^a-z0-9]+', ' ', 'g')) || '%'
+      )
+    LIMIT 1
+  `)) as unknown as FragmentNameMatch[];
+  return rows[0] ?? null;
+}
+
 // 2026-07-14 — the resignation extractor is instructed to use a collective
 // name (e.g. "Pesti Srácok szerkesztőség") ONLY when an article names no
 // individuals at all. In practice it sometimes still produces one anyway
@@ -313,7 +361,7 @@ export async function findExistingVerdict(
 
 export type ComplaintStatus = 'feljelentés' | 'nyomozás' | 'vádemelés' | 'ítélet' | 'elutasítva';
 
-export type ExistingComplaint = { id: string; status: ComplaintStatus; filerName: string; amountLabel: string | null };
+export type ExistingComplaint = { id: string; status: ComplaintStatus; filerName: string; amountLabel: string | null; targetEntity?: string | null };
 
 /** 180 days, not the usual 30 (DEDUP_WINDOW_DAYS) — a complaint can take
  *  months to reach an indictment or verdict (spec Assumptions). */
@@ -353,10 +401,30 @@ export const COMPLAINT_DEDUP_WINDOW_DAYS = 180;
 // FOLYTONOS jel eleve beleszámít a rangsorolásba, nem csak utólagos
 // szűrésként — egy PONTOSAN egyező összeg ("60 milliárd Ft" = "60 milliárd
 // Ft") erősebb jel, mint egy csak hasonló szavú, de más összegű sor.
-const COMPLAINT_MATCH_HIGH = 1.0; // efölött automatikus match, AI-döntőbíró nélkül
-const COMPLAINT_MATCH_LOW = 0.34; // ez alatt nem is jelölt — nincs elég közös jel
+export const COMPLAINT_MATCH_HIGH = 1.0; // efölött automatikus match, AI-döntőbíró nélkül
+// 2026-09-07 user report (Waberer's/MFB duplikátum — l.
+// merge-duplicate-complaints-2026-09-07.ts): egy VALÓDI duplikátum-pár
+// (ugyanaz a 77 milliárdos MFB-kötvényvásárlás, egyszer az eredeti
+// feljelentés-cikkből, egyszer a Waberer's válasz-cikkéből kinyerve) 0,34
+// alatti (~0,25) textScore-t kapott, mert a két targetName gyakorlatilag
+// csak a "Waberer's" szón osztozott — a régi 0,34-es küszöb ezt még AI-
+// döntőbíróhoz sem engedte el. Csökkentve 0,15-re: az isSameComplaintAi()
+// hívás olcsó és gyakorlatilag ingyenes ehhez a hívásszámhoz képest (l.
+// social-copy-polish.ts hasonló érvelése), a téves-egyesítés kockázatát
+// pedig maga az AI-döntőbíró (+ a hívó oldali filer-egyeztetés) szűri ki —
+// nem a puszta szó-átfedési küszöb feladata ez.
+export const COMPLAINT_MATCH_LOW = 0.15; // ez alatt nem is jelölt — nincs elég közös jel
 
-const SAME_COMPLAINT_SYSTEM = `Te egy magyar korrupció-figyelő szerkesztő asszisztens vagy. Két feljelentés/nyomozás cél-leírását kapod. Döntsd el, hogy UGYANARRÓL a valós ügyről/esetről szólnak-e (akkor is, ha más szavakkal, más hangsúllyal írják le — pl. ugyanaz a szoftverrendszer-botrány, csak az egyik a közbeszerzést, a másik az érintett céget emeli ki), vagy két KÜLÖNBÖZŐ ügyről van szó.`;
+// 2026-09-07 — a filerName mostantól OPCIONÁLIS kontextusként bekerül a
+// promptba (l. isSameComplaintAi alább): ugyanaznapi MNB-duplikátum-pár
+// (l. merge-duplicate-complaints-2026-09-07.ts) ~0,5 pontszámmal MÁR elérte
+// az AI-döntőbírót, mégis "nem ugyanaz"-t mondott — a két csupasz
+// targetName-string (pl. "MNB jegybanki ingatlanügyek — csalás és hűtlen
+// kezelés" vs "MNB-Ingatlan Kft. — ingatlanhasznosítási visszaélések")
+// önmagában kevés jel egy 1-2 mondatos ítélethez. A bejelentő majdnem
+// szó szerint egyezett ("MNB (Magyar Nemzeti Bank)" vs "Magyar Nemzeti
+// Bank") — ez erős kiegészítő jel, amit a modell eddig meg sem kapott.
+const SAME_COMPLAINT_SYSTEM = `Te egy magyar korrupció-figyelő szerkesztő asszisztens vagy. Két feljelentés/nyomozás cél-leírását kapod. Döntsd el, hogy UGYANARRÓL a valós ügyről/esetről szólnak-e (akkor is, ha más szavakkal, más hangsúllyal írják le — pl. ugyanaz a szoftverrendszer-botrány, csak az egyik a közbeszerzést, a másik az érintett céget emeli ki), vagy két KÜLÖNBÖZŐ ügyről van szó. Ha a bejelentő (filer) neve is meg van adva mindkét oldalhoz, vedd figyelembe kiegészítő jelként: ha a két bejelentő ugyanaz a szereplő (vagy egy intézmény és az azt vezető személy), az ERŐSEN valószínűsíti, hogy ugyanarról az ügyről van szó — de eltérő bejelentő önmagában NEM zárja ki, hogy ugyanarról az ügyről szól két külön fél bejelentése.`;
 
 const SAME_COMPLAINT_TOOL: LlmToolSpec = {
   name: 'same_complaint',
@@ -373,8 +441,9 @@ const SAME_COMPLAINT_TOOL: LlmToolSpec = {
   },
 };
 
-async function isSameComplaintAi(a: string, b: string): Promise<boolean> {
-  const user = `A leírás: ${a}\n\nB leírás: ${b}`;
+async function isSameComplaintAi(a: string, b: string, filerA?: string | null, filerB?: string | null): Promise<boolean> {
+  const filerContext = filerA && filerB ? `\n\nA bejelentője: ${filerA}\nB bejelentője: ${filerB}` : '';
+  const user = `A leírás: ${a}\n\nB leírás: ${b}${filerContext}`;
   const { data } = await llmExtract<{ same: boolean }>({
     system: SAME_COMPLAINT_SYSTEM,
     user,
@@ -382,6 +451,25 @@ async function isSameComplaintAi(a: string, b: string): Promise<boolean> {
     maxTokens: 100,
   });
   return Boolean(data?.same);
+}
+
+/**
+ * Pure text+amount match score for two complaint candidates — extracted out
+ * of findExistingComplaint() so it's unit-testable without a DB or an LLM
+ * call (see review.test.ts). See COMPLAINT_MATCH_HIGH/LOW above for how the
+ * result is interpreted.
+ */
+export function complaintMatchScore(
+  targetName: string,
+  candidateTargetName: string,
+  amountLabel: string | null,
+  candidateAmountLabel: string | null,
+): number {
+  const textScore = Math.max(
+    textMatchScore(targetName, candidateTargetName),
+    textMatchScore(candidateTargetName, targetName),
+  );
+  return textScore + amountCloseness(amountLabel, candidateAmountLabel);
 }
 
 /**
@@ -402,9 +490,27 @@ async function isSameComplaintAi(a: string, b: string): Promise<boolean> {
  * should always be passed when known — see amountCloseness() below for why
  * it materially changes which candidate wins.
  *
- * Two-tier match: (1) exact normalized-string equality (cheap, catches a
- * literal re-run); (2) if that misses, every candidate in the dedup window
- * is scored (stopword-aware text overlap + amount closeness, see
+ * `filerName` (the NEW complaint's filer, if any) is used TWO ways: (1) as
+ * the deterministic Tier 0 check below — l. `targetEntity` doc right after
+ * this paragraph; (2) as extra CONTEXT to the AI tie-break (isSameComplaintAi)
+ * in Tier 2, so the model isn't judging case identity from two bare label
+ * strings alone (2026-09-07 MNB duplicate — l.
+ * merge-duplicate-complaints-2026-09-07.ts).
+ *
+ * `targetEntity` (the NEW complaint's accused party, if known — l.
+ * migration 0060) enables a Tier 0 DETERMINISTIC match: 2026-09-07 user
+ * kérés — "ellenőrizd, ki a feljelentő, ellenőrizd, kit jelentenek fel, és
+ * ha van egyezés, azokat egy az egyben értelmezni kell". If BOTH the filer
+ * (isSameComplainant) AND the accused party (isSameEntity) match a
+ * candidate's, that candidate is returned immediately — no fuzzy scoring,
+ * no AI call, no ambiguity. This only fires when both sides have a
+ * targetEntity (old rows before migration 0060 have NULL — they fall
+ * through to Tier 1/2 as before, unaffected).
+ *
+ * Three-tier match: (0) deterministic filer+entity match, see above; (1)
+ * exact normalized targetName-string equality (cheap, catches a literal
+ * re-run); (2) if that misses too, every candidate in the dedup window is
+ * scored (stopword-aware text overlap + amount closeness, see
  * COMPLAINT_MATCH_HIGH/LOW above) — a "duplicate"-tier score returns
  * immediately, an "ambiguous"-tier score gets one cheap AI tie-break call
  * against the single best-scoring candidate (same pattern as
@@ -414,12 +520,14 @@ export async function findExistingComplaint(
   db: Executable,
   targetName: string,
   amountLabel: string | null = null,
+  filerName: string | null = null,
+  targetEntity: string | null = null,
   withinDays: number = COMPLAINT_DEDUP_WINDOW_DAYS,
 ): Promise<ExistingComplaint | null> {
   const key = normalizeName(targetName);
   if (!key) return null;
   const exactRows = (await db.execute(sql`
-    SELECT id, "status", "filerName", "amountLabel" FROM "CriminalComplaint"
+    SELECT id, "status", "filerName", "amountLabel", "targetEntity" FROM "CriminalComplaint"
     WHERE trim(regexp_replace(lower(unaccent(trim("targetName"))), '[^a-z0-9]+', ' ', 'g')) = ${key}
       AND "createdAt" >= now() - make_interval(days => ${withinDays})
     ORDER BY "eventDate" DESC
@@ -432,26 +540,32 @@ export async function findExistingComplaint(
   // TELJES táblát tölti be), és JS-ben pontozzuk — l. a COMPLAINT_MATCH_*
   // fenti kommentjét, hogy miért nem a nyers pg_trgm ORDER BY/LIMIT.
   const candidates = (await db.execute(sql`
-    SELECT id, "status", "filerName", "amountLabel", "targetName" FROM "CriminalComplaint"
+    SELECT id, "status", "filerName", "amountLabel", "targetName", "targetEntity" FROM "CriminalComplaint"
     WHERE "createdAt" >= now() - make_interval(days => ${withinDays})
-  `)) as unknown as Array<ExistingComplaint & { targetName: string }>;
+  `)) as unknown as Array<ExistingComplaint & { targetName: string; targetEntity: string | null }>;
   if (candidates.length === 0) return null;
 
-  let best: (ExistingComplaint & { targetName: string; score: number }) | null = null;
-  for (const row of candidates) {
-    const textScore = Math.max(
-      textMatchScore(targetName, row.targetName),
-      textMatchScore(row.targetName, targetName),
+  // Tier 0 — l. a fenti doc-komment "targetEntity" bekezdését. A Tier 1
+  // (fenti exactRows) UTÁN fut, mert egy szó szerint egyező targetName már
+  // önmagában is egyértelmű újrafeldolgozás — nem kell rá a targetEntity.
+  if (targetEntity) {
+    const deterministic = candidates.find(
+      (row) => row.targetEntity && isSameEntity(targetEntity, row.targetEntity) && isSameComplainant(filerName ?? '', row.filerName),
     );
-    const score = textScore + amountCloseness(amountLabel, row.amountLabel);
+    if (deterministic) return { id: deterministic.id, status: deterministic.status, filerName: deterministic.filerName, amountLabel: deterministic.amountLabel, targetEntity: deterministic.targetEntity };
+  }
+
+  let best: (ExistingComplaint & { targetName: string; targetEntity: string | null; score: number }) | null = null;
+  for (const row of candidates) {
+    const score = complaintMatchScore(targetName, row.targetName, amountLabel, row.amountLabel);
     if (!best || score > best.score) best = { ...row, score };
   }
   if (!best) return null;
-  if (best.score >= COMPLAINT_MATCH_HIGH) return { id: best.id, status: best.status, filerName: best.filerName, amountLabel: best.amountLabel };
+  if (best.score >= COMPLAINT_MATCH_HIGH) return { id: best.id, status: best.status, filerName: best.filerName, amountLabel: best.amountLabel, targetEntity: best.targetEntity };
   if (best.score < COMPLAINT_MATCH_LOW) return null;
 
-  const same = await isSameComplaintAi(targetName, best.targetName);
-  return same ? { id: best.id, status: best.status, filerName: best.filerName, amountLabel: best.amountLabel } : null;
+  const same = await isSameComplaintAi(targetName, best.targetName, filerName, best.filerName);
+  return same ? { id: best.id, status: best.status, filerName: best.filerName, amountLabel: best.amountLabel, targetEntity: best.targetEntity } : null;
 }
 
 /**
@@ -563,6 +677,36 @@ export function isSameComplainant(a: string, b: string): boolean {
   // GENUINELY different institutions (e.g. "Integritás Hatóság" vs
   // "Tudományos és Technológiai Minisztérium") never contain one another.
   return na.includes(nb) || nb.includes(na);
+}
+
+/**
+ * 2026-09-07 user kérés: "ellenőrizd, ki a feljelentő, ellenőrizd, kit
+ * jelentenek fel, és ha van egyezés, azokat egy az egyben értelmezni kell"
+ * — ugyanaz a substring-tolerő névegyeztetés, mint isSameComplainant()
+ * fent, csak a feljelentés TÁRGYÁRA (a feljelentett fél, l.
+ * CriminalComplaint.targetEntity) alkalmazva, nem a bejelentőre. Külön
+ * névvel exportálva (nem csak egy `isSameComplainant`-alias), hogy a
+ * hívási hely önmagában is olvasható legyen: findExistingComplaint()
+ * mindkettőt hívja, egy filerName-re és egy targetEntity-re — más
+ * jelentésű "ugyanaz"-t kérdeznek, még ha az implementáció azonos is.
+ */
+export function isSameEntity(a: string | null | undefined, b: string | null | undefined): boolean {
+  if (!a || !b) return false;
+  return isSameComplainant(a, b);
+}
+
+// 2026-09-07 user report: a Mi Hazánk két, néhány nap eltéréssel megjelenő
+// feljelentése ugyanarról az augusztus 20-i rendezvény-közbeszerzésről két
+// külön sorként landolt (eltérő targetName/amountLabel megfogalmazás miatt
+// findExistingComplaint/isSameComplainant sem ismerte fel egymást fedőnek).
+// A user döntése: a Mi Hazánk feljelentéseit ne is vegyük figyelembe —
+// explicit tiltólista, nem a fuzzy-matchelést próbáljuk tovább finomítani.
+// normalizeName() strips diacritics, so "hazánk" → "hazank" here.
+const BLACKLISTED_COMPLAINT_FILERS = ['mi hazank'];
+
+export function isBlacklistedComplaintFiler(filerName: string): boolean {
+  const normalized = normalizeName(filerName);
+  return BLACKLISTED_COMPLAINT_FILERS.some((blocked) => normalized.includes(blocked));
 }
 
 const SAME_COMPLAINANT_SYSTEM = `Te egy magyar korrupció-figyelő szerkesztő asszisztens vagy. Két megnevezést kapsz, amik egy-egy feljelentés BENYÚJTÓJÁRA utalnak (cikkenként eltérő megfogalmazásban). Döntsd el, hogy UGYANARRA a valós szereplőre utalnak-e — pl. egy minisztérium és az azt A CIKK IDEJÉN vezető miniszter/államtitkár neve ugyanaz a bejelentő, mert a személy a hivatal nevében jár el (pl. "Külügyminisztérium" és "Orbán Anita" ugyanaz, ha ő a külügyminiszter; "a kormány" és egy konkrét minisztérium neve is gyakran ugyanaz). Csak akkor mondj "true"-t, ha ténylegesen ugyanaz a szereplő, ne csak hasonló témában.`;
