@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanPositionTitle, decideComplaintTransition, decideStatus, findExistingComplaint, isDuplicate, isSameComplainant, isSuspiciouslyEarlyDate, sameApproxComplaintAmount, truncateDescriptionWords } from './review';
+import { cleanPositionTitle, decideComplaintTransition, decideStatus, findExistingComplaint, isBlacklistedComplaintFiler, isDuplicate, isSameComplainant, isSuspiciouslyEarlyDate, sameApproxComplaintAmount, truncateDescriptionWords } from './review';
 import { isCalledToResignPerson, isWatchlistPerson, normalizeName } from './watchlist';
 
 // Drizzle's `sql` template tag returns an object tree (StringChunk literals
@@ -333,6 +333,23 @@ describe('isSameComplainant (2026-08-11 Gondosóra bug: a second, independent co
     it('still false for two genuinely different institutions, even with overlapping generic words', () => {
       expect(isSameComplainant('Integritás Hatóság', 'Tudományos és Technológiai Minisztérium')).toBe(false);
     });
+  });
+});
+
+// 2026-09-07 user kérés: a Mi Hazánk feljelentéseit nem vesszük fel
+// (duplikátum-eset: két Mi Hazánk-sor ugyanarról az aug. 20-i
+// rendezvény-közbeszerzésről, eltérő megfogalmazás miatt a fuzzy
+// case/filer-matching sem fogta össze őket).
+describe('isBlacklistedComplaintFiler', () => {
+  it('true for "Mi Hazánk" regardless of case/accent/suffix', () => {
+    expect(isBlacklistedComplaintFiler('Mi Hazánk')).toBe(true);
+    expect(isBlacklistedComplaintFiler('mi hazánk')).toBe(true);
+    expect(isBlacklistedComplaintFiler('Mi Hazánk Mozgalom')).toBe(true);
+  });
+
+  it('false for unrelated filers', () => {
+    expect(isBlacklistedComplaintFiler('Integritás Hatóság')).toBe(false);
+    expect(isBlacklistedComplaintFiler('Miniszterelnökség')).toBe(false);
   });
 });
 

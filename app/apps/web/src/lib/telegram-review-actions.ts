@@ -20,6 +20,7 @@ import {
   isCollectiveEntityName,
   isDuplicate,
   isPermanentBreakingPerson,
+  isBlacklistedComplaintFiler,
   isPlaceholderName,
   isTransientLlmFailure,
   isWatchlistPerson,
@@ -522,6 +523,12 @@ export async function processCriminalComplaint(article: ArticleForReprocess, tod
 
     if (!complaint.targetName || isPlaceholderName(complaint.targetName) || !complaint.filerName) {
       lastDiscardReason = 'missing_fields';
+      continue;
+    }
+
+    // 2026-09-07 user kérés — l. isBlacklistedComplaintFiler() (review.ts).
+    if (isBlacklistedComplaintFiler(complaint.filerName)) {
+      lastDiscardReason = 'blacklisted_filer';
       continue;
     }
 

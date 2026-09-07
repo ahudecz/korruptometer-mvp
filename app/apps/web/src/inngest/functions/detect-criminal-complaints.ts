@@ -6,6 +6,7 @@ import {
   decideComplaintTransition,
   decideStatus,
   findExistingComplaint,
+  isBlacklistedComplaintFiler,
   isPlaceholderName,
   isSameComplainant,
   isSameComplainantAi,
@@ -63,6 +64,14 @@ async function processComplaintArticle(
 
     if (!complaint.targetName || isPlaceholderName(complaint.targetName) || !complaint.filerName) {
       lastDiscardReason = 'missing_fields';
+      continue;
+    }
+
+    // 2026-09-07 user kérés: a Mi Hazánk feljelentéseit nem vesszük fel —
+    // l. isBlacklistedComplaintFiler() doc commentje (review.ts) a duplikátum
+    // előzményért.
+    if (isBlacklistedComplaintFiler(complaint.filerName)) {
+      lastDiscardReason = 'blacklisted_filer';
       continue;
     }
 
