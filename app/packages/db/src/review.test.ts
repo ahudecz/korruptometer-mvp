@@ -619,6 +619,35 @@ describe('findExistingComplaint — AI tie-break receives filerName context (202
   });
 });
 
+describe('findExistingComplaint — AI tie-break receives amountLabel context (2026-09-08 Szuverenitásvédelmi Hivatal fix)', () => {
+  beforeEach(() => {
+    vi.mocked(llmExtract).mockClear();
+  });
+
+  it('passes both amounts to the AI prompt when a candidate is in the ambiguous score range', async () => {
+    vi.mocked(llmExtract).mockResolvedValueOnce({ data: { same: true }, inputTokens: 0, outputTokens: 0 });
+    const rows = [{
+      id: 'szuverenitasvedelmi-row', status: 'feljelentés', filerName: 'Miniszterelnökség', amountLabel: '3,67 milliárd Ft',
+      targetName: 'A Szuverenitásvédelmi Hivatal propagandacélú költései',
+    }];
+    let call = 0;
+    const db = { execute: async () => (call++ === 0 ? [] : rows) };
+
+    const match = await findExistingComplaint(
+      db,
+      'Szuverenitásvédelmi Hivatal kommunikációs költségei – hűtlen kezelés gyanúja',
+      '3,5 milliárd Ft',
+      'Miniszterelnökség',
+    );
+
+    expect(match?.id).toBe('szuverenitasvedelmi-row');
+    expect(llmExtract).toHaveBeenCalledTimes(1);
+    const promptArg = vi.mocked(llmExtract).mock.calls[0]![0] as { user: string };
+    expect(promptArg.user).toContain('3,5 milliárd Ft');
+    expect(promptArg.user).toContain('3,67 milliárd Ft');
+  });
+});
+
 describe('findExistingComplaint — Tier 0: deterministic filer+targetEntity match (2026-09-07 user kérés)', () => {
   beforeEach(() => {
     vi.mocked(llmExtract).mockClear();

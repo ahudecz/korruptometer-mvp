@@ -123,6 +123,21 @@ const getCachedClosureCount = unstable_cache(
   ['closure-count'],
   { revalidate: 300 },
 );
+// 2026-09-08 — hero-stat KPI: hány feljelentés érinti a NER-hez köthető
+// feltételezett bűncselekményeket (l. page-en a "Dokumentált közpénz-
+// érintettség" hero-doboz cseréje). Minden 'approved' CriminalComplaint sor
+// számít, státusztól (feljelentés/nyomozás/vádemelés/ítélet) függetlenül —
+// a doboz azt méri, HÁNY ilyen ügy indult el, nem azt, hol tart most.
+const getCachedComplaintCount = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { count: cnt, eq: eqF } = await import('drizzle-orm');
+    const db = getDb();
+    return db.select({ c: cnt() }).from(schema.criminalComplaints).where(eqF(schema.criminalComplaints.reviewStatus, 'approved')).then(r => r[0]?.c ?? 0);
+  },
+  ['complaint-count'],
+  { revalidate: 300 },
+);
 // [perf] diagnosztika mutatta: az uncached db.execute(sql`...`) a Promise.all-ban
 // időnként sose fejeződik be (nincs siker, nincs hiba log — csak lefagy a
 // function 60s-ig). Minden MÁS db.execute() hívás ebben a fájlban unstable_cache
@@ -540,6 +555,7 @@ export default async function HomePage() {
     recentPodcastsRaw,
     resignationCountRaw,
     closureCountRaw,
+    complaintCountRaw,
     verdictCounts,
     pretrialByUgy,
     latestVerdictDb,
@@ -561,6 +577,7 @@ export default async function HomePage() {
     getCachedRecentPodcasts(),
     getCachedResignationCount(),
     getCachedClosureCount(),
+    getCachedComplaintCount(),
     getCachedVerdictCounts(),
     getCachedPretrialByUgy(),
     getCachedLatestVerdict(),
@@ -639,6 +656,7 @@ export default async function HomePage() {
 
   const resignationCount = resignationCountRaw;
   const closureCount = closureCountRaw;
+  const complaintCount = complaintCountRaw;
   const latestClosures = latestClosuresRaw;
   const pinnedClosures = pinnedClosuresRaw;
   const latestVerdict = latestVerdictDb;
@@ -654,11 +672,17 @@ export default async function HomePage() {
   const totalDamage = BigInt(totalDamageRaw);
   const bySector = (snapshot?.bySector ?? []) as SectorEntry[];
 
+  // 2026-09-08 — a href mezőt korábban a Pie3D-legenda saját, kategóriánkénti
+  // szűrt linkjeihez adtuk (pl. "/adatbazis?q=EU pályázat") — most, hogy a
+  // teljes KPI-01 doboz egyetlen <Link>-be van csomagolva (user kérés: bárhova
+  // kattintva az adatbázisra vigyen), egy beágyazott <a> a legendában érvénytelen
+  // HTML-t (nested anchor) eredményezne. A kategória-szűrés így elvész, de a
+  // user explicit "bárhova kattintunk a boxon belül" kérése ezt preferálja az
+  // egyedi mélylinkek felett.
   const moneySlices: PieSlice[] = bySector
     .map((e) => ({
       name: e.name,
       value: e.value,
-      href: e.name && e.name !== 'Egyéb' ? `/adatbazis?q=${encodeURIComponent(e.name)}` : undefined,
     }))
     .sort((a, b) => b.value - a.value);
 
@@ -696,9 +720,9 @@ export default async function HomePage() {
           </div>
 
           <div className="hero-stats">
-            <Link href="/adatbazis" className="hero-stat">
-              <div className="hero-stat-value"><FtValue n={totalDamage} mode="long" /></div>
-              <div className="hero-stat-label">Dokumentált közpénz-érintettség összesen</div>
+            <Link href="/birosagi-iteletek" className="hero-stat">
+              <div className="hero-stat-value">{fmtNumber(complaintCount)}</div>
+              <div className="hero-stat-label">feljelentés NER-hez köthető feltételezett bűncselekmények miatt</div>
             </Link>
             <Link href="/birosagi-iteletek" className="hero-stat">
               <div className="hero-stat-value">{fmtNumber(pretrialCountDb)} fő</div>
@@ -712,6 +736,10 @@ export default async function HomePage() {
               <div className="hero-stat-value">{fmtNumber(closureCount)}</div>
               <div className="hero-stat-label">Megszűnt médium április 12. óta</div>
             </Link>
+            <Link href="/visszaszerzett-vagyon" className="hero-stat">
+              <div className="hero-stat-value">{totalRecoveredFt > 0n ? <FtValue n={totalRecoveredFt} mode="long" /> : '—'}</div>
+              <div className="hero-stat-label">Visszaszerzett vagy visszakövetelt vagyon</div>
+            </Link>
           </div>
         </div>
 
@@ -719,19 +747,19 @@ export default async function HomePage() {
         <PollBanner />
 
         <div className="stat-grid">
-          <div className="stat-card">
+          <Link href="/adatbazis" className="stat-card stat-card--link">
             <div className="stat-card-head">
               <div className="stat-label">Becsült / lehetséges közpénz-érintettség</div>
               <div className="stat-id">/ KPI–01</div>
             </div>
             <div className="stat-value stat-value--money"><FtValue n={totalDamage} mode="short" /></div>
             <div className="stat-unit">
-              <span className="stat-unit-part"><Link href="/adatbazis" className="stat-unit-link">K-Monitor adatbázis</Link></span>
+              <span className="stat-unit-part">K-Monitor adatbázis</span>
               <span className="stat-unit-part">· valós dokumentált adatok</span>
               <span className="stat-unit-part">· {moneySlices.length} kategória szerint</span>
             </div>
             <Pie3D slices={moneySlices} palette={PALETTE_MONEY} className="donut" ariaLabel="Közpénz-érintettség szektoronként" legend />
-          </div>
+          </Link>
 
           <div className="stat-card">
             <div className="stat-card-head">
@@ -775,7 +803,7 @@ export default async function HomePage() {
                 </div>
               </>
             )}
-            <Link href="/birosagi-iteletek" className="stat-card-list-link stat-card-corner-link">Részletek →</Link>
+            <Link href="/birosagi-iteletek" className="stat-card-cta stat-card-corner-link">Részletek →</Link>
           </div>
 
           <div className="stat-card">
@@ -816,7 +844,7 @@ export default async function HomePage() {
                 <div className="stat-recovered-more">Még nincs rögzített visszaszerzés.</div>
               )}
             </div>
-            <Link href="/visszaszerzett-vagyon" className="stat-card-list-link stat-card-corner-link">Teljes lista →</Link>
+            <Link href="/visszaszerzett-vagyon" className="stat-card-cta stat-card-corner-link">Teljes lista →</Link>
           </div>
 
           <div className="stat-card">
@@ -844,7 +872,7 @@ export default async function HomePage() {
                 </div>
               </>
             )}
-            <Link href="/lemondasok" className="stat-card-list-link stat-card-corner-link">Teljes lista →</Link>
+            <Link href="/lemondasok" className="stat-card-cta stat-card-corner-link">Teljes lista →</Link>
           </div>
         </div>
       </section>

@@ -424,7 +424,16 @@ export const COMPLAINT_MATCH_LOW = 0.15; // ez alatt nem is jelölt — nincs el
 // önmagában kevés jel egy 1-2 mondatos ítélethez. A bejelentő majdnem
 // szó szerint egyezett ("MNB (Magyar Nemzeti Bank)" vs "Magyar Nemzeti
 // Bank") — ez erős kiegészítő jel, amit a modell eddig meg sem kapott.
-const SAME_COMPLAINT_SYSTEM = `Te egy magyar korrupció-figyelő szerkesztő asszisztens vagy. Két feljelentés/nyomozás cél-leírását kapod. Döntsd el, hogy UGYANARRÓL a valós ügyről/esetről szólnak-e (akkor is, ha más szavakkal, más hangsúllyal írják le — pl. ugyanaz a szoftverrendszer-botrány, csak az egyik a közbeszerzést, a másik az érintett céget emeli ki), vagy két KÜLÖNBÖZŐ ügyről van szó. Ha a bejelentő (filer) neve is meg van adva mindkét oldalhoz, vedd figyelembe kiegészítő jelként: ha a két bejelentő ugyanaz a szereplő (vagy egy intézmény és az azt vezető személy), az ERŐSEN valószínűsíti, hogy ugyanarról az ügyről van szó — de eltérő bejelentő önmagában NEM zárja ki, hogy ugyanarról az ügyről szól két külön fél bejelentése.`;
+// 2026-09-08 — Szuverenitásvédelmi Hivatal/Miniszterelnökség duplikátum (l.
+// merge-duplicate-complaints-2026-09-08.ts): egy pár 0,55 pontszámmal
+// (0,5 textScore + 0,05 amountCloseness) elérte az AI-döntőbírót — IDENTIKUS
+// bejelentővel ("Miniszterelnökség" mindkét oldalon) —, mégis "nem ugyanaz"
+// döntés született. A gyanú: a modell nem kapta meg az összeget kontextusként
+// (csak a filerName ment be, l. a fenti 2026-09-07-i MNB-fix), pedig a két
+// összeg (3,5 vs 3,67 Mrd Ft) majdnem egyezik — pontosan az a fajta jel, ami
+// a Waberer's/MNB-fix szerint is erősen valószínűsíti az azonosságot. Az
+// amountLabel mostantól ugyanúgy bekerül a promptba, mint a filerName.
+const SAME_COMPLAINT_SYSTEM = `Te egy magyar korrupció-figyelő szerkesztő asszisztens vagy. Két feljelentés/nyomozás cél-leírását kapod. Döntsd el, hogy UGYANARRÓL a valós ügyről/esetről szólnak-e (akkor is, ha más szavakkal, más hangsúllyal írják le — pl. ugyanaz a szoftverrendszer-botrány, csak az egyik a közbeszerzést, a másik az érintett céget emeli ki), vagy két KÜLÖNBÖZŐ ügyről van szó. Ha a bejelentő (filer) neve is meg van adva mindkét oldalhoz, vedd figyelembe kiegészítő jelként: ha a két bejelentő ugyanaz a szereplő (vagy egy intézmény és az azt vezető személy), az ERŐSEN valószínűsíti, hogy ugyanarról az ügyről van szó — de eltérő bejelentő önmagában NEM zárja ki, hogy ugyanarról az ügyről szól két külön fél bejelentése. Ha az összeg is meg van adva mindkét oldalhoz, azt is vedd figyelembe: ha a két összeg pontosan egyezik VAGY egymáshoz nagyon közel esik (néhány százalékon belül — pl. egy korábbi, kerekített becslés és egy később pontosított szám), az szintén ERŐSEN valószínűsíti, hogy ugyanarról az ügyről van szó, még akkor is, ha a cél-leírás szövege eltérő hangsúlyú.`;
 
 const SAME_COMPLAINT_TOOL: LlmToolSpec = {
   name: 'same_complaint',
@@ -441,9 +450,17 @@ const SAME_COMPLAINT_TOOL: LlmToolSpec = {
   },
 };
 
-async function isSameComplaintAi(a: string, b: string, filerA?: string | null, filerB?: string | null): Promise<boolean> {
+async function isSameComplaintAi(
+  a: string,
+  b: string,
+  filerA?: string | null,
+  filerB?: string | null,
+  amountA?: string | null,
+  amountB?: string | null,
+): Promise<boolean> {
   const filerContext = filerA && filerB ? `\n\nA bejelentője: ${filerA}\nB bejelentője: ${filerB}` : '';
-  const user = `A leírás: ${a}\n\nB leírás: ${b}${filerContext}`;
+  const amountContext = amountA && amountB ? `\n\nA összege: ${amountA}\nB összege: ${amountB}` : '';
+  const user = `A leírás: ${a}\n\nB leírás: ${b}${filerContext}${amountContext}`;
   const { data } = await llmExtract<{ same: boolean }>({
     system: SAME_COMPLAINT_SYSTEM,
     user,
@@ -564,7 +581,7 @@ export async function findExistingComplaint(
   if (best.score >= COMPLAINT_MATCH_HIGH) return { id: best.id, status: best.status, filerName: best.filerName, amountLabel: best.amountLabel, targetEntity: best.targetEntity };
   if (best.score < COMPLAINT_MATCH_LOW) return null;
 
-  const same = await isSameComplaintAi(targetName, best.targetName, filerName, best.filerName);
+  const same = await isSameComplaintAi(targetName, best.targetName, filerName, best.filerName, amountLabel, best.amountLabel);
   return same ? { id: best.id, status: best.status, filerName: best.filerName, amountLabel: best.amountLabel, targetEntity: best.targetEntity } : null;
 }
 
