@@ -3,8 +3,9 @@ import 'server-only';
 /**
  * ChatGPT-alapú "hangszín-átfogalmazás" a Social Post Outbox sablon-alapú
  * (social-caption.ts) szövegei fölé — user kérés, 2026-09-07: a sablonok
- * ("🚨 KICKER / headline / detail") ténybelileg pontosak, de a user szerint
- * "kurva unalmasak", nem néznek ki élő Facebook-posztnak, és nem akarja
+ * ("{emoji} headline / hookLine / detail" — l. social-caption.ts
+ * breakingCaption()) ténybelileg pontosak, de a user szerint "kurva
+ * unalmasak", nem néznek ki élő Facebook-posztnak, és nem akarja
  * Telegramon egyesével javítgatni minden jelöltet.
  *
  * SZÁNDÉKOSAN szűk hatókörű: csak a `headline` + `detail` mezőt fogalmazza

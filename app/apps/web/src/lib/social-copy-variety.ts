@@ -67,3 +67,80 @@ export function resignationHeadline(name: string, resignationType: string): stri
   const verb = RESIGNATION_VERBS[resignationType] ?? 'távozott!';
   return `${name}: ${verb}`;
 }
+
+// 2026-09-08 user report: "X feljelentést tett hűtlen kezelés gyanúja
+// ellen" ment ki élesen jóváhagyásra — a CriminalComplaint.targetEntity
+// mező (a prompt szerint "a feljelentett fél RÖVID, ÖNÁLLÓ NEVE", l.
+// criminal-complaint-detect.ts) ide néha egy BŰNCSELEKMÉNY-LEÍRÁST kap az
+// LLM-től a névhely helyett — a prompt ezt explicit tiltja, de nem
+// garantálja. Az "ellen" névutó egy bűncselekmény-leírásra ráépítve
+// nyelvtanilag hibás/értelmezhetetlen mondatot ad (kinek/minek a gyanúja
+// ellen?). Ugyanaz a hibaosztály, mint a 2026-09-07-i Waberer's-fix (l.
+// check-social-triggers.ts buildComplaintTriggers) — csak ott a targetName
+// oldalán, itt a targetEntity oldalán csúszott be a probléma. Zárt
+// szólista, ugyanaz a minta, mint a review.ts DANGLING_LAST_WORDS/
+// COLLECTIVE_NAME_RE: ha targetEntity ezek bármelyikét tartalmazza, az NEM
+// egy önálló név, hanem egy bűncselekmény/eljárás-leírás — sose épülhet rá
+// az "ellen" forma, mert egy valódi intézmény/személynév sosem tartalmazza
+// ezeket a szavakat.
+const CRIME_DESCRIPTION_MARKERS = [
+  'gyanúja', 'gyanúval', 'gyanús', 'vádjával', 'vádemelés', 'gyanúja miatt',
+  ' miatt', 'ügyében', 'elkövetése', 'elkövetésének', 'bűncselekmény',
+  'hűtlen kezelés', 'költségvetési csalás', 'sikkasztás',
+];
+
+/** True ha `value` egy bűncselekmény/eljárás-LEÍRÁS (pl. "hűtlen kezelés
+ *  gyanúja"), nem egy önálló név — l. fenti komment. Ilyenre sosem
+ *  biztonságos az "X ellen" mondatszerkezet. */
+export function looksLikeCrimeDescription(value: string): boolean {
+  const normalized = ` ${value.trim().toLowerCase()} `;
+  return CRIME_DESCRIPTION_MARKERS.some((marker) => normalized.includes(marker));
+}
+
+/** "X feljelentést tett Y ellen" / "X feljelentést tett: Y" — a fejléc
+ *  egyetlen belépési pontja, hogy a döntés (van-e biztonságosan használható
+ *  targetEntity) ne ismétlődhessen szét/csúszhasson el a hívási helyeken.
+ *  Az "ellen" forma csak akkor mehet ki, ha targetEntity kitöltött ÉS nem
+ *  bűncselekmény-leírás (l. looksLikeCrimeDescription) — minden más esetben
+ *  a kettőspontos forma megy, ami BÁRMILYEN szabad szövegre (targetName)
+ *  nyelvtanilag biztonságos, sose igényel egyeztetést. */
+export function complaintHeadline(filerName: string, targetEntity: string | null | undefined, targetName: string): string {
+  if (targetEntity && !looksLikeCrimeDescription(targetEntity)) {
+    return `${filerName} feljelentést tett ${targetEntity} ellen`;
+  }
+  return `${filerName} feljelentést tett: ${targetName}`;
+}
+
+// 2026-09-08 user report ("levágod a szöveget mindkettőn a felénél") — a
+// check-social-triggers.ts építői egy hosszú szabad szöveget (kvíz-intro,
+// ítélet-summary, kiemelt-ügy-summary) eddig nyers `.slice(0, N) + '…'`
+// karakter-vágással rövidítettek, ami KÖZÉPEN VÁGOTT EL EGY SZÓT (pl. "...
+// rejtélyes befekte…" — a "befektetésekben" szó közepén), és ez a levágott
+// szöveg mindkét helyre kiment: a KÉPRE ÉS a poszt-szövegbe is (ugyanaz a
+// `detail` változó adta mindkettőt). Ugyanaz a hibaosztály, mint a
+// review.ts truncateDescriptionWords() — csak ott szó-SZÁM, itt karakter-
+// SZÁM a korlát; a megoldás elve azonos: sose vágj a korlát közepén levő
+// szóhatáron belül, mindig az utolsó TELJES szóig vágj vissza.
+//
+// Emellett a user kifejezett kérése (l. a beillesztett Facebook-poszt
+// briefje): a KÉPRE csak egy rövid "hook"-jellegű alsó sor kerüljön, SOSE
+// egy hosszú magyarázó bekezdés — a hosszabb kontextus a poszt SZÖVEGÉBE
+// (caption) való, nem a képre. Ezért két külön korlát van: a képen
+// megjelenő sor (IMAGE_DETAIL_MAX_CHARS) sokkal rövidebb, mint a caption-be
+// kerülő, hosszabb kontextus-mondat (CAPTION_DETAIL_MAX_CHARS).
+export const IMAGE_DETAIL_MAX_CHARS = 90;
+export const CAPTION_DETAIL_MAX_CHARS = 220;
+
+/** Karakterkorlátra vág, DE mindig a korláton belüli utolsó teljes
+ *  szóhatárig — sosem hagy félbevágott szót a végén. `undefined`/üres
+ *  bemenetre `undefined`-ot ad, hogy a hívó helyén a `?? fallback` mintát
+ *  lehessen használni. */
+export function truncateAtWordBoundary(value: string | null | undefined, maxChars: number): string | undefined {
+  const trimmed = (value ?? '').trim();
+  if (trimmed.length === 0) return undefined;
+  if (trimmed.length <= maxChars) return trimmed;
+  const sliced = trimmed.slice(0, maxChars);
+  const lastSpace = sliced.lastIndexOf(' ');
+  const cut = lastSpace > 0 ? sliced.slice(0, lastSpace) : sliced;
+  return `${cut.trim().replace(/[.,;:!?…-]+$/, '')}…`;
+}

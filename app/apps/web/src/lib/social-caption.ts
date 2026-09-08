@@ -23,18 +23,58 @@ export function milestoneCaption(amountLabel: string): string {
 // felülírja explicit cta paraméterrel.
 const DEFAULT_BREAKING_CTA = '👉 Kattints és olvasd el a legfrissebb híreket!';
 
+// 2026-09-08 user brief — a Facebook-poszt legelső sora legyen MAGA a hook
+// (a konkrét, tényszerű headline — pl. "Kirúgták X-et."), EGYETLEN
+// funkcionális emojival, ne egy generikus "🚨 KICKER" all-caps felkiáltás.
+// A kicker (kategória-szó) attól nem szűnt meg fontosnak lenni — az
+// eseménytípusra utaló emoji ÉPPEN a kickerből dönt, csak nem íródik ki
+// külön, dupla soron a kép-badge-en KÍVÜL is. Zárt lista, mert a brief
+// konkrét emoji-t ír elő kategóriánként, nem "bármi odaillő"-t — ha egy
+// kicker nincs a listán, a semleges 🚨 marad a fallback (pl. jövőbeli, még
+// nem kategorizált trigger-típus).
+const KICKER_EMOJI: Record<string, string> = {
+  'LEMONDÁS': '👋',
+  'KIRÚGÁS': '❌',
+  'FELMENTÉS': '❌', // PoliticalResignation.resignationType='felmentés' — nem tévesztendő össze a CourtVerdict 'FELMENTVE' (felmentés a büntetőeljárásban) kickerrel lent.
+  'VISSZAHÍVÁS': '❌',
+  'LETARTÓZTATVA': '🔴',
+  'ÍTÉLET': '⚖️',
+  'JOGERŐS ÍTÉLET': '⚖️',
+  'VÁDEMELÉS': '📢',
+  'SZABADLÁBON': '🔓',
+  'ELJÁRÁS MEGSZŰNT': '⚪',
+  'FELMENTVE': '✅',
+  'VAGYONVISSZASZERZÉS': '💰',
+  'FELJELENTÉS': '📄',
+  'KVÍZ': '🧠',
+  'MEGSZŰNÉS': '📉',
+  'LEÉPÍTÉS': '📉',
+  'ELMARADT ESEMÉNY': '📉',
+  'MÉDIA-HÍR': '📰',
+  'KIEMELT ÜGY': '🔎',
+  'ADATBÁZIS': '🔎',
+  'SZAVAZÁS EREDMÉNYE': '📊',
+};
+
+/**
+ * headline = a hook — a konkrét, entitásra szabott sor (pl. "X: kirúgták!",
+ * kvíznél a kvíz saját címe: "Lehetnél te az NVVH legfőbb ügyésze?") — ez
+ * megy ki ELSŐ sorként, egyetlen kategória-emojival, nem egy külön
+ * "🚨 KICKER" felkiáltással megelőzve (l. KICKER_EMOJI fenti komment).
+ * hookLine = az opcionális, zéró-költségű "hangszín" mondat
+ * (social-copy-variety.ts HOOKS), ami a hook UTÁN, kiegészítő energikus
+ * sorként jöhet — sose helyettesíti, sose ismétli meg a hook-ot.
+ */
 export function breakingCaption(kicker: string, headline: string, detail?: string, linkPath?: string, cta: string = DEFAULT_BREAKING_CTA, hookLine?: string): string {
-  return [
-    `🚨 ${kicker}`,
-    hookLine ?? null,
-    '',
-    headline,
-    detail ? `\n${detail}` : null,
-    '',
-    `Részletek: kegyencjarat.hu${linkPath ?? ''}`,
-    cta,
-    '#kegyencjarat #korrupció',
-  ].filter((l) => l !== null).join('\n');
+  const emoji = KICKER_EMOJI[kicker] ?? '🚨';
+  // "Blokkokban" épül (hook+hookLine együtt, a detail önállóan, a lábjegyzet
+  // önállóan), a blokkok közé egy-egy üres sor kerül — így egy hiányzó
+  // detail sosem hagy két egymást követő üres sort (mint egy fix-pozíciós
+  // '' placeholderes tömb tenné).
+  const top = [`${emoji} ${headline}`, hookLine ?? null].filter((l): l is string => l !== null);
+  const footer = [`Részletek: kegyencjarat.hu${linkPath ?? ''}`, cta, '#kegyencjarat #korrupció'];
+  const blocks = [top.join('\n'), ...(detail ? [detail] : []), footer.join('\n')];
+  return blocks.join('\n\n');
 }
 
 // Napi tartalék-poszt (nincs elég friss esemény aznapra) — futó összesítő
