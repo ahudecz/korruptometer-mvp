@@ -114,15 +114,20 @@ export async function renderMilestoneImage(
   return Buffer.from(await img.arrayBuffer());
 }
 
-/** Breaking-poszt: konkrét esemény (lemondás/megszűnés/ítélet/vagyonvisszaszerzés). */
+/** Breaking-poszt: konkrét esemény (lemondás/megszűnés/ítélet/vagyonvisszaszerzés).
+ *  `detail` sztringként VAGY sorok tömbjeként adható — a Satori (next/og)
+ *  nem tördeli a "\n"-t egy szövegdobozon belül (user report, 2026-09-03:
+ *  a szavazás-poszton a top 3 egybefolyt), ezért egy tömb minden eleme
+ *  külön <div>-be kerül, ami valódi sortörést ad. */
 export async function renderBreakingImage(
   params: {
     kicker: string; // pl. "LEMONDÁS" / "ÍTÉLET" / "MEGSZŰNÉS" / "VAGYONVISSZASZERZÉS"
     headline: string;
-    detail?: string;
+    detail?: string | string[];
   },
-  variant: ImageVariant = 'light',
+  variant: ImageVariant = 'dark',
 ): Promise<Buffer> {
+  const detailLines = params.detail == null ? [] : Array.isArray(params.detail) ? params.detail : [params.detail];
   const dark = variant === 'dark';
   const bg = dark ? INK : '#ffffff';
   const headlineColor = dark ? '#ffffff' : INK;
@@ -165,11 +170,62 @@ export async function renderBreakingImage(
           <div style={{ display: 'flex', color: headlineColor, fontSize: 72, fontWeight: 900, lineHeight: 1.15, marginTop: 24 }}>
             {params.headline}
           </div>
-          {params.detail && (
-            <div style={{ display: 'flex', color: detailColor, fontSize: 38, fontWeight: 500, lineHeight: 1.35, marginTop: 28, maxWidth: 880 }}>
-              {params.detail}
+          {detailLines.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 28, maxWidth: 880 }}>
+              {detailLines.map((line, i) => (
+                <div key={i} style={{ display: 'flex', color: detailColor, fontSize: 38, fontWeight: 500, lineHeight: 1.35 }}>
+                  {line}
+                </div>
+              ))}
             </div>
           )}
+        </div>
+
+        <div style={{ display: 'flex', color: footerColor, fontSize: 32, fontWeight: 600 }}>kegyencjarat.hu</div>
+      </div>
+    ),
+    SIZE,
+  );
+  return Buffer.from(await img.arrayBuffer());
+}
+
+/** Napi tartalék "összesítő" poszt: 3-4 futó számláló egy kártyán. */
+export async function renderSummaryImage(
+  params: { stats: Array<{ label: string; value: string }> },
+  variant: ImageVariant = 'dark',
+): Promise<Buffer> {
+  const dark = variant === 'dark';
+  const bg = dark ? INK : '#ffffff';
+  const kickerColor = dark ? '#9a9ca3' : '#5c5e62';
+  const labelColor = dark ? SURFACE : INK;
+  const footerColor = dark ? '#9a9ca3' : '#5c5e62';
+
+  const img = new ImageResponse(
+    (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          background: bg,
+          padding: '80px 90px',
+          fontFamily: 'sans-serif',
+        }}
+      >
+        <LogoChip width={380} dark={dark} />
+
+        <div style={{ display: 'flex', color: kickerColor, fontSize: 34, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', marginTop: 48 }}>
+          Eddig a Kegyencjáraton
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center', gap: 28, marginTop: 8 }}>
+          {params.stats.map((s, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 20 }}>
+              <div style={{ display: 'flex', color: ACCENT, fontSize: 64, fontWeight: 900, whiteSpace: 'nowrap' }}>{s.value}</div>
+              <div style={{ display: 'flex', color: labelColor, fontSize: 34, fontWeight: 600 }}>{s.label}</div>
+            </div>
+          ))}
         </div>
 
         <div style={{ display: 'flex', color: footerColor, fontSize: 32, fontWeight: 600 }}>kegyencjarat.hu</div>
@@ -199,5 +255,13 @@ export async function regenerateOutboxImage(row: {
     const amountLabel = row.milestoneValueFt !== null ? formatMilliardLabel(row.milestoneValueFt) : '';
     return renderMilestoneImage({ amountLabel, subline: row.imageText ?? '' }, variant);
   }
-  return renderBreakingImage({ kicker: row.kicker ?? '', headline: row.headline, detail: row.imageText || undefined }, variant);
+  if (row.triggerType === 'summary_stats') {
+    // imageText: JSON.stringify(Array<{label,value}>) — l. buildSummaryStatsTrigger.
+    const stats = row.imageText ? (JSON.parse(row.imageText) as Array<{ label: string; value: string }>) : [];
+    return renderSummaryImage({ stats }, variant);
+  }
+  // imageText több soros tartalomnál (pl. szavazás top 3) "\n"-nel elválasztva
+  // tárolódik — split()-elve adjuk át, hogy renderBreakingImage valódi
+  // sortöréssel rajzolja (l. a függvény fejléce).
+  return renderBreakingImage({ kicker: row.kicker ?? '', headline: row.headline, detail: row.imageText ? row.imageText.split('\n') : undefined }, variant);
 }
