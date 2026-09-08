@@ -127,6 +127,21 @@ const getCachedClosureCount = unstable_cache(
   ['closure-count'],
   { revalidate: 300 },
 );
+// 2026-09-08 — hero-stat KPI: hány feljelentés érinti a NER-hez köthető
+// feltételezett bűncselekményeket (l. page-en a "Dokumentált közpénz-
+// érintettség" hero-doboz cseréje). Minden 'approved' CriminalComplaint sor
+// számít, státusztól (feljelentés/nyomozás/vádemelés/ítélet) függetlenül —
+// a doboz azt méri, HÁNY ilyen ügy indult el, nem azt, hol tart most.
+const getCachedComplaintCount = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { count: cnt, eq: eqF } = await import('drizzle-orm');
+    const db = getDb();
+    return db.select({ c: cnt() }).from(schema.criminalComplaints).where(eqF(schema.criminalComplaints.reviewStatus, 'approved')).then(r => r[0]?.c ?? 0);
+  },
+  ['complaint-count'],
+  { revalidate: 300 },
+);
 // [perf] diagnosztika mutatta: az uncached db.execute(sql`...`) a Promise.all-ban
 // időnként sose fejeződik be (nincs siker, nincs hiba log — csak lefagy a
 // function 60s-ig). Minden MÁS db.execute() hívás ebben a fájlban unstable_cache
@@ -548,6 +563,7 @@ export default async function HomePage() {
     recentPodcastsRaw,
     resignationCountRaw,
     closureCountRaw,
+    complaintCountRaw,
     verdictCounts,
     pretrialByUgy,
     latestVerdictDb,
@@ -569,6 +585,7 @@ export default async function HomePage() {
     getCachedRecentPodcasts(),
     getCachedResignationCount(),
     getCachedClosureCount(),
+    getCachedComplaintCount(),
     getCachedVerdictCounts(),
     getCachedPretrialByUgy(),
     getCachedLatestVerdict(),
@@ -647,6 +664,7 @@ export default async function HomePage() {
 
   const resignationCount = resignationCountRaw;
   const closureCount = closureCountRaw;
+  const complaintCount = complaintCountRaw;
   const latestClosures = latestClosuresRaw;
   const pinnedClosures = pinnedClosuresRaw;
   const latestVerdict = latestVerdictDb;
@@ -662,11 +680,17 @@ export default async function HomePage() {
   const totalDamage = BigInt(totalDamageRaw);
   const bySector = (snapshot?.bySector ?? []) as SectorEntry[];
 
+  // 2026-09-08 — a href mezőt korábban a Pie3D-legenda saját, kategóriánkénti
+  // szűrt linkjeihez adtuk (pl. "/adatbazis?q=EU pályázat") — most, hogy a
+  // teljes KPI-01 doboz egyetlen <Link>-be van csomagolva (user kérés: bárhova
+  // kattintva az adatbázisra vigyen), egy beágyazott <a> a legendában érvénytelen
+  // HTML-t (nested anchor) eredményezne. A kategória-szűrés így elvész, de a
+  // user explicit "bárhova kattintunk a boxon belül" kérése ezt preferálja az
+  // egyedi mélylinkek felett.
   const moneySlices: PieSlice[] = bySector
     .map((e) => ({
       name: e.name,
       value: e.value,
-      href: e.name && e.name !== 'Egyéb' ? `/adatbazis?q=${encodeURIComponent(e.name)}` : undefined,
     }))
     .sort((a, b) => b.value - a.value);
 
@@ -704,9 +728,13 @@ export default async function HomePage() {
           </div>
 
           <div className="hero-stats">
-            <Link href="/adatbazis" className="hero-stat">
-              <div className="hero-stat-value"><FtValue n={totalDamage} mode="long" /></div>
-              <div className="hero-stat-label">Dokumentált közpénz-érintettség összesen</div>
+            <Link href="/visszaszerzett-vagyon" className="hero-stat">
+              <div className="hero-stat-value">{totalRecoveredFt > 0n ? <FtValue n={totalRecoveredFt} mode="long" /> : '—'}</div>
+              <div className="hero-stat-label">Visszaszerzett vagy visszakövetelt vagyon</div>
+            </Link>
+            <Link href="/birosagi-iteletek" className="hero-stat">
+              <div className="hero-stat-value">{fmtNumber(complaintCount)}</div>
+              <div className="hero-stat-label">feljelentés NER-hez köthető feltételezett bűncselekmények miatt</div>
             </Link>
             <Link href="/birosagi-iteletek" className="hero-stat">
               <div className="hero-stat-value">{fmtNumber(pretrialCountDb)} fő</div>
@@ -727,132 +755,145 @@ export default async function HomePage() {
         <PollBanner />
 
         <div className="stat-grid">
-          <div className="stat-card">
-            <div className="stat-card-head">
-              <div className="stat-label">Becsült / lehetséges közpénz-érintettség</div>
-              <div className="stat-id">/ KPI–01</div>
+          <Link href="/adatbazis" className="stat-card stat-card--link">
+            <div className="stat-card-body">
+              <div className="stat-card-head">
+                <div className="stat-label">Becsült / lehetséges közpénz-érintettség</div>
+                <div className="stat-id">/ KPI–01</div>
+              </div>
+              <div className="stat-value stat-value--money"><FtValue n={totalDamage} mode="short" /></div>
+              <div className="stat-unit">
+                <span className="stat-unit-part">K-Monitor adatbázis</span>
+                <span className="stat-unit-part">· valós dokumentált adatok</span>
+                <span className="stat-unit-part">· {moneySlices.length} kategória szerint</span>
+              </div>
+              <Pie3D slices={moneySlices} palette={PALETTE_MONEY} className="donut" ariaLabel="Közpénz-érintettség szektoronként" legend />
             </div>
-            <div className="stat-value stat-value--money"><FtValue n={totalDamage} mode="short" /></div>
-            <div className="stat-unit">
-              <span className="stat-unit-part"><Link href="/adatbazis" className="stat-unit-link">K-Monitor adatbázis</Link></span>
-              <span className="stat-unit-part">· valós dokumentált adatok</span>
-              <span className="stat-unit-part">· {moneySlices.length} kategória szerint</span>
-            </div>
-            <Pie3D slices={moneySlices} palette={PALETTE_MONEY} className="donut" ariaLabel="Közpénz-érintettség szektoronként" legend />
-          </div>
+            {/* Az egész doboz linkel (l. .stat-card--link fent) — ez a span
+                CSAK vizuális jelzés, nem külön link (egy <a>-n belül nem
+                lehet másik <a>), hogy first glance-re is látszódjon: ide
+                lehet kattintani. */}
+            <span className="stat-card-cta stat-card-corner-link">Megnézem az adatbázist →</span>
+          </Link>
 
           <div className="stat-card">
-            <div className="stat-card-head">
-              <div className="stat-label">Börtönben van-e?</div>
-              <div className="stat-id">/ KPI–02</div>
-            </div>
-            <div className="stat-status-grid stat-status-grid--2">
-              <div className="stat-status-item">
-                <div className="stat-value stat-status-value--red" style={{ marginBottom: 4 }}>{pretrialCountDb}</div>
-                <div className="stat-status-label">Előzetesben van</div>
+            <div className="stat-card-body">
+              <div className="stat-card-head">
+                <div className="stat-label">Börtönben van-e?</div>
+                <div className="stat-id">/ KPI–02</div>
               </div>
-              <div className="stat-status-item">
-                <div className="stat-value" style={{ marginBottom: 4 }}>{eliteltCountDb}</div>
-                <div className="stat-status-label">Jogerősen elítélt</div>
-              </div>
-            </div>
-            <div className="stat-unit stat-unit-notice" style={{ marginTop: 16 }}>
-              {pretrialByUgy.map(({ ugyId, n }) => {
-                const ugy = ugyId ? UGYEK.find(u => u.id === ugyId) : null;
-                // Rövidített megjelenítés ebben a szűk KPI-listában — a teljes
-                // "Parkfenntartási kenőpénzbotrány" cím nem fér ki egy sorba mobilon.
-                const label = ugyId === 'parkfenntartas' ? 'Parkfenntartási ügy' : (ugy?.title ?? ugyId ?? 'Egyéb');
-                const href = ugy ? `/ugyek/${ugyId}` : '/birosagi-iteletek';
-                return (
-                  <div key={ugyId ?? '__other'} style={{ marginBottom: 2 }}>
-                    <Link href={href} className="stat-case-link">
-                      {label}
-                    </Link>
-                    {': '}{n} fő előzetesben
-                  </div>
-                );
-              })}
-            </div>
-            {latestVerdict && (
-              <>
-                <h3 className="stat-card-list-title">Legfrissebb</h3>
-                <div className="stat-unit stat-unit-fresh">
-                  <Link href="/birosagi-iteletek" className="stat-case-link">
-                    {latestVerdict.description ?? latestVerdict.personName}
-                  </Link>
+              <div className="stat-status-grid stat-status-grid--2">
+                <div className="stat-status-item">
+                  <div className="stat-value stat-status-value--red" style={{ marginBottom: 4 }}>{pretrialCountDb}</div>
+                  <div className="stat-status-label">Előzetesben van</div>
                 </div>
-              </>
-            )}
-            <Link href="/birosagi-iteletek" className="stat-card-list-link stat-card-corner-link">Részletek →</Link>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-card-head">
-              <div className="stat-label">Visszaszerzett vagyon</div>
-              <div className="stat-id">/ KPI–03</div>
-            </div>
-            <div className="stat-value">{totalRecoveredFt > 0n ? <FtValue n={totalRecoveredFt} /> : '—'}</div>
-            <div className="stat-unit stat-unit-fresh">
-              frissül az eljárások előrehaladásával
-            </div>
-            <h3 className="stat-card-list-title">Legfrissebb visszaszerzések</h3>
-            <div className="stat-recovered-list">
-              {latestRecoveries.map((r) => {
-                // Csak akkor linkeljünk a /ugyek/ oldalra, ha tényleg létezik
-                // curált ügyoldal hozzá — egyébként (friss, még nem curált
-                // eset) a forráscikkre mutasson, ne törött linkre.
-                const hasUgy = UGYEK.some(u => u.id === r.caseId);
-                const href = hasUgy ? `/ugyek/${r.caseId}` : (r.sourceUrl ?? '/visszaszerzett-vagyon');
-                const external = !hasUgy && !!r.sourceUrl;
-                return (
-                  <Link
-                    key={r.id}
-                    href={href}
-                    className="stat-recovered-item stat-recovered-item--link"
-                    {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                  >
-                    <div className="stat-recovered-bar" />
-                    <div className="stat-recovered-body">
-                      <span className="stat-recovered-case">{r.caseLabel}</span>
-                      <span className="stat-recovered-amt"><FtValue n={r.amountFt} /></span>
+                <div className="stat-status-item">
+                  <div className="stat-value" style={{ marginBottom: 4 }}>{eliteltCountDb}</div>
+                  <div className="stat-status-label">Jogerősen elítélt</div>
+                </div>
+              </div>
+              <div className="stat-unit stat-unit-notice" style={{ marginTop: 16 }}>
+                {pretrialByUgy.map(({ ugyId, n }) => {
+                  const ugy = ugyId ? UGYEK.find(u => u.id === ugyId) : null;
+                  // Rövidített megjelenítés ebben a szűk KPI-listában — a teljes
+                  // "Parkfenntartási kenőpénzbotrány" cím nem fér ki egy sorba mobilon.
+                  const label = ugyId === 'parkfenntartas' ? 'Parkfenntartási ügy' : (ugy?.title ?? ugyId ?? 'Egyéb');
+                  const href = ugy ? `/ugyek/${ugyId}` : '/birosagi-iteletek';
+                  return (
+                    <div key={ugyId ?? '__other'} style={{ marginBottom: 2 }}>
+                      <Link href={href} className="stat-case-link">
+                        {label}
+                      </Link>
+                      {': '}{n} fő előzetesben
                     </div>
-                    <div className="stat-recovered-note">{r.description} · {fmtRecoveryDate(r.recoveredAt)}</div>
-                  </Link>
-                );
-              })}
-              {latestRecoveries.length === 0 && (
-                <div className="stat-recovered-more">Még nincs rögzített visszaszerzés.</div>
+                  );
+                })}
+              </div>
+              {latestVerdict && (
+                <>
+                  <h3 className="stat-card-list-title">Legfrissebb</h3>
+                  <div className="stat-unit stat-unit-fresh">
+                    <Link href="/birosagi-iteletek" className="stat-case-link">
+                      {latestVerdict.description ?? latestVerdict.personName}
+                    </Link>
+                  </div>
+                </>
               )}
             </div>
-            <Link href="/visszaszerzett-vagyon" className="stat-card-list-link stat-card-corner-link">Teljes lista →</Link>
+            <Link href="/birosagi-iteletek" className="stat-card-cta stat-card-corner-link">Részletek →</Link>
           </div>
 
           <div className="stat-card">
-            <div className="stat-card-head">
-              <div className="stat-label">Lemondások és kirúgások</div>
-              <div className="stat-id">/ KPI–04</div>
-            </div>
-            <div className="stat-value">{fmtNumber(resignationCount)}</div>
-            <div className="stat-unit stat-unit-fresh">
-              2026. április 12. óta
-            </div>
-            <h3 className="stat-card-list-title">Top lemondások</h3>
-            {featuredResignations.length > 0 ? (
-              <div className="stat-resigned-list">
-                {featuredResignations.map((r) => renderResignedItem(r))}
+            <div className="stat-card-body">
+              <div className="stat-card-head">
+                <div className="stat-label">Visszaszerzett vagyon</div>
+                <div className="stat-id">/ KPI–03</div>
               </div>
-            ) : (
-              <div className="stat-unit" style={{ marginTop: 24 }}>Még nem érkezett adat.</div>
-            )}
-            {additionalResignations.length > 0 && (
-              <>
-                <h3 className="stat-card-list-title" style={{ marginTop: 20 }}>További lemondások</h3>
+              <div className="stat-value">{totalRecoveredFt > 0n ? <FtValue n={totalRecoveredFt} /> : '—'}</div>
+              <div className="stat-unit stat-unit-fresh">
+                frissül az eljárások előrehaladásával
+              </div>
+              <h3 className="stat-card-list-title">Legfrissebb visszaszerzések</h3>
+              <div className="stat-recovered-list">
+                {latestRecoveries.map((r) => {
+                  // Csak akkor linkeljünk a /ugyek/ oldalra, ha tényleg létezik
+                  // curált ügyoldal hozzá — egyébként (friss, még nem curált
+                  // eset) a forráscikkre mutasson, ne törött linkre.
+                  const hasUgy = UGYEK.some(u => u.id === r.caseId);
+                  const href = hasUgy ? `/ugyek/${r.caseId}` : (r.sourceUrl ?? '/visszaszerzett-vagyon');
+                  const external = !hasUgy && !!r.sourceUrl;
+                  return (
+                    <Link
+                      key={r.id}
+                      href={href}
+                      className="stat-recovered-item stat-recovered-item--link"
+                      {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                    >
+                      <div className="stat-recovered-bar" />
+                      <div className="stat-recovered-body">
+                        <span className="stat-recovered-case">{r.caseLabel}</span>
+                        <span className="stat-recovered-amt"><FtValue n={r.amountFt} /></span>
+                      </div>
+                      <div className="stat-recovered-note">{r.description} · {fmtRecoveryDate(r.recoveredAt)}</div>
+                    </Link>
+                  );
+                })}
+                {latestRecoveries.length === 0 && (
+                  <div className="stat-recovered-more">Még nincs rögzített visszaszerzés.</div>
+                )}
+              </div>
+            </div>
+            <Link href="/visszaszerzett-vagyon" className="stat-card-cta stat-card-corner-link">Teljes lista →</Link>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-card-body">
+              <div className="stat-card-head">
+                <div className="stat-label">Lemondások és kirúgások</div>
+                <div className="stat-id">/ KPI–04</div>
+              </div>
+              <div className="stat-value">{fmtNumber(resignationCount)}</div>
+              <div className="stat-unit stat-unit-fresh">
+                2026. április 12. óta
+              </div>
+              <h3 className="stat-card-list-title">Top lemondások</h3>
+              {featuredResignations.length > 0 ? (
                 <div className="stat-resigned-list">
-                  {additionalResignations.map((r) => renderResignedItem(r))}
+                  {featuredResignations.map((r) => renderResignedItem(r))}
                 </div>
-              </>
-            )}
-            <Link href="/lemondasok" className="stat-card-list-link stat-card-corner-link">Teljes lista →</Link>
+              ) : (
+                <div className="stat-unit" style={{ marginTop: 24 }}>Még nem érkezett adat.</div>
+              )}
+              {additionalResignations.length > 0 && (
+                <>
+                  <h3 className="stat-card-list-title" style={{ marginTop: 20 }}>További lemondások</h3>
+                  <div className="stat-resigned-list">
+                    {additionalResignations.map((r) => renderResignedItem(r))}
+                  </div>
+                </>
+              )}
+            </div>
+            <Link href="/lemondasok" className="stat-card-cta stat-card-corner-link">Teljes lista →</Link>
           </div>
         </div>
       </section>
