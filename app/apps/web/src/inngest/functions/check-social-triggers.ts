@@ -21,17 +21,28 @@ import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
  * +1000 milliárdos mérföldkövénél, (2) friss breaking eseményeknél (BÁRMELY
  * jóváhagyott lemondás/megszűnés/ítélet/vagyonvisszaszerzés/feljelentés,
  * NEM csak WATCH_LIST — user kérés 2026-09-03, korábban itt watchlist-szűrés
- * volt), (3) aktív szavazás napi állásáról. Napi max. TARGET_PER_DAY (3)
- * TÉNYLEGESEN KIPOSTOLT (status='posted') bejegyzés a cél — egy még
- * elbírálatlan vagy elutasított jelölt NEM foglalja a napi keretet (user
- * report, 2026-09-03: egy sose jóváhagyott jelölt tévesen "betelt a nap"-ot
- * eredményezett), ezért egy nap akár 3-nál TÖBB jelölt is kimehet
- * Telegramra, ha korábbiak elutasításra/válasz nélkül maradtak. Ha a
- * ténylegesen kiposztolt darabszám egy napon nem éri el a 3-at, a nap egy
- * rögzített órájában (FALLBACK_HOUR_BUDAPEST) a hiányzó helyeket három
- * tartalék-típus FELVÁLTVA tölti ki (l. buildFallbackTrigger): összesítő
- * statisztika / kiemelt ügy felidézése / galéria-profil felidézése — sose
- * ugyanaz mindig, l. fallbackRotationForToday().
+ * volt), (3) egy KVÍZ felidézése kb. 2 naponta, (4) egy szavazás LEZÁRÁSAKOR
+ * egyszeri végeredmény-poszt. Napi max. TARGET_PER_DAY (3) TÉNYLEGESEN
+ * KIPOSTOLT (status='posted') bejegyzés a cél — egy még elbírálatlan vagy
+ * elutasított jelölt NEM foglalja a napi keretet (user report, 2026-09-03:
+ * egy sose jóváhagyott jelölt tévesen "betelt a nap"-ot eredményezett),
+ * ezért egy nap akár 3-nál TÖBB jelölt is kimehet Telegramra, ha korábbiak
+ * elutasításra/válasz nélkül maradtak. Ha a ténylegesen kiposztolt
+ * darabszám egy napon nem éri el a 3-at, a nap egy rögzített órájában
+ * (FALLBACK_HOUR_BUDAPEST) a hiányzó helyeket három tartalék-típus
+ * FELVÁLTVA tölti ki (l. buildFallbackTrigger): összesítő statisztika /
+ * kiemelt ügy felidézése / galéria-profil felidézése — sose ugyanaz
+ * mindig, l. fallbackRotationForToday().
+ *
+ * 2026-09-09 — user kérés (hotfix a régi napi szavazás-állás poszt ellen,
+ * l. project-facebook-quiz-poll-revamp memória): a korábbi NAPI
+ * szavazás-állás poszt (buildPollStatusTriggers, most törölve) unalmas és
+ * félrevezető volt (élő szavazatszám egy nappal később már elavult, a
+ * caption ki se írta MIRŐL szól a szavazás, és nem hívott szavazásra) —
+ * helyette a szavazás státusza 'closed'-ra állításakor EGYSZER kimegy egy
+ * záró végeredmény-poszt (l. buildPollFinalResultTrigger). A poll
+ * 'closed'-ra állítása MANUÁLIS admin-lépés marad (nincs automatikus
+ * lezárási határidő).
  *
  * SOSEM posztol közvetlenül — mindig SocialPostOutbox sort ír
  * 'pending_approval' státusszal, és egy KÉPES Telegram-üzenetet küld
@@ -44,6 +55,7 @@ const BREAKING_LOOKBACK_HOURS = 2; // órás cron + puffer; a valódi dedup a tr
 const TARGET_PER_DAY = 3;
 const FALLBACK_HOUR_BUDAPEST = 20; // csak ekkor tölt fel tartalékkal, hogy a nap folyamán a valódi eseményeknek legyen esélyük
 const CATALOG_COOLDOWN_DAYS = 60; // ennyi napon belül nem ismétlünk kiemelt ügyet / galéria-profilt
+const QUIZ_COOLDOWN_DAYS = 2; // user kérés, 2026-09-07: a kvíz(ek) felidézése kb. 2 naponta egyszer
 
 type OutboxInsert = {
   triggerType: string;
@@ -300,48 +312,100 @@ async function buildComplaintTriggers(db: ReturnType<typeof getDb>): Promise<Out
   return out;
 }
 
-/** Aktív szavazás(ok) napi állása — max 1 poszt/szavazás/nap (mai dátumra
- *  ellenőrizve, l. lent). Az élő eredmény-lekérdezést a poll-queries.ts
- *  (a /szavazas oldal saját forrása) adja, hogy ne duplikáljunk join-logikát. */
-async function buildPollStatusTriggers(db: ReturnType<typeof getDb>): Promise<OutboxInsert[]> {
-  const allPolls = await listPolls(db);
-  const openPolls = allPolls.filter((p) => p.status === 'open' && p.totalVotes > 0);
-  if (openPolls.length === 0) return [];
+/**
+ * Kvíz-felidéző poszt — user kérés, 2026-09-07: "ott van a kvíz, amit lehet
+ * nyomni 2 naponta". Globális (nem kvízenkénti) cooldown: ha az utolsó
+ * QUIZ_COOLDOWN_DAYS napban ment már kvíz-poszt (bármelyik kvízről), ez a
+ * függvény üres tömböt ad, amíg le nem jár. Több kvíz esetén a legrégebben
+ * (vagy sose) posztolt kap elsőbbséget, hogy körbeforogjanak.
+ */
+async function buildQuizTriggers(db: ReturnType<typeof getDb>): Promise<OutboxInsert[]> {
+  const cooldownSince = new Date(Date.now() - QUIZ_COOLDOWN_DAYS * 24 * 60 * 60 * 1000);
+  const [recentRow] = await db
+    .select({ c: sql<number>`count(*)::int` })
+    .from(schema.socialPostOutbox)
+    .where(and(
+      eq(schema.socialPostOutbox.triggerType, 'quiz_highlight'),
+      gt(schema.socialPostOutbox.createdAt, cooldownSince),
+    ));
+  if ((recentRow?.c ?? 0) > 0) return [];
 
+  const allQuizzes = await db.select({ id: schema.quizzes.id, slug: schema.quizzes.slug, title: schema.quizzes.title, intro: schema.quizzes.intro }).from(schema.quizzes);
+  if (allQuizzes.length === 0) return [];
+
+  const lastPostedRows = await db
+    .select({ triggerRefId: schema.socialPostOutbox.triggerRefId, createdAt: schema.socialPostOutbox.createdAt })
+    .from(schema.socialPostOutbox)
+    .where(eq(schema.socialPostOutbox.triggerType, 'quiz_highlight'))
+    .orderBy(desc(schema.socialPostOutbox.createdAt));
+  const lastPostedAt = new Map<string, Date>();
+  for (const r of lastPostedRows) {
+    if (r.triggerRefId && !lastPostedAt.has(r.triggerRefId)) lastPostedAt.set(r.triggerRefId, r.createdAt);
+  }
+  // Legrégebben posztolt (vagy sose posztolt, ami "legrégebbi") elöl.
+  const sorted = [...allQuizzes].sort((a, b) => {
+    const at = lastPostedAt.get(a.id)?.getTime() ?? 0;
+    const bt = lastPostedAt.get(b.id)?.getTime() ?? 0;
+    return at - bt;
+  });
+  const pick = sorted[0];
+  if (!pick) return [];
+
+  const kicker = 'KVÍZ';
+  const headline = pick.title;
+  const detail = pick.intro.length > 220 ? pick.intro.slice(0, 217) + '…' : pick.intro;
+  const image = await renderBreakingImage({ kicker, headline, detail });
+  return [{
+    triggerType: 'quiz_highlight',
+    triggerRefId: pick.id,
+    milestoneValueFt: null,
+    headline,
+    caption: breakingCaption(kicker, headline, detail, `/kviz/${pick.slug}`, '🧠 Töltsd ki, és nézd meg, hányat tudtál!'),
+    imagePng: image,
+    imageText: detail,
+    kicker,
+  }];
+}
+
+/**
+ * Egyszeri záró végeredmény-poszt, akkor és csak akkor, ha egy szavazás
+ * státusza 'closed' — user kérés, 2026-09-07: a korábbi NAPI "napi állás"
+ * poszt unalmas volt és nem is mondta ki, miről szól a szavazás, sem hogy
+ * szavazzon rá a látogató. A lezárás MANUÁLIS admin-lépés (nincs
+ * automatikus dátum-alapú lezárás), ez a trigger csak arra vár, hogy
+ * megtörténjen — attól kezdve egyszer, örökre kimegy, a triggerRefId a
+ * pollQuestions.id-jével dedupolva.
+ */
+async function buildPollFinalResultTrigger(db: ReturnType<typeof getDb>): Promise<OutboxInsert[]> {
+  const allPolls = await listPolls(db);
+  const closedPolls = allPolls.filter((p) => p.status === 'closed' && p.totalVotes > 0);
+  if (closedPolls.length === 0) return [];
+
+  const alreadyPostedIds = await alreadyPostedRefIds(db, 'poll_final_result');
   const out: OutboxInsert[] = [];
-  for (const poll of openPolls) {
-    const [postedTodayRow] = await db
+  for (const poll of closedPolls) {
+    const [row] = await db
       .select({ id: schema.pollQuestions.id })
       .from(schema.pollQuestions)
       .where(eq(schema.pollQuestions.slug, poll.slug));
-    const pollId = postedTodayRow?.id;
-    if (!pollId) continue;
-
-    const [alreadyToday] = await db
-      .select({ c: sql<number>`count(*)::int` })
-      .from(schema.socialPostOutbox)
-      .where(and(
-        eq(schema.socialPostOutbox.triggerType, 'poll_status'),
-        eq(schema.socialPostOutbox.triggerRefId, pollId),
-        sql`"createdAt" >= date_trunc('day', now())`,
-      ));
-    if ((alreadyToday?.c ?? 0) > 0) continue; // ma már ment erről a szavazásról
+    const pollId = row?.id;
+    if (!pollId || alreadyPostedIds.has(pollId)) continue;
 
     const full = await getPollWithResults(db, poll.slug);
     if (!full) continue;
     const top3 = [...full.options].sort((a, b) => b.votes - a.votes).slice(0, 3);
 
-    const kicker = 'SZAVAZÁS';
-    const headline = `Már ${full.totalVotes} szavazat érkezett — itt a jelenlegi állás`;
-    const detailLines = top3.map((o, i) => `${i + 1}. ${o.title} (${o.votes})`);
-    const detail = detailLines.join('\n'); // imageText-be flat sztringként megy, l. regenerateOutboxImage split()-je
+    const kicker = 'SZAVAZÁS EREDMÉNYE';
+    const headline = `Lezárult a szavazás: ${full.question.questionText}`;
+    const detailLines = top3.map((o, i) => `${i + 1}. ${o.title} — ${o.sharePct}% (${o.votes} szavazat)`);
+    const detail = detailLines.join('\n');
     const image = await renderBreakingImage({ kicker, headline, detail: detailLines });
     out.push({
-      triggerType: 'poll_status',
+      triggerType: 'poll_final_result',
       triggerRefId: pollId,
       milestoneValueFt: null,
       headline,
-      caption: breakingCaption(kicker, headline, detail, `/szavazas/${poll.slug}`, '👉 Szavazz te is, ha még nem tetted!'),
+      caption: breakingCaption(kicker, headline, detail, `/szavazas/${poll.slug}`, `👉 Összesen ${full.totalVotes} szavazat érkezett — nézd meg a teljes eredményt!`),
       imagePng: image,
       imageText: detail,
       kicker,
@@ -535,7 +599,8 @@ export async function runSocialTriggersCore({
   candidates.push(...(await step.run('check-verdicts', () => buildCourtVerdictTriggers(db))));
   candidates.push(...(await step.run('check-asset-recoveries', () => buildAssetRecoveryTriggers(db))));
   candidates.push(...(await step.run('check-complaints', () => buildComplaintTriggers(db))));
-  candidates.push(...(await step.run('check-poll-status', () => buildPollStatusTriggers(db))));
+  candidates.push(...(await step.run('check-quiz', () => buildQuizTriggers(db))));
+  candidates.push(...(await step.run('check-poll-final-result', () => buildPollFinalResultTrigger(db))));
 
   const selected = candidates.slice(0, remaining);
   remaining -= selected.length;
