@@ -13084,6 +13084,18 @@ body:has(.admin-nav) > main {
   color: var(--accent);
 }
 
+/* "Nincs konkrét összeg" — nem összeg, ezért nem is úgy néz ki: a kiemelt
+   (vastag, accent színű) összeg-stílus helyett visszafogott, muted szöveg,
+   hogy egy pillantásra elkülönüljön a valódi összegektől a listában.
+   A .complaint-meta-value--amount UTÁN kell állnia: azonos specificitás
+   mellett a később definiált szabály nyer. (user kérés, 2026-09-09 — a
+   korábbi puszta gondolatjel helyett.) */
+.complaint-meta-value--amount-missing {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--muted);
+}
+
 .complaint-detail-date { display: none; }
 
 @media (max-width: 700px) {
@@ -13148,6 +13160,14 @@ body:has(.admin-nav) > main {
     overflow-wrap: break-word;
     text-align: left;
     min-width: 0;
+  }
+  /* A hiányzó-összeg szöveg mobilon is kisebb marad, mint egy valódi összeg.
+     A fenti --amount szabály UTÁN kell állnia: mindkét osztály rajta van az
+     elemen, azonos specificitás mellett a később definiált nyer — fordított
+     sorrendben a 15px írná felül ezt, és a 3 szavas mondat fölöslegesen
+     vinné a helyet a státusz-pill elől. */
+  .complaint-meta-value--amount-missing {
+    font-size: 12px;
   }
   .complaint-status-pill--meta {
     font-size: 11px;
