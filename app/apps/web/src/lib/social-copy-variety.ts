@@ -129,7 +129,34 @@ export function complaintHeadline(filerName: string, targetEntity: string | null
 // megjelenő sor (IMAGE_DETAIL_MAX_CHARS) sokkal rövidebb, mint a caption-be
 // kerülő, hosszabb kontextus-mondat (CAPTION_DETAIL_MAX_CHARS).
 export const IMAGE_DETAIL_MAX_CHARS = 90;
-export const CAPTION_DETAIL_MAX_CHARS = 220;
+
+// 2026-09-09 — a brief 6. pontjának szigorú olvasata: a POSZT SZÖVEGÉT
+// (caption) egyáltalán nem szabad rövidíteni. Korábban itt egy 220
+// karakteres caption-korlát volt, ami pl. a 244 karakteres kvíz-introból
+// levágta a végét ("10 kérdés — …", elveszett a "nagy meglepetések,
+// kezdjük!") — ez pontosan az a fajta önkényes információ-elhagyás, amit a
+// brief tilt („Ha egy információ nem fér bele, ne dönts önkényesen arról,
+// hogy az nem fontos"). A Facebook-poszt hosszának nincs gyakorlati
+// korlátja, ezért a caption MINDIG a teljes szöveget kapja.
+//
+// Az EGYETLEN hely, ahol tényleges platform-korlát van: a Telegram
+// sendPhoto felirata max 1024 karakter. Az viszont csak a JÓVÁHAGYÁSI
+// ELŐNÉZET — a Facebookra ténylegesen kimenő szöveg a DB caption mezője,
+// amit ez nem érint. Ezért ott (és csak ott) vágunk, explicit jelöléssel.
+export const TELEGRAM_PREVIEW_MAX_CHARS = 900;
+
+/** A Telegram-előnézet felirata (max 1024 karakter a Bot API-ban). A
+ *  visszaadott szöveg CSAK az előnézeté — a DB-ben tárolt, Facebookra
+ *  kimenő caption mindig teljes marad. Ha vágni kellett, ezt explicit
+ *  kiírjuk, hogy a jóváhagyó tudja: a valódi poszt hosszabb. */
+export function telegramPreview(prefix: string, caption: string): string {
+  const full = `${prefix}\n\n${caption}`;
+  if (full.length <= TELEGRAM_PREVIEW_MAX_CHARS) return full;
+  const note = '\n\n[…] (csak az előnézet van levágva — a Facebookra a TELJES szöveg megy ki)';
+  const room = TELEGRAM_PREVIEW_MAX_CHARS - note.length - prefix.length - 2;
+  const cut = truncateAtWordBoundary(caption, Math.max(room, 100)) ?? caption.slice(0, Math.max(room, 100));
+  return `${prefix}\n\n${cut}${note}`;
+}
 
 /** Karakterkorlátra vág, DE mindig a korláton belüli utolsó teljes
  *  szóhatárig — sosem hagy félbevágott szót a végén. `undefined`/üres

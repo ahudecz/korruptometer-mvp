@@ -16,7 +16,7 @@ import {
   complaintHeadline,
   truncateAtWordBoundary,
   IMAGE_DETAIL_MAX_CHARS,
-  CAPTION_DETAIL_MAX_CHARS,
+  telegramPreview,
 } from '@/lib/social-copy-variety';
 import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
 
@@ -66,7 +66,7 @@ import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
  *    (Ez a 2026-09-08-i user report gyökéroka volt: "...rejtélyes befekte…")
  *  - 7-8. pont (SOURCE / POST / IMAGE COPY három külön réteg): a képre
  *    rövidebb sor megy (IMAGE_DETAIL_MAX_CHARS), a caption-be a hosszabb
- *    kontextus (CAPTION_DETAIL_MAX_CHARS) — sose ugyanaz a levágott szöveg
+ *    kontextus TELJES EGÉSZÉBEN, vágás nélkül — sose ugyanaz a levágott szöveg
  *    mindkettőn.
  *  - 11. pont (jogi státuszok nem szinonimák): VERDICT_KICKERS a
  *    CourtVerdict.verdictType-ból dolgozik, sose "erősít fel" egy státuszt
@@ -237,7 +237,7 @@ async function buildMediaClosureTriggers(db: ReturnType<typeof getDb>): Promise<
     const kicker = MEDIA_CLOSURE_KICKERS[m.eventType] ?? 'MÉDIA-HÍR';
     const verb = MEDIA_CLOSURE_VERBS[m.eventType];
     const headline = verb ? `${m.name}: ${verb}` : m.name;
-    const detail = truncateAtWordBoundary(m.description, CAPTION_DETAIL_MAX_CHARS);
+    const detail = m.description ?? undefined;
     const imageDetail = truncateAtWordBoundary(m.description, IMAGE_DETAIL_MAX_CHARS);
     const hookLine = hookFor('media_closure', m.id);
     const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
@@ -315,7 +315,7 @@ async function buildCourtVerdictTriggers(db: ReturnType<typeof getDb>): Promise<
     // János" → "Kovács Jánost"), ami ismeretlen névvégződésen elcsúszik.
     const verb = VERDICT_VERBS[v.verdictType];
     const headline = verb ? `${v.personName}: ${verb}` : sentence ? `${v.personName}: ${sentence}` : v.personName;
-    const detail = truncateAtWordBoundary(v.summary, CAPTION_DETAIL_MAX_CHARS) ?? v.summary;
+    const detail = v.summary;
     const imageDetail = truncateAtWordBoundary(v.summary, IMAGE_DETAIL_MAX_CHARS);
     const hookLine = hookFor('court_verdict', v.id);
     const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
@@ -351,7 +351,7 @@ async function buildAssetRecoveryTriggers(db: ReturnType<typeof getDb>): Promise
     const headline = `${a.caseLabel}: ${formatFtLabel(a.amountFt)}`;
     // a.description a DB-ben max 1000 karakter lehet, és eddig EGYÁLTALÁN
     // nem volt rövidítve, mielőtt a képre került — brief 8. pont.
-    const detail = truncateAtWordBoundary(a.description, CAPTION_DETAIL_MAX_CHARS) ?? a.description;
+    const detail = a.description;
     const imageDetail = truncateAtWordBoundary(a.description, IMAGE_DETAIL_MAX_CHARS);
     const hookLine = hookFor('asset_recovery', a.id);
     const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
@@ -461,7 +461,7 @@ async function buildQuizTriggers(db: ReturnType<typeof getDb>): Promise<OutboxIn
   // 2026-09-08 user report — pontosan ez a sor adta a "...rejtélyes
   // befekte…" félbevágott szót: a nyers char-slice a szó KÖZEPÉN vágott, és
   // ugyanaz a levágott szöveg ment a képre ÉS a caption-be is.
-  const detail = truncateAtWordBoundary(pick.intro, CAPTION_DETAIL_MAX_CHARS) ?? pick.intro;
+  const detail = pick.intro;
   const imageDetail = truncateAtWordBoundary(pick.intro, IMAGE_DETAIL_MAX_CHARS);
   const hookLine = hookFor('quiz_highlight', pick.id);
   const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
@@ -580,7 +580,7 @@ async function buildCatalogHighlightTrigger(db: ReturnType<typeof getDb>): Promi
 
   const kicker = 'KIEMELT ÜGY';
   const headline = pick.title;
-  const detail = truncateAtWordBoundary(pick.summary, CAPTION_DETAIL_MAX_CHARS) ?? pick.summary;
+  const detail = pick.summary;
   const imageDetail = truncateAtWordBoundary(pick.summary, IMAGE_DETAIL_MAX_CHARS);
   const hookLine = hookFor('catalog_highlight', pick.id);
   const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
@@ -646,7 +646,7 @@ async function buildGalleryHighlightTrigger(db: ReturnType<typeof getDb>): Promi
     if (dmg > 0n) detailParts.push(`Érintett összeg: ${formatFtLabel(dmg)}`);
   }
   const detail = detailParts.filter(Boolean).join(' — ');
-  const trimmedDetail = truncateAtWordBoundary(detail, CAPTION_DETAIL_MAX_CHARS) ?? detail;
+  const trimmedDetail = detail;
   const imageDetail = truncateAtWordBoundary(detail, IMAGE_DETAIL_MAX_CHARS);
   const hookLine = hookFor('gallery_highlight', pick.id);
   const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
@@ -754,9 +754,14 @@ export async function runSocialTriggersCore({
         .returning({ id: schema.socialPostOutbox.id });
       if (!inserted) return;
 
+      // A DB-ben tárolt caption (ez megy ki a Facebookra) MINDIG teljes; a
+      // Telegram sendPhoto feliratának viszont 1024 karakteres platform-
+      // korlátja van, ezért CSAK az előnézetet vágjuk, explicit jelöléssel
+      // (l. telegramPreview()). Korábban a hosszú caption miatt a Telegram
+      // hívás simán elszállt volna, jelölt nélkül.
       const messageId = await sendTelegramPhoto(
         c.imagePng,
-        `📢 Új Facebook-poszt-jelölt\n\n${c.caption}`,
+        telegramPreview('📢 Új Facebook-poszt-jelölt', c.caption),
         approvalKeyboard(inserted.id),
       );
       if (messageId) {

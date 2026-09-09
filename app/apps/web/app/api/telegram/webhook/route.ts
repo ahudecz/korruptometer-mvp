@@ -927,9 +927,31 @@ export async function POST(req: Request) {
   // `undefined`-dal hasonlítana, ami MINDIG egyenlőtlen — így minden szerkesztői
   // gomb csendben, magyarázat nélkül elromlana. Így viszont explicit a szabály:
   // provisioning nélkül egyetlen gombnyomás sem ír adatbázist.
-  const allowedCallbackChatId = process.env.TELEGRAM_CHAT_ID;
-  if (!allowedCallbackChatId || String(cq.message.chat.id) !== allowedCallbackChatId) {
+  // 2026-09-09 — user report: "dolgozik hosszan, majd nem történik semmi",
+  // MINDEN szerkesztői gombra (nem csak a Módosításra). Reprodukálva egy
+  // szintetikus callback_query-vel az éles végpont ellen: HTTP 200, de a
+  // SocialPostOutbox sor státusza nem változott — vagyis pontosan ez az ág
+  // futott. Két külön hiba volt benne:
+  //
+  // 1) A `process.env.TELEGRAM_CHAT_ID` értéke szóközzel/sortöréssel is
+  //    érkezhet (a Vercel env-be beillesztéskor ez a leggyakoribb hiba). A
+  //    Telegram API a chat_id-t így is elfogadja, ezért a KIMENŐ üzenetek
+  //    hibátlanul megérkeznek — a szigorú `!==` string-összehasonlítás
+  //    viszont elhasal rajta, és attól kezdve minden BEJÖVŐ gombnyomás
+  //    csendben elveszik. Ezért itt trim-elünk, és számként is elfogadjuk
+  //    az egyezést.
+  // 2) Az ág answerCallbackQuery() nélkül tért vissza, így a Telegram
+  //    kliens csak pörgött, majd feladta — se a szerkesztő, se a
+  //    Vercel-logot nem néző fejlesztő nem kapott jelzést arról, hogy a
+  //    gomb el lett dobva. Egy elutasított gombnyomásra is MINDIG
+  //    válaszolunk.
+  const allowedCallbackChatId = process.env.TELEGRAM_CHAT_ID?.trim();
+  const callbackChatId = String(cq.message.chat.id).trim();
+  const chatIdMatches = allowedCallbackChatId !== undefined && allowedCallbackChatId !== ''
+    && (callbackChatId === allowedCallbackChatId || Number(callbackChatId) === Number(allowedCallbackChatId));
+  if (!chatIdMatches) {
     console.log('[telegram-webhook] callback_query from unauthorised chat', cq.message.chat.id);
+    await answerCallbackQuery(cq.id, 'Ez a gomb ebből a chatből nem használható.');
     return NextResponse.json({ ok: true });
   }
 

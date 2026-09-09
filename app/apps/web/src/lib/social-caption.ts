@@ -47,6 +47,7 @@ const KICKER_EMOJI: Record<string, string> = {
   // egyértelmű ("őrizetbe vették").
   'ELŐZETESBEN': '🔴',
   'ŐRIZETBE VÉVE': '🔴',
+  'LETARTÓZTATVA': '🔴', // bíróság által elrendelt letartóztatás — erősebb állítás, mint az őrizet: csak akkor, ha a forrás EZT írja
   'ÍTÉLET': '⚖️',
   'JOGERŐS ÍTÉLET': '⚖️',
   'VÁDEMELÉS': '📢',
