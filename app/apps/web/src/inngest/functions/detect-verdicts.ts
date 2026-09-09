@@ -8,6 +8,7 @@ import {
   decideStatus,
   findExistingVerdict,
   findFragmentNameMatch,
+  findSimilarVerdictByContent,
   isPlaceholderName,
   isSuspiciouslyEarlyDate,
   isWatchlistPerson,
@@ -224,6 +225,24 @@ async function processVerdictArticle(
     reviewStatus = 'pending';
   }
 
+  // 2026-09-09 user report — l. review.ts findSimilarVerdictByContent()
+  // fejléce (Szabó Sándor / "Ismeretlen két személy" NKA-eset): a fenti két
+  // ellenőrzés mindkettő personName-STRING egyezést keres, de itt pont az
+  // a lényeg, hogy a név változott (ismeretlenből lett néven nevezett) —
+  // egyik sem talált volna rá. Csak akkor fut, ha a névalapú ellenőrzések
+  // MÁR NEM találtak semmit (fragmentMatch is lefedné, ha lenne rá), mert
+  // ez tartalom-alapú (summary+crimes) egyezést keres a TELJES táblán, ami
+  // olykor egy AI-döntőbíró hívással jár — nem kell duplán lefuttatni, ha a
+  // névalapú ellenőrzés már úgyis pending-be kényszerítette a sort.
+  const contentMatch = !existingVerdict && !fragmentMatch
+    ? await findSimilarVerdictByContent(db, result.summary, result.crimes)
+    : null;
+  if (contentMatch && reviewStatus === 'approved') {
+    reviewStatus = 'pending';
+  }
+  const conflictingMatch = fragmentMatch
+    ?? (contentMatch ? { name: contentMatch.personName, sourceUrl: contentMatch.sourceUrl, reason: 'content' as const } : null);
+
   let recordId: string;
   if (existingVerdict) {
     await db.update(schema.courtVerdicts).set({
@@ -308,7 +327,7 @@ async function processVerdictArticle(
       articleUrl: article.sourceUrl ?? '',
       articleId: article.id,
       recordId,
-      conflictingMatch: fragmentMatch ? { name: fragmentMatch.name, sourceUrl: fragmentMatch.sourceUrl } : undefined,
+      conflictingMatch: conflictingMatch ?? undefined,
     });
   }
 

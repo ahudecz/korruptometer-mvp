@@ -357,6 +357,130 @@ export async function findExistingVerdict(
   return rows[0] ?? null;
 }
 
+// 2026-09-09 user report — "Szabó Sándor" (a follow-up hang.hu article
+// naming the suspect) silently auto-published as a BRAND NEW CourtVerdict
+// row alongside an already-existing "Ismeretlen két személy (egyikük
+// feltehetően Fásyné Gurzó Mária)" row describing the SAME NAV őrizetbe
+// vétel. findExistingVerdict (exact) and findFragmentNameMatch (substring)
+// both match on personName TEXT only — the two names shared zero characters
+// ("Szabó Sándor" is not a substring of "Ismeretlen két személy…" or vice
+// versa), so neither could ever catch this: the whole point of the second
+// article is that the name changed from unknown to known. The article
+// content itself made the connection obvious (NKA-ügy, Fásy család,
+// dokumentumfilm, 56 millió Ft, NAV-őrizet all present in both) — a
+// content-based match, not a name-based one, is what was missing.
+//
+// Mirrors findExistingComplaint()'s pg_trgm/textMatchScore two-tier pattern
+// above (see its doc comment) but keyed on the case CONTENT (summary +
+// crimes) instead of a name/target string, since here the identity field
+// itself is exactly what's unreliable. Deliberately UNBOUNDED — no day
+// window (user request 2026-09-09: "ne az elmúlt 2-3 hetet, a legelejéig
+// nézzen vissza mindent, soha nem lesz olyan sok, hogy ne férne bele") — a
+// pretrial case can resurface under a newly-revealed name arbitrarily late,
+// and CourtVerdict is small enough this stays cheap regardless.
+//
+// Unlike findExistingComplaint, a content match here is NEVER auto-merged —
+// the caller (detect-verdicts.ts) only forces reviewStatus='pending' and
+// surfaces the candidate as `conflictingMatch` in the Telegram review
+// message, same as findFragmentNameMatch. Rewriting personName (e.g.
+// combining "Ismeretlen két személy…" + "Szabó Sándor" into one label) needs
+// editorial judgment, not a blind field overwrite — see
+// merge-unknown-person-verdicts-2026-09-09.ts for how that merge is done by
+// hand.
+export const VERDICT_CONTENT_MATCH_HIGH = 0.4; // efölött automatikus jelölés, AI-döntőbíró nélkül
+export const VERDICT_CONTENT_MATCH_LOW = 0.15; // ez alatt nem is jelölt — nincs elég közös jel
+
+/** Extra jel, ha a két sor legalább egy bűncselekmény-megnevezésben egyezik — ugyanaz a szerep, mint amountCloseness() a feljelentéseknél. */
+function crimesOverlapBonus(crimes: string[], candidateCrimes: string[]): number {
+  if (crimes.length === 0 || candidateCrimes.length === 0) return 0;
+  const key = (c: string) => c.trim().toLowerCase();
+  const candidateSet = new Set(candidateCrimes.map(key));
+  return crimes.some((c) => candidateSet.has(key(c))) ? 0.15 : 0;
+}
+
+/**
+ * Pure text+crimes match score for two verdict candidates — extracted out of
+ * findSimilarVerdictByContent() so it's unit-testable without a DB or an LLM
+ * call. See VERDICT_CONTENT_MATCH_HIGH/LOW above for how the result is
+ * interpreted.
+ */
+export function verdictMatchScore(
+  summary: string,
+  candidateSummary: string,
+  crimes: string[],
+  candidateCrimes: string[],
+): number {
+  const textScore = Math.max(
+    textMatchScore(summary, candidateSummary),
+    textMatchScore(candidateSummary, summary),
+  );
+  return textScore + crimesOverlapBonus(crimes, candidateCrimes);
+}
+
+const SAME_VERDICT_SYSTEM = `Te egy magyar bírósági/büntetőügyeket figyelő szerkesztő asszisztens vagy. Két cikk-összefoglalót kapsz, mindkettő egy letartóztatásról, vádemelésről vagy ítéletről szól. Döntsd el, hogy UGYANARRÓL a valós esetről/érintettről szólnak-e — akkor is, ha az egyik forrás még nem tudta/nem közölte az érintett nevét, és csak leírásból azonosítja (pl. "egy vállalkozó", "egy férfi", "ismeretlen nő") —, vagy két KÜLÖNBÖZŐ ügyről/személyről van szó.`;
+
+const SAME_VERDICT_TOOL: LlmToolSpec = {
+  name: 'same_verdict',
+  description: 'Decide whether two court-case summaries describe the same real-world defendant/case.',
+  schema: {
+    type: 'object',
+    properties: {
+      same: {
+        type: 'boolean',
+        description: 'True only if both summaries concern the same specific person/case, not just a similar topic.',
+      },
+    },
+    required: ['same'],
+  },
+};
+
+async function isSameVerdictAi(a: string, b: string): Promise<boolean> {
+  const user = `A leírás: ${a}\n\nB leírás: ${b}`;
+  const { data } = await llmExtract<{ same: boolean }>({
+    system: SAME_VERDICT_SYSTEM,
+    user,
+    tool: SAME_VERDICT_TOOL,
+    maxTokens: 100,
+  });
+  return Boolean(data?.same);
+}
+
+export type ContentVerdictMatch = { id: string; personName: string; sourceUrl: string | null };
+
+/**
+ * Content-based (not name-based) duplicate finder for CourtVerdict — see the
+ * header comment above this section. Only meaningful to call when the
+ * name-based checks (findExistingVerdict, findFragmentNameMatch) already
+ * came up empty; a name match is always the stronger, cheaper signal, and
+ * this only exists to catch what those structurally cannot.
+ */
+export async function findSimilarVerdictByContent(
+  db: Executable,
+  summary: string,
+  crimes: string[],
+): Promise<ContentVerdictMatch | null> {
+  if (!summary.trim()) return null;
+  // Feltétel nélkül a TELJES tábla — l. a fenti fejléc "Deliberately
+  // UNBOUNDED" bekezdését. Ugyanaz a minta, mint findExistingComplaint()
+  // ablakon belüli candidates-lekérdezése, csak itt nincs ablak.
+  const candidates = (await db.execute(sql`
+    SELECT id, "personName", "summary", "crimes", "sourceUrls"[1] AS "sourceUrl" FROM "CourtVerdict"
+    WHERE "summary" IS NOT NULL AND length(trim("summary")) > 0
+  `)) as unknown as Array<{ id: string; personName: string; summary: string; crimes: string[] | null; sourceUrl: string | null }>;
+  if (candidates.length === 0) return null;
+
+  let best: (typeof candidates[number] & { score: number }) | null = null;
+  for (const row of candidates) {
+    const score = verdictMatchScore(summary, row.summary, crimes, row.crimes ?? []);
+    if (!best || score > best.score) best = { ...row, score };
+  }
+  if (!best || best.score < VERDICT_CONTENT_MATCH_LOW) return null;
+  if (best.score >= VERDICT_CONTENT_MATCH_HIGH) return { id: best.id, personName: best.personName, sourceUrl: best.sourceUrl };
+
+  const same = await isSameVerdictAi(summary, best.summary);
+  return same ? { id: best.id, personName: best.personName, sourceUrl: best.sourceUrl } : null;
+}
+
 // ─── 009-criminal-complaint-tracking ──────────────────────────────────────
 
 export type ComplaintStatus = 'feljelentés' | 'nyomozás' | 'vádemelés' | 'ítélet' | 'elutasítva';

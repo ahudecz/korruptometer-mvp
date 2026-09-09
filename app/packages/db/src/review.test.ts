@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // isSameComplaintAi() doc for what it's mocking.
 vi.mock('./llm', () => ({ llmExtract: vi.fn() }));
 
-import { cleanPositionTitle, complaintMatchScore, COMPLAINT_MATCH_HIGH, COMPLAINT_MATCH_LOW, decideComplaintTransition, decideStatus, findExistingComplaint, findFragmentNameMatch, isBlacklistedComplaintFiler, isDuplicate, isSameComplainant, isSameEntity, isSuspiciouslyEarlyDate, sameApproxComplaintAmount, truncateDescriptionWords } from './review';
+import { cleanPositionTitle, complaintMatchScore, COMPLAINT_MATCH_HIGH, COMPLAINT_MATCH_LOW, decideComplaintTransition, decideStatus, findExistingComplaint, findFragmentNameMatch, findSimilarVerdictByContent, isBlacklistedComplaintFiler, isDuplicate, isSameComplainant, isSameEntity, isSuspiciouslyEarlyDate, sameApproxComplaintAmount, truncateDescriptionWords, verdictMatchScore, VERDICT_CONTENT_MATCH_HIGH, VERDICT_CONTENT_MATCH_LOW } from './review';
 import { llmExtract } from './llm';
 import { isCalledToResignPerson, isWatchlistPerson, normalizeName } from './watchlist';
 
@@ -763,6 +763,66 @@ describe('findFragmentNameMatch (2026-09-07 user kérés — Császár Attila/P�
     let queried = false;
     const db = { execute: async () => { queried = true; return []; } };
     const match = await findFragmentNameMatch(db, 'PoliticalResignation', 'name', 'Ede');
+    expect(match).toBeNull();
+    expect(queried).toBe(false);
+  });
+});
+
+describe('verdictMatchScore / findSimilarVerdictByContent (2026-09-09 fix — Szabó Sándor / "Ismeretlen két személy" NKA-eset)', () => {
+  beforeEach(() => {
+    vi.mocked(llmExtract).mockClear();
+  });
+
+  // A valódi éles duplikátum-pár: az egyik cikk még nem tudta a nevet, a
+  // másik (egy nappal később) igen — findExistingVerdict/findFragmentNameMatch
+  // egyik sem talált volna rá, mert a két personName semmiben nem egyezik.
+  const unknownSummary = 'A NAV két embert vett őrizetbe az NKA-botrányban: egy férfit, aki cége tulajdonos-ügyvezetőjeként közel 56 millió forintért bízott meg Fásy családhoz köthető cégeket egy dokumentumfilm elkészítésével, és egy nőt — feltehetően Fásyné Gurzó Mária, egy érintett cég tulajdonosa, de ezt a forráscikkek nem állítják tényként —, aki egy másik cég ügyvezetőjeként fiktív számlákkal leplezte, hogy a több mint 80 millió forintos NKA/NKTK-támogatásból a film nem készült el. Letartóztatásukról a cikk szerint szerdán dönt a bíróság.';
+  const szaboSummary = 'Szabó Sándort, a Munkácsy Art Kft. tulajdonos-ügyvezetőjét őrizetbe vette a NAV az NKA-támogatás körüli ügyben. Gyanú szerint fiktív számlákkal takarták el az 56 millió forintos, Fásy családhoz kötődő cégeknek juttatott támogatást.';
+
+  it('a valódi duplikátum-pár szövegpontszáma jóval a HIGH küszöb fölött van — auto-jelölve, AI-döntőbíró nélkül', () => {
+    const score = verdictMatchScore(szaboSummary, unknownSummary, [], []);
+    expect(score).toBeCloseTo(0.5, 2);
+    expect(score).toBeGreaterThanOrEqual(VERDICT_CONTENT_MATCH_HIGH);
+  });
+
+  it('egy ugyanabban a botrányban érintett, de más gyanúsítottról szóló sor NEM egyezik (Bús Balázs — más NKA-ügybeli szereplő)', () => {
+    const busBalazsSummary = 'Bús Balázs, az NKA volt alelnöke és korábbi óbudai polgármester előzetes letartóztatásban van az NKA-támogatási botrányban. Költségvetési csalás és hamis magánokirat felhasználása miatt gyanúsítják.';
+    const score = verdictMatchScore(szaboSummary, busBalazsSummary, [], []);
+    expect(score).toBeLessThan(VERDICT_CONTENT_MATCH_LOW);
+  });
+
+  it('teljesen független ügy pontszáma nulla', () => {
+    const varhegyiSummary = 'Várhegyi Attila egykori fideszes államtitkárt jogerősen elítélték hűtlen kezelés miatt.';
+    const score = verdictMatchScore(szaboSummary, varhegyiSummary, [], []);
+    expect(score).toBe(0);
+  });
+
+  it('közös bűncselekmény-megnevezés önmagában is emeli a pontszámot (crimesOverlapBonus)', () => {
+    const withoutOverlap = verdictMatchScore('rövid, alig egyező szöveg A', 'teljesen más szöveg B', [], []);
+    const withOverlap = verdictMatchScore('rövid, alig egyező szöveg A', 'teljesen más szöveg B', ['költségvetési csalás'], ['Költségvetési Csalás']);
+    expect(withOverlap).toBeCloseTo(withoutOverlap + 0.15, 5);
+  });
+
+  it('findSimilarVerdictByContent a HIGH sávban AI-hívás nélkül visszaadja a legjobb jelöltet', async () => {
+    const rows = [{ id: 'unknown-row', personName: 'Ismeretlen két személy (egyikük feltehetően Fásyné Gurzó Mária)', summary: unknownSummary, crimes: [], sourceUrl: 'https://hvg.hu/itthon/nka-ugy' }];
+    const db = { execute: async () => rows };
+    const match = await findSimilarVerdictByContent(db, szaboSummary, []);
+    expect(match).toEqual({ id: 'unknown-row', personName: 'Ismeretlen két személy (egyikük feltehetően Fásyné Gurzó Mária)', sourceUrl: 'https://hvg.hu/itthon/nka-ugy' });
+    expect(llmExtract).not.toHaveBeenCalled();
+  });
+
+  it('a LOW küszöb alatt null-t ad, AI-hívás nélkül', async () => {
+    const rows = [{ id: 'unrelated-row', personName: 'Várhegyi Attila', summary: 'Várhegyi Attila egykori fideszes államtitkárt jogerősen elítélték hűtlen kezelés miatt.', crimes: [], sourceUrl: null }];
+    const db = { execute: async () => rows };
+    const match = await findSimilarVerdictByContent(db, szaboSummary, []);
+    expect(match).toBeNull();
+    expect(llmExtract).not.toHaveBeenCalled();
+  });
+
+  it('üres summary-re nem is fut le a lekérdezés', async () => {
+    let queried = false;
+    const db = { execute: async () => { queried = true; return []; } };
+    const match = await findSimilarVerdictByContent(db, '', []);
     expect(match).toBeNull();
     expect(queried).toBe(false);
   });
