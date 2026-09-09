@@ -580,22 +580,19 @@ async function buildSummaryStatsTrigger(db: ReturnType<typeof getDb>): Promise<O
   const convictedCount = charged.filter(
     (r) => r.verdictType === 'jogerős' || r.verdictType === 'elsőfokú',
   ).length;
-  // Szándékosan explicit szűrő, nem `charged.length - convictedCount`:
-  // az 'egyéb' típusú sorok is a `charged` kupacba esnek, azokat viszont
-  // nem nevezhetjük vádemelésnek.
-  const indictedCount = charged.filter((r) => r.verdictType === 'vádemelés').length;
   if (pretrial.length > 0) {
     stats.push({ label: 'fő előzetes letartóztatásban', value: String(pretrial.length) });
   }
   if (convictedCount > 0) {
     stats.push({ label: 'fő ellen elsőfokú vagy jogerős ítélet', value: String(convictedCount) });
   }
-  if (indictedCount > 0) {
-    stats.push({ label: 'fő ellen vádemelés', value: String(indictedCount) });
-  }
+  // A vádemelés-sor SZÁNDÉKOSAN nincs benne: a jelenlegi 'vádemelés'
+  // rekordok nem elég releváns ügyekhez tartoznak ahhoz, hogy a
+  // "Kegyencjárat eddigi mérlege" posztban szerepeljenek (user döntés,
+  // 2026-09-09). Csak akkor vedd vissza, ha a user kifejezetten szól.
   const recoveredFt = recoverySum?.s ? BigInt(recoverySum.s) : 0n;
   if (recoveredFt > 0n) {
-    stats.push({ label: 'visszaszerzett vagyon', value: formatFtLabel(recoveredFt) });
+    stats.push({ label: 'visszaszerzett/visszakövetelt vagyon', value: formatFtLabel(recoveredFt) });
   }
 
   const lines = stats.map((s) => `• ${s.value} ${s.label}`);
