@@ -40,7 +40,13 @@ const KICKER_EMOJI: Record<string, string> = {
   'KIRÚGÁS': '❌',
   'FELMENTÉS': '❌', // PoliticalResignation.resignationType='felmentés' — nem tévesztendő össze a CourtVerdict 'FELMENTVE' (felmentés a büntetőeljárásban) kickerrel lent.
   'VISSZAHÍVÁS': '❌',
+  // Brief 11. pont — az őrizetbe vétel és az előzetes letartóztatás KÉT
+  // KÜLÖN státusz. A CourtVerdict.verdictType a kettőt egy bucketbe teszi
+  // ('előzetesben'), ezért az automata poszt azt a semlegesebb szót
+  // használja; a kézi posztok viszont pontosan megnevezhetik, ha a forrás
+  // egyértelmű ("őrizetbe vették").
   'ELŐZETESBEN': '🔴',
+  'ŐRIZETBE VÉVE': '🔴',
   'ÍTÉLET': '⚖️',
   'JOGERŐS ÍTÉLET': '⚖️',
   'VÁDEMELÉS': '📢',
