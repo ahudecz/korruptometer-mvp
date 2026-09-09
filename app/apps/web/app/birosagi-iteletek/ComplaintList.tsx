@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { fmtFtOrUnknown } from '@korr/shared/format';
 
 export type SerializedComplaint = {
   id: string;
@@ -98,7 +99,16 @@ function ComplaintRow({ c }: { c: SerializedComplaint }) {
         <div className="complaint-meta">
           <div className="complaint-meta-item complaint-meta-item--amount">
             <span className="complaint-meta-label">Összeg</span>
-            <span className="complaint-meta-value complaint-meta-value--amount">{c.amountLabel ?? '–'}</span>
+            {/* 2026-09-09 user kérés: ahol a feljelentéshez nincs konkrét
+                összeg, ott korábban egy puszta gondolatjel állt — helyette
+                rövid, tárgyilagos szöveg. A megfogalmazás nem új: a
+                fmtFtOrUnknown() a projekt bevett "Nincs konkrét összeg"
+                szövegét adja (ugyanez látszik a szavazás-oldal
+                opció-kártyáin is), így a két felület nem mond mást
+                ugyanarra a hiányra. */}
+            <span className={`complaint-meta-value complaint-meta-value--amount${c.amountLabel ? '' : ' complaint-meta-value--amount-missing'}`}>
+              {fmtFtOrUnknown(null, c.amountLabel)}
+            </span>
           </div>
           <div className="complaint-meta-item complaint-meta-item--date">
             <span className="complaint-meta-label">Dátum</span>
