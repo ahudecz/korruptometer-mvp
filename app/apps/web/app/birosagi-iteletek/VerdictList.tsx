@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { ComplaintList, type SerializedComplaint } from './ComplaintList';
-import { isReleased, computeVerdictStats } from './verdict-stats';
+import { isReleased, computeVerdictStats, partitionVerdicts } from './verdict-stats';
 import { computeComplaintBarMax, computeComplaintTotal, computeTopFilers } from './complaint-stats';
 import { FtValue } from '../_home/ft-value';
 import { fmtFtParts } from '@korr/shared/format';
@@ -378,8 +378,12 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
   );
 
   const hasFilter = search || verdictTypeFilter !== 'all' || complaintStatusFilter !== 'all' || crimeFilter.length > 0 || yearRange !== 'all' || courtFilter !== 'all' || ugyFilter !== 'all';
-  const activeFiltered   = filtered.filter(r => !isReleased(r.verdictType));
-  const releasedFiltered = filtered.filter(r => isReleased(r.verdictType));
+  // 2026-09-09 user kérés: az "Előzetesben van" és a "Vádemelve vagy
+  // elítélve" doboz KÜLÖN listához görget, ezért a korábbi egy közös
+  // "eljárás alatt" blokk két külön szekcióra bomlik. A csoportosítás
+  // ugyanabból a partitionVerdicts()-ből jön, amiből a dobozok számai —
+  // l. verdict-stats.ts kommentje, hogy miért nem itt helyben szűrünk.
+  const { pretrial: pretrialFiltered, charged: chargedFiltered, released: releasedFiltered } = partitionVerdicts(filtered);
   // verdict-stats.ts: tesztelt, egyetlen forrás — l. verdict-stats.test.ts,
   // ami minden CHECK-constraint-listás verdictType értékre garantálja, hogy
   // pontosan egy kártyába/számlálóba esik (2026-08-02, user report).
@@ -414,12 +418,12 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
             <div className="megszunt-stat-label">Feljelentések száma</div>
           </div>
         )}
-        {activeFiltered.length > 0 ? (
+        {pretrialFiltered.length > 0 ? (
           <button
             type="button"
             className="megszunt-stat megszunt-stat--clickable"
-            onClick={() => scrollToSection('eljaras-alatt-lista')}
-            aria-label="Ugrás az előzetesben lévők / eljárás alatt állók listájához"
+            onClick={() => scrollToSection('elozetesben-lista')}
+            aria-label="Ugrás az előzetesben lévők listájához"
           >
             <div className="megszunt-stat-value megszunt-stat-value--red">{pretrialCount}</div>
             <div className="megszunt-stat-label">Előzetesben van</div>
@@ -435,15 +439,12 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
             túljutott, még nem lezárt/kiengedett szakaszt is (vádemelés,
             fellebbezés alatt is beleesik — l. verdict-stats.ts komment). A régi
             "Ítélet összesen" felirat ezt tévesen sugallta (user report,
-            2026-08-17: egy csak vádemelt ügy is "ítéletként" jelent meg).
-            Ezért ugyanoda görget, mint az "Előzetesben van": mindkét szám
-            sorai EGY listában, az "Előzetesben / Eljárás alatt" szekcióban
-            vannak — nincs külön lista a kettőnek. */}
-        {activeFiltered.length > 0 ? (
+            2026-08-17: egy csak vádemelt ügy is "ítéletként" jelent meg). */}
+        {chargedFiltered.length > 0 ? (
           <button
             type="button"
             className="megszunt-stat megszunt-stat--clickable"
-            onClick={() => scrollToSection('eljaras-alatt-lista')}
+            onClick={() => scrollToSection('vademelve-lista')}
             aria-label="Ugrás a vádemelt vagy elítélt személyek listájához"
           >
             <div className="megszunt-stat-value">{nonPretrialCount}</div>
@@ -793,7 +794,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
           korábban egy pl. "Kiengedve" szűrés itt üresnek tűnt, miközben a
           találat ténylegesen a lenti szekcióban jelent meg, ami megtévesztő
           volt. */}
-      {activeFiltered.length === 0 && releasedFiltered.length === 0 ? (
+      {pretrialFiltered.length === 0 && chargedFiltered.length === 0 && releasedFiltered.length === 0 ? (
         <div className="vlist" style={{ marginTop: 20 }}>
           <div style={{ padding: '40px 24px', textAlign: 'center', color: '#888' }}>
             Nincs a feltételeknek megfelelő bejegyzés.
@@ -801,32 +802,58 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
         </div>
       ) : (
         <>
-          {activeFiltered.length > 0 && (
-            /* Itt a horgony a fejléccel EGYÜTT a blokk tetején van (szemben a
-               feljelentés-listával fentebb): a szekciócím + egy mondatos
-               magyarázat rövid, így a görgetés után a lista első sorai is
-               látszanak, a cím pedig kontextust ad. */
-            <div id="eljaras-alatt-lista" className="verdict-scroll-anchor" style={{ marginTop: 20 }}>
+          {/* Előzetesben — az "Előzetesben van" stat-doboz célpontja.
+              A horgony a fejléccel EGYÜTT a blokk tetején van (szemben a
+              feljelentés-listával fentebb): a szekciócím + egy mondatos
+              magyarázat rövid, így a görgetés után a lista első sorai is
+              látszanak, a cím pedig kontextust ad — a kattintó user rögtön
+              látja, hogy jó helyre érkezett.
+              A cím szűrt nézetben is a kategórianév marad (a darabszámmal
+              kiegészítve): három szekció egyidejű "Találat — N db" fejlécéből
+              nem derülne ki, melyik melyik. */}
+          {pretrialFiltered.length > 0 && (
+            <div id="elozetesben-lista" className="verdict-scroll-anchor" style={{ marginTop: 20 }}>
               <div style={{ marginBottom: 16 }}>
                 <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
-                  {hasFilter ? `Találat — ${activeFiltered.length} db` : 'Előzetesben / Eljárás alatt'}
+                  {hasFilter ? `Előzetesben — ${pretrialFiltered.length} db` : 'Előzetesben'}
                 </h3>
                 <p style={{ fontSize: 13, color: '#888', margin: 0 }}>
-                  Az alábbi személyek ellen jelenleg is folyamatban van az eljárás — előzetes letartóztatásban vannak, vagy vádemelés/ítélet történt, de az ügy még nem zárult le.
+                  Az alábbi személyek jelenleg előzetes letartóztatásban vannak — az ügyükben még nem született ítélet.
                 </p>
               </div>
               <div className="vlist">
-                {activeFiltered.map(r => <VerdictRow key={r.id} r={r} />)}
+                {pretrialFiltered.map(r => <VerdictRow key={r.id} r={r} />)}
+              </div>
+            </div>
+          )}
+
+          {/* Vádemelve vagy elítélve — a harmadik stat-doboz célpontja. */}
+          {chargedFiltered.length > 0 && (
+            <div
+              id="vademelve-lista"
+              className="verdict-scroll-anchor"
+              style={{ marginTop: pretrialFiltered.length > 0 ? 48 : 20 }}
+            >
+              <div style={{ marginBottom: 16 }}>
+                <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
+                  {hasFilter ? `Vádemelve vagy elítélve — ${chargedFiltered.length} db` : 'Vádemelve vagy elítélve'}
+                </h3>
+                <p style={{ fontSize: 13, color: '#888', margin: 0 }}>
+                  Az alábbi személyek ellen vádat emeltek, vagy már ítélet is született — az ügyük azonban még nem zárult le.
+                </p>
+              </div>
+              <div className="vlist">
+                {chargedFiltered.map(r => <VerdictRow key={r.id} r={r} />)}
               </div>
             </div>
           )}
 
           {/* Lezárt / kiengedett szekció */}
           {releasedFiltered.length > 0 && (
-            <div style={{ marginTop: activeFiltered.length > 0 ? 48 : 20 }}>
+            <div style={{ marginTop: (pretrialFiltered.length > 0 || chargedFiltered.length > 0) ? 48 : 20 }}>
               <div style={{ borderTop: '2px solid #e0e0e0', paddingTop: 32, marginBottom: 16 }}>
                 <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
-                  {hasFilter ? `Találat — ${releasedFiltered.length} db` : 'Szabadlábra helyezve / Eljárás megszűnt'}
+                  {hasFilter ? `Szabadlábra helyezve / Eljárás megszűnt — ${releasedFiltered.length} db` : 'Szabadlábra helyezve / Eljárás megszűnt'}
                 </h3>
                 <p style={{ fontSize: 13, color: '#888', margin: 0 }}>
                   Az alábbi személyek letartóztatása megszűnt vagy az ellenük folyó eljárás lezárult — az ügy azonban folyamatban van.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeVerdictStats, isReleased, type VerdictStatRow } from './verdict-stats';
+import { computeVerdictStats, isReleased, partitionVerdicts, type VerdictStatRow } from './verdict-stats';
 
 // Forrás: supabase/migrations/0050_court_verdict_type_check.sql — a
 // verdictType oszlop szabad text, ez a CHECK constraint az egyetlen hely,
@@ -31,6 +31,26 @@ describe('computeVerdictStats', () => {
       { verdictType: 'szabadlábra helyezve', sentenceYears: 3 },
     ];
     expect(computeVerdictStats(rows).totalYears).toBe(5);
+  });
+
+  // 2026-09-09: a stat-dobozok külön listához görgetnek, ezért a lista
+  // csoportosításának BIT-RE egyeznie kell a dobozok számaival — enélkül a
+  // "14 előzetesben" doboz egy 13 elemű listához vihetne.
+  it('partitionVerdicts buckets match computeVerdictStats counts for every CHECK-constraint type', () => {
+    for (const type of ALL_TYPES) {
+      const rows: VerdictStatRow[] = [{ verdictType: type, sentenceYears: 0 }];
+      const stats = computeVerdictStats(rows);
+      const { pretrial, charged, released } = partitionVerdicts(rows);
+      expect(pretrial.length, `pretrial mismatch for "${type}"`).toBe(stats.pretrialCount);
+      expect(charged.length, `charged mismatch for "${type}"`).toBe(stats.nonPretrialCount);
+      expect(released.length, `released mismatch for "${type}"`).toBe(stats.releasedCount);
+    }
+  });
+
+  it('partitionVerdicts puts every row in exactly one bucket and loses none', () => {
+    const rows: VerdictStatRow[] = ALL_TYPES.map(t => ({ verdictType: t, sentenceYears: 1 }));
+    const { pretrial, charged, released } = partitionVerdicts(rows);
+    expect(pretrial.length + charged.length + released.length).toBe(rows.length);
   });
 
   it('isReleased recognizes exactly the 3 closed-case types', () => {

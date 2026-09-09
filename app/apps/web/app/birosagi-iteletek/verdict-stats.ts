@@ -32,6 +32,36 @@ export interface VerdictStats {
   releasedCount: number;
 }
 
+/**
+ * Ugyanaz a hármas partíció, amiből computeVerdictStats() alább a számokat
+ * képezi — kiemelve, hogy a LISTA csoportosítása (VerdictList.tsx) is
+ * ebből az egyetlen forrásból jöjjön.
+ *
+ * 2026-09-09 user kérés: az "Előzetesben van" és a "Vádemelve vagy elítélve"
+ * stat-doboz külön-külön listához görget, nem egy közös "eljárás alatt"
+ * szekcióhoz. Ha a lista a feltételt saját kezűleg ismételné meg
+ * (`r.verdictType === 'előzetesben'` stb.), a doboz SZÁMA és a hozzá
+ * görgetett LISTA hossza némán elcsúszhatna egymástól, amint a besorolás
+ * változik — pontosan az a hibaosztály, ami ellen ez a modul 2026-08-02-ben
+ * kiemelésre került. A verdict-stats.test.ts invariánsa mindkettőt egyszerre
+ * védi.
+ */
+export function partitionVerdicts<T extends VerdictStatRow>(rows: T[]): {
+  pretrial: T[];
+  charged: T[];
+  released: T[];
+} {
+  const pretrial: T[] = [];
+  const charged: T[] = [];
+  const released: T[] = [];
+  for (const r of rows) {
+    if (isReleased(r.verdictType)) released.push(r);
+    else if (r.verdictType === 'előzetesben') pretrial.push(r);
+    else charged.push(r);
+  }
+  return { pretrial, charged, released };
+}
+
 export function computeVerdictStats(rows: VerdictStatRow[]): VerdictStats {
   const active = rows.filter(r => !isReleased(r.verdictType));
   const released = rows.filter(r => isReleased(r.verdictType));
