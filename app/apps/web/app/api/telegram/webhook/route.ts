@@ -913,7 +913,12 @@ export async function POST(req: Request) {
 
   const cq = update?.callback_query;
   if (!cq?.data || !cq.message) {
-    return NextResponse.json({ ok: true }); // not a button press we care about
+    // `ignored` a válasz-testben: ez az ág és a lenti chat-guard is 200-at ad
+    // (a Telegramnak így kell), ezért kívülről eddig megkülönböztethetetlen
+    // volt attól, hogy a gomb rendben lefutott. 2026-09-09-én pont emiatt
+    // tartott órákig egy néma hiba felderítése — a mező nem szivárogtat
+    // semmit, csak megmondja, MELYIK ág nyelte el a gombnyomást.
+    return NextResponse.json({ ok: true, ignored: 'not_a_button_press' });
   }
 
   // ── 012-reader-subscriptions FR-005 — a gombnyomás EREDETÉNEK ellenőrzése.
@@ -952,7 +957,15 @@ export async function POST(req: Request) {
   if (!chatIdMatches) {
     console.log('[telegram-webhook] callback_query from unauthorised chat', cq.message.chat.id);
     await answerCallbackQuery(cq.id, 'Ez a gomb ebből a chatből nem használható.');
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({
+      ok: true,
+      ignored: 'chat_id_mismatch',
+      // Csak azt áruljuk el, HONNAN jött a nyomás (azt a küldő úgyis tudja)
+      // és hogy be van-e egyáltalán állítva a várt érték — a konfigurált
+      // chat-azonosítót magát sose adjuk vissza.
+      fromChatId: cq.message.chat.id,
+      expectedConfigured: Boolean(allowedCallbackChatId),
+    });
   }
 
   const [action, code, id] = cq.data.split(':');
