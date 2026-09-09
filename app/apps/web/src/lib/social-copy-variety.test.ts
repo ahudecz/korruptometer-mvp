@@ -6,6 +6,8 @@ import {
   pickBySeed,
   resignationHeadline,
   truncateAtWordBoundary,
+  imageDetailLine,
+  IMAGE_DETAIL_MAX_CHARS,
 } from './social-copy-variety';
 
 describe('pickBySeed', () => {
@@ -116,5 +118,47 @@ describe('truncateAtWordBoundary', () => {
     const long = 'a'.repeat(50) + ' ' + 'b'.repeat(50) + ' ' + 'c'.repeat(50);
     const result = truncateAtWordBoundary(long, 60)!;
     expect(result.length).toBeLessThanOrEqual(61);
+  });
+});
+
+describe('imageDetailLine (brief 8. pont — a KEPRE csak teljes gondolat kerulhet)', () => {
+  const QUIZ_INTRO =
+    'Nezzuk, mennyit tudsz az MNB-alapitvanyi botranyrol — a Matolcsy-kor koruli ugyrol, amiben eddig kiderult '
+    + 'sztorik szerint milliardok tuntek el nyomtalanul, rejtelyes befektetesekben es kulfoldi kiteroken. '
+    + '10 kerdes — nagy meglepetesek, kezdjuk!';
+
+  it('a 2026-09-09-i user report: hosszu kviz-introbol INKABB SEMMI, mint harmaspontos felmondat', () => {
+    expect(imageDetailLine(QUIZ_INTRO)).toBeUndefined();
+  });
+
+  it('sose ad vissza harmaspontban vegzodo csonkot', () => {
+    for (const input of [QUIZ_INTRO, 'x'.repeat(500), 'szo '.repeat(100)]) {
+      const out = imageDetailLine(input);
+      if (out !== undefined) expect(out.endsWith('…')).toBe(false);
+    }
+  });
+
+  it('rovid, onallo sort valtozatlanul atenged', () => {
+    const short = 'Szabo Sandorral egyutt, egy honapra';
+    expect(imageDetailLine(short)).toBe(short);
+  });
+
+  it('hosszu szovegbol az elso TELJES mondatot hasznalja, ha az elfer', () => {
+    const out = imageDetailLine('Roviden. Ez a masodik mondat mar joval hosszabb es egyutt tullepnenek a korlaton.');
+    expect(out).toBe('Roviden.');
+  });
+
+  it('sose lepi tul a kepre szant karakterkorlatot', () => {
+    for (const input of [QUIZ_INTRO, 'a'.repeat(200), 'Rovid mondat.']) {
+      const out = imageDetailLine(input);
+      if (out !== undefined) expect(out.length).toBeLessThanOrEqual(IMAGE_DETAIL_MAX_CHARS);
+    }
+  });
+
+  it('ures/hianyzo bemenetre undefined', () => {
+    expect(imageDetailLine('')).toBeUndefined();
+    expect(imageDetailLine('   ')).toBeUndefined();
+    expect(imageDetailLine(null)).toBeUndefined();
+    expect(imageDetailLine(undefined)).toBeUndefined();
   });
 });

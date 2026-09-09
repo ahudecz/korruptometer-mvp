@@ -14,8 +14,7 @@ import {
   hookFor,
   resignationHeadline,
   complaintHeadline,
-  truncateAtWordBoundary,
-  IMAGE_DETAIL_MAX_CHARS,
+  imageDetailLine,
   telegramPreview,
 } from '@/lib/social-copy-variety';
 import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
@@ -61,13 +60,16 @@ import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
  * ═══ A POSZT-SZÖVEG KÖTELEZŐ FORRÁSA: docs/facebook-content-brief.md ═══
  * User utasítás, 2026-09-09: „csak ez alapján készülhet bármilyen poszt".
  * A briefből az alábbiak vannak KÓDBAN kikényszerítve, ne lazíts rajtuk:
- *  - 6. pont (tilos a csonkítás): sehol nincs nyers `.slice(0, N)` karakter-
- *    vágás — mindenhol truncateAtWordBoundary(), ami sose vág szó közepén.
- *    (Ez a 2026-09-08-i user report gyökéroka volt: "...rejtélyes befekte…")
+ *  - 6. pont (tilos a csonkítás): a POSZT SZÖVEGE (caption) sehol nem
+ *    rövidül — se nyers `.slice(0, N)`, se karakterkorlát. Két user report
+ *    vezetett ide: 2026-09-08 "levágod a szöveget" (nyers char-slice a szó
+ *    közepén), majd 2026-09-09 a 244 karakteres kvíz-intro vége, amit egy
+ *    220-as caption-korlát nyelt el.
  *  - 7-8. pont (SOURCE / POST / IMAGE COPY három külön réteg): a képre
- *    rövidebb sor megy (IMAGE_DETAIL_MAX_CHARS), a caption-be a hosszabb
- *    kontextus TELJES EGÉSZÉBEN, vágás nélkül — sose ugyanaz a levágott szöveg
- *    mindkettőn.
+ *    imageDetailLine() ad alsó sort — vagy egy önmagában TELJES, rövid
+ *    gondolatot, vagy SEMMIT. Hármaspontos félmondat sose kerül a képre
+ *    (2026-09-09 user report: "ugyanúgy le van vágva a képen a szöveg").
+ *    A teljes kontextus a caption-be megy, nem a képre.
  *  - 11. pont (jogi státuszok nem szinonimák): VERDICT_KICKERS a
  *    CourtVerdict.verdictType-ból dolgozik, sose "erősít fel" egy státuszt
  *    (l. az 'előzetesben' melletti kommentet).
@@ -188,7 +190,7 @@ async function buildResignationTriggers(db: ReturnType<typeof getDb>): Promise<O
     // generikus "X távozott" formából.
     const headline = resignationHeadline(r.name, r.resignationType);
     const detail = `${r.position}, ${r.institution}`;
-    const imageDetail = truncateAtWordBoundary(detail, IMAGE_DETAIL_MAX_CHARS);
+    const imageDetail = imageDetailLine(detail);
     const hookLine = hookFor('resignation', r.id);
     const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
     out.push({
@@ -238,7 +240,7 @@ async function buildMediaClosureTriggers(db: ReturnType<typeof getDb>): Promise<
     const verb = MEDIA_CLOSURE_VERBS[m.eventType];
     const headline = verb ? `${m.name}: ${verb}` : m.name;
     const detail = m.description ?? undefined;
-    const imageDetail = truncateAtWordBoundary(m.description, IMAGE_DETAIL_MAX_CHARS);
+    const imageDetail = imageDetailLine(m.description);
     const hookLine = hookFor('media_closure', m.id);
     const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
     out.push({
@@ -316,7 +318,7 @@ async function buildCourtVerdictTriggers(db: ReturnType<typeof getDb>): Promise<
     const verb = VERDICT_VERBS[v.verdictType];
     const headline = verb ? `${v.personName}: ${verb}` : sentence ? `${v.personName}: ${sentence}` : v.personName;
     const detail = v.summary;
-    const imageDetail = truncateAtWordBoundary(v.summary, IMAGE_DETAIL_MAX_CHARS);
+    const imageDetail = imageDetailLine(v.summary);
     const hookLine = hookFor('court_verdict', v.id);
     const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
     out.push({
@@ -352,7 +354,7 @@ async function buildAssetRecoveryTriggers(db: ReturnType<typeof getDb>): Promise
     // a.description a DB-ben max 1000 karakter lehet, és eddig EGYÁLTALÁN
     // nem volt rövidítve, mielőtt a képre került — brief 8. pont.
     const detail = a.description;
-    const imageDetail = truncateAtWordBoundary(a.description, IMAGE_DETAIL_MAX_CHARS);
+    const imageDetail = imageDetailLine(a.description);
     const hookLine = hookFor('asset_recovery', a.id);
     const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
     out.push({
@@ -397,7 +399,7 @@ async function buildComplaintTriggers(db: ReturnType<typeof getDb>): Promise<Out
     // a 011-nvvh-case-poll branchen; addig mindig a biztonságos ág fut.)
     const headline = complaintHeadline(c.filerName, null, c.targetName);
     const detail = c.amountLabel ? `Érintett összeg: ${c.amountLabel}` : undefined;
-    const imageDetail = truncateAtWordBoundary(detail, IMAGE_DETAIL_MAX_CHARS);
+    const imageDetail = imageDetailLine(detail);
     const hookLine = hookFor('criminal_complaint', c.id);
     const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
     out.push({
@@ -462,7 +464,7 @@ async function buildQuizTriggers(db: ReturnType<typeof getDb>): Promise<OutboxIn
   // befekte…" félbevágott szót: a nyers char-slice a szó KÖZEPÉN vágott, és
   // ugyanaz a levágott szöveg ment a képre ÉS a caption-be is.
   const detail = pick.intro;
-  const imageDetail = truncateAtWordBoundary(pick.intro, IMAGE_DETAIL_MAX_CHARS);
+  const imageDetail = imageDetailLine(pick.intro);
   const hookLine = hookFor('quiz_highlight', pick.id);
   const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
   return [{
@@ -581,7 +583,7 @@ async function buildCatalogHighlightTrigger(db: ReturnType<typeof getDb>): Promi
   const kicker = 'KIEMELT ÜGY';
   const headline = pick.title;
   const detail = pick.summary;
-  const imageDetail = truncateAtWordBoundary(pick.summary, IMAGE_DETAIL_MAX_CHARS);
+  const imageDetail = imageDetailLine(pick.summary);
   const hookLine = hookFor('catalog_highlight', pick.id);
   const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
   return {
@@ -647,7 +649,7 @@ async function buildGalleryHighlightTrigger(db: ReturnType<typeof getDb>): Promi
   }
   const detail = detailParts.filter(Boolean).join(' — ');
   const trimmedDetail = detail;
-  const imageDetail = truncateAtWordBoundary(detail, IMAGE_DETAIL_MAX_CHARS);
+  const imageDetail = imageDetailLine(detail);
   const hookLine = hookFor('gallery_highlight', pick.id);
   const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
   return {

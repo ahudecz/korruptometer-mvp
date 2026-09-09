@@ -128,7 +128,34 @@ export function complaintHeadline(filerName: string, targetEntity: string | null
 // (caption) való, nem a képre. Ezért két külön korlát van: a képen
 // megjelenő sor (IMAGE_DETAIL_MAX_CHARS) sokkal rövidebb, mint a caption-be
 // kerülő, hosszabb kontextus-mondat (CAPTION_DETAIL_MAX_CHARS).
-export const IMAGE_DETAIL_MAX_CHARS = 90;
+// Brief 8. pont: a képre ideálisan 3–7 szó kerül. 60 karakter kb. ennyi —
+// a korábbi 90 már egy fél bekezdésnyi sort engedett a kép aljára.
+export const IMAGE_DETAIL_MAX_CHARS = 60;
+
+/**
+ * A KÉPRE kerülő alsó sor — vagy egy önmagában TELJES, rövid gondolat, vagy
+ * SEMMI. Sose csonka mondat.
+ *
+ * 2026-09-09 user report: "ugyanúgy le van vágva az új poszton a képen a
+ * szöveg". A szóhatáron vágás (truncateAtWordBoundary) csak a szó KÖZEPÉN
+ * vágást szüntette meg — a képre így is egy hármaspontban elharapott
+ * félmondat került ("...a Matolcsy-kör körüli ügyről…"). A brief 8. pontja
+ * viszont nem rövidebb csonkot kér, hanem önálló, teljes szöveget: NÉV +
+ * ESEMÉNY, ÖSSZEG + ESEMÉNY, INTÉZMÉNY + STÁTUSZ vagy egy kérdés/hook.
+ *
+ * Ezért itt nincs "…"-os rövidítés: ha a kapott szöveg elfér, megy; ha nem,
+ * megpróbáljuk az első TELJES mondatát; ha az sem fér el, a kép csak a
+ * fejlécet kapja (ami maga a hook). Egy hiányzó alsó sor sosem rontja el a
+ * képet — egy elharapott mondat viszont igen.
+ */
+export function imageDetailLine(value: string | null | undefined): string | undefined {
+  const trimmed = (value ?? '').trim();
+  if (trimmed.length === 0) return undefined;
+  if (trimmed.length <= IMAGE_DETAIL_MAX_CHARS) return trimmed;
+  const firstSentence = trimmed.match(/^[^.!?]+[.!?]/)?.[0]?.trim();
+  if (firstSentence && firstSentence.length <= IMAGE_DETAIL_MAX_CHARS) return firstSentence;
+  return undefined;
+}
 
 // 2026-09-09 — a brief 6. pontjának szigorú olvasata: a POSZT SZÖVEGÉT
 // (caption) egyáltalán nem szabad rövidíteni. Korábban itt egy 220
