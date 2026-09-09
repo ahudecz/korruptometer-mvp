@@ -6,6 +6,7 @@ import { renderMilestoneImage, renderBreakingImage, renderSummaryImage } from '@
 import { milestoneCaption, breakingCaption, summaryCaption } from '@/lib/social-caption';
 import { sendTelegramPhoto, type InlineKeyboardMarkup } from '@/lib/telegram';
 import { computeComplaintTotal } from '@app/birosagi-iteletek/complaint-stats';
+import { partitionVerdicts } from '@app/birosagi-iteletek/verdict-stats';
 import { computeNextMilestone, formatMilliardLabel } from '@/lib/social-milestone';
 import { UGYEK } from '@app/_home/ugyek-config';
 import { toAsciiId, autoDisplayTitle, RETIRED_SCANDAL_IDS } from '@app/_home/case-detail-config';
@@ -551,11 +552,11 @@ async function buildPollFinalResultTrigger(db: ReturnType<typeof getDb>): Promis
 // ─── Tartalék-posztok (csak ha egy napra nincs elég friss esemény) ────────
 
 async function buildSummaryStatsTrigger(db: ReturnType<typeof getDb>): Promise<OutboxInsert | null> {
-  const [[resignationCount], [closureCount], [complaintCount], [verdictCount], [recoverySum]] = await Promise.all([
+  const [[resignationCount], [closureCount], [complaintCount], verdictRows, [recoverySum]] = await Promise.all([
     db.select({ c: sql<number>`count(*)::int` }).from(schema.politicalResignations).where(eq(schema.politicalResignations.reviewStatus, 'approved')),
     db.select({ c: sql<number>`count(*)::int` }).from(schema.mediaClosures).where(eq(schema.mediaClosures.reviewStatus, 'approved')),
     db.select({ c: sql<number>`count(*)::int` }).from(schema.criminalComplaints).where(eq(schema.criminalComplaints.reviewStatus, 'approved')),
-    db.select({ c: sql<number>`count(*)::int` }).from(schema.courtVerdicts).where(eq(schema.courtVerdicts.reviewStatus, 'approved')),
+    db.select({ verdictType: schema.courtVerdicts.verdictType }).from(schema.courtVerdicts).where(eq(schema.courtVerdicts.reviewStatus, 'approved')),
     db.select({ s: sql<string>`COALESCE(SUM("amountFt"), 0)` }).from(schema.assetRecoveries),
   ]);
 
@@ -563,8 +564,35 @@ async function buildSummaryStatsTrigger(db: ReturnType<typeof getDb>): Promise<O
     { label: 'lemondás / kirúgás / felmentés eddig', value: String(resignationCount?.c ?? 0) },
     { label: 'megszűnt médium', value: String(closureCount?.c ?? 0) },
     { label: 'feljelentés a nyilvántartásban', value: String(complaintCount?.c ?? 0) },
-    { label: 'jogerős/elsőfokú ítélet', value: String(verdictCount?.c ?? 0) },
   ];
+
+  // A CourtVerdict tábla NEM ítéletek táblája — a sorok döntő többsége
+  // előzetes letartóztatás, vádemelés vagy kiengedés. A korábbi
+  // `count(*)` + "jogerős/elsőfokú ítélet" címke ezért publikusan
+  // valótlant állított (user report, 2026-09-09: kiment egy poszt
+  // "24 jogerős/elsőfokú ítélet"-tel, miközben egyetlen ilyen sor sem
+  // volt jóváhagyva). Ugyanaz a partíció, amit a /birosagi-iteletek és a
+  // nyitóoldal használ — és a facebook-content-brief 11. pontja is
+  // megköveteli, hogy a jogi státuszokat ne mossuk össze.
+  const { pretrial, charged } = partitionVerdicts(
+    verdictRows.map((r) => ({ verdictType: r.verdictType, sentenceYears: 0 })),
+  );
+  const convictedCount = charged.filter(
+    (r) => r.verdictType === 'jogerős' || r.verdictType === 'elsőfokú',
+  ).length;
+  // Szándékosan explicit szűrő, nem `charged.length - convictedCount`:
+  // az 'egyéb' típusú sorok is a `charged` kupacba esnek, azokat viszont
+  // nem nevezhetjük vádemelésnek.
+  const indictedCount = charged.filter((r) => r.verdictType === 'vádemelés').length;
+  if (pretrial.length > 0) {
+    stats.push({ label: 'fő előzetes letartóztatásban', value: String(pretrial.length) });
+  }
+  if (convictedCount > 0) {
+    stats.push({ label: 'fő ellen elsőfokú vagy jogerős ítélet', value: String(convictedCount) });
+  }
+  if (indictedCount > 0) {
+    stats.push({ label: 'fő ellen vádemelés', value: String(indictedCount) });
+  }
   const recoveredFt = recoverySum?.s ? BigInt(recoverySum.s) : 0n;
   if (recoveredFt > 0n) {
     stats.push({ label: 'visszaszerzett vagyon', value: formatFtLabel(recoveredFt) });
