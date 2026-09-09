@@ -11833,6 +11833,63 @@ body:has(.admin-nav) > main {
   margin-top: 8px;
 }
 
+/* Kattintható stat-doboz (/birosagi-iteletek, user kérés 2026-09-09): a
+   TELJES doboz kattintható (nem csak a szám vagy a felirat), és a hozzá
+   tartozó listához görget. <button>-ként renderelődik, ezért a böngésző
+   alapértelmezett gomb-stílusát (középre zárt szöveg, saját font, keret,
+   szürke háttér) itt kell visszabontani a .megszunt-stat kinézetére —
+   különben a kattinthatóvá tett dobozok kilógnának a rácsból. */
+.megszunt-stat--clickable {
+  display: block;
+  width: 100%;
+  border: 0;
+  margin: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s ease;
+}
+
+.megszunt-stat--clickable:hover,
+.megszunt-stat--clickable:focus-visible {
+  background: #fafafa;
+}
+
+.megszunt-stat--clickable:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+}
+
+/* Halvány lefelé nyíl a sarokban — az egyetlen vizuális jel, hogy ez a
+   doboz nem csak dísz. Hoverre erősödik. */
+.megszunt-stat--clickable::after {
+  content: '↓';
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--muted);
+  opacity: 0.45;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.megszunt-stat--clickable:hover::after,
+.megszunt-stat--clickable:focus-visible::after {
+  opacity: 1;
+  transform: translateY(2px);
+}
+
+/* A stat-dobozok görgetési célpontjai. Ugyanaz a sticky-nav probléma, amit
+   a .quiz-* blokk scroll-margin-top-ja is old (l. lentebb, 2026-09-03):
+   scrollIntoView({block:'start'}) enélkül pontosan a fejléc MÖGÉ görget, így
+   a szekciócím ("Előzetesben / Eljárás alatt") és a magyarázó mondat a nav
+   alá csúszna — méréssel ellenőrizve, 2026-09-09. */
+.verdict-scroll-anchor {
+  scroll-margin-top: 110px;
+}
+
 @media (max-width: 640px) {
   .megszunt-stats {
     grid-template-columns: repeat(2, 1fr);

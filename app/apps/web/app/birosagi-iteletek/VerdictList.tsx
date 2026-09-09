@@ -60,6 +60,13 @@ const YEAR_RANGES: Record<string, [number, number | null]> = {
   '15+':   [15, null],
 };
 
+// A stat-dobozok → lista görgetés (user kérés, 2026-09-09). Ugyanaz a
+// scrollIntoView-minta, amit a ?ugy=<id> linkkel érkezés is használ lentebb
+// — így a két görgetés egyformán viselkedik.
+function scrollToSection(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function releasedLabel(t: string) {
   if (t === 'szabadlábra helyezve') return 'KIENGEDVE';
   if (t === 'eljárás megszűnt') return 'MEGSZŰNT';
@@ -384,26 +391,70 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
 
   return (
     <>
-      {/* Stats */}
+      {/* Stats — az első három doboz a hozzá tartozó listához görget (user
+          kérés, 2026-09-09). Csak akkor kattintható, ha a cél-szekció
+          ténylegesen renderelődik: egy aktív szűrő kiüresítheti bármelyik
+          listát, és egy nem létező horgonyra görgetés némán nem csinálna
+          semmit — ami rosszabb, mint ha a doboz eleve nem is tűnik
+          kattinthatónak. */}
       <div className="megszunt-stats megszunt-stats--5">
-        <div className="megszunt-stat">
-          <div className="megszunt-stat-value">{filteredComplaints.length}</div>
-          <div className="megszunt-stat-label">Feljelentések száma</div>
-        </div>
-        <div className="megszunt-stat">
-          <div className="megszunt-stat-value megszunt-stat-value--red">{pretrialCount}</div>
-          <div className="megszunt-stat-label">Előzetesben van</div>
-        </div>
-        <div className="megszunt-stat">
-          <div className="megszunt-stat-value">{nonPretrialCount}</div>
-          {/* Ez a szám nem CSAK a ténylegesen kihirdetett ítéleteket
-              (elsőfokú/jogerős) számolja, hanem minden előzetesen túljutott,
-              még nem lezárt/kiengedett szakaszt is (vádemelés, fellebbezés
-              alatt is beleesik — l. verdict-stats.ts komment). A régi
-              "Ítélet összesen" felirat ezt tévesen sugallta (user report,
-              2026-08-17: egy csak vádemelt ügy is "ítéletként" jelent meg). */}
-          <div className="megszunt-stat-label">Vádemelve vagy elítélve</div>
-        </div>
+        {complaints.length > 0 && filteredComplaints.length > 0 ? (
+          <button
+            type="button"
+            className="megszunt-stat megszunt-stat--clickable"
+            onClick={() => scrollToSection('feljelentesek-lista')}
+            aria-label="Ugrás a feljelentések listájához"
+          >
+            <div className="megszunt-stat-value">{filteredComplaints.length}</div>
+            <div className="megszunt-stat-label">Feljelentések száma</div>
+          </button>
+        ) : (
+          <div className="megszunt-stat">
+            <div className="megszunt-stat-value">{filteredComplaints.length}</div>
+            <div className="megszunt-stat-label">Feljelentések száma</div>
+          </div>
+        )}
+        {activeFiltered.length > 0 ? (
+          <button
+            type="button"
+            className="megszunt-stat megszunt-stat--clickable"
+            onClick={() => scrollToSection('eljaras-alatt-lista')}
+            aria-label="Ugrás az előzetesben lévők / eljárás alatt állók listájához"
+          >
+            <div className="megszunt-stat-value megszunt-stat-value--red">{pretrialCount}</div>
+            <div className="megszunt-stat-label">Előzetesben van</div>
+          </button>
+        ) : (
+          <div className="megszunt-stat">
+            <div className="megszunt-stat-value megszunt-stat-value--red">{pretrialCount}</div>
+            <div className="megszunt-stat-label">Előzetesben van</div>
+          </div>
+        )}
+        {/* A "Vádemelve vagy elítélve" szám nem CSAK a ténylegesen kihirdetett
+            ítéleteket (elsőfokú/jogerős) számolja, hanem minden előzetesen
+            túljutott, még nem lezárt/kiengedett szakaszt is (vádemelés,
+            fellebbezés alatt is beleesik — l. verdict-stats.ts komment). A régi
+            "Ítélet összesen" felirat ezt tévesen sugallta (user report,
+            2026-08-17: egy csak vádemelt ügy is "ítéletként" jelent meg).
+            Ezért ugyanoda görget, mint az "Előzetesben van": mindkét szám
+            sorai EGY listában, az "Előzetesben / Eljárás alatt" szekcióban
+            vannak — nincs külön lista a kettőnek. */}
+        {activeFiltered.length > 0 ? (
+          <button
+            type="button"
+            className="megszunt-stat megszunt-stat--clickable"
+            onClick={() => scrollToSection('eljaras-alatt-lista')}
+            aria-label="Ugrás a vádemelt vagy elítélt személyek listájához"
+          >
+            <div className="megszunt-stat-value">{nonPretrialCount}</div>
+            <div className="megszunt-stat-label">Vádemelve vagy elítélve</div>
+          </button>
+        ) : (
+          <div className="megszunt-stat">
+            <div className="megszunt-stat-value">{nonPretrialCount}</div>
+            <div className="megszunt-stat-label">Vádemelve vagy elítélve</div>
+          </div>
+        )}
         <div className="megszunt-stat">
           <div className="megszunt-stat-value">{totalYears}</div>
           <div className="megszunt-stat-label">Kiszabott börtönév</div>
@@ -725,7 +776,14 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
               Nincs a feltételeknek megfelelő feljelentés.
             </div>
           ) : (
-            <ComplaintList rows={filteredComplaints} />
+            /* A horgony szándékosan a LISTA elé kerül, nem a "Feljelentések"
+               szekció tetejére: a fejléc és az értékösszeg-számláló együtt
+               egy képernyőnél magasabb, így a szekció tetejére görgetve a
+               user még mindig nem látná magát a listát — pedig a stat-doboz
+               száma pont a lista hosszát mutatja. */
+            <div id="feljelentesek-lista" className="verdict-scroll-anchor">
+              <ComplaintList rows={filteredComplaints} />
+            </div>
           )}
         </div>
       )}
@@ -744,7 +802,11 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
       ) : (
         <>
           {activeFiltered.length > 0 && (
-            <div style={{ marginTop: 20 }}>
+            /* Itt a horgony a fejléccel EGYÜTT a blokk tetején van (szemben a
+               feljelentés-listával fentebb): a szekciócím + egy mondatos
+               magyarázat rövid, így a görgetés után a lista első sorai is
+               látszanak, a cím pedig kontextust ad. */
+            <div id="eljaras-alatt-lista" className="verdict-scroll-anchor" style={{ marginTop: 20 }}>
               <div style={{ marginBottom: 16 }}>
                 <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
                   {hasFilter ? `Találat — ${activeFiltered.length} db` : 'Előzetesben / Eljárás alatt'}
