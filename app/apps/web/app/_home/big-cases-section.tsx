@@ -128,7 +128,7 @@ export function BigCasesSection({ cases }: { cases: BigCaseConfig[] }) {
   return (
     <section className="section big-cases-section" id="legdurvabb-ugyek">
       <div className="section-head">
-        <div className="section-num">03 / Legdurvább ügyek</div>
+        <div className="section-num">04 / Legdurvább ügyek</div>
         <h2 className="section-title">Legdurvább ügyek.</h2>
       </div>
 

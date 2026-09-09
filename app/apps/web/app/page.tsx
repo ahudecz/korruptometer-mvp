@@ -23,6 +23,8 @@ import { UGYEK } from './_home/ugyek-config';
 import { autoDisplayTitle, getCaseDisplayTitle, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS, toAsciiId } from './_home/case-detail-config';
 import { NewsCardImage } from './hirek/news-card-image';
 import { PodcastVideoCard } from './_home/podcast-video-card';
+import { FeljelentesTeaserCard } from './_home/feljelentes-teaser-card';
+import { computeComplaintBarMax } from './birosagi-iteletek/complaint-stats';
 import { PodcastSpotlight } from './_home/podcast-spotlight';
 import { cleanSpotlightDescription } from '@/lib/podcast-description';
 import { pickBreakingArticle } from '@/lib/breaking-pick';
@@ -140,6 +142,78 @@ const getCachedComplaintCount = unstable_cache(
     return db.select({ c: cnt() }).from(schema.criminalComplaints).where(eqF(schema.criminalComplaints.reviewStatus, 'approved')).then(r => r[0]?.c ?? 0);
   },
   ['complaint-count'],
+  { revalidate: 300 },
+);
+// 2026-09-08 — "Feljelentették-e már?" nyitóoldal-teaser: a feljelentések
+// érintett-értékösszege — ugyanaz a számítás (parseComplaintAmountFt →
+// computeComplaintTotal), mint a /birosagi-iteletek "Feljelentési
+// értékösszeg számláló" sávjánál, egyetlen forrásból (complaint-stats.ts),
+// hogy a két szám sose csússzon szét egymástól.
+const getCachedComplaintTotalFt = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { eq: eqF } = await import('drizzle-orm');
+    const { computeComplaintTotal } = await import('./birosagi-iteletek/complaint-stats');
+    const db = getDb();
+    const rows = await db.select({ amountLabel: schema.criminalComplaints.amountLabel })
+      .from(schema.criminalComplaints)
+      .where(eqF(schema.criminalComplaints.reviewStatus, 'approved'));
+    return computeComplaintTotal(rows).toString();
+  },
+  ['complaint-total-ft'],
+  { revalidate: 300 },
+);
+// A legfrissebb 12 feljelentés (user kérés, 2026-09-08: 3 teljes sor
+// 4-oszlopos rácsnál) — NEM lenyíló, mindig-látható "keretes" kártyaként
+// (l. FeljelentesTeaserCard), szándékosan más forma, mint a
+// /birosagi-iteletek lenyíló ComplaintList-je. Nem a related-complaints.ts-t
+// (getRelatedComplaintsForUgy) hívja, mert ahhoz itt kulcsszó-szűrés sem
+// kell, ÉS az amountLabel mezőre is szükség van a kártyán, amit a
+// RelatedComplaint típus nem tartalmaz.
+const FRESH_WINDOW_DAYS = 7;
+const LATEST_COMPLAINTS_TEASER_LIMIT = 12;
+const getCachedLatestComplaintsTeaser = unstable_cache(
+  async () => {
+    const { getDb, schema } = await import('@/lib/db');
+    const { desc: d, eq: eqF } = await import('drizzle-orm');
+    const db = getDb();
+    // Néhánnyal többet kérünk le, mint amennyi ténylegesen kell — a lenti
+    // forrás-nélküli szűrés miatt egy sima .limit(12) néha 12-nél
+    // kevesebbet adna vissza.
+    const rows = await db.select({
+      id: schema.criminalComplaints.id,
+      targetName: schema.criminalComplaints.targetName,
+      description: schema.criminalComplaints.description,
+      amountLabel: schema.criminalComplaints.amountLabel,
+      eventDate: schema.criminalComplaints.eventDate,
+      sourceUrls: schema.criminalComplaints.sourceUrls,
+      sourceNames: schema.criminalComplaints.sourceNames,
+    })
+      .from(schema.criminalComplaints)
+      .where(eqF(schema.criminalComplaints.reviewStatus, 'approved'))
+      .orderBy(d(schema.criminalComplaints.eventDate))
+      .limit(LATEST_COMPLAINTS_TEASER_LIMIT + 5);
+    return rows
+      .filter((r) => r.sourceUrls[0]) // sose mutass forrás nélküli állítást
+      .slice(0, LATEST_COMPLAINTS_TEASER_LIMIT)
+      .map((r) => {
+        const days = (Date.now() - new Date(r.eventDate).getTime()) / 86_400_000;
+        return {
+          id: r.id,
+          targetName: r.targetName,
+          description: r.description,
+          amountLabel: r.amountLabel,
+          sourceUrl: r.sourceUrls[0]!,
+          sourceName: r.sourceNames[0] ?? 'Forrás',
+          // Date → string, mert az unstable_cache JSON-on keresztül adja
+          // vissza (l. fmtShortDate() kommentje lentebb) — a hívó oldalon
+          // revive-oljuk.
+          eventDate: new Date(r.eventDate).toISOString(),
+          isFresh: days <= FRESH_WINDOW_DAYS,
+        };
+      });
+  },
+  ['latest-complaints-teaser'],
   { revalidate: 300 },
 );
 // [perf] diagnosztika mutatta: az uncached db.execute(sql`...`) a Promise.all-ban
@@ -577,6 +651,8 @@ export default async function HomePage() {
     latestClosuresRaw,
     pinnedClosuresRaw,
     totalDamageRaw,
+    complaintTotalFtRaw,
+    latestComplaintsTeaserRaw,
   ] = await Promise.all([
     getCachedKpiSnapshot(),
     getCachedTopResignations(),
@@ -599,6 +675,8 @@ export default async function HomePage() {
     getCachedLatestClosures(),
     getCachedPinnedClosures(),
     getCachedTotalDamage(),
+    getCachedComplaintTotalFt(),
+    getCachedLatestComplaintsTeaser(),
   ]);
   const { pretrial: pretrialCountDb, elitelt: eliteltCountDb } = verdictCounts;
 
@@ -665,6 +743,16 @@ export default async function HomePage() {
   const resignationCount = resignationCountRaw;
   const closureCount = closureCountRaw;
   const complaintCount = complaintCountRaw;
+  const complaintTotalFt = BigInt(complaintTotalFtRaw);
+  // Ugyanaz a sáv-logika, mint a /birosagi-iteletek "Feljelentési
+  // értékösszeg számláló"-ja (VerdictList.tsx) — egyetlen forrásból
+  // (complaint-stats.ts), hogy a két hely sose csússzon szét.
+  const complaintBarMax = computeComplaintBarMax(complaintTotalFt);
+  const complaintBarPct = Number(complaintTotalFt) / Number(complaintBarMax) * 100;
+  const complaintBarWidth = complaintTotalFt > 0n ? Math.min(100, Math.max(complaintBarPct, 0.6)) : 0;
+  // eventDate: string → Date (l. getCachedLatestComplaintsTeaser kommentje) —
+  // a FeljelentesTeaserCard/fmtDate valódi Date-et vár.
+  const latestComplaintsTeaser = latestComplaintsTeaserRaw.map((c) => ({ ...c, eventDate: new Date(c.eventDate) }));
   const latestClosures = latestClosuresRaw;
   const pinnedClosures = pinnedClosuresRaw;
   const latestVerdict = latestVerdictDb;
@@ -898,6 +986,52 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* ───── FELJELENTETTÉK-E MÁR TEASER (01) ───── */}
+      <div className="feljelentes-section-wrap">
+        <section className="section feljelentes-section" id="feljelentesek">
+          <div className="section-head">
+            <div className="section-num">01 / Feljelentések</div>
+            <h2 className="section-title">Feljelentették-e már?</h2>
+          </div>
+          <p className="section-partner-note">
+            NER-kapcsolatú és politikai indíttatású eljárások — előzetes letartóztatás,
+            vádemelés, első fokú és jogerős ítélet. Tényeket és forrásokat közlünk, nem
+            kommentárt.
+          </p>
+
+          <div className="complaint-tracker">
+            <div className="complaint-tracker-head">
+              <div className="complaint-tracker-label">Feljelentési értékösszeg számláló</div>
+              <div className="complaint-tracker-count">{fmtNumber(complaintCount)} feljelentés összesen</div>
+            </div>
+            <div className="complaint-tracker-track">
+              <div className="complaint-tracker-fill" style={{ width: `${complaintBarWidth}%` }} />
+            </div>
+            <div className="complaint-tracker-scale">
+              <span>0 Ft</span>
+              <span><FtValue n={complaintBarMax} mode="long" /></span>
+            </div>
+            <div className="complaint-tracker-stats">
+              <span className="complaint-tracker-current"><FtValue n={complaintTotalFt} mode="long" /></span>
+            </div>
+          </div>
+
+          {latestComplaintsTeaser.length > 0 ? (
+            <div className="feljelentes-teaser-grid">
+              {latestComplaintsTeaser.map((c) => (
+                <FeljelentesTeaserCard key={c.id} item={c} />
+              ))}
+            </div>
+          ) : (
+            <div className="stat-unit" style={{ marginTop: 24 }}>Még nem érkezett adat.</div>
+          )}
+
+          <div className="news-more-wrap">
+            <Link href="/birosagi-iteletek" className="news-more-btn">Összes feljelentés megtekintése →</Link>
+          </div>
+        </section>
+      </div>
+
       {/* ───── MEGSZŰNT-E TEASER ───── */}
       <section className="closure-teaser-section">
         <div className="closure-teaser-head">
@@ -934,7 +1068,7 @@ export default async function HomePage() {
         <div className="podcast-section-wrap">
           <section className="section" id="podcastok">
             <div className="section-head">
-              <div className="section-num">01 / Videóriportok és podcastok</div>
+              <div className="section-num">02 / Videóriportok és podcastok</div>
               <h2 className="section-title">Amiről beszélni kell.</h2>
             </div>
             <PodcastSpotlight
@@ -1107,7 +1241,7 @@ export default async function HomePage() {
       {/* ───── DATABASE PREVIEW ───── */}
       <section className="section" id="database">
         <div className="section-head">
-          <div className="section-num">04 / Adatbázis</div>
+          <div className="section-num">05 / Adatbázis</div>
           <h2 className="section-title">Az ügyek nyilvántartása.</h2>
         </div>
         <p className="section-partner-note">
@@ -1182,7 +1316,7 @@ export default async function HomePage() {
       <div className="news-section-wrap">
         <section className="section" id="news">
           <div className="section-head">
-            <div className="section-num">05 / Hírfolyam</div>
+            <div className="section-num">06 / Hírfolyam</div>
             <h2 className="section-title">Élő riportok az ügyekről.</h2>
           </div>
 
@@ -1245,7 +1379,7 @@ export default async function HomePage() {
       <section className="rogues" id="rogues">
         <div className="rogues-inner">
           <div className="section-head">
-            <div className="section-num">06 / Galéria</div>
+            <div className="section-num">07 / Galéria</div>
             <h2 className="section-title">10 kiemelt személy.</h2>
           </div>
           <p className="rogues-deck">
@@ -1349,7 +1483,7 @@ export default async function HomePage() {
       <section className="submission" id="submission">
         <div className="submission-inner">
           <div className="submission-left">
-            <div className="section-num">09 / Bejelentés</div>
+            <div className="section-num">10 / Bejelentés</div>
             <h2>
               Hiányzik egy <em>név</em>?<br />
               Jelentsd be.
@@ -1378,7 +1512,7 @@ export default async function HomePage() {
       <section className="submission" id="hirlevel">
         <div className="submission-inner">
           <div className="submission-left">
-            <div className="section-num">10 / Értesítések</div>
+            <div className="section-num">11 / Értesítések</div>
             <h2>
               Szólunk, ha <em>történik</em> valami.
             </h2>
