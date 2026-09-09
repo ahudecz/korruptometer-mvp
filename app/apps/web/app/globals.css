@@ -11452,6 +11452,20 @@ body:has(.admin-nav) > main {
     width: 90px;
     text-align: left;
   }
+  /* 2026-09-09 — user report: a "Top lemondások" leírás-oszlopa nem volt egy
+     vonalban az alatta lévő "További lemondások"-éval. A fenti fix a LEÍRÁS
+     szélességét rögzítette, a DÁTUM-é viszont tartalomfüggő maradt: a
+     .stat-resigned-body flex:1-e a maradék helyet nyeli el, így egy rövidebb
+     dátum ("okt. 1.", 26px) szélesebbre engedte a body-t, és a leírást
+     jobbra tolta, mint egy hosszabb dátumú soré ("szept. 30.", 41px+) —
+     mérve: a Top listában 190–205px között szórt a leírás bal széle, míg a
+     lentiben (véletlenül hasonló hosszú dátumok miatt) 189–191px között.
+     A 48px a LEGHOSSZABB lehetséges dátumra méretezve (a böngészőben mérve
+     "szept. 30." = 47,41px ezzel a 11px-es Archivóval), tehát egyetlen
+     jövőbeli dátum sem vágódik/tördelődik miatta. */
+  .stat-resigned-date {
+    width: 48px;
+  }
   /* A nevek/pozíciók eddig "..."-ra vágva jelentek meg mobilon (ugyanaz a
      minta, mint a /birosagi-iteletek kártyáin) — helyette engedjük a
      törést, a body flex:1 + min-width:0 amúgy is megadja hozzá a helyet. */
