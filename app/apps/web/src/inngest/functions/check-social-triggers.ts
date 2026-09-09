@@ -10,6 +10,14 @@ import { computeNextMilestone, formatMilliardLabel } from '@/lib/social-mileston
 import { UGYEK } from '@app/_home/ugyek-config';
 import { toAsciiId, autoDisplayTitle, RETIRED_SCANDAL_IDS } from '@app/_home/case-detail-config';
 import { listPolls, getPollWithResults } from '@/lib/poll-queries';
+import {
+  hookFor,
+  resignationHeadline,
+  complaintHeadline,
+  truncateAtWordBoundary,
+  IMAGE_DETAIL_MAX_CHARS,
+  CAPTION_DETAIL_MAX_CHARS,
+} from '@/lib/social-copy-variety';
 import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
 
 /**
@@ -49,6 +57,22 @@ import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
  * Jóváhagyás/Elutasítás gombokkal (l. telegram/webhook route.ts 's' ág).
  * Nincs LLM-hívás (sablon-alapú caption, l. social-caption.ts) — a napi
  * Anthropic-keretre nulla hatással van.
+ *
+ * ═══ A POSZT-SZÖVEG KÖTELEZŐ FORRÁSA: docs/facebook-content-brief.md ═══
+ * User utasítás, 2026-09-09: „csak ez alapján készülhet bármilyen poszt".
+ * A briefből az alábbiak vannak KÓDBAN kikényszerítve, ne lazíts rajtuk:
+ *  - 6. pont (tilos a csonkítás): sehol nincs nyers `.slice(0, N)` karakter-
+ *    vágás — mindenhol truncateAtWordBoundary(), ami sose vág szó közepén.
+ *    (Ez a 2026-09-08-i user report gyökéroka volt: "...rejtélyes befekte…")
+ *  - 7-8. pont (SOURCE / POST / IMAGE COPY három külön réteg): a képre
+ *    rövidebb sor megy (IMAGE_DETAIL_MAX_CHARS), a caption-be a hosszabb
+ *    kontextus (CAPTION_DETAIL_MAX_CHARS) — sose ugyanaz a levágott szöveg
+ *    mindkettőn.
+ *  - 11. pont (jogi státuszok nem szinonimák): VERDICT_KICKERS a
+ *    CourtVerdict.verdictType-ból dolgozik, sose "erősít fel" egy státuszt
+ *    (l. az 'előzetesben' melletti kommentet).
+ *  - 12. pont (kirúgás ≠ lemondás): resignationHeadline() a tényleges
+ *    resignationType-ból képzi az igét, nincs generikus "távozott".
  */
 
 const BREAKING_LOOKBACK_HOURS = 2; // órás cron + puffer; a valódi dedup a triggerRefId-egyediség
@@ -159,16 +183,22 @@ async function buildResignationTriggers(db: ReturnType<typeof getDb>): Promise<O
     // user kérés, 2026-09-03: nem csak WATCH_LIST — minden jóváhagyott
     // lemondás/kirúgás poszt-jelölt, hogy legyen elég napi alapanyag.
     const kicker = RESIGNATION_KICKERS[r.resignationType] ?? 'TÁVOZÁS';
-    const headline = `${r.name} távozott: ${r.position}, ${r.institution}`;
-    const image = await renderBreakingImage({ kicker, headline });
+    // Brief 12. pont: a kirúgás ≠ lemondás — a fejléc a TÉNYLEGES
+    // resignationType-ból képzi az igét ("X: kirúgták!"), nem a korábbi
+    // generikus "X távozott" formából.
+    const headline = resignationHeadline(r.name, r.resignationType);
+    const detail = `${r.position}, ${r.institution}`;
+    const imageDetail = truncateAtWordBoundary(detail, IMAGE_DETAIL_MAX_CHARS);
+    const hookLine = hookFor('resignation', r.id);
+    const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
     out.push({
       triggerType: 'resignation',
       triggerRefId: r.id,
       milestoneValueFt: null,
       headline,
-      caption: breakingCaption(kicker, headline, undefined, '/lemondasok/' + r.id),
+      caption: breakingCaption(kicker, headline, detail, '/lemondasok/' + r.id, undefined, hookLine),
       imagePng: image,
-      imageText: '',
+      imageText: imageDetail ?? '',
       kicker,
     });
   }
@@ -177,6 +207,15 @@ async function buildResignationTriggers(db: ReturnType<typeof getDb>): Promise<O
 
 const MEDIA_CLOSURE_KICKERS: Record<string, string> = {
   'megszűnés': 'MEGSZŰNÉS', 'leépítés': 'LEÉPÍTÉS', 'elmaradt esemény': 'ELMARADT ESEMÉNY', 'egyéb': 'MÉDIA-HÍR',
+};
+// Brief 3. pont — a kép/hook legyen "intézmény + státusz", ne csak az
+// intézmény bare neve. Kettőspontos forma (mint resignationHeadline):
+// intranzitív igék, sose igényelnek tárgyeset-egyeztetést a névvel, ezért
+// bármilyen médiumnévre biztonságosak.
+const MEDIA_CLOSURE_VERBS: Record<string, string> = {
+  'megszűnés': 'megszűnt!',
+  'leépítés': 'leépítést hajtott végre!',
+  'elmaradt esemény': 'elmaradt!',
 };
 
 async function buildMediaClosureTriggers(db: ReturnType<typeof getDb>): Promise<OutboxInsert[]> {
@@ -196,26 +235,67 @@ async function buildMediaClosureTriggers(db: ReturnType<typeof getDb>): Promise<
   for (const m of recent) {
     if (alreadyPostedIds.has(m.id)) continue;
     const kicker = MEDIA_CLOSURE_KICKERS[m.eventType] ?? 'MÉDIA-HÍR';
-    const headline = m.name;
-    const image = await renderBreakingImage({ kicker, headline, detail: m.description ?? undefined });
+    const verb = MEDIA_CLOSURE_VERBS[m.eventType];
+    const headline = verb ? `${m.name}: ${verb}` : m.name;
+    const detail = truncateAtWordBoundary(m.description, CAPTION_DETAIL_MAX_CHARS);
+    const imageDetail = truncateAtWordBoundary(m.description, IMAGE_DETAIL_MAX_CHARS);
+    const hookLine = hookFor('media_closure', m.id);
+    const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
     out.push({
       triggerType: 'media_closure',
       triggerRefId: m.id,
       milestoneValueFt: null,
       headline,
-      caption: breakingCaption(kicker, headline, m.description ?? undefined, '/megszunt'),
+      caption: breakingCaption(kicker, headline, detail, '/megszunt', undefined, hookLine),
       imagePng: image,
-      imageText: m.description ?? '',
+      imageText: imageDetail ?? '',
       kicker,
     });
   }
   return out;
 }
 
+// Brief 11. pont — a jogi státuszok NEM szinonimák: "őrizetbe vett",
+// "letartóztatott", "előzetesben", "vádemelés", "elsőfokú", "jogerős",
+// "felmentve" mind külön kategória, és a poszt sose állíthat erősebbet,
+// mint amit a rekord rögzít. Korábban MINDEN CourtVerdict-sor egységesen
+// 'ÍTÉLET' kickert kapott a valós verdictType-tól függetlenül — ez a brief
+// szerint hibás (egy előzetes letartóztatás nem ítélet).
+//
+// FIGYELEM az 'előzetesben' soron: a detektor (court-verdict-detect.ts)
+// EGY bucketbe teszi az őrizetbe vételt és az előzetes letartóztatást
+// ("held in custody/pretrial detention"), tehát az adatmodellből NEM
+// dönthető el, melyikről van szó. Ezért itt szándékosan a rekord SAJÁT
+// szava ('ELŐZETESBEN') megy ki, NEM a "LETARTÓZTATVA" — az utóbbi
+// felerősítené a státuszt olyan esetekben, ahol csak őrizetbe vétel
+// történt (l. NKA/Fásy-ügy, 2026-09: őrizetbe vétel + letartóztatás
+// KEZDEMÉNYEZÉSE). A pontos megfogalmazás a summary-ből (detail) jön.
+const VERDICT_KICKERS: Record<string, string> = {
+  'előzetesben': 'ELŐZETESBEN',
+  'elsőfokú': 'ÍTÉLET',
+  'jogerős': 'JOGERŐS ÍTÉLET',
+  'vádemelés': 'VÁDEMELÉS',
+  'szabadlábra helyezve': 'SZABADLÁBON',
+  'eljárás megszűnt': 'ELJÁRÁS MEGSZŰNT',
+  'felmentve': 'FELMENTVE',
+};
+// Csak azokra a típusokra, ahol egy rövid, kettőspontos igés forma
+// informatívabb, mint a puszta sentenceLabel (pl. 'előzetesben' esetén
+// nincs sentenceLabel). 'elsőfokú'/'jogerős' szándékosan KIMARAD, mert ott
+// a tényleges sentence ("5 év") konkrétabb. Az igék sose erősítenek a
+// verdictType-on (l. fenti komment).
+const VERDICT_VERBS: Record<string, string> = {
+  'előzetesben': 'előzetesben!',
+  'vádemelés': 'vádat emeltek ellene!',
+  'szabadlábra helyezve': 'szabadlábra helyezve!',
+  'eljárás megszűnt': 'az eljárás megszűnt!',
+  'felmentve': 'felmentve!',
+};
+
 async function buildCourtVerdictTriggers(db: ReturnType<typeof getDb>): Promise<OutboxInsert[]> {
   const since = new Date(Date.now() - BREAKING_LOOKBACK_HOURS * 60 * 60 * 1000);
   const recent = await db
-    .select({ id: schema.courtVerdicts.id, personName: schema.courtVerdicts.personName, sentenceLabel: schema.courtVerdicts.sentenceLabel, sentenceYears: schema.courtVerdicts.sentenceYears, summary: schema.courtVerdicts.summary })
+    .select({ id: schema.courtVerdicts.id, personName: schema.courtVerdicts.personName, sentenceLabel: schema.courtVerdicts.sentenceLabel, sentenceYears: schema.courtVerdicts.sentenceYears, summary: schema.courtVerdicts.summary, verdictType: schema.courtVerdicts.verdictType })
     .from(schema.courtVerdicts)
     .where(and(
       eq(schema.courtVerdicts.reviewStatus, 'approved'),
@@ -228,19 +308,25 @@ async function buildCourtVerdictTriggers(db: ReturnType<typeof getDb>): Promise<
   const out: OutboxInsert[] = [];
   for (const v of recent) {
     if (alreadyPostedIds.has(v.id)) continue;
-    const kicker = 'ÍTÉLET';
+    const kicker = VERDICT_KICKERS[v.verdictType] ?? 'ÍTÉLET';
     const sentence = v.sentenceLabel ?? (v.sentenceYears > 0 ? `${v.sentenceYears} év` : null);
-    const headline = sentence ? `${v.personName}: ${sentence}` : v.personName;
-    const detail = v.summary.length > 220 ? v.summary.slice(0, 217) + '…' : v.summary;
-    const image = await renderBreakingImage({ kicker, headline, detail });
+    // Kettőspontos forma — sose "Letartóztatták X-et"-féle igés+tárgyeset
+    // szerkezet, mert az a név accusative ragozását igényelné (pl. "Kovács
+    // János" → "Kovács Jánost"), ami ismeretlen névvégződésen elcsúszik.
+    const verb = VERDICT_VERBS[v.verdictType];
+    const headline = verb ? `${v.personName}: ${verb}` : sentence ? `${v.personName}: ${sentence}` : v.personName;
+    const detail = truncateAtWordBoundary(v.summary, CAPTION_DETAIL_MAX_CHARS) ?? v.summary;
+    const imageDetail = truncateAtWordBoundary(v.summary, IMAGE_DETAIL_MAX_CHARS);
+    const hookLine = hookFor('court_verdict', v.id);
+    const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
     out.push({
       triggerType: 'court_verdict',
       triggerRefId: v.id,
       milestoneValueFt: null,
       headline,
-      caption: breakingCaption(kicker, headline, detail, '/birosagi-iteletek'),
+      caption: breakingCaption(kicker, headline, detail, '/birosagi-iteletek', undefined, hookLine),
       imagePng: image,
-      imageText: detail,
+      imageText: imageDetail ?? '',
       kicker,
     });
   }
@@ -263,15 +349,20 @@ async function buildAssetRecoveryTriggers(db: ReturnType<typeof getDb>): Promise
     if (alreadyPostedIds.has(a.id)) continue;
     const kicker = 'VAGYONVISSZASZERZÉS';
     const headline = `${a.caseLabel}: ${formatFtLabel(a.amountFt)}`;
-    const image = await renderBreakingImage({ kicker, headline, detail: a.description });
+    // a.description a DB-ben max 1000 karakter lehet, és eddig EGYÁLTALÁN
+    // nem volt rövidítve, mielőtt a képre került — brief 8. pont.
+    const detail = truncateAtWordBoundary(a.description, CAPTION_DETAIL_MAX_CHARS) ?? a.description;
+    const imageDetail = truncateAtWordBoundary(a.description, IMAGE_DETAIL_MAX_CHARS);
+    const hookLine = hookFor('asset_recovery', a.id);
+    const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
     out.push({
       triggerType: 'asset_recovery',
       triggerRefId: a.id,
       milestoneValueFt: null,
       headline,
-      caption: breakingCaption(kicker, headline, a.description, '/visszaszerzett-vagyon'),
+      caption: breakingCaption(kicker, headline, detail, '/visszaszerzett-vagyon', undefined, hookLine),
       imagePng: image,
-      imageText: a.description,
+      imageText: imageDetail ?? '',
       kicker,
     });
   }
@@ -295,17 +386,28 @@ async function buildComplaintTriggers(db: ReturnType<typeof getDb>): Promise<Out
   for (const c of recent) {
     if (alreadyPostedIds.has(c.id)) continue;
     const kicker = 'FELJELENTÉS';
-    const headline = `${c.filerName} feljelentést tett ${c.targetName} ellen`;
+    // 2026-09-07 user report: "${filerName} feljelentést tett ${targetName}
+    // ellen" élesen értelmetlen mondatot adott ki ("...tett Magyar
+    // Fejlesztési Bank 77 milliárdos kötvényvásárlása a Waberer's-től
+    // ellen") — a targetName egy szabad szöveges ÜGY-LEÍRÁS (l.
+    // criminal-complaint-detect.ts), NEM egy önálló főnév, amire az "ellen"
+    // névutó ráépíthető. complaintHeadline() a kettőspontos formát adja,
+    // ami tetszőleges szabad szövegre nyelvtanilag biztonságos.
+    // (targetEntity oszlop a main sémájában még nincs — l. 0060-as migráció
+    // a 011-nvvh-case-poll branchen; addig mindig a biztonságos ág fut.)
+    const headline = complaintHeadline(c.filerName, null, c.targetName);
     const detail = c.amountLabel ? `Érintett összeg: ${c.amountLabel}` : undefined;
-    const image = await renderBreakingImage({ kicker, headline, detail });
+    const imageDetail = truncateAtWordBoundary(detail, IMAGE_DETAIL_MAX_CHARS);
+    const hookLine = hookFor('criminal_complaint', c.id);
+    const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
     out.push({
       triggerType: 'criminal_complaint',
       triggerRefId: c.id,
       milestoneValueFt: null,
       headline,
-      caption: breakingCaption(kicker, headline, detail, '/birosagi-iteletek'),
+      caption: breakingCaption(kicker, headline, detail, '/birosagi-iteletek', undefined, hookLine),
       imagePng: image,
-      imageText: detail ?? '',
+      imageText: imageDetail ?? '',
       kicker,
     });
   }
@@ -351,18 +453,26 @@ async function buildQuizTriggers(db: ReturnType<typeof getDb>): Promise<OutboxIn
   const pick = sorted[0];
   if (!pick) return [];
 
+  // Brief 10. pont: a kvíz NEM szavazás — sem a kicker, sem a CTA nem
+  // nevezheti "szavazásnak"/"pollnak". A kvíz saját címe (pick.title, pl.
+  // "Lehetnél te az NVVH legfőbb ügyésze?") már önmagában erős hook.
   const kicker = 'KVÍZ';
   const headline = pick.title;
-  const detail = pick.intro.length > 220 ? pick.intro.slice(0, 217) + '…' : pick.intro;
-  const image = await renderBreakingImage({ kicker, headline, detail });
+  // 2026-09-08 user report — pontosan ez a sor adta a "...rejtélyes
+  // befekte…" félbevágott szót: a nyers char-slice a szó KÖZEPÉN vágott, és
+  // ugyanaz a levágott szöveg ment a képre ÉS a caption-be is.
+  const detail = truncateAtWordBoundary(pick.intro, CAPTION_DETAIL_MAX_CHARS) ?? pick.intro;
+  const imageDetail = truncateAtWordBoundary(pick.intro, IMAGE_DETAIL_MAX_CHARS);
+  const hookLine = hookFor('quiz_highlight', pick.id);
+  const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
   return [{
     triggerType: 'quiz_highlight',
     triggerRefId: pick.id,
     milestoneValueFt: null,
     headline,
-    caption: breakingCaption(kicker, headline, detail, `/kviz/${pick.slug}`, '🧠 Töltsd ki, és nézd meg, hányat tudtál!'),
+    caption: breakingCaption(kicker, headline, detail, `/kviz/${pick.slug}`, '🧠 Töltsd ki, és nézd meg, hányat tudtál!', hookLine),
     imagePng: image,
-    imageText: detail,
+    imageText: imageDetail ?? '',
     kicker,
   }];
 }
@@ -399,13 +509,14 @@ async function buildPollFinalResultTrigger(db: ReturnType<typeof getDb>): Promis
     const headline = `Lezárult a szavazás: ${full.question.questionText}`;
     const detailLines = top3.map((o, i) => `${i + 1}. ${o.title} — ${o.sharePct}% (${o.votes} szavazat)`);
     const detail = detailLines.join('\n');
+    const hookLine = hookFor('poll_final_result', pollId);
     const image = await renderBreakingImage({ kicker, headline, detail: detailLines });
     out.push({
       triggerType: 'poll_final_result',
       triggerRefId: pollId,
       milestoneValueFt: null,
       headline,
-      caption: breakingCaption(kicker, headline, detail, `/szavazas/${poll.slug}`, `👉 Összesen ${full.totalVotes} szavazat érkezett — nézd meg a teljes eredményt!`),
+      caption: breakingCaption(kicker, headline, detail, `/szavazas/${poll.slug}`, `👉 Összesen ${full.totalVotes} szavazat érkezett — nézd meg a teljes eredményt!`, hookLine),
       imagePng: image,
       imageText: detail,
       kicker,
@@ -469,16 +580,18 @@ async function buildCatalogHighlightTrigger(db: ReturnType<typeof getDb>): Promi
 
   const kicker = 'KIEMELT ÜGY';
   const headline = pick.title;
-  const detail = pick.summary.length > 220 ? pick.summary.slice(0, 217) + '…' : pick.summary;
-  const image = await renderBreakingImage({ kicker, headline, detail });
+  const detail = truncateAtWordBoundary(pick.summary, CAPTION_DETAIL_MAX_CHARS) ?? pick.summary;
+  const imageDetail = truncateAtWordBoundary(pick.summary, IMAGE_DETAIL_MAX_CHARS);
+  const hookLine = hookFor('catalog_highlight', pick.id);
+  const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
   return {
     triggerType: 'catalog_highlight',
     triggerRefId: pick.id,
     milestoneValueFt: null,
     headline,
-    caption: breakingCaption(kicker, headline, detail, `/ugyek/${pick.id}`),
+    caption: breakingCaption(kicker, headline, detail, `/ugyek/${pick.id}`, undefined, hookLine),
     imagePng: image,
-    imageText: detail,
+    imageText: imageDetail ?? '',
     kicker,
   };
 }
@@ -533,16 +646,18 @@ async function buildGalleryHighlightTrigger(db: ReturnType<typeof getDb>): Promi
     if (dmg > 0n) detailParts.push(`Érintett összeg: ${formatFtLabel(dmg)}`);
   }
   const detail = detailParts.filter(Boolean).join(' — ');
-  const trimmedDetail = detail.length > 220 ? detail.slice(0, 217) + '…' : detail;
-  const image = await renderBreakingImage({ kicker, headline, detail: trimmedDetail });
+  const trimmedDetail = truncateAtWordBoundary(detail, CAPTION_DETAIL_MAX_CHARS) ?? detail;
+  const imageDetail = truncateAtWordBoundary(detail, IMAGE_DETAIL_MAX_CHARS);
+  const hookLine = hookFor('gallery_highlight', pick.id);
+  const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
   return {
     triggerType: 'gallery_highlight',
     triggerRefId: pick.id,
     milestoneValueFt: null,
     headline,
-    caption: breakingCaption(kicker, headline, trimmedDetail, `/adatbazis/${toAsciiId(pick.id)}`),
+    caption: breakingCaption(kicker, headline, trimmedDetail, `/adatbazis/${toAsciiId(pick.id)}`, undefined, hookLine),
     imagePng: image,
-    imageText: trimmedDetail,
+    imageText: imageDetail ?? '',
     kicker,
   };
 }
