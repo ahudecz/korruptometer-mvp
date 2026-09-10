@@ -15,9 +15,21 @@ import {
   resignationHeadline,
   complaintHeadline,
   truncateAtWordBoundary,
+  fitCompleteSentences,
   IMAGE_DETAIL_MAX_CHARS,
   telegramPreview,
 } from '@/lib/social-copy-variety';
+import {
+  EVENT_LOOKBACK_HOURS,
+  MIN_CASE_DAMAGE_FT,
+
+  checkPostGate,
+  fallbackKindsForRun,
+  isPlaceholderSummary,
+  parseHungarianFtAmount,
+  selectQueueBatch,
+  type FallbackKind,
+} from '@/lib/social-post-policy';
 import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
 
 /**
@@ -75,7 +87,9 @@ import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
  *    resignationType-ból képzi az igét, nincs generikus "távozott".
  */
 
-const BREAKING_LOOKBACK_HOURS = 2; // órás cron + puffer; a valódi dedup a triggerRefId-egyediség
+// 2026-09-10: a korábbi 2 órás ablak abból indult ki, hogy a cron óránként
+// lefut — nem fut. L. EVENT_LOOKBACK_HOURS kommentje (social-post-policy.ts).
+const BREAKING_LOOKBACK_HOURS = EVENT_LOOKBACK_HOURS;
 const TARGET_PER_DAY = 3;
 const FALLBACK_HOUR_BUDAPEST = 20; // csak ekkor tölt fel tartalékkal, hogy a nap folyamán a valódi eseményeknek legyen esélyük
 const CATALOG_COOLDOWN_DAYS = 60; // ennyi napon belül nem ismétlünk kiemelt ügyet / galéria-profilt
@@ -90,6 +104,9 @@ type OutboxInsert = {
   imagePng: Buffer;
   imageText: string; // a képre írt, "✏️ Módosítás"-sal szerkeszthető szöveg (subline/detail) — summary_stats-nál JSON.stringify(stats)
   kicker: string | null; // csak breaking-típusoknál — l. schema.ts komment
+  /** Ügy-felidéző típusoknál a bizonyított érintettség; a kapu ezt méri az
+   *  1 milliárdos minimumhoz (l. social-post-policy.ts). */
+  provenAmountFt?: bigint | null;
 };
 
 function budapestHour(d: Date = new Date()): number {
@@ -572,8 +589,18 @@ async function buildCatalogHighlightTrigger(db: ReturnType<typeof getDb>): Promi
     ));
   const recentIds = new Set(recentlyPosted.map((r) => r.triggerRefId));
 
-  const candidates = UGYEK.filter((u) => !recentIds.has(u.id) && u.summary);
-  const pool = candidates.length > 0 ? candidates : UGYEK.filter((u) => u.summary);
+  // 2026-09-10 user szabály: csak legalább MIN_CASE_DAMAGE_FT (1 milliárd Ft)
+  // BIZONYÍTOTT érintettségű ügy mehet ki. Az UGYEK-ben az összeg szabad
+  // szöveg (estimatedDamage), ezért parse-oljuk; amit nem tudunk
+  // megállapítani, az szándékosan kiesik — inkább ne menjen poszt, mint hogy
+  // egy ismeretlen súlyú ügy menjen.
+  const bigEnough = UGYEK.filter((u) => {
+    if (!u.summary) return false;
+    const amount = parseHungarianFtAmount(u.estimatedDamage);
+    return amount !== null && amount >= MIN_CASE_DAMAGE_FT;
+  });
+  const candidates = bigEnough.filter((u) => !recentIds.has(u.id));
+  const pool = candidates.length > 0 ? candidates : bigEnough;
   if (pool.length === 0) return null;
   const pick = pool[Math.floor(Math.random() * pool.length)];
   if (!pick) return null;
@@ -581,10 +608,15 @@ async function buildCatalogHighlightTrigger(db: ReturnType<typeof getDb>): Promi
   const kicker = 'KIEMELT ÜGY';
   const headline = pick.title;
   const detail = pick.summary;
-  const imageDetail = truncateAtWordBoundary(pick.summary, IMAGE_DETAIL_MAX_CHARS);
+  // A KÉPRE a rövid, kurált állapot-sor megy (pl. „Aktív · 7 személy
+  // előzetesben"), NEM az összefoglaló eleje: 90 karakterbe egy valódi
+  // mondat úgysem fér bele, a levágott mondat pedig pontosan az a hiba,
+  // amit a user kifogásolt. A teljes összefoglaló a caption-ben marad.
+  const imageDetail = fitCompleteSentences(pick.eyebrow, IMAGE_DETAIL_MAX_CHARS);
   const hookLine = hookFor('catalog_highlight', pick.id);
   const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
   return {
+    provenAmountFt: parseHungarianFtAmount(pick.estimatedDamage),
     triggerType: 'catalog_highlight',
     triggerRefId: pick.id,
     milestoneValueFt: null,
@@ -616,10 +648,23 @@ async function buildGalleryHighlightTrigger(db: ReturnType<typeof getDb>): Promi
   const recentIds = new Set(recentlyPosted.map((r) => r.triggerRefId).filter((v): v is string => v !== null));
   const excludeIds = [...recentIds, ...RETIRED_SCANDAL_IDS];
 
+  // 2026-09-10 — két user-szabály SQL-be kötve:
+  //  (a) legalább 1 milliárd Ft érintettség (MIN_CASE_DAMAGE_FT),
+  //  (b) valódi ügyleírás, nem generált katalógus-csonk. A 947 summary-ből
+  //      673 ilyen csonk („Fodor János — besorolatlan (1 cikk)"), és pont
+  //      egy ilyen ment ki tegnap posztként.
+  const qualityWhere = sql`
+      sc.summary IS NOT NULL
+      AND length(trim(sc.summary)) >= 120
+      AND sc.summary NOT ILIKE '%besorolatlan%'
+      AND sc.summary !~ '\(\d+ cikk\)'
+      AND sc.damage_huf IS NOT NULL
+      AND sc.damage_huf >= ${MIN_CASE_DAMAGE_FT.toString()}::numeric`;
+
   const rows = (await db.execute(sql`
     SELECT sc.id, sc.name, sc.person, sc.institution, sc.summary, sc.damage_huf AS "damageHuf"
     FROM "ScandalCatalog" sc
-    WHERE sc.summary IS NOT NULL AND length(trim(sc.summary)) > 0
+    WHERE ${qualityWhere}
       AND sc.id NOT IN (${sql.join(excludeIds.length > 0 ? excludeIds.map((v) => sql`${v}`) : [sql`''`], sql`, `)})
   `)) as unknown as ScandalCatalogRow[];
 
@@ -629,7 +674,7 @@ async function buildGalleryHighlightTrigger(db: ReturnType<typeof getDb>): Promi
     const fallbackRows = (await db.execute(sql`
       SELECT sc.id, sc.name, sc.person, sc.institution, sc.summary, sc.damage_huf AS "damageHuf"
       FROM "ScandalCatalog" sc
-      WHERE sc.summary IS NOT NULL AND length(trim(sc.summary)) > 0
+      WHERE ${qualityWhere}
         AND sc.id NOT IN (${sql.join(RETIRED_SCANDAL_IDS.length > 0 ? RETIRED_SCANDAL_IDS.map((v) => sql`${v}`) : [sql`''`], sql`, `)})
     `)) as unknown as ScandalCatalogRow[];
     pool = fallbackRows;
@@ -638,19 +683,25 @@ async function buildGalleryHighlightTrigger(db: ReturnType<typeof getDb>): Promi
   const pick = pool[Math.floor(Math.random() * pool.length)];
   if (!pick) return null;
 
+  if (isPlaceholderSummary(pick.summary)) return null;
+
   const kicker = 'ADATBÁZIS';
   const headline = autoDisplayTitle(pick.name, pick.person) || pick.name;
-  const detailParts = [pick.summary ?? ''];
-  if (pick.damageHuf) {
-    const dmg = BigInt(pick.damageHuf);
-    if (dmg > 0n) detailParts.push(`Érintett összeg: ${formatFtLabel(dmg)}`);
-  }
-  const detail = detailParts.filter(Boolean).join(' — ');
+  const detail = (pick.summary ?? '').trim();
   const trimmedDetail = detail;
-  const imageDetail = truncateAtWordBoundary(detail, IMAGE_DETAIL_MAX_CHARS);
+  // A KÉPRE a rövid azonosító sor megy (személy · intézmény), NEM az
+  // összefoglaló levágott eleje. Az összeget szándékosan NEM írjuk ki:
+  // a damage_huf sok sornál gyűjtő-/becsült érték (215 sor pontosan
+  // 5 000 000 000 Ft), tehát szűrésre alkalmas, konkrét állításként
+  // publikálni viszont félrevezető lenne.
+  const imageDetail = fitCompleteSentences(
+    [pick.person, pick.institution].filter(Boolean).join(' · '),
+    IMAGE_DETAIL_MAX_CHARS,
+  );
   const hookLine = hookFor('gallery_highlight', pick.id);
   const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
   return {
+    provenAmountFt: pick.damageHuf ? BigInt(pick.damageHuf) : null,
     triggerType: 'gallery_highlight',
     triggerRefId: pick.id,
     milestoneValueFt: null,
@@ -662,14 +713,36 @@ async function buildGalleryHighlightTrigger(db: ReturnType<typeof getDb>): Promi
   };
 }
 
-type FallbackKind = 'summary_stats' | 'catalog_highlight' | 'gallery_highlight';
+/** Mikor ment ki legutóbb összesítő poszt — a heti cooldownhoz. */
+async function lastSummaryAt(db: ReturnType<typeof getDb>): Promise<Date | null> {
+  const [row] = await db
+    .select({ createdAt: schema.socialPostOutbox.createdAt })
+    .from(schema.socialPostOutbox)
+    .where(eq(schema.socialPostOutbox.triggerType, 'summary_stats'))
+    .orderBy(desc(schema.socialPostOutbox.createdAt))
+    .limit(1);
+  return row?.createdAt ?? null;
+}
 
-/** Napi rotáció, hogy ne mindig ugyanaz a tartalék-típus menjen ki elsőnek —
- *  user kérés, 2026-09-03: "mindahárom, váltogatva". */
-function fallbackRotationForToday(): FallbackKind[] {
-  const order: FallbackKind[] = ['summary_stats', 'catalog_highlight', 'gallery_highlight'];
-  const dayIndex = Math.floor(Date.now() / (24 * 60 * 60 * 1000)) % order.length;
-  return [...order.slice(dayIndex), ...order.slice(0, dayIndex)];
+/** Mikor került ki legutóbb BÁRMILYEN jelölt — a két poszt közti minimum
+ *  szünethez (user, 2026-09-10: "nem egy perc alatt akarok hármat posztolni"). */
+async function lastQueuedAt(db: ReturnType<typeof getDb>): Promise<Date | null> {
+  const [row] = await db
+    .select({ createdAt: schema.socialPostOutbox.createdAt })
+    .from(schema.socialPostOutbox)
+    .orderBy(desc(schema.socialPostOutbox.createdAt))
+    .limit(1);
+  return row?.createdAt ?? null;
+}
+
+/** Hány jelölt vár még emberi döntésre. Ha van ilyen, tartalék nem indul —
+ *  a "töltelék" sose előzheti meg azt, amiről még nem döntöttél. */
+async function pendingApprovalCount(db: ReturnType<typeof getDb>): Promise<number> {
+  const [row] = await db
+    .select({ c: sql<number>`count(*)::int` })
+    .from(schema.socialPostOutbox)
+    .where(eq(schema.socialPostOutbox.status, 'pending_approval'));
+  return row?.c ?? 0;
 }
 
 async function buildFallbackTrigger(kind: FallbackKind, db: ReturnType<typeof getDb>): Promise<OutboxInsert | null> {
@@ -700,7 +773,7 @@ export async function runSocialTriggersCore({
   const db = getDb();
 
   const todayCount = await step.run('count-today-queued', () => countTodayQueued(db));
-  let remaining = TARGET_PER_DAY - todayCount;
+  const remaining = TARGET_PER_DAY - todayCount;
   if (remaining <= 0) {
     logger?.info?.(`check-social-triggers: napi sapka (${TARGET_PER_DAY}) már elérve, kihagyva`);
     return { candidates: 0, queued: 0 };
@@ -717,26 +790,55 @@ export async function runSocialTriggersCore({
   candidates.push(...(await step.run('check-quiz', () => buildQuizTriggers(db))));
   candidates.push(...(await step.run('check-poll-final-result', () => buildPollFinalResultTrigger(db))));
 
-  const selected = candidates.slice(0, remaining);
-  remaining -= selected.length;
-
-  // Tartalék csak egy rögzített napi órában lép be, hogy a nap folyamán a
-  // valódi eseményeknek legyen esélyük betölteni a napi kvótát — l. fájl
-  // fejléce.
-  if (remaining > 0 && budapestHour() === FALLBACK_HOUR_BUDAPEST) {
-    const rotation = await step.run('fallback-rotation', () => Promise.resolve(fallbackRotationForToday()));
-    for (const kind of rotation) {
-      if (remaining <= 0) break;
+  // Tartalék CSAK akkor, ha nincs valódi esemény-jelölt, nincs elbírálatlan
+  // jelölt, és a nap rögzített órájában járunk. 2026-09-10 user report: a
+  // nap egyetlen valódi eseménye (Volánbusz-feljelentés) helyett három
+  // tartalék ment ki — a tartalék sose előzheti a valódit.
+  const pending = await step.run('count-pending', () => pendingApprovalCount(db));
+  if (candidates.length === 0 && pending === 0 && budapestHour() === FALLBACK_HOUR_BUDAPEST) {
+    const summarySeenAt = await step.run('last-summary-at', () => lastSummaryAt(db));
+    const kinds = fallbackKindsForRun({
+      now: new Date(),
+      lastSummaryAt: summarySeenAt ? new Date(summarySeenAt) : null,
+    });
+    for (const kind of kinds) {
       const built = await step.run(`fallback-${kind}`, () => buildFallbackTrigger(kind, db));
       if (built) {
-        selected.push(built);
-        remaining--;
+        candidates.push(built);
+        break; // egy futásban egy tartalék elég
       }
     }
+  } else if (candidates.length === 0 && pending > 0) {
+    logger?.info?.(`check-social-triggers: ${pending} jelölt vár döntésre, tartalék kihagyva`);
   }
+
+  // Mennyi mehet ki MOST (max 1 futásonként + minimum szünet) — a döntés
+  // tiszta függvényben, tesztelve: social-post-policy.ts selectQueueBatch().
+  const lastAt = await step.run('last-queued-at', () => lastQueuedAt(db));
+  const decision = selectQueueBatch(candidates, {
+    now: new Date(),
+    lastQueuedAt: lastAt ? new Date(lastAt) : null,
+    remainingToday: remaining,
+  });
+  if (decision.skippedReason) logger?.info?.(`check-social-triggers: kihagyva — ${decision.skippedReason}`);
+  const selected = decision.selected;
 
   let queued = 0;
   for (const c of selected) {
+    // ═══ A KAPU ═══ Minden jelölt ezen megy át, típustól függetlenül. Egy
+    // később hozzáadott ÚJ trigger-típus is automatikusan ide fut be, ezért
+    // a szabályok nem tudnak "kimaradni" egy új builderből.
+    const gate = checkPostGate({
+      triggerType: c.triggerType,
+      headline: c.headline,
+      caption: c.caption,
+      imageText: c.imageText,
+      provenAmountFt: c.provenAmountFt ?? null,
+    });
+    if (!gate.ok) {
+      logger?.info?.(`check-social-triggers: ELDOBVA (${c.triggerType}) — ${gate.reason}`);
+      continue;
+    }
     await step.run(`queue-${c.triggerType}-${c.triggerRefId ?? c.milestoneValueFt ?? Math.random()}`, async () => {
       const [inserted] = await db
         .insert(schema.socialPostOutbox)

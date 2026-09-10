@@ -171,3 +171,46 @@ export function truncateAtWordBoundary(value: string | null | undefined, maxChar
   const cut = lastSpace > 0 ? sliced.slice(0, lastSpace) : sliced;
   return `${cut.trim().replace(/[.,;:!?…-]+$/, '')}…`;
 }
+
+/**
+ * A KÉPRE kerülő sor: befejezett mondat(ok), soha nem „…"-ra végződő csonk.
+ *
+ * 2026-09-10 user report: a képen megint félbevágott szöveg jelent meg
+ * („…köztük Őrsi Gergely (DK) II. kerületi…"). A truncateAtWordBoundary()
+ * ugyan szó közepén nem vág, de a mondat közepén IGEN, és kitesz egy „…"-t
+ * — a képen ez pontosan úgy néz ki, mintha elfogyott volna a szöveg.
+ *
+ * Ez a függvény ehelyett a korláton belül elférő EGÉSZ mondatokat adja
+ * vissza. Ha már az első mondat sem fér el, a mondat végéről vesszős
+ * tagmondatokat hagy el, amíg befér (a maradék így is önálló állítás). Csak
+ * ha ez sem elég — nincs se mondathatár, se vessző —, akkor esik vissza a
+ * régi, „…"-os vágásra, mert a képre akkor is kell valami.
+ */
+export function fitCompleteSentences(value: string | null | undefined, maxChars: number): string | undefined {
+  const trimmed = (value ?? '').replace(/\s+/g, ' ').trim();
+  if (trimmed.length === 0) return undefined;
+  if (trimmed.length <= maxChars) return trimmed;
+
+  // 1. A korláton belül elférő egész mondatok.
+  const sentences = trimmed.match(/[^.!?]+[.!?]+(?:\s|$)|[^.!?]+$/g) ?? [trimmed];
+  let acc = '';
+  for (const s of sentences) {
+    const next = (acc + s).trimEnd();
+    if (next.length > maxChars) break;
+    acc = next + ' ';
+  }
+  const whole = acc.trim();
+  if (whole.length > 0) return whole;
+
+  // 2. Az első mondat sem fér be — tagmondatokat hagyunk el a végéről.
+  const first = (sentences[0] ?? trimmed).trim().replace(/[.!?]+$/, '');
+  const parts = first.split(/,\s*/);
+  while (parts.length > 1) {
+    parts.pop();
+    const candidate = parts.join(', ');
+    if (candidate.length <= maxChars && candidate.split(/\s+/).length >= 4) return candidate;
+  }
+
+  // 3. Végső tartalék: a régi viselkedés.
+  return truncateAtWordBoundary(trimmed, maxChars);
+}
