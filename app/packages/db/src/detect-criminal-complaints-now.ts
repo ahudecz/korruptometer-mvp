@@ -167,7 +167,7 @@ async function main() {
     let lastReason: CheckReason = 'not_applicable';
 
     for (const complaint of result.complaints) {
-      if (!complaint.targetName || isPlaceholderName(complaint.targetName) || !complaint.filerName) {
+      if (!complaint.targetName || isPlaceholderName(complaint.targetName) || !complaint.filerName || isPlaceholderName(complaint.filerName)) {
         console.log(`\n  ↳ hiányzó adat, kihagyva`);
         lastReason = 'missing_fields';
         discarded++;

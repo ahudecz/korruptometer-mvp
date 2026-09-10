@@ -62,7 +62,7 @@ async function processComplaintArticle(
     lastName = complaint.targetName || lastName;
     lastConfidence = complaint.confidence;
 
-    if (!complaint.targetName || isPlaceholderName(complaint.targetName) || !complaint.filerName) {
+    if (!complaint.targetName || isPlaceholderName(complaint.targetName) || !complaint.filerName || isPlaceholderName(complaint.filerName)) {
       lastDiscardReason = 'missing_fields';
       continue;
     }
@@ -283,7 +283,7 @@ export async function runCriminalComplaintDetectionCore({ step, logger }: { step
     // 2026-07-24 — l. detect-resignations.ts azonos mintája.
     isIncomplete: (result) =>
       !result || result.complaints.length === 0 ||
-      result.complaints.some((c) => !c.targetName || isPlaceholderName(c.targetName) || !c.filerName),
+      result.complaints.some((c) => !c.targetName || isPlaceholderName(c.targetName) || !c.filerName || isPlaceholderName(c.filerName)),
     processArticle: processComplaintArticle,
     logLabel: 'criminal_complaint.detect',
   });

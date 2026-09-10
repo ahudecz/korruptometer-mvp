@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { fmtFtOrUnknown } from '@korr/shared/format';
+import { isPlaceholderName } from '@korr/shared/placeholder-name';
 
 export type SerializedComplaint = {
   id: string;
@@ -93,7 +94,13 @@ function ComplaintRow({ c }: { c: SerializedComplaint }) {
 
         <div className="complaint-identity">
           <div className="complaint-title">{c.targetName}</div>
-          <div className="complaint-filer">Feljelentő: {c.filerName}</div>
+          {/* Utolsó védőháló: ha egy régi sorban mégis benne maradt egy LLM-
+              placeholder ("<UNKNOWN>", "ismeretlen"), akkor sem írjuk ki —
+              a detektorok már eldobják az ilyet (isPlaceholderName), de a
+              MÁR BESZÚRT sorokat az nem javítja vissza. */}
+          {!isPlaceholderName(c.filerName) && (
+            <div className="complaint-filer">Feljelentő: {c.filerName}</div>
+          )}
         </div>
 
         <div className="complaint-meta">

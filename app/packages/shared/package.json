@@ -17,6 +17,7 @@
     "./virus-scan": "./src/virus-scan.ts",
     "./slack": "./src/slack.ts",
     "./sealed-box-monitor": "./src/sealed-box-monitor.ts",
+    "./placeholder-name": "./src/placeholder-name.ts",
     "./schemas/cases": "./src/schemas/cases.ts",
     "./schemas/submission": "./src/schemas/submission.ts"
   },

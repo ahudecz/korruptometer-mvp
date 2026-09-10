@@ -132,7 +132,7 @@ export async function processResignation(article: ArticleForReprocess, todayIso:
     lastName = person.name || lastName;
     lastConfidence = person.confidence;
 
-    if (!person.name || isPlaceholderName(person.name) || !person.institution) {
+    if (!person.name || isPlaceholderName(person.name) || !person.institution || isPlaceholderName(person.institution)) {
       lastDiscardReason = 'missing_fields';
       continue;
     }
@@ -521,7 +521,7 @@ export async function processCriminalComplaint(article: ArticleForReprocess, tod
     lastName = complaint.targetName || lastName;
     lastConfidence = complaint.confidence;
 
-    if (!complaint.targetName || isPlaceholderName(complaint.targetName) || !complaint.filerName) {
+    if (!complaint.targetName || isPlaceholderName(complaint.targetName) || !complaint.filerName || isPlaceholderName(complaint.filerName)) {
       lastDiscardReason = 'missing_fields';
       continue;
     }

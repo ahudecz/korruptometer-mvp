@@ -137,7 +137,7 @@ async function processResignationArticle(
     lastName = person.name || lastName;
     lastConfidence = person.confidence;
 
-    if (!person.name || isPlaceholderName(person.name) || !person.institution) {
+    if (!person.name || isPlaceholderName(person.name) || !person.institution || isPlaceholderName(person.institution)) {
       lastDiscardReason = 'missing_fields';
       continue;
     }
@@ -346,7 +346,7 @@ export async function runResignationDetectionCore({ step, logger }: { step: Bypa
     // Fail-open: ha a lekérés/retry nem hoz jobbat, marad az eredeti.
     isIncomplete: (result) =>
       !result || result.resignations.length === 0 ||
-      result.resignations.some((p) => !p.name || isPlaceholderName(p.name) || !p.institution),
+      result.resignations.some((p) => !p.name || isPlaceholderName(p.name) || !p.institution || isPlaceholderName(p.institution)),
     processArticle: processResignationArticle,
     logLabel: 'resignation.detect',
   });
