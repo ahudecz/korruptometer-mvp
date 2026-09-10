@@ -203,6 +203,32 @@ describe('isDuplicate', () => {
       expect(await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Lázár János', undefined, 'Magyar Teniszszövetség')).toBe(true);
     });
 
+    // 2026-09-10 — Mike Ferenc bug report: Telex called the institution
+    // "Nemzeti Reorganizációs Nonprofit Kft. (NRN)", HVG called it "állami
+    // felszámoló" — same person, same day, same felmentés, but neither
+    // normalized equality nor substring containment bridges those two
+    // wordings, so the institution guard let a duplicate row through.
+    it('adds a same-day resignationDate escape hatch to the institution clause when eventDate is passed', async () => {
+      let capturedQuery: unknown;
+      const db = { execute: async (query: unknown) => { capturedQuery = query; return []; } };
+      await isDuplicate(
+        db, { table: 'PoliticalResignation', nameColumn: 'name' },
+        'Mike Ferenc', undefined, 'állami felszámoló', new Date('2026-09-09T00:00:00Z'),
+      );
+      const text = sqlToText(capturedQuery);
+      expect(text).toContain('resignationDate');
+      // OR-ed INSIDE the institution parenthesis, never AND-ed after it —
+      // otherwise it would tighten the guard instead of relaxing it.
+      expect(text).not.toContain('AND "resignationDate"');
+    });
+
+    it('does NOT add the date clause when eventDate is omitted (old behavior intact)', async () => {
+      let capturedQuery: unknown;
+      const db = { execute: async (query: unknown) => { capturedQuery = query; return []; } };
+      await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Lázár János', undefined, 'Országgyűlés');
+      expect(sqlToText(capturedQuery)).not.toContain('resignationDate');
+    });
+
     it('a same-name match with a non-matching institution is NOT a duplicate (query returns no rows)', async () => {
       // Simulates the real bug: the row exists (Teniszszövetség), but the
       // SQL institution clause excludes it because this call is checking

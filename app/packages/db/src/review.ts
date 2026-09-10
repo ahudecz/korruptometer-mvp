@@ -180,6 +180,11 @@ type Executable = { execute: (query: ReturnType<typeof sql>) => Promise<unknown>
  * drift) before counting as a duplicate. Omitted for tables with no
  * institution concept (MediaClosure/CourtVerdict/AssetRecovery) — those
  * keep the old name-only behavior.
+ *
+ * 2026-09-10 — `eventDate` (PoliticalResignation only, passed alongside
+ * `institution`) relaxes that guard for the case it got wrong: same name +
+ * same resignation date = same event even when the two articles word the
+ * institution differently. See the inline comment at sameEventDayClause.
  */
 export async function isDuplicate(
   db: Executable,
@@ -187,6 +192,7 @@ export async function isDuplicate(
   name: string,
   withinDays?: number,
   institution?: string,
+  eventDate?: Date | null,
 ): Promise<boolean> {
   const key = normalizeName(name);
   if (!key) return false;
@@ -194,6 +200,20 @@ export async function isDuplicate(
   const nameCol = sql.identifier(target.nameColumn);
   const windowClause = withinDays != null
     ? sql`AND "createdAt" >= now() - make_interval(days => ${withinDays})`
+    : sql``;
+  // 2026-09-10 — the institution guard alone over-corrected: two outlets can
+  // describe the SAME resignation's institution differently ("Nemzeti
+  // Reorganizációs Nonprofit Kft. (NRN)" vs. "állami felszámoló"), and
+  // neither normalized equality nor substring containment bridges that, so
+  // the second article inserted a duplicate row (Mike Ferenc, 2026-09-09;
+  // same pattern found on Csányi Sándor, 2026-06-30). A same-name match on
+  // the SAME resignationDate is the same real-world event regardless of how
+  // the institution is worded — one person does not leave two posts on the
+  // identical day — so that alone also counts as a duplicate. The Lázár
+  // János case the institution guard was built for stays fixed: his two
+  // resignations are 4 months apart, so the date branch never fires.
+  const sameEventDayClause = eventDate
+    ? sql`OR "resignationDate"::date = ${eventDate}::date`
     : sql``;
   const institutionClause = institution
     ? sql`AND (
@@ -203,6 +223,7 @@ export async function isDuplicate(
           LIKE '%' || trim(regexp_replace(lower(unaccent(${institution})), '[^a-z0-9]+', ' ', 'g')) || '%'
         OR trim(regexp_replace(lower(unaccent(${institution})), '[^a-z0-9]+', ' ', 'g'))
           LIKE '%' || trim(regexp_replace(lower(unaccent(trim("institution"))), '[^a-z0-9]+', ' ', 'g')) || '%'
+        ${sameEventDayClause}
       )`
     : sql``;
   const rows = (await db.execute(sql`

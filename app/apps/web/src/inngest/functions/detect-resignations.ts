@@ -166,13 +166,26 @@ async function processResignationArticle(
       continue;
     }
 
+    // A lemondás dátuma a dedup-ellenőrzéshez is kell (l. lentebb a beszúrásnál
+    // is ezt használjuk) — 2026-09-10 óta ugyanaz a név ugyanazon a napon akkor
+    // is duplikátum, ha a két cikk máshogy nevezi meg az intézményt.
+    // article.publishedAt is serialized as string by Inngest JSON
+    const fallbackDate = new Date(article.publishedAt as unknown as string);
+    let resignationDate: Date;
+    try {
+      resignationDate = new Date(person.resignationDate);
+      if (isNaN(resignationDate.getTime())) resignationDate = fallbackDate;
+    } catch {
+      resignationDate = fallbackDate;
+    }
+
     // Dedup by normalized name + institution across ALL statuses, so a
     // rejected detection is not re-created (FR-009, FR-011) — but a second,
     // genuinely different resignation by the same person from a DIFFERENT
     // institution is NOT blocked (l. isDuplicate() komment, 2026-08-23: Lázár
     // János Teniszszövetség-lemondása néma duplikátumnak jelölte az OGY-
     // mandátumáról szóló, teljesen más lemondását).
-    if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, person.name, undefined, person.institution)) {
+    if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, person.name, undefined, person.institution, resignationDate)) {
       lastDiscardReason = 'duplicate';
       continue;
     }
@@ -209,15 +222,7 @@ async function processResignationArticle(
       continue;
     }
 
-    // article.publishedAt is serialized as string by Inngest JSON
-    const fallbackDate = new Date(article.publishedAt as unknown as string);
-    let resignationDate: Date;
-    try {
-      resignationDate = new Date(person.resignationDate);
-      if (isNaN(resignationDate.getTime())) resignationDate = fallbackDate;
-    } catch {
-      resignationDate = fallbackDate;
-    }
+    // (resignationDate/fallbackDate feljebb, a dedup-ellenőrzés előtt készül el)
 
     // 2026-08-25 — user report ("Mandiner"-eset, Kohán Mátyás et al.): a
     // modell 2 hónappal korábbi dátumot extrahált egy "Mai dátum"-mal
