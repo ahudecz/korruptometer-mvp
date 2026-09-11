@@ -1,0 +1,38 @@
+name: Publish scheduled social posts
+
+# 2026-09-11 — user kérés: a Telegramon egyben jóváhagyott Facebook-posztok
+# ne egyszerre menjenek ki, hanem 3 óránként (l.
+# apps/web/src/lib/social-schedule.ts). A jóváhagyás csak időpontot ad a
+# sornak; ez a cron viszi ki azt, ami esedékessé vált — futásonként egyet.
+#
+# 20. perc — nem ütközik a hourly-pipeline (07.) és a hourly-social-triggers
+# (35.) időzítésével.
+#
+# A GitHub Actions ütemezője köztudottan kihagy futásokat (2026-09-10-én
+# egész nap egyetlen social-trigger futás volt). Ezért fut óránként, nem
+# 3 óránként: a slot pontos idejét a `scheduledFor` tartja, a cron csak
+# ránéz, van-e esedékes. Egy kimaradt óra így legfeljebb késleltet, nem
+# nyel el posztot.
+
+on:
+  schedule:
+    - cron: '20 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  publish-scheduled-social:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call /api/cron/publish-scheduled-social
+        run: |
+          set -e
+          http_code=$(curl -sS -m 100 -o /tmp/response.json -w '%{http_code}' \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://www.kegyencjarat.hu/api/cron/publish-scheduled-social)
+          echo "HTTP status: $http_code"
+          cat /tmp/response.json
+          echo ""
+          if [ "$http_code" != "200" ]; then
+            echo "::error::publish-scheduled-social endpoint returned HTTP $http_code"
+            exit 1
+          fi

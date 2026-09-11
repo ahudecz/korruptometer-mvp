@@ -3,7 +3,7 @@ import { and, desc, eq, gt, sql } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 import { renderMilestoneImage, renderBreakingImage, renderSummaryImage } from '@/lib/social-image';
-import { milestoneCaption, breakingCaption, summaryCaption } from '@/lib/social-caption';
+import { milestoneCaption, breakingCaption, summaryCaption, resignationLinkPath } from '@/lib/social-caption';
 import { sendTelegramPhoto, type InlineKeyboardMarkup } from '@/lib/telegram';
 import { computeComplaintTotal } from '@app/birosagi-iteletek/complaint-stats';
 import { computeNextMilestone, formatMilliardLabel } from '@/lib/social-milestone';
@@ -213,7 +213,7 @@ async function buildResignationTriggers(db: ReturnType<typeof getDb>): Promise<O
       triggerRefId: r.id,
       milestoneValueFt: null,
       headline,
-      caption: breakingCaption(kicker, headline, detail, '/lemondasok/' + r.id, undefined, hookLine),
+      caption: breakingCaption(kicker, headline, detail, resignationLinkPath(r.name), undefined, hookLine),
       imagePng: image,
       imageText: imageDetail ?? '',
       kicker,
@@ -724,17 +724,6 @@ async function lastSummaryAt(db: ReturnType<typeof getDb>): Promise<Date | null>
   return row?.createdAt ?? null;
 }
 
-/** Mikor került ki legutóbb BÁRMILYEN jelölt — a két poszt közti minimum
- *  szünethez (user, 2026-09-10: "nem egy perc alatt akarok hármat posztolni"). */
-async function lastQueuedAt(db: ReturnType<typeof getDb>): Promise<Date | null> {
-  const [row] = await db
-    .select({ createdAt: schema.socialPostOutbox.createdAt })
-    .from(schema.socialPostOutbox)
-    .orderBy(desc(schema.socialPostOutbox.createdAt))
-    .limit(1);
-  return row?.createdAt ?? null;
-}
-
 /** Hány jelölt vár még emberi döntésre. Ha van ilyen, tartalék nem indul —
  *  a "töltelék" sose előzheti meg azt, amiről még nem döntöttél. */
 async function pendingApprovalCount(db: ReturnType<typeof getDb>): Promise<number> {
@@ -754,7 +743,12 @@ async function buildFallbackTrigger(kind: FallbackKind, db: ReturnType<typeof ge
 export function approvalKeyboard(outboxId: string): InlineKeyboardMarkup {
   return {
     inline_keyboard: [
-      [{ text: '✅ Közzététel (Facebook)', callback_data: `s:a:${outboxId}` }],
+      // 2026-09-11 — a jóváhagyás már nem posztol azonnal, hanem időpontot ad
+      // (l. social-schedule.ts), ezért a gomb szövege is „ütemezés".
+      [{ text: '✅ Ütemezett közzététel', callback_data: `s:a:${outboxId}` }],
+      // „Mind" — az összes elbírálatlan jelöltet egyben hagyja jóvá, 3 órás
+      // szünetekkel kiosztva. user kérés: „ne kelljen velük baszakodnom külön".
+      [{ text: '✅✅ Mind jóváhagyom (3 óránként megy ki)', callback_data: `s:aa:${outboxId}` }],
       [
         { text: '✏️ Módosítás', callback_data: `s:m:${outboxId}` },
         { text: '❌ Elutasítás', callback_data: `s:r:${outboxId}` },
@@ -814,10 +808,8 @@ export async function runSocialTriggersCore({
 
   // Mennyi mehet ki MOST (max 1 futásonként + minimum szünet) — a döntés
   // tiszta függvényben, tesztelve: social-post-policy.ts selectQueueBatch().
-  const lastAt = await step.run('last-queued-at', () => lastQueuedAt(db));
   const decision = selectQueueBatch(candidates, {
     now: new Date(),
-    lastQueuedAt: lastAt ? new Date(lastAt) : null,
     remainingToday: remaining,
   });
   if (decision.skippedReason) logger?.info?.(`check-social-triggers: kihagyva — ${decision.skippedReason}`);

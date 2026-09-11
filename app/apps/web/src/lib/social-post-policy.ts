@@ -16,17 +16,28 @@
  *     végződő vagy a képkorlátnál hosszabb kép-szöveget.
  *  3. „fiszem-faszom ügyek az adatbázisból" → bizonyított, legalább
  *     MIN_CASE_DAMAGE_FT érintettség + placeholder-summary tiltása.
- *  4. „egyszerre küldöd őket / egy perc alatt hármat" → MAX_PER_RUN és
- *     MIN_MINUTES_BETWEEN_POSTS (l. selectQueueBatch).
+ *  4. „egyszerre küldöd őket / egy perc alatt hármat" → 2026-09-11 óta NEM
+ *     itt, a sorba-állításnál dől el, hanem a KIKÜLDÉSNÉL: a jóváhagyás
+ *     időpontot ad (social-schedule.ts, 3 órás szünet + éjszakai tiltott
+ *     sáv), a posztolást a publish-scheduled-social cron végzi. A jelöltek
+ *     ezért mehetnek EGYBEN Telegramra (user kérés: „ne kelljen velük
+ *     baszakodnom külön"), a Facebookra akkor sem kerülnek egyszerre.
  */
 
 import { IMAGE_DETAIL_MAX_CHARS } from './social-copy-variety';
 
-/** Egy futásban legfeljebb ennyi jelölt mehet ki. */
-export const MAX_PER_RUN = 1;
-
-/** Két kiküldött jelölt között minimum ennyi idő teljen el. */
-export const MIN_MINUTES_BETWEEN_POSTS = 120;
+/**
+ * Egy futásban legfeljebb ennyi jelölt mehet ki JÓVÁHAGYÁSRA (Telegramra).
+ *
+ * 2026-09-10-től 09-11-ig ez 1 volt, egy 120 perces minimum-szünettel — mert
+ * akkor a jóváhagyás AZONNAL posztolt, tehát a sorba-állítás üteme volt a
+ * Facebook-poszt üteme. 2026-09-11 óta a kettő szét van választva: a
+ * jóváhagyás csak időpontot ad (social-schedule.ts GAP_HOURS), a posztolást
+ * a cron végzi. A Telegram-oldali fékre így nincs többé szükség — a user
+ * kifejezetten EGYBEN kéri a jelölteket —, a napi keret (TARGET_PER_DAY)
+ * pedig továbbra is korlátoz.
+ */
+export const MAX_PER_RUN = 3;
 
 /** Az összesítő ("Eddig a Kegyencjáraton") legfeljebb ennyi naponta egyszer. */
 export const SUMMARY_COOLDOWN_DAYS = 7;
@@ -209,20 +220,10 @@ export type QueueDecision<T> = { selected: T[]; skippedReason?: string };
  */
 export function selectQueueBatch<T>(
   candidates: T[],
-  opts: { now: Date; lastQueuedAt: Date | null; remainingToday: number },
+  opts: { now: Date; remainingToday: number },
 ): QueueDecision<T> {
   if (candidates.length === 0) return { selected: [] };
   if (opts.remainingToday <= 0) return { selected: [], skippedReason: 'napi keret betelt' };
-
-  if (opts.lastQueuedAt) {
-    const minutes = (opts.now.getTime() - opts.lastQueuedAt.getTime()) / 60000;
-    if (minutes < MIN_MINUTES_BETWEEN_POSTS) {
-      return {
-        selected: [],
-        skippedReason: `az előző poszt ${Math.round(minutes)} perce ment ki, a minimum ${MIN_MINUTES_BETWEEN_POSTS} perc`,
-      };
-    }
-  }
 
   return { selected: candidates.slice(0, Math.min(MAX_PER_RUN, opts.remainingToday)) };
 }

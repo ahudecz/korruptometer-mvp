@@ -1713,6 +1713,13 @@ export const socialPostOutbox = pgTable(
     imageText: text('imageText'),
     imageVariant: text('imageVariant').notNull().default('dark'),
     kicker: text('kicker'),
+    // 2026-09-11 — ütemezett kiküldés (l. social-schedule.ts): jóváhagyáskor
+    // a sor 'approved' lesz + kap egy `scheduledFor` időpontot, és a
+    // /api/cron/publish-scheduled-social viszi ki, amikor esedékes. A NULL
+    // `scheduledFor` egy 'approved' soron azt jelenti, hogy a posztolás
+    // technikai okból (nincs bekötve a Make/FB) maradt el — azt a cron NEM
+    // veszi fel, kézzel újraküldhető.
+    scheduledFor: timestamp('scheduledFor', { withTimezone: true }),
     createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
     postedAt: timestamp('postedAt', { withTimezone: true }),
   },

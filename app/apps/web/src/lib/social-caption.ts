@@ -8,6 +8,8 @@
  * utasítás, 2026-09-09: „csak ez alapján készülhet bármilyen poszt").
  */
 
+import { WATCH_LIST } from '@app/_home/watchlist-config';
+
 export function milestoneCaption(amountLabel: string): string {
   return [
     `🚨 Elérte a ${amountLabel}-ot a NER-hez és államigazgatáshoz köthető feltételezett bűncselekmények miatt tett feljelentések összértéke.`,
@@ -75,6 +77,35 @@ const KICKER_EMOJI: Record<string, string> = {
  * (social-copy-variety.ts HOOKS), ami a hook UTÁN, kiegészítő energikus
  * sorként jöhet — sose helyettesíti, sose ismétli meg a hook-ot.
  */
+/** A `/lemondasok/[id]` végoldal KIZÁRÓLAG a 8 WATCH_LIST-es tisztségviselőt
+ *  ismeri (l. lemondasok/[id]/page.tsx generateStaticParams) — a
+ *  PoliticalResignation UUID-ja ott GARANTÁLTAN 404. Ez élesben 2026-09-03 óta,
+ *  a nem-watchlistes lemondások bekapcsolása óta MINDEN lemondás-poszton így
+ *  volt (user report, 2026-09-11: „az összes telegramra küldött fb poszt
+ *  linkje 404"). Ha a lemondó rajta van a watchlistán, az ő slugjára
+ *  linkelünk, különben a mindig élő listaoldalra. SOSE a nyers r.id-t. */
+function normalizeName(v: string): string {
+  return v.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z ]/g, '').trim();
+}
+
+export function resignationLinkPath(name: string): string {
+  const target = normalizeName(name);
+  const hit = WATCH_LIST.find((p) => normalizeName(p.name) === target);
+  return hit ? `/lemondasok/${hit.id}` : '/lemondasok';
+}
+
+/** Védőháló: nyers adatbázis-UUID SOSE kerülhet a poszt linkjébe. A
+ *  /lemondasok/[id] (és a többi végoldal) slugot vár, nem UUID-t — a nyers
+ *  id garantált 404 (user report, 2026-09-11: „az összes telegramra küldött
+ *  fb poszt linkje 404"). Itt inkább a szülő listaoldalra esünk vissza, mint
+ *  hogy döglött linket posztoljunk. */
+const UUID_SEGMENT = /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?=\/|$)/i;
+
+export function safeLinkPath(linkPath?: string): string {
+  if (!linkPath) return '';
+  return UUID_SEGMENT.test(linkPath) ? linkPath.replace(UUID_SEGMENT, '') : linkPath;
+}
+
 export function breakingCaption(kicker: string, headline: string, detail?: string, linkPath?: string, cta: string = DEFAULT_BREAKING_CTA, hookLine?: string): string {
   const emoji = KICKER_EMOJI[kicker] ?? '🚨';
   // "Blokkokban" épül (hook+hookLine együtt, a detail önállóan, a lábjegyzet
@@ -83,7 +114,7 @@ export function breakingCaption(kicker: string, headline: string, detail?: strin
   // '' placeholderes tömb tenné). l. brief 4. pont (mobilon olvasható
   // tagolás, nincs szövegfal).
   const top = [`${emoji} ${headline}`, hookLine ?? null].filter((l): l is string => l !== null);
-  const footer = [`Részletek: kegyencjarat.hu${linkPath ?? ''}`, cta, '#kegyencjarat #korrupció'];
+  const footer = [`Részletek: kegyencjarat.hu${safeLinkPath(linkPath)}`, cta, '#kegyencjarat #korrupció'];
   const blocks = [top.join('\n'), ...(detail ? [detail] : []), footer.join('\n')];
   return blocks.join('\n\n');
 }
@@ -97,7 +128,7 @@ export function summaryCaption(lines: string[], linkPath: string, cta: string = 
     '',
     ...lines,
     '',
-    `Minden adat, forrás és részlet: kegyencjarat.hu${linkPath}`,
+    `Minden adat, forrás és részlet: kegyencjarat.hu${safeLinkPath(linkPath)}`,
     cta,
     '#kegyencjarat #korrupció',
   ].join('\n');

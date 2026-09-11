@@ -2,13 +2,13 @@ import { describe, it, expect } from 'vitest';
 import {
   MAX_PER_RUN,
   MIN_CASE_DAMAGE_FT,
-  MIN_MINUTES_BETWEEN_POSTS,
   checkPostGate,
   fallbackKindsForRun,
   isPlaceholderSummary,
   parseHungarianFtAmount,
   selectQueueBatch,
 } from '@/lib/social-post-policy';
+import { GAP_HOURS, scheduleBatch } from '@/lib/social-schedule';
 import { fitCompleteSentences, IMAGE_DETAIL_MAX_CHARS } from '@/lib/social-copy-variety';
 import { UGYEK } from '@app/_home/ugyek-config';
 
@@ -157,37 +157,25 @@ describe('fallbackKindsForRun', () => {
 describe('selectQueueBatch', () => {
   const now = new Date('2026-09-10T20:39:00Z');
 
-  // ═══ user: "mi a geciért egyszerre küldöd őket? nem egy perc alatt akarok
-  // hármat posztolni" — 2026-09-10-én három sor keletkezett 20:39:36-kor ═══
-  it('never queues more than one candidate in a single run', () => {
-    const { selected } = selectQueueBatch(['a', 'b', 'c'], { now, lastQueuedAt: null, remainingToday: 3 });
-    expect(selected).toHaveLength(MAX_PER_RUN);
-    expect(selected).toEqual(['a']);
-  });
-
-  it('holds back when the previous post is too recent', () => {
-    const { selected, skippedReason } = selectQueueBatch(['a'], {
-      now,
-      lastQueuedAt: new Date(now.getTime() - 30 * 60_000),
-      remainingToday: 3,
-    });
-    expect(selected).toEqual([]);
-    expect(skippedReason).toMatch(/perc/);
-  });
-
-  it('releases once the minimum gap has passed', () => {
-    const { selected } = selectQueueBatch(['a'], {
-      now,
-      lastQueuedAt: new Date(now.getTime() - (MIN_MINUTES_BETWEEN_POSTS + 1) * 60_000),
-      remainingToday: 3,
-    });
-    expect(selected).toEqual(['a']);
+  // ═══ 2026-09-11, user kérés: „egyben jönnek telegramra, hogy ne kelljen
+  // velük baszakodnom külön" — a jelöltek MEHETNEK egyszerre jóváhagyásra;
+  // a 09-10-i panasz („nem egy perc alatt akarok hármat posztolni") ellen
+  // már a KIKÜLDÉS oldalán véd a scheduleBatch() 3 órás szünete. ═══
+  it('lets a whole batch reach Telegram in one run', () => {
+    const { selected } = selectQueueBatch(['a', 'b', 'c'], { now, remainingToday: 3 });
+    expect(selected).toEqual(['a', 'b', 'c']);
+    expect(selected.length).toBeLessThanOrEqual(MAX_PER_RUN);
   });
 
   it('respects the daily cap', () => {
-    const { selected, skippedReason } = selectQueueBatch(['a'], { now, lastQueuedAt: null, remainingToday: 0 });
+    const { selected, skippedReason } = selectQueueBatch(['a'], { now, remainingToday: 0 });
     expect(selected).toEqual([]);
     expect(skippedReason).toMatch(/napi keret/);
+  });
+
+  it('never exceeds what is left for the day', () => {
+    const { selected } = selectQueueBatch(['a', 'b', 'c'], { now, remainingToday: 1 });
+    expect(selected).toEqual(['a']);
   });
 });
 
@@ -208,10 +196,19 @@ describe('the 1 billion floor still leaves something to post', () => {
 
 // ═══ Regressziós teszt a 2026-09-10-i konkrét esetre ═══
 describe('the 2026-09-10 incident cannot repeat', () => {
-  it('the three posts sent at 20:39:36 would be reduced to at most one', () => {
+  it('the three posts sent at 20:39:36 would go out 3 hours apart, not in one minute', () => {
+    // A jelöltek egyszerre mehetnek Telegramra (ez a kényelem), de a
+    // Facebookra kiküldés idejét a scheduleBatch() osztja szét — ez az,
+    // ami a 09-10-i „egy perc alatt három poszt" esetet kizárja.
     const trio = ['summary_stats', 'catalog_highlight', 'gallery_highlight'];
-    const { selected } = selectQueueBatch(trio, { now: new Date(), lastQueuedAt: null, remainingToday: 3 });
-    expect(selected.length).toBeLessThanOrEqual(1);
+    const { selected } = selectQueueBatch(trio, { now: new Date(), remainingToday: 3 });
+    expect(selected).toHaveLength(3);
+
+    const slots = scheduleBatch(new Date('2026-09-10T08:39:00Z'), null, selected.length);
+    for (let i = 1; i < slots.length; i++) {
+      const gapHours = (slots[i]!.getTime() - slots[i - 1]!.getTime()) / 3_600_000;
+      expect(gapHours).toBeGreaterThanOrEqual(GAP_HOURS);
+    }
   });
 
   it('the gallery post that went out is now rejected by the gate', () => {

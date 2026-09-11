@@ -5,10 +5,9 @@ import { and, desc, eq, ilike, inArray, isNotNull, isNull, sql } from 'drizzle-o
 
 import { getDb, schema } from '@/lib/db';
 import { answerCallbackQuery, editMessageCaption, editMessageReplyMarkup, sendTelegramMessage, sendTelegramPhoto, type InlineKeyboardMarkup } from '@/lib/telegram';
-import { postPhotoToPage } from '@/lib/facebook';
-import { postPhotoViaMake } from '@/lib/make-facebook';
 import { regenerateOutboxImage } from '@/lib/social-image';
 import { approvalKeyboard as socialApprovalKeyboard } from '@/inngest/functions/check-social-triggers';
+import { approveAndSchedule } from '@/lib/social-publish';
 import {
   applyWatchlistRemoval,
   checkWatchlistRemovalForArticle,
@@ -1475,6 +1474,37 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true });
     }
 
+    // 2026-09-11, user kérés: „olyat tudsz, hogy egyben jönnek telegramra,
+    // hogy ne kelljen velük baszakodnom külön, de pár óra csúsztatással
+    // küldöd ki akkor is, ha egyben hagyom jóvá?" — a jóváhagyás ezért NEM
+    // posztol azonnal, hanem IDŐPONTOT ad a sornak (`scheduledFor`), és a
+    // /api/cron/publish-scheduled-social viszi ki, amikor esedékes. Az első
+    // slot MOST van, tehát a legközelebbi cron-futáson ki is megy; minden
+    // további +3 óra, 22:00–08:00 közé sose esik (l. social-schedule.ts).
+    // code='aa' → „Mind jóváhagyom": az ÖSSZES elbírálatlan jelöltet ütemezi,
+    // a legrégebbivel kezdve.
+    if (code === 'aa') {
+      try {
+        const pending = await getDb()
+          .select({ id: schema.socialPostOutbox.id })
+          .from(schema.socialPostOutbox)
+          .where(eq(schema.socialPostOutbox.status, 'pending_approval'))
+          .orderBy(schema.socialPostOutbox.createdAt);
+        if (pending.length === 0) {
+          await answerCallbackQuery(cq.id, 'Nincs elbírálatlan poszt-jelölt.');
+          return NextResponse.json({ ok: true });
+        }
+        const scheduled = await approveAndSchedule(pending.map((r) => r.id));
+        const lines = scheduled.map((it, i) => `${i + 1}. ${it.slotLabel} — ${it.headline}`);
+        await answerCallbackQuery(cq.id, `✅ ${scheduled.length} poszt ütemezve.`);
+        await sendTelegramMessage([`✅ ${scheduled.length} poszt ütemezve:`, ...lines].join('\n'));
+      } catch (err) {
+        await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
+        console.error('[telegram-webhook] social-post-outbox approve-all error', err);
+      }
+      return NextResponse.json({ ok: true });
+    }
+
     if (code !== 'a' && code !== 'r') {
       await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
       return NextResponse.json({ ok: true });
@@ -1492,52 +1522,16 @@ export async function POST(req: Request) {
         await getDb().update(schema.socialPostOutbox).set({ status: 'rejected' }).where(eq(schema.socialPostOutbox.id, id));
         resultText = '❌ Elutasítva — nem megy ki.';
       } else {
-        const imageBuffer = Buffer.from(outboxRow.imagePng, 'base64');
-        // user kérés, 2026-08-31: a saját Facebook App-unkon (Graph API,
-        // Standard Access) keresztüli posztolás csak azoknak látszik,
-        // akiknek szerepük van az App-on — a nyilvános láthatósághoz
-        // Advanced Access kellene, ami Business Verificationt igényel
-        // (valódi jogi dokumentumot, ami egy be nem jegyzett civil
-        // projektnél nincs). Ezért az ELSŐDLEGES posztoló út mostantól a
-        // Make.com-on átvezetett, már Advanced Access-es Facebook Pages
-        // integráció (l. make-facebook.ts) — ha az nincs beállítva,
-        // visszaesünk a régi közvetlen Graph API hívásra (postPhotoToPage).
-        const viaMake = await postPhotoViaMake(imageBuffer, outboxRow.caption);
-        if (viaMake.ok) {
-          await getDb().update(schema.socialPostOutbox)
-            .set({ status: 'posted', postedAt: new Date() })
-            .where(eq(schema.socialPostOutbox.id, id));
-          const pagePublicId = process.env.FACEBOOK_PAGE_PUBLIC_ID;
-          const pageLink = pagePublicId ? `\nhttps://www.facebook.com/profile.php?id=${pagePublicId}` : '';
-          // A Make-scenario aszinkron dolgozik (pár másodperc), ezért itt
-          // nincs azonnali poszt-permalink — csak az Oldal linkje.
-          resultText = `✅ Elküldve posztolásra (Make.com-on keresztül) — pár másodpercen belül megjelenik az Oldalon.${pageLink}`;
-        } else if (viaMake.notConfigured) {
-          // Make nincs beállítva → visszaesés a közvetlen Graph API hívásra.
-          const posted = await postPhotoToPage(imageBuffer, outboxRow.caption);
-          if (posted.ok) {
-            await getDb().update(schema.socialPostOutbox)
-              .set({ status: 'posted', externalPostId: posted.postId, postedAt: new Date() })
-              .where(eq(schema.socialPostOutbox.id, id));
-            resultText = `✅ Kiposztolva a Facebookra.\n${posted.postUrl}`;
-          } else if (posted.notConfigured) {
-            await getDb().update(schema.socialPostOutbox).set({ status: 'approved' }).where(eq(schema.socialPostOutbox.id, id));
-            resultText = '⚠️ Jóváhagyva, de sem a Make.com, sem a közvetlen Facebook-fiók nincs bekötve — amint megvan, kézzel újraküldhető.';
-          } else {
-            await getDb().update(schema.socialPostOutbox)
-              .set({ status: 'failed', failureReason: posted.error })
-              .where(eq(schema.socialPostOutbox.id, id));
-            resultText = `❌ Hiba a Facebook-posztolásnál: ${posted.error}`;
-          }
-        } else {
-          await getDb().update(schema.socialPostOutbox)
-            .set({ status: 'failed', failureReason: viaMake.error })
-            .where(eq(schema.socialPostOutbox.id, id));
-          resultText = `❌ Hiba a Facebook-posztolásnál (Make.com): ${viaMake.error}`;
-        }
+        const scheduled = await approveAndSchedule([id]);
+        const slot = scheduled[0];
+        resultText = slot
+          ? `✅ Jóváhagyva — kiküldés: ${slot.slotLabel}.`
+          : '⚠️ Ez a jelölt már nincs elbírálatlan állapotban.';
       }
       await answerCallbackQuery(cq.id, resultText);
-      await editMessageCaption(cq.message.chat.id, cq.message.message_id, `${cq.message.caption ?? ''}\n\n${resultText}`.trim());
+      await editMessageCaption(cq.message.chat.id, cq.message.message_id, `${cq.message.caption ?? ''}
+
+${resultText}`.trim());
     } catch (err) {
       await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
       console.error('[telegram-webhook] social-post-outbox action error', err);
