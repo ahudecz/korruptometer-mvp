@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, desc, eq, inArray, isNotNull, lte, or, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray, isNotNull, lte, or } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 import { postPhotoViaMake } from '@/lib/make-facebook';
@@ -79,22 +79,32 @@ export async function publishOutboxRow(row: OutboxRow): Promise<PublishResult> {
 export async function lastScheduledSlot(): Promise<Date | null> {
   const db = getDb();
   const since = new Date(Date.now() - 48 * 60 * 60 * 1000);
+  // SZÁNDÉKOSAN nincs itt nyers sql-töredék Date-tel — 2026-09-11-én pont az
+  // tette tönkre az ÖSSZES jóváhagyó gombot. Egy nyers sql-töredékbe
+  // interpolált Date típus-hozzárendelés nélkül megy a postgres-js felé, és
+  // futásidőben dob: "The string argument must be of type string or an
+  // instance of Buffer or ArrayBuffer. Received an instance of Date".
+  // A kivételt a webhook catch-e elnyelte, a Telegram 200-at kapott, a sor
+  // nem változott — kívülről pontosan úgy nézett ki, mint egy néma, halott
+  // gomb. A tipizált gt() a helyes forma; a maximumot JS-ben számoljuk, így
+  // GREATEST/COALESCE sem kell.
   const rows = await db
-    .select({ slot: sql<Date>`GREATEST(COALESCE(${schema.socialPostOutbox.scheduledFor}, 'epoch'::timestamptz), COALESCE(${schema.socialPostOutbox.postedAt}, 'epoch'::timestamptz))` })
+    .select({ scheduledFor: schema.socialPostOutbox.scheduledFor, postedAt: schema.socialPostOutbox.postedAt })
     .from(schema.socialPostOutbox)
     .where(and(
       inArray(schema.socialPostOutbox.status, ['approved', 'posted']),
       or(
-        and(isNotNull(schema.socialPostOutbox.scheduledFor), sql`${schema.socialPostOutbox.scheduledFor} > ${since}`),
-        and(isNotNull(schema.socialPostOutbox.postedAt), sql`${schema.socialPostOutbox.postedAt} > ${since}`),
+        gt(schema.socialPostOutbox.scheduledFor, since),
+        gt(schema.socialPostOutbox.postedAt, since),
       ),
     ))
-    .orderBy(desc(sql`GREATEST(COALESCE(${schema.socialPostOutbox.scheduledFor}, 'epoch'::timestamptz), COALESCE(${schema.socialPostOutbox.postedAt}, 'epoch'::timestamptz))`))
-    .limit(1);
-  const slot = rows[0]?.slot;
-  if (!slot) return null;
-  const d = slot instanceof Date ? slot : new Date(slot);
-  return Number.isNaN(d.getTime()) || d.getTime() < since.getTime() ? null : d;
+    .orderBy(desc(schema.socialPostOutbox.createdAt))
+    .limit(50);
+
+  const times = rows
+    .flatMap((r) => [r.scheduledFor, r.postedAt])
+    .filter((d): d is Date => d instanceof Date && d.getTime() > since.getTime());
+  return times.length > 0 ? new Date(Math.max(...times.map((d) => d.getTime()))) : null;
 }
 
 export type ScheduledItem = { id: string; headline: string; slot: Date; slotLabel: string };

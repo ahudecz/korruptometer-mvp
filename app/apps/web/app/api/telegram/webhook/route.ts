@@ -1533,8 +1533,16 @@ export async function POST(req: Request) {
 
 ${resultText}`.trim());
     } catch (err) {
-      await answerCallbackQuery(cq.id, 'Hiba történt, próbáld újra.');
+      // 2026-09-11 — ez az ág órákig rejtett egy valódi hibát: a
+      // lastScheduledSlot() minden jóváhagyásnál dobott, a catch lenyelte, a
+      // Telegram 200-at kapott, a user meg csak annyit látott, hogy „nem
+      // működik a gomb". Ezért mostantól (a 09-09-i `ignored` mező mintájára)
+      // a hiba OKA is kimegy: a felugró üzenetbe röviden, a válasz-testbe
+      // teljesen — utóbbi csak a Telegram szerverének megy, nem publikus.
+      const message = err instanceof Error ? err.message : String(err);
+      await answerCallbackQuery(cq.id, `Hiba: ${message}`.slice(0, 200));
       console.error('[telegram-webhook] social-post-outbox action error', err);
+      return NextResponse.json({ ok: true, failed: 'social_outbox_action', error: message });
     }
     return NextResponse.json({ ok: true });
   }
