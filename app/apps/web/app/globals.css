@@ -460,7 +460,7 @@ button {
   line-height: 0.92;
   letter-spacing: -0.04em;
   margin-bottom: 32px;
-  color: var(--ink);
+  color: var(--accent);
 }
 .hero-title em {
   font-style: normal;
