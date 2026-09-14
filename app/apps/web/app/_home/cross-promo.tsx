@@ -185,6 +185,8 @@ export async function CrossFelszolitottak() {
                     src={watchImgSrc(p.photoUrl)}
                     alt={p.name}
                     className="person-more-img"
+                    loading="lazy"
+                    decoding="async"
                     style={p.objectPosition ? { objectPosition: p.objectPosition } : undefined}
                   />
                 ) : (
@@ -321,7 +323,7 @@ export function PersonGaleriaPromo({
       <div className="cross-promo-person-layout">
         <div className="cross-promo-person-photo">
           {src ? (
-            <img src={src} alt={personName} />
+            <img src={src} alt={personName} loading="lazy" decoding="async" />
           ) : (
             <div className="person-photo-placeholder"><span>{initials}</span></div>
           )}
@@ -375,6 +377,8 @@ export async function CrossAdatbazisSzemelyek() {
                   src={p.photoUrl.startsWith('/') || p.photoUrl.includes('wikimedia.org') ? p.photoUrl : `/api/img-proxy?url=${encodeURIComponent(p.photoUrl)}`}
                   alt={p.name}
                   className="person-more-img"
+                  loading="lazy"
+                  decoding="async"
                 />
               ) : (
                 <div className="person-photo-placeholder">
@@ -410,6 +414,8 @@ export function CrossGaleria() {
                   src={e.photoUrl.startsWith('/') || e.photoUrl.includes('wikimedia.org') ? e.photoUrl : `/api/img-proxy?url=${encodeURIComponent(e.photoUrl)}`}
                   alt={e.name}
                   className="person-more-img"
+                  loading="lazy"
+                  decoding="async"
                 />
               ) : (
                 <Mugshot

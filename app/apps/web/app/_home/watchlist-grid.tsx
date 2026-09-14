@@ -38,6 +38,8 @@ function WatchCard({ person }: { person: WatchPerson }) {
             src={imgSrc(person.photoUrl)}
             alt={person.name}
             className="watchlist-photo-img"
+            loading="lazy"
+            decoding="async"
             style={person.objectPosition ? { objectPosition: person.objectPosition } : undefined}
           />
         ) : (

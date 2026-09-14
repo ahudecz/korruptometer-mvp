@@ -1,13 +1,13 @@
 import Link from 'next/link';
 
 const PRISON_PERSONS = [
-  { name: 'Orbán Viktor',    sub: 'Volt miniszterelnök',            photo: '/images/persons/orban.jpg',           objectPos: '50% 15%' },
-  { name: 'Rogán Antal',     sub: 'Volt kabinetirodát vezető min.', photo: '/images/persons/rogan-antal.png',     objectPos: '50% 10%' },
-  { name: 'Mészáros Lőrinc', sub: 'Felcsúti üzletember',           photo: '/images/persons/meszaros-lorinc.png', objectPos: '50% 5%'  },
-  { name: 'Tiborcz István',  sub: 'Orbán Viktor veje',              photo: '/images/persons/tiborcz-istvan.png',  objectPos: '50% 10%' },
-  { name: 'Szijjártó Péter', sub: 'Volt külügyminiszter',          photo: '/images/persons/szijjarto-peter.png', objectPos: '50% 10%' },
-  { name: 'Lázár János',     sub: 'Volt építési miniszter',         photo: '/images/persons/lazar-janos.png',     objectPos: '50% 10%' },
-  { name: 'Balásy Gyula',    sub: 'New Land Media',                 photo: '/images/persons/balasy-gyula.png',    objectPos: '50% 10%' },
+  { name: 'Orbán Viktor',    sub: 'Volt miniszterelnök',            photo: '/images/persons/orban.webp',           objectPos: '50% 15%' },
+  { name: 'Rogán Antal',     sub: 'Volt kabinetirodát vezető min.', photo: '/images/persons/rogan-antal.webp',     objectPos: '50% 10%' },
+  { name: 'Mészáros Lőrinc', sub: 'Felcsúti üzletember',           photo: '/images/persons/meszaros-lorinc.webp', objectPos: '50% 5%'  },
+  { name: 'Tiborcz István',  sub: 'Orbán Viktor veje',              photo: '/images/persons/tiborcz-istvan.webp',  objectPos: '50% 10%' },
+  { name: 'Szijjártó Péter', sub: 'Volt külügyminiszter',          photo: '/images/persons/szijjarto-peter.webp', objectPos: '50% 10%' },
+  { name: 'Lázár János',     sub: 'Volt építési miniszter',         photo: '/images/persons/lazar-janos.webp',     objectPos: '50% 10%' },
+  { name: 'Balásy Gyula',    sub: 'New Land Media',                 photo: '/images/persons/balasy-gyula.webp',    objectPos: '50% 10%' },
 ];
 
 export default function NotFound() {
