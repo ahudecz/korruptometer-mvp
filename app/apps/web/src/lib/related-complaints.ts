@@ -51,9 +51,37 @@ async function loadApprovedComplaints() {
 
 type RawComplaint = Awaited<ReturnType<typeof loadApprovedComplaints>>[number];
 
+/**
+ * 2026-09-14 — user report: az /ugyek/nka-botrany oldalon két olyan
+ * feljelentés jelent meg "kapcsolódó"-ként, aminek semmi köze az ügyhöz
+ * (Koskovics Zoltán, Simonka György). Ok: a rövidítés-kulcsszó SZÓ BELSEJÉBE
+ * illeszkedett — "mu(nka)társát", "Simo(nka)".
+ *
+ * A javítás ezért NEM csak kis-nagybetű-érzékenység (az önmagában féltető:
+ * egy nagybetűs rövidítés is beleeshet egy másik nagybetűs szóba), hanem
+ * SZÓHATÁR-illesztés: a rövidítés előtt és után nem állhat betű vagy szám.
+ * A magyar toldalékolás így is átmegy, mert azt kötőjellel írjuk
+ * ("NKA-botrány", "NKA-s", "az NKA pénzeiből"). Több szavas kulcsszavaknál
+ * (személynevek, "Nemzeti Kulturális Alap") marad a régi, kis-nagybetűre
+ * érzéketlen tartalmazás-vizsgálat.
+ */
+const BOUNDARY = String.raw`[^\p{L}\p{N}]`;
+
+export function matchesKeyword(haystack: string, keyword: string): boolean {
+  const kw = keyword.trim();
+  if (kw.length === 0) return false;
+  // Rövidítés-jellegű, egy szavas kulcsszó (NKA, MNB, NAV, NKTK…): szóhatárhoz
+  // kötve ÉS kis-nagybetű-érzékenyen illesztünk.
+  const isBareAcronym = /^[A-ZÁÉÍÓÖŐÚÜŰ]+$/.test(kw);
+  if (isBareAcronym) {
+    const re = new RegExp(`(?<=^|${BOUNDARY})${kw}(?=$|${BOUNDARY})`, 'u');
+    return re.test(haystack);
+  }
+  return haystack.toLowerCase().includes(kw.toLowerCase());
+}
+
 function matchesKeywords(haystack: string, keywords: string[]): boolean {
-  const h = haystack.toLowerCase();
-  return keywords.some((kw) => kw.trim().length > 0 && h.includes(kw.toLowerCase()));
+  return keywords.some((kw) => matchesKeyword(haystack, kw));
 }
 
 function toRelatedComplaint(c: RawComplaint): RelatedComplaint | null {

@@ -314,6 +314,7 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
   // (fentebb már a hír-lekérdezéshez is felhasznált lista) újrahasznosítja,
   // nincs külön karbantartandó kulcsszólista.
   const relatedComplaints = await getRelatedComplaintsForUgy(entry.articleKeywords ?? []);
+  const suspiciousItems = entry.suspiciousItems ?? [];
 
   const descParagraphs = entry.descriptionBlocks ? [] : entry.description.split('\n\n').filter(Boolean);
   // Konvenció: új breaking-group blokkot mindig a tömb ELEJÉRE kell felvenni
@@ -419,12 +420,29 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
             helye). Óvatos megfogalmazás: egy feljelentés önmagában nem
             jelent felelősséget/ítéletet, ezért "köthető" helyett
             semlegesebb "érintő" — l. user report. ── */}
-        {relatedComplaints.length > 0 && (
+        {(relatedComplaints.length > 0 || suspiciousItems.length > 0) && (
           <div className="ugy-description" style={{ marginBottom: entry.breakingUpdate ? 16 : 40 }}>
-            <h2 className="person-section-title">Kapcsolódó feljelentések</h2>
+            <h2 className="person-section-title">
+              {suspiciousItems.length > 0
+                ? 'Kapcsolódó gyanús támogatások és feljelentések'
+                : 'Kapcsolódó feljelentések'}
+            </h2>
             <p className="person-section-note">
-              Nyilvánosan dokumentált feljelentések, amelyek érintik ezt az ügyet — ítélet, felelősség megállapítása nélkül.
+              {suspiciousItems.length > 0
+                ? 'Nyilvánosan dokumentált fejlemények — gyanús támogatás-kifizetések, kényszerintézkedések és feljelentések —, amelyek érintik ezt az ügyet. Ítélet, felelősség megállapítása nélkül.'
+                : 'Nyilvánosan dokumentált feljelentések, amelyek érintik ezt az ügyet — ítélet, felelősség megállapítása nélkül.'}
             </p>
+            {suspiciousItems.map((a, i) => (
+              <a key={`susp-${i}`} href={a.url} target="_blank" rel="noopener noreferrer" className="ugy-block-article-card">
+                <div className="ugy-block-article-meta">
+                  <span className="ugy-block-article-source">{a.source}</span>
+                  {a.date && <span className="ugy-block-article-date">{a.date}</span>}
+                </div>
+                <div className="ugy-block-article-headline">{a.headline}</div>
+                {a.lead && <p className="ugy-block-article-lead">{a.lead}</p>}
+                <span className="ugy-block-article-arrow">Cikk olvasása →</span>
+              </a>
+            ))}
             {relatedComplaints.slice(0, 3).map((c) => (
               <RelatedComplaintCard key={c.id} complaint={c} />
             ))}
