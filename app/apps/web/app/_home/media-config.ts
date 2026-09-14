@@ -815,7 +815,11 @@ export const MEDIA_OUTLETS: MediaOutletEntry[] = [
     statusLabel: 'Megszűnt (2026. jún. 30.)',
     sourceUrl: 'https://telex.hu/velemeny/2026/06/30/szuverenitasvedelmi-hivatal-lanczi-tamas-nemzeti-erdek-borton',
     sourceName: 'Telex',
-    logoUrl: 'https://szuverenitasvedelmihivatal.hu/img/logo_white_v2.png',
+    // 2026-09-14 — a hivatal megszűnése után a szuverenitasvedelmihivatal.hu
+    // egésze 403-at ad, a logó 404-et, így a kártya képe üresen maradt.
+    // Helyi másolat a Wayback Machine 2026-06-30-i mentéséből:
+    // https://web.archive.org/web/20260630201325id_/https://www.szuverenitasvedelmihivatal.hu/img/logo_white_v2.png
+    logoUrl: '/images/media/szuverenitasvedelmi-hivatal.webp',
     logoCredit: 'Szuverenitásvédelmi Hivatal',
     logoBgColor: '#1D1559',
   },
