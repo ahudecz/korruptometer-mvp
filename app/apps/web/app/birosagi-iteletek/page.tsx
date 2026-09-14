@@ -21,12 +21,12 @@ function fmtDateLong(d: Date): string {
 }
 
 const VERDICT_PERSON_PHOTOS: Record<string, string> = {
-  'Bús Balázs': '/images/persons/bus-balazs.png',
-  'Őrsi Gergely': '/images/persons/orsi-gergely.png',
-  'Láng Zsolt': '/images/persons/lang-zsolt.png',
-  'Puskás Péter': '/images/persons/puskas-peter.png',
-  'Molnár Zsolt': '/images/persons/molnar-zsolt.png',
-  'Ughy Attila': '/images/persons/ughy-attila.png',
+  'Bús Balázs': '/images/persons/bus-balazs.webp',
+  'Őrsi Gergely': '/images/persons/orsi-gergely.webp',
+  'Láng Zsolt': '/images/persons/lang-zsolt.webp',
+  'Puskás Péter': '/images/persons/puskas-peter.webp',
+  'Molnár Zsolt': '/images/persons/molnar-zsolt.webp',
+  'Ughy Attila': '/images/persons/ughy-attila.webp',
 };
 
 const VERDICT_PERSON_QUOTES: Record<string, string> = {

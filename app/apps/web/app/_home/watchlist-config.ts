@@ -16,7 +16,7 @@ export const WATCH_LIST: WatchPerson[] = [
     name: 'Sulyok Tamás',
     institution: 'köztársasági elnök',
     status: 'active',
-    photoUrl: '/images/persons/sulyok-tamas-koztarsasagi-elnok.png',
+    photoUrl: '/images/persons/sulyok-tamas-koztarsasagi-elnok.webp',
     photoCredit: 'Eredeti fotó: hvg.hu',
   },
   {
@@ -24,7 +24,7 @@ export const WATCH_LIST: WatchPerson[] = [
     name: 'Polt Péter',
     institution: 'Alkotmánybíróság elnöke',
     status: 'active',
-    photoUrl: '/images/persons/polt-peter.png',
+    photoUrl: '/images/persons/polt-peter.webp',
     photoCredit: 'Eredeti fotó: portfolio.hu',
     objectPosition: 'right top',
   },
@@ -33,7 +33,7 @@ export const WATCH_LIST: WatchPerson[] = [
     name: 'Nagy Gábor Bálint',
     institution: 'legfőbb ügyész',
     status: 'active',
-    photoUrl: '/images/persons/nagy-gabor-balint-legfobb-ugyesz.png',
+    photoUrl: '/images/persons/nagy-gabor-balint-legfobb-ugyesz.webp',
     photoCredit: 'Eredeti fotó: vasarnap.hu',
   },
   {
@@ -41,7 +41,7 @@ export const WATCH_LIST: WatchPerson[] = [
     name: 'Varga Zs. András',
     institution: 'Kúria elnöke',
     status: 'active',
-    photoUrl: '/images/persons/varga-zs-andras-kuria.png',
+    photoUrl: '/images/persons/varga-zs-andras-kuria.webp',
     photoCredit: 'Eredeti fotó: hvg.hu',
   },
   {
@@ -49,7 +49,7 @@ export const WATCH_LIST: WatchPerson[] = [
     name: 'Windisch László',
     institution: 'ÁSZ elnöke',
     status: 'active',
-    photoUrl: '/images/persons/windisch-laszlo-asz.png',
+    photoUrl: '/images/persons/windisch-laszlo-asz.webp',
     photoCredit: 'Eredeti fotó: 24.hu',
   },
   {
@@ -57,7 +57,7 @@ export const WATCH_LIST: WatchPerson[] = [
     name: 'Rigó Csaba Balázs',
     institution: 'GVH elnöke',
     status: 'active',
-    photoUrl: '/images/persons/rigo-csaba-gvh.png',
+    photoUrl: '/images/persons/rigo-csaba-gvh.webp',
     photoCredit: 'Eredeti fotó: azutazo.hu',
   },
   {
@@ -65,7 +65,7 @@ export const WATCH_LIST: WatchPerson[] = [
     name: 'Koltay András',
     institution: 'Médiahatóság elnöke',
     status: 'removed',
-    photoUrl: '/images/persons/koltay-andras-mediahatosag.png',
+    photoUrl: '/images/persons/koltay-andras-mediahatosag.webp',
     photoCredit: 'Eredeti fotó: 444.hu',
   },
   {
@@ -73,7 +73,7 @@ export const WATCH_LIST: WatchPerson[] = [
     name: 'Senyei György',
     institution: 'OBH elnöke',
     status: 'active',
-    photoUrl: '/images/persons/senyei-gyorgy-obh.png',
+    photoUrl: '/images/persons/senyei-gyorgy-obh.webp',
     photoCredit: 'Eredeti fotó: index.hu',
   },
 ];

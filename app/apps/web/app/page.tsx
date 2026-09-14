@@ -1427,6 +1427,8 @@ export default async function HomePage() {
                         src={entry.photoUrl.startsWith('/') || entry.photoUrl.includes('wikimedia.org') ? entry.photoUrl : `/api/img-proxy?url=${encodeURIComponent(entry.photoUrl)}`}
                         alt={entry.name}
                         className="rogue-photo"
+                        loading="lazy"
+                        decoding="async"
                       />
                     ) : (
                       <Mugshot

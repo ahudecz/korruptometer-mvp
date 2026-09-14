@@ -99,6 +99,16 @@ export interface UgyekConfig {
    * alongside the auto-matched DB articles, not instead of them.
    */
   pinnedNews?: BreakingGroupArticle[];
+  /**
+   * 2026-09-14, user kérés (NKA-ügy): a "Kapcsolódó feljelentések" szekció
+   * gyakran olyan fejleményeket fog össze, amikre nincs KÜLÖN, nevesített
+   * feljelentés — csak gyanús támogatás-kifizetés, kényszerintézkedés vagy
+   * sajtó-leleplezés. Ilyenkor a szekció "Kapcsolódó gyanús támogatások és
+   * feljelentések" néven fut, és ezek a kézzel felvett kártyák jelennek meg
+   * az automatikusan illesztett CriminalComplaint-sorok MELLETT (nem
+   * helyettük). Ugyanaz a kártya-forma, mint a pinnedNews-nál.
+   */
+  suspiciousItems?: BreakingGroupArticle[];
   moreUrl?: string;
   sourceRefs?: BigCaseRef[];
   statusItems: BigCaseStatus[];
@@ -125,7 +135,7 @@ export const UGYEK: UgyekConfig[] = [
     title: 'NKA botrány',
     responsible: 'Hankó Balázs',
     responsibleGaleriaId: undefined,
-    photo: '/images/persons/hanko-balazs.png',
+    photo: '/images/persons/hanko-balazs.webp',
     photoCredit: 'Eredeti fotó: kultura.hu',
     estimatedDamage: 'Több tízmilliárd Ft — tiltott pártfinanszírozásra kiosztott közpénz',
     responsiblePersons: ['Hankó Balázs — volt kulturális miniszter'],
@@ -140,6 +150,33 @@ export const UGYEK: UgyekConfig[] = [
     // hatvanpuszta stb.) articleKeywords-szel működik folyamatosan — ugyanezt
     // pótoljuk itt is.
     articleKeywords: ['NKA', 'Hankó Balázs', 'Nemzeti Kulturális Alap'],
+    // 2026-09-14, user kérés: kifejezett, nevesített feljelentés ebben az
+    // ügyben nincs — a fejlemények kényszerintézkedések és gyanús
+    // támogatás-kifizetések. Ezért fut a szekció "Kapcsolódó gyanús
+    // támogatások és feljelentések" néven, ezekkel a kártyákkal.
+    suspiciousItems: [
+      {
+        source: '24.hu',
+        date: '2026. szept. 14.',
+        headline: 'Molnár Áron: Tiltott kampányfinanszírozás is történhetett a Radics Bélához köthető NKA-s pénzekből',
+        lead: 'Radics Béla fideszes képviselő alapítványa 20 millió forintot már visszafizetett az NKA-nak, 15 milliót viszont megtartott. Molnár Áron szerint egy zuglói, a helyi Fidesz által kampányeseményként közvetített márciusi megemlékezés fellépését NKA-keretből, a Parter Event Kft.-n keresztül finanszírozhatták — kérte a hatóságok vizsgálatát, és Radics, valamint Hankó Balázs mentelmi jogának kikérését sürgeti.',
+        url: 'https://24.hu/belfold/2026/09/14/molnar-aron-tiltott-kampanyfinanszirozas-radics-bela/',
+      },
+      {
+        source: '444',
+        date: '2026. szept. 13.',
+        headline: '375 millió forint állami támogatást kapott egy cég, ami fideszes YouTube-csatornát csinált a választásokra, a nagy részét a pénznek visszautalták',
+        lead: 'A csatornán futott többek között Bárdosi Sándor volt birkózó és Pityinger László (Dopeman) műsora, a BarbárShop.',
+        url: 'https://444.hu/2026/09/13/375-millio-forint-allami-tamogatast-kapott-egy-ceg-ami-fideszes-youtube-csatornat-csinalt-a-valasztokra-a-nagy-reszet-a-penznek-visszautaltak',
+      },
+      {
+        source: 'Telex',
+        date: '2026. szept. 9.',
+        headline: 'NKA-botrány: letartóztatták Fásy Ádám feleségét',
+        lead: 'A Kecskeméti Járásbíróság egy hónapra letartóztatta Fásyné Gurzó Máriát és Szabó Sándort, a megbízó cég tulajdonos-ügyvezetőjét. A gyanú bűnszövetségben elkövetett költségvetési csalás: fiktív számlákkal igazolták volna egy dokumentumfilm elkészültét, amelyre 82,55 millió forint érkezett az NKA 790-es keretéből, további 89,9 millió pedig Hankó Balázs miniszteri keretéből.',
+        url: 'https://telex.hu/belfold/2026/09/09/nka-botrany-fasy-dokumentumfilm-letartoztatas-birosag',
+      },
+    ],
     moreUrl: '/ugyek/nka-botrany',
     summary: 'Hankó Balázs volt kulturális miniszter a 2026-os választások előtt szabálytalanul osztott ki milliárdos NKA-támogatásokat — közel 394 millió forintnyi egyedi miniszteri keretből. A NAV hűtlen kezelés bűntett gyanújával nyomoz, az ügy 17+ milliárd Ft-ot érint. Tarr Zoltán a kifizetések átvizsgálását rendelte el.',
     // 2026-08-24 — user report: az addigi kiemelt videó (Molnár Áron,
@@ -1227,7 +1264,7 @@ A nyomozás jelenleg is folyamatban van. Az ügy tétje kettős: egyrészt az eg
     title: 'Pécsi Volvo-gate',
     responsible: 'Bánki Erik',
     responsibleGaleriaId: undefined,
-    photo: '/images/persons/banki-erik.png',
+    photo: '/images/persons/banki-erik.webp',
     photoCredit: 'Eredeti fotó: Telex',
     photoPosition: 'right top',
     estimatedDamage: '~700 millió Ft közkár — 3,5 Mrd Ft helyett 2,8 Mrd lett volna a piaci ár',
