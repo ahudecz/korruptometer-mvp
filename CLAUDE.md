@@ -124,6 +124,23 @@ Config lives in `app/apps/web/.env.local`; template at `app/.env.example`. Group
 
 # Global Claude Instructions
 
+## Branch-szabály (KÖTELEZŐ, 2026-09-14)
+
+- **`main` az egyetlen ág. Minden munka ide megy, közvetlenül.** A `main` = az
+  éles oldal (Vercel auto-deploy). Ami nincs `main`-en, az nem létezik.
+- **Ne nyiss feature-branchet**, kivéve ha a user KIFEJEZETTEN kéri. Ha mégis
+  nyitsz, ugyanabban a munkamenetben vissza is kell olvasztani `main`-be —
+  félkész ág nem maradhat a következő munkamenetre.
+- **Ne hozz létre új git worktree-t.** A párhuzamos worktree-k (`main-deploy`,
+  `publish-main`, `poll-to-main-*` stb.) okozták a 2026-09-14-ig húzódó
+  szétcsúszást: 111 commit az egyik ágon, 132 a másikon, 34 olyan javítás,
+  ami sosem került élesre. Egy repo, egy munkakönyvtár, egy ág.
+- **Minden munkamenet elején ellenőrizd**: `git branch --show-current` →
+  ha nem `main`, azt jelezd a usernek az első válaszban, mielőtt bármit
+  elkezdenél.
+- **Push előtt** mindig kérj megerősítést (ez éles deploy), de a CÉL mindig a
+  `main`. Sose "majd később visszaviszem main-re" — az a szétcsúszás.
+
 ## Core Practices
 
 ### No New Markdown Files
