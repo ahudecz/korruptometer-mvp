@@ -119,17 +119,6 @@ function StatusBadge({ r }: { r: SerializedVerdict }) {
       </div>
     );
   }
-  // 2026-09-15 user report: a Szivek Norbert-sor ('egyéb' típus, gyanúsítás)
-  // az ítélet-badge-be esett bele, és "0 ÉV"-et írt ki — holott nincs ítélet.
-  // Ítélet-badge-et csak az kaphat, akinek TÉNYLEG van kiszabott büntetése;
-  // minden más (egyéb / még nem lezárt szakasz) semleges címkét kap.
-  if (r.sentenceYears === 0 && !r.sentenceMonths) {
-    return (
-      <div className="vrow-badge vrow-badge--ongoing">
-        <span>ELJÁRÁS ALATT</span>
-      </div>
-    );
-  }
   return (
     <div className="vrow-badge vrow-badge--sentence">
       <span className="vrow-badge-years">{r.sentenceYears}</span>

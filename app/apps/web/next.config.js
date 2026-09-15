@@ -24,12 +24,7 @@ const ContentSecurityPolicy = [
     : "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
-  // www.facebook.com: a Facebook reel/videó beágyazott lejátszója
-  // (plugins/video.php) — user kérés, 2026-09-15, l. packages/shared/src/
-  // facebook-reel.ts. A lejátszó CSAK kattintásra töltődik be
-  // (fb-reel-embed.tsx), addig a saját Storage-unkban lévő poszterkép
-  // látszik, tehát a Facebook egy sütit sem kap a látogató szándéka nélkül.
-  "frame-src https://challenges.cloudflare.com https://www.youtube.com https://www.youtube-nocookie.com https://www.facebook.com",
+  "frame-src https://challenges.cloudflare.com https://www.youtube.com https://www.youtube-nocookie.com",
   // google-analytics.com/analytics.google.com: GA4's actual measurement
   // beacon (gtag.js posts here) — googletagmanager.com is also needed here
   // since gtag.js itself does a config fetch back to it.

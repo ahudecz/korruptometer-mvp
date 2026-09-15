@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { and, desc, eq, inArray, like } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 import { getMonitoredNames } from '@/lib/breaking-monitored';
@@ -8,9 +8,6 @@ import { cleanSpotlightDescription } from '@/lib/podcast-description';
 import { PodcastVideoCard } from '../_home/podcast-video-card';
 import { PodcastSpotlight } from '../_home/podcast-spotlight';
 import { PodcastFeatureFull } from '../_home/podcast-feature-full';
-import { FbReelEmbed } from '../_home/fb-reel-embed';
-import { REEL_AUTHORS } from '../_home/reels-config';
-import { pickReels } from '../_home/reels-select';
 
 export const metadata: Metadata = {
   title: { absolute: 'Podcastok' },
@@ -122,34 +119,6 @@ export default async function PodcastokPage() {
   const [lead, ...rest] = ranked;
   const blocks = buildBlocks(rest);
 
-  // Kurált Facebook-reelek (user kérés, 2026-09-15). Ugyanabból a
-  // SocialPost táblából jön, amit a Facebook-szinkron már tölt — nincs se új
-  // scrape, se extra költség. A szerzők listája: _home/reels-config.ts.
-  // A `postUrl LIKE '%/reel/%'` csak előszűrés, a tényleges "lejátszható-e"
-  // döntést a pickReels() -> isFacebookVideoUrl() hozza meg.
-  const reelRows = REEL_AUTHORS.length
-    ? await db
-        .select({
-          id: schema.socialPosts.id,
-          authorName: schema.socialPosts.authorName,
-          postUrl: schema.socialPosts.postUrl,
-          imageUrl: schema.socialPosts.imageUrl,
-          content: schema.socialPosts.content,
-          postedAt: schema.socialPosts.postedAt,
-        })
-        .from(schema.socialPosts)
-        .where(
-          and(
-            eq(schema.socialPosts.hidden, false),
-            inArray(schema.socialPosts.authorName, REEL_AUTHORS),
-            like(schema.socialPosts.postUrl, '%/reel/%'),
-          ),
-        )
-        .orderBy(desc(schema.socialPosts.postedAt))
-        .limit(40)
-    : [];
-  const reels = pickReels(reelRows);
-
   return (
     <div className="podcast-section-wrap">
       <section className="section" id="podcastok">
@@ -215,28 +184,6 @@ export default async function PodcastokPage() {
           </>
         )}
       </section>
-
-      {reels.length > 0 && (
-        <section className="section" id="reelek">
-          <div className="section-head">
-            <div className="section-num">06 / Reelek</div>
-            <h2 className="section-title">Rövid videók.</h2>
-          </div>
-          <div className="reel-grid">
-            {reels.map((r) => (
-              <figure key={r.id} className="reel-card">
-                <FbReelEmbed url={r.postUrl} posterUrl={r.imageUrl} authorName={r.authorName} />
-                <figcaption className="reel-card-meta">
-                  <span className="reel-card-author">{r.authorName}</span>
-                  {r.postedAt && (
-                    <span className="reel-card-date">{fmtRelative(r.postedAt)}</span>
-                  )}
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 }

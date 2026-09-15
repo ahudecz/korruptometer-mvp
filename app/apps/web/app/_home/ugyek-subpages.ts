@@ -80,6 +80,11 @@ export type UgySubpage = {
   publishedAt: string;
   updatedAt: string;
   heroImage?: { src: string; alt: string; credit?: string };
+  /** A szülő ügyoldalon megjelenő, teljes egészében kattintható keretes promó
+   *  (user kérés, 2026-09-15: az aloldal ne legyen árva oldal). A cím
+   *  szándékosan megszólító, nem leíró — a lap tetején kell hogy megállítsa
+   *  az olvasót. */
+  promo: { eyebrow: string; title: string; lead: string; cta: string };
   blocks: SubpageBlock[];
   faq: SubpageFaq[];
   sources: { label: string; url: string }[];
@@ -104,6 +109,13 @@ export const UGY_SUBPAGES: UgySubpage[] = [
       src: '/images/persons/hanko-balazs.webp',
       alt: 'Hankó Balázs volt kulturális miniszter, akinek miniszteri keretéből az NKA-botrány vitatott kifizetései indultak',
       credit: 'Eredeti fotó: kultura.hu',
+    },
+    promo: {
+      eyebrow: 'Háttér · NKA-pályázatok',
+      title: 'Nem igazán vagy képben, mik ezek az NKA-pályázatok pontosan?',
+      lead:
+        'Összeraktuk egy oldalra, hogyan zajlott egy NKA-pályázat a beadástól az elszámolásig — és pontosan hol csúszott el. Kiderül, mi volt a titkos 447-es és 790-es keret, amivel a szakmai bírálatot át lehetett ugrani, hogyan lett egy 172 milliós dokumentumfilmből semmi, és ki mennyi közpénzt fizetett vissza azóta. Néhány perc, és képben leszel.',
+      cta: 'Kattints, és kerülj képbe',
     },
     blocks: [
       {
