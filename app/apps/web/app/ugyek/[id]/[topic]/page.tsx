@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { UGYEK } from '../../../_home/ugyek-config';
-import { UGY_SUBPAGES, getSubpage, getSubpagesForUgy, type InlineLink, type SubpageBlock, type TableCell, type UgySubpage } from '../../../_home/ugyek-subpages';
+import { visibleSubpages, getSubpage, getSubpagesForUgy, type InlineLink, type SubpageBlock, type TableCell, type UgySubpage } from '../../../_home/ugyek-subpages';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../../_home/cross-promo';
 import { loadCaseDetentions, isStillDetained, type CaseDetentionRow } from '@/lib/case-detentions';
 
@@ -28,7 +28,7 @@ function huDate(iso: string): string {
 }
 
 export async function generateStaticParams() {
-  return UGY_SUBPAGES.map((s) => ({ id: s.parentId, topic: s.id }));
+  return visibleSubpages().map((s) => ({ id: s.parentId, topic: s.id }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string; topic: string }> }) {
@@ -242,6 +242,21 @@ function Block({ block, detentions }: { block: SubpageBlock; detentions: CaseDet
           </ul>
         </div>
       );
+    case 'stances':
+      return (
+        <div className="ugy-block-text" id={block.id}>
+          <h2 className="ugy-block-heading">{block.heading}</h2>
+          {block.intro && <p>{block.intro}</p>}
+          <div className="seo-stances">
+            {block.sides.map((side, i) => (
+              <div key={i} className={i === 0 ? 'seo-stance seo-stance-a' : 'seo-stance seo-stance-b'}>
+                <h3 className="seo-stance-label">{side.label}</h3>
+                <p className="seo-stance-body">{side.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
     case 'table':
       return (
         <div className="ugy-block-text" id={block.id}>
@@ -341,6 +356,27 @@ export default async function UgySubPage({ params }: { params: Promise<{ id: str
   // aloldalak egymást is erősítik, nem csak a szülő oldalról érhetők el.
   const siblings = getSubpagesForUgy(sub.parentId).filter((s) => s.id !== sub.id);
 
+  // Hányadik blokk UTÁN jöjjön a promó. A megadott blokk után közvetlenül
+  // következő videó/cikk-kártya blokkokat átugorjuk: ezek a megelőző
+  // szakaszhoz tartoznak, és a user kifejezetten kérte, hogy a keretes ne
+  // ragadjon közvetlenül egy videó mellé. Ha nincs megadva horgony (vagy
+  // nem található), a promó a tartalom végére kerül.
+  const anchorIndex = sub.crossPromoAfterBlockId
+    ? sub.blocks.findIndex((b) => 'id' in b && b.id === sub.crossPromoAfterBlockId)
+    : -1;
+  let crossPromoIndex = anchorIndex;
+  if (crossPromoIndex >= 0) {
+    while (
+      crossPromoIndex + 1 < sub.blocks.length &&
+      (sub.blocks[crossPromoIndex + 1]!.type === 'video' ||
+        sub.blocks[crossPromoIndex + 1]!.type === 'article-card')
+    ) {
+      crossPromoIndex += 1;
+    }
+  } else {
+    crossPromoIndex = sub.blocks.length - 1;
+  }
+
   // Strukturált adat. A DR-0 domainnek ez az egyik kevés eszköze, amivel a
   // találati listán a puszta rangsoron felül is helyet foglalhat (GYIK-
   // kinyitható találat, morzsamenü a cím alatt).
@@ -433,7 +469,23 @@ export default async function UgySubPage({ params }: { params: Promise<{ id: str
             Jogerős ítélet hiányában minden érintett ártatlannak tekintendő.
           </p>
           <div className="ugy-description-body">
-            {sub.blocks.map((b, i) => <Block key={i} block={b} detentions={detentions} />)}
+            {sub.blocks.map((b, i) => (
+              <React.Fragment key={i}>
+                <Block block={b} detentions={detentions} />
+                {i === crossPromoIndex && siblings.map((sp) => (
+                  <Link
+                    key={sp.id}
+                    href={`/ugyek/${sp.parentId}/${sp.id}`}
+                    className="ugy-subpage-promo"
+                  >
+                    <span className="ugy-subpage-promo-eyebrow">{sp.promo.eyebrow}</span>
+                    <span className="ugy-subpage-promo-title">{sp.promo.title}</span>
+                    <span className="ugy-subpage-promo-lead">{sp.promo.lead}</span>
+                    <span className="ugy-subpage-promo-cta">{sp.promo.cta} →</span>
+                  </Link>
+                ))}
+              </React.Fragment>
+            ))}
           </div>
 
           {sub.faq.length > 0 && (
@@ -462,19 +514,6 @@ export default async function UgySubPage({ params }: { params: Promise<{ id: str
             </ul>
           </div>
         </div>
-
-        {siblings.map((sp) => (
-          <Link
-            key={sp.id}
-            href={`/ugyek/${sp.parentId}/${sp.id}`}
-            className="ugy-subpage-promo"
-          >
-            <span className="ugy-subpage-promo-eyebrow">{sp.promo.eyebrow}</span>
-            <span className="ugy-subpage-promo-title">{sp.promo.title}</span>
-            <span className="ugy-subpage-promo-lead">{sp.promo.lead}</span>
-            <span className="ugy-subpage-promo-cta">{sp.promo.cta} →</span>
-          </Link>
-        ))}
 
         <div className="seo-internal-links">
           <h2 className="person-section-title">Hogyan tovább az oldalon</h2>

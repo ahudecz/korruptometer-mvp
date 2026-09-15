@@ -44,6 +44,9 @@ export type SubpageBlock =
   | { type: 'callout'; heading: string; content: string }
   | { type: 'steps'; heading: string; id?: string; intro?: string; items: { title: string; body: string }[] }
   | { type: 'checklist'; heading: string; id?: string; intro?: string; items: { title: string; body: string }[] }
+  /** „Ki és mit állít a vitában?" — két (vagy több) álláspont egymás mellett,
+   *  a Telex-féle kérdezz-felelek formátumhoz. */
+  | { type: 'stances'; heading: string; id?: string; intro?: string; sides: { label: string; body: string }[] }
   | {
       type: 'table';
       heading: string;
@@ -95,6 +98,16 @@ export type UgySubpage = {
   sources: { label: string; url: string }[];
   /** Belső linkek a hub & spoke szerkezethez */
   internalLinks: { label: string; href: string; note: string }[];
+  /** Melyik tartalmi blokk UTÁN jelenjen meg a testvér-aloldal keretes
+   *  promója (user kérés, 2026-09-15: ne a lap alján legyen, hanem nagyjából
+   *  a tartalom felénél). A blokk `id`-ját kell megadni. Ha a megadott blokk
+   *  után közvetlenül videó/cikk-kártya jön, a promó azok UTÁN kerül — a
+   *  user kifejezett kérése, hogy ne ragadjon közvetlenül videó mellé. */
+  crossPromoAfterBlockId?: string;
+  /** Vázlat: csak fejlesztői (nem production) buildben létezik. Így egy
+   *  formátum-kísérletet ki lehet tenni localhostra anélkül, hogy élesben
+   *  megjelenne a promók között, a sitemapben vagy a keresőben. */
+  draft?: boolean;
 };
 
 export const UGY_SUBPAGES: UgySubpage[] = [
@@ -389,6 +402,7 @@ export const UGY_SUBPAGES: UgySubpage[] = [
       { label: 'Telex: 49 pályázó 1,69 milliárdot utalt vissza (máj. 23.)', url: 'https://telex.hu/belfold/2026/05/23/nka-palyazati-penzek-visszafizetes-kis-grofo-varosliget-zrt' },
       { label: 'Portfolio: Dagad az NKA-botrány, már Győrben is nyomoznak (jún. 16.)', url: 'https://www.portfolio.hu/gazdasag/20260616/dagad-az-nka-botrany-mar-gyorben-is-nyomoznak-843584' },
     ],
+    crossPromoAfterBlockId: 'radics-szal',
     internalLinks: [
       { label: 'NKA botrány — a teljes ügy idővonala', href: '/ugyek/nka-botrany', note: 'Letartóztatások, hatósági közlemények, videók, napi frissítéssel.' },
       { label: 'Korrupciós adatbázis', href: '/adatbazis', note: 'Ügyenként dokumentált közpénz-érintettség és források.' },
@@ -551,18 +565,193 @@ export const UGY_SUBPAGES: UgySubpage[] = [
       { label: 'Telex: NKA-botrány — letartóztatták Fásy Ádám feleségét (szept. 9.)', url: 'https://telex.hu/belfold/2026/09/09/nka-botrany-fasy-dokumentumfilm-letartoztatas-birosag' },
       { label: 'Portfolio: Dagad az NKA-botrány, már Győrben is nyomoznak (jún. 16.)', url: 'https://www.portfolio.hu/gazdasag/20260616/dagad-az-nka-botrany-mar-gyorben-is-nyomoznak-843584' },
     ],
+    crossPromoAfterBlockId: 'hetedik',
     internalLinks: [
       { label: 'Börtönben van-e már?', href: '/birosagi-iteletek', note: 'Az összes NER-hez kapcsolható eljárás — nem csak az NKA-ügy — ugyanebből az adatbázisból.' },
       { label: 'NKA botrány — a teljes ügy idővonala', href: '/ugyek/nka-botrany', note: 'Hatósági közlemények, videók, napi frissítéssel.' },
       { label: 'Lemondások és felmentések', href: '/lemondasok', note: 'Bús Balázs, Báán László és Vidnyánszky Attila NKA-s pozíciójának sorsa.' },
     ],
   },
+  // ── CSAK LOKÁLIS ELŐNÉZET (2026-09-15) ────────────────────────────────
+  // A user egy Telex-féle „kérdezz-felelek" formátumú változatot kért
+  // ugyanabból a tartalomból, összehasonlításra. Ez a bejegyzés NINCS
+  // élesítve — ha bármikor kimegy a main-re, akkor a /ugyek/nka-botrany
+  // oldalon HÁROM promó jelenne meg, és a sitemapbe is bekerülne egy
+  // duplikált tartalmú oldal (kannibalizáció ugyanarra a kulcsszóra).
+  // Vagy ez, vagy a hagyományos /nka-palyazatok maradjon — ne mindkettő.
+  {
+    id: 'nka-palyazatok-2',
+    parentId: 'nka-botrany',
+    draft: true,
+    seoTitle: 'Mi ez a nagy felhajtás az NKA-pályázatok körül? – Kérdezz-felelek',
+    seoDescription:
+      'Mi történt pontosan az NKA-pályázatokkal, kik a főszereplők, és miért fontos ez neked? A legfontosabb tudnivalók kérdés-válasz formában, számokkal.',
+    h1: 'Mi ez a nagy felhajtás az NKA-pályázatok körül? – Kérdezz-felelek',
+    eyebrow: 'Kérdezz-felelek · NKA-pályázatok',
+    lead:
+      'A nyár óta szinte minden híroldalt elleptek az NKA-pályázatokkal kapcsolatos hírek: letartóztatások, visszautalt milliárdok, egy dokumentumfilm, ami el sem készült. De mi történt pontosan, kik a főszereplők, és hogyan érinti ez a mindennapi életünket? Összefoglaltuk a legfontosabb tudnivalókat.',
+    publishedAt: '2026-09-15',
+    updatedAt: '2026-09-15',
+    heroImage: {
+      src: '/images/persons/hanko-balazs.webp',
+      alt: 'Hankó Balázs volt kulturális miniszter, akinek miniszteri keretéből az NKA-pályázatok vitatott kifizetései indultak',
+      credit: 'Eredeti fotó: kultura.hu',
+    },
+    promo: {
+      eyebrow: 'Kérdezz-felelek · NKA-pályázatok',
+      title: 'Mi ez a nagy felhajtás az NKA-pályázatok körül?',
+      lead:
+        'Mi történt pontosan, mi vezetett idáig, ki mit állít, és miért fontos ez neked? A teljes NKA-ügy kérdés-válasz formában, öt perc alatt átlátható módon.',
+      cta: 'Elolvasom a kérdezz-feleleket',
+    },
+    blocks: [
+      {
+        type: 'text',
+        id: 'mi-tortent',
+        heading: 'Mi történt pontosan?',
+        content:
+          'A NAV 2026. június 23-án hat embert vett őrizetbe hűtlen kezelés gyanújával a Nemzeti Kulturális Alapnál kiosztott pénzek miatt. Azóta heten kerültek előzetes letartóztatásba, köztük az NKA korábbi alelnöke, Bús Balázs és a támogatáskezelő NKTK főigazgatója; szeptemberben már a pénz végső felhasználóit is elérte az ügy. A nyomozás több mint 17 milliárd forintnyi NKA-pályázati kifizetést érint, és 49 korábbi nyertes önként visszautalt összesen 1,69 milliárd forintot.',
+      },
+      {
+        type: 'text',
+        id: 'mi-vezetett',
+        heading: 'Mi vezetett idáig?',
+        content:
+          'Az ügy kirobbanásának pontos időzítése nem véletlen. Hankó Balázs akkori kulturális miniszter négy nappal a 2026-os parlamenti választás előtt, április 8-án közel 394 millió forintot osztott ki egyedi miniszteri keretből. A kormányváltás után az új kulturális miniszter, Tarr Zoltán visszavonta ezeket a döntéseket, elrendelte a korábbi kifizetések átvizsgálását, és mintegy 400 millió forintot vissza is tartott. Az átvizsgálás nyomán derült ki, milyen szervezetek jutottak nagy összegekhez az NKA-pályázatokon úgy, hogy érdemi kulturális tevékenységet nem folytattak — és innen már egyenes út vezetett a NAV nyomozásáig.',
+      },
+      {
+        type: 'text',
+        id: 'hogyan-mukodtek',
+        heading: 'Hogyan működtek egyáltalán az NKA-pályázatok?',
+        content:
+          'Két, egymástól nagyon eltérő úton lehetett NKA-pénzhez jutni. A nyílt pályázatokat legkésőbb 30 nappal a határidő előtt közzé kellett tenni, a beadás elektronikusan ment, nevezési díjjal, tételes költségvetéssel, és egy szakmai kollégium bírálta el őket 60 napon belül. A másik út az egyedi, 447-es és 790-es keret volt: itt nem volt nyilvános kiírás és nem volt kollégiumi bírálat sem — a támogatás egyetlen aláíráson múlt. A botrány kifizetései szinte kivétel nélkül erről a második útról indultak.',
+      },
+      {
+        type: 'image',
+        src: '/images/cases/nka-palyazatok-penzutvonal.svg',
+        srcMobile: '/images/cases/nka-palyazatok-penzutvonal-mobil.svg',
+        alt: 'Ábra: az NKA pályázati pénz két útja — nyílt kollégiumi pályázat, szemben az egyedi 447-es és 790-es kerettel',
+        caption: 'Ugyanaz a közpénz, két teljesen más út — a botrány a jobb oldali ágon történt.',
+      },
+      {
+        type: 'stances',
+        id: 'ki-mit-allit',
+        heading: 'Ki és mit állít a vitában?',
+        sides: [
+          {
+            label: 'A korábbi döntéshozók szerint',
+            body:
+              'A Fidesz politikailag motiváltnak és koncepciósnak nevezte az eljárásokat, a letartóztatottakra pedig „politikai fogvatartottakként" hivatkozott, akiknek a szabadon engedését követeli. Hankó Balázs volt kulturális miniszter szerint a kifizetések szabályosak voltak. Radics Béla fideszes képviselő, akinek alapítványa visszafizetett 20 millió forintot, azzal indokolta a döntést, hogy a parlamenti munkája mellett nem tudná megfelelő minőségben irányítani a programot — tehát nem hibát ismert el.',
+          },
+          {
+            label: 'A kritikusok szerint',
+            body:
+              'Az NKA egy korábbi kuratóriumi tagja nyilvánosan úgy fogalmazott: „érdemtelenek kaptak érdemtelenül sok pénzt többnyire értelmezhetetlen projektekre". Molnár Áron, akinek bejelentései nyomán az ügy jelentős része elindult, tiltott kampányfinanszírozás gyanúját is felvetette, és Hankó Balázs, valamint Radics Béla mentelmi jogának kikérését sürgeti. A visszautalások időzítése — a nyomozás megindulása után — szerintük önmagában is beszédes.',
+          },
+        ],
+      },
+      {
+        type: 'text',
+        id: 'foszereplok',
+        heading: 'Kik a főszereplők?',
+        content:
+          'A hivatali oldalon Hankó Balázs volt kulturális miniszter áll, akinek keretéből a vitatott pénzek indultak, de aki ellen nem folyik eljárás. Az ügy legismertebb letartóztatottja Bús Balázs, az NKA korábbi alelnöke, Óbuda volt fideszes polgármestere. A pénz felhasználói oldalán a legtöbbet emlegetett szál a Fásy családhoz köthető dokumentumfilm: a Kéz, szív, lélek című sorozatra 172,45 millió forint ment el, az elszámolás határidejére mégsem készült el, az elkészültét pedig a gyanú szerint fiktív számlákkal igazolták. Itt fontos pontosítani, mert sokan félreértik: Fásy Ádám ellen nem folyik eljárás, a feleségét és egy vele szerződő cég vezetőjét helyezte letartóztatásba a bíróság.',
+      },
+      {
+        type: 'video',
+        id: 'wKZSqY6168E',
+        label: 'ATV',
+        title: 'Megkérdeztük Fásy Ádámtól, kapott-e 101 millió forintot Fásy Zsüliett az NKA-tól',
+        summary: 'Az ATV riportja a Fásy Zsülietthez köthető cégek NKA-támogatásairól.',
+      },
+      {
+        type: 'text',
+        id: 'miert-fontos',
+        heading: 'Miért fontos ez nekem, átlagemberként?',
+        content:
+          'Azért, mert az NKA pénze a te pénzed: az alap bevétele részben az ötöslottó szerencsejáték-adójából és a kulturális járulékból származik, vagyis közpénz. A vizsgált 17 milliárd forint nagyjából annyi, mint amiből több vidéki színház vagy könyvtár egy teljes évet működne. Ha ez az összeg érdemi kulturális teljesítmény nélküli szervezetekhez folyt, akkor nem elvont politikai kérdésről van szó: konkrét előadások, kiállítások, könyvkiadások maradtak el helyette. A másik, közvetlenebb hatás, hogy a valódi kulturális szereplők — a Heti Napló riportja szerint például Duda Éva táncművész — épp emiatt estek el a támogatástól.',
+      },
+      {
+        type: 'video',
+        id: 'KnzfHvXsZKg',
+        label: 'HETI NAPLÓ',
+        title: 'NKA-botrány: Molnár Áron miatt nem kapott állami támogatást Duda Éva táncművész',
+        summary: 'Amikor a támogatás megvonása is politikai döntés lett — a botrány ritkábban tárgyalt oldala.',
+      },
+      {
+        type: 'table',
+        id: 'visszafizetok',
+        heading: 'Ki mennyit fizetett vissza?',
+        intro:
+          'A visszautalók teljes listáját az NKA nem hozta nyilvánosságra — a 49 pályázóból az alábbiakat nevesítette a sajtó.',
+        columns: ['Visszautaló', 'Összeg', 'Kihez / mihez köthető', 'Forrás'],
+        rows: [
+          ['Városliget Zrt.', '1,25 milliárd Ft', 'Állami tulajdonú projektcég (Liget Budapest)', { text: 'Telex', href: 'https://telex.hu/belfold/2026/05/23/nka-palyazati-penzek-visszafizetes-kis-grofo-varosliget-zrt' }],
+          ['R56 Nonprofit Kft.', 'a kapott 375 millió Ft nagy része', 'A Horizont nevű YouTube-csatorna üzemeltetője', { text: '444', href: 'https://444.hu/2026/09/13/375-millio-forint-allami-tamogatast-kapott-egy-ceg-ami-fideszes-youtube-csatornat-csinalt-a-valasztokra-a-nagy-reszet-a-penznek-visszautaltak' }],
+          ['Tradíciókért Alapítvány', '20 millió Ft', 'Radics Béla fideszes országgyűlési képviselő', { text: 'Telex', href: 'https://telex.hu/belfold/2026/09/12/radics-bela-fidesz-nka-palyazat-tamogatas-20-millio-visszafizetes-tradiciokert-alapitvany' }],
+          ['Kis-Grófo', '5 millió Ft', 'Előadóművész — maga ismerte el, hogy aránytalan volt az összeg', { text: 'Telex', href: 'https://telex.hu/belfold/2026/05/23/nka-palyazati-penzek-visszafizetes-kis-grofo-varosliget-zrt' }],
+          ['További, meg nem nevezett pályázók', 'a 49 visszautalóval együtt összesen 1,69 milliárd Ft', '—', { text: 'Telex', href: 'https://telex.hu/belfold/2026/05/23/nka-palyazati-penzek-visszafizetes-kis-grofo-varosliget-zrt' }],
+        ],
+        note: 'A visszafizetés önmagában nem jogi felelősségvállalás — több szervezet a nyomozás megindulására hivatkozva, önként utalt vissza.',
+      },
+      {
+        type: 'text',
+        id: 'mi-varhato',
+        heading: 'Mi várható a következőkben?',
+        content:
+          'A nyomozás 2026 őszén is zajlik, és terjed: Budapest mellett Győrben is eljárás indult négy helyi szervezet miatt. Mivel az ügy a támogatások végső felhasználói felé halad, további gyanúsítások és letartóztatások reálisan várhatók. A letartóztatottak ügyében a bíróságnak rendszeresen felül kell vizsgálnia a kényszerintézkedést — Bús Balázsét például három hónappal hosszabbították meg, Konczos Nóráét viszont augusztusban bűnügyi felügyeletre enyhítették. Vádemelésről és jogerős ítéletről egyelőre nincs szó: az NKA-pályázatok ügyében eddig egyetlen érintett bűnössége sem került megállapításra.',
+      },
+    ],
+    faq: [
+      {
+        q: 'Mennyi pénzről szól az NKA-botrány?',
+        a: 'A NAV szerint a vizsgált NKA-pályázati kifizetések összege meghaladja a 17 milliárd forintot. Ebből 49 pályázó önként visszautalt 1,69 milliárd forintot, Tarr Zoltán miniszter pedig mintegy 400 millió forintot tartott vissza.',
+      },
+      {
+        q: 'Mi volt a baj az NKA-pályázatokkal?',
+        a: 'A vitatott támogatások nem a nyílt, szakmai kollégium által elbírált úton mentek ki, hanem egyedi, 447-es és 790-es kereten — ahol nem volt nyilvános kiírás és kollégiumi bírálat sem. Több nyertesnél hiányzott a konkrét programleírás, és érdemi kulturális tevékenység sem társult a pénzhez.',
+      },
+      {
+        q: 'Hány embert tartóztattak le?',
+        a: 'Eddig hét embert helyeztek előzetes letartóztatásba, közülük kettő már szabadlábon van. A friss listát az NKA-letartóztatásokról szóló oldalunkon vezetjük.',
+      },
+      {
+        q: 'Letartóztatták Fásy Ádámot?',
+        a: 'Nem. Fásy Ádám ellen tudomásunk szerint nem folyik eljárás — a feleségét, Fásyné Gurzó Máriát és egy vele szerződő cég vezetőjét helyezte letartóztatásba a Kecskeméti Járásbíróság 2026. szeptember 9-én.',
+      },
+      {
+        q: 'Honnan van az NKA pénze?',
+        a: 'A Nemzeti Kulturális Alap az állam elkülönített pénzalapja: bevétele részben szerencsejáték-adóból és kulturális járulékból származik. Vagyis közpénz, amelyből kulturális programokat, kiadványokat és produkciókat támogatnak.',
+      },
+    ],
+    sources: [
+      { label: 'NKA: Pályázati tudnivalók (hivatalos eljárásrend)', url: 'https://nka.hu/kiemelt-kategoriak/palyaztatas/kollegiumok-felhivasai/palyazati-tudnivalok/' },
+      { label: 'NAV.hu: Áttörés az NKA-ügyben — hat személyt vettek őrizetbe (jún. 23.)', url: 'https://nav.gov.hu/sajtoszoba/hirek/Attores_az_NKA-ugyben' },
+      { label: 'Telex: 49 pályázó 1,69 milliárdot utalt vissza (máj. 23.)', url: 'https://telex.hu/belfold/2026/05/23/nka-palyazati-penzek-visszafizetes-kis-grofo-varosliget-zrt' },
+      { label: 'Telex: NKA-botrány — letartóztatták Fásy Ádám feleségét (szept. 9.)', url: 'https://telex.hu/belfold/2026/09/09/nka-botrany-fasy-dokumentumfilm-letartoztatas-birosag' },
+      { label: 'Telex: Radics Béla alapítványa visszafizetett 20 milliót (szept. 12.)', url: 'https://telex.hu/belfold/2026/09/12/radics-bela-fidesz-nka-palyazat-tamogatas-20-millio-visszafizetes-tradiciokert-alapitvany' },
+      { label: '24.hu: Molnár Áron tiltott kampányfinanszírozásról beszélt (szept. 14.)', url: 'https://24.hu/belfold/2026/09/14/molnar-aron-tiltott-kampanyfinanszirozas-radics-bela/' },
+      { label: 'Portfolio: Dagad az NKA-botrány, már Győrben is nyomoznak (jún. 16.)', url: 'https://www.portfolio.hu/gazdasag/20260616/dagad-az-nka-botrany-mar-gyorben-is-nyomoznak-843584' },
+    ],
+    internalLinks: [
+      { label: 'NKA botrány — a teljes ügy idővonala', href: '/ugyek/nka-botrany', note: 'Hatósági közlemények, videók, napi frissítéssel.' },
+      { label: 'Korrupciós adatbázis', href: '/adatbazis', note: 'Ügyenként dokumentált közpénz-érintettség és források.' },
+      { label: 'Börtönben van-e már?', href: '/birosagi-iteletek', note: 'Minden NER-hez kapcsolható eljárás egy helyen.' },
+    ],
+  },
 ];
 
+/** Éles buildben a vázlatok nem léteznek — sem oldalként, sem promóként,
+ *  sem a sitemapben. Fejlesztésben (localhost) viszont igen. */
+export function visibleSubpages(): UgySubpage[] {
+  const showDrafts = process.env.NODE_ENV !== 'production';
+  return UGY_SUBPAGES.filter((s) => showDrafts || !s.draft);
+}
+
 export function getSubpage(parentId: string, id: string): UgySubpage | undefined {
-  return UGY_SUBPAGES.find((s) => s.parentId === parentId && s.id === id);
+  return visibleSubpages().find((s) => s.parentId === parentId && s.id === id);
 }
 
 export function getSubpagesForUgy(parentId: string): UgySubpage[] {
-  return UGY_SUBPAGES.filter((s) => s.parentId === parentId);
+  return visibleSubpages().filter((s) => s.parentId === parentId);
 }

@@ -3,7 +3,7 @@ import { sql } from 'drizzle-orm';
 
 import { getDb } from '@/lib/db';
 import { UGYEK } from './_home/ugyek-config';
-import { UGY_SUBPAGES } from './_home/ugyek-subpages';
+import { visibleSubpages } from './_home/ugyek-subpages';
 import { GALERIA } from './_home/galeria-config';
 import { WATCH_LIST } from './_home/watchlist-config';
 import { PERSON_ROLLUPS } from './_home/person-rollup-config';
@@ -82,7 +82,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     });
   }
-  for (const s of UGY_SUBPAGES) {
+  for (const s of visibleSubpages()) {
     entries.push({
       url: `${appUrl}/ugyek/${s.parentId}/${s.id}`,
       lastModified: new Date(s.updatedAt),

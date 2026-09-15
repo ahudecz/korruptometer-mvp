@@ -15737,3 +15737,37 @@ code {
 .seo-detention-table {
   min-width: 680px;
 }
+
+/* „Ki és mit állít a vitában?" — két álláspont egymás mellett
+   (kérdezz-felelek formátum). */
+.seo-stances {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+.seo-stance {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+.seo-stance-a {
+  border-top: 3px solid #4a6a8a;
+}
+.seo-stance-b {
+  border-top: 3px solid var(--accent);
+}
+.seo-stance-label {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.seo-stance-body {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--ink);
+}
