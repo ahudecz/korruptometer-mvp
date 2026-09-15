@@ -15632,6 +15632,15 @@ code {
   text-underline-offset: 2px;
   font-weight: 600;
 }
+/* A táblázatok forrás-linkje SOHA ne törjön két sorba: a „444.hu" a sor
+   végén maradna, a „→" pedig új sorba csúszna — csúnya és zavaró (user
+   report, 2026-09-15). Ugyanez a szabály védi a /lemondasok táblát is
+   (.res-source-link), onnan származik a minta. A cella inkább legyen
+   szélesebb; ha nem fér ki, a .seo-table-wrap vízszintes görgetése old meg. */
+.seo-subpage .seo-table td a,
+.seo-subpage .seo-table th a {
+  white-space: nowrap;
+}
 .seo-subpage .ugy-block-text p a:hover,
 .seo-subpage .seo-table td a:hover {
   text-decoration-thickness: 2px;
