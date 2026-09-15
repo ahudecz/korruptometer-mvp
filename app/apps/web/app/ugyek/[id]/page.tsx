@@ -5,6 +5,7 @@ import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
 import { getDb, schema } from '@/lib/db';
 import { UGYEK, UGYEK_REDIRECTS, type DescriptionBlock, type BreakingGroupArticle, type BigCaseVideo } from '../../_home/ugyek-config';
+import { getSubpagesForUgy } from '../../_home/ugyek-subpages';
 import { GALERIA } from '../../_home/galeria-config';
 import { WATCH_LIST } from '../../_home/watchlist-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../_home/cross-promo';
@@ -13,7 +14,7 @@ import { RelatedComplaintCard } from '../../_home/related-complaint-card';
 
 export const dynamic = 'force-dynamic';
 
-// Kézzel írt SEO-leírás mind a 8 kiemelt ügyre — nem az on-page `summary`
+// Kézzel írt SEO-leírás mind a 9 kiemelt ügyre — nem az on-page `summary`
 // gépi levágása (2026-07-31, user kérés). Egy tömör, konkrét tényt emel ki,
 // ami a 155 karakteres kereten belül is önmagában megáll.
 const UGY_SEO: Record<string, string> = {
@@ -24,6 +25,7 @@ const UGY_SEO: Record<string, string> = {
   'hatvanpuszta': 'Orbán Viktor majorságának valódi tulajdonosa és finanszírozása mind a mai napig ismeretlen.',
   'mnb-botrany': 'Matolcsy 266 milliárd forintot csatornázott MNB-alapítványokba — 2026-ban nyomozás indult ellene.',
   'ki-az-a-zsolt-bacsi': 'A Szőlő utcai gyermekvédelmi botrány koronatanúja — a kormány a nyilvánosságra kerülés után ellentámadásba lendült.',
+  'volanbusz-ugy': 'Tízmilliárdos túlárazott buszbeszerzés a Volán-társaságoknál — nyolc gyanúsított, három ember őrizetben.',
   'pecsi-volvo-gate': 'A pécsi Tüke Zrt. 700 milliós közkárral vett használt Volvo buszokat egy fideszes képviselőhöz köthető cégtől.',
 };
 const UGY_CTA = 'Kattints, és ismerd meg a részleteket!';
@@ -94,7 +96,7 @@ function DescBlock({ block, isLatestBreaking = true }: { block: DescriptionBlock
     case 'text':
       return (
         <div className="ugy-block-text">
-          {block.heading && <h3 className="ugy-block-heading">{block.heading}</h3>}
+          {block.heading && <h2 className="ugy-block-heading">{block.heading}</h2>}
           <p>{block.content}</p>
         </div>
       );
@@ -314,6 +316,9 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
   // (fentebb már a hír-lekérdezéshez is felhasznált lista) újrahasznosítja,
   // nincs külön karbantartandó kulcsszólista.
   const relatedComplaints = await getRelatedComplaintsForUgy(entry.articleKeywords ?? []);
+  // SEO hub & spoke: az ügyhöz tartozó mély aloldalak (l. ugyek-subpages.ts).
+  // A belső link innen kötelező — enélkül a Google nem találja meg őket.
+  const subpages = getSubpagesForUgy(entry.id);
   const suspiciousItems = entry.suspiciousItems ?? [];
 
   const descParagraphs = entry.descriptionBlocks ? [] : entry.description.split('\n\n').filter(Boolean);
@@ -384,7 +389,7 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
           </div>
 
           <div className="person-hero-text">
-            <div className="person-hero-eyebrow">7 kiemelt ügy</div>
+            <div className="person-hero-eyebrow">{UGYEK.length} kiemelt ügy</div>
             <h1 className="person-hero-name">{entry.title}</h1>
             {entry.responsible && (
               <div className="person-hero-sub">{entry.responsible}</div>
@@ -462,6 +467,7 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
               <div className="ugy-breaking-group-headline">{entry.breakingUpdate.headline}</div>
               <p className="ugy-breaking-box-lead">{entry.breakingUpdate.lead}</p>
             </div>
+            {entry.breakingUpdate.companies.length > 0 && (
             <div className="ugy-breaking-update-table-wrap">
               <table className="ugy-breaking-update-table">
                 <thead>
@@ -494,17 +500,33 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
                 </tbody>
               </table>
             </div>
+            )}
+            {/* 2026-09-15 (Volánbusz-ügy): céges táblázat helyett — vagy amellett —
+                keretes hírkártyák, ugyanabban a formában, mint a pinnedNews. */}
+            {entry.breakingUpdate.articles?.map((a, i) => (
+              <a key={`bu-${i}`} href={a.url} target="_blank" rel="noopener noreferrer" className="ugy-block-article-card">
+                <div className="ugy-block-article-meta">
+                  <span className="ugy-block-article-source">{a.source}</span>
+                  {a.date && <span className="ugy-block-article-date">{a.date}</span>}
+                </div>
+                <div className="ugy-block-article-headline">{a.headline}</div>
+                {a.lead && <p className="ugy-block-article-lead">{a.lead}</p>}
+                <span className="ugy-block-article-arrow">Cikk olvasása →</span>
+              </a>
+            ))}
             {entry.breakingUpdate.companiesNote && (
               <p className="ugy-breaking-update-footnote">{entry.breakingUpdate.companiesNote}</p>
             )}
-            <a
-              href={entry.breakingUpdate.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ugy-breaking-update-source"
-            >
-              Forrás: {entry.breakingUpdate.sourceLabel} →
-            </a>
+            {entry.breakingUpdate.sourceUrl && (
+              <a
+                href={entry.breakingUpdate.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ugy-breaking-update-source"
+              >
+                Forrás: {entry.breakingUpdate.sourceLabel} →
+              </a>
+            )}
           </div>
         )}
 
@@ -604,6 +626,26 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
             </div>
           )}
         </div>
+
+        {/* ── Részletes háttér-aloldalak (SEO hub & spoke, 2026-09-15) ── */}
+        {subpages.length > 0 && (
+          <div className="seo-internal-links">
+            <h2 className="person-section-title">Részletes háttér</h2>
+            <p className="person-section-note">
+              Egy-egy részkérdés önálló, alaposabb feldolgozása — hogyan működik a rendszer,
+              amelyben az ügy megtörtént.
+            </p>
+            <div className="seo-internal-grid">
+              {subpages.map(sp => (
+                <Link key={sp.id} href={`/ugyek/${entry.id}/${sp.id}`} className="seo-internal-card">
+                  <span className="seo-internal-title">{sp.h1}</span>
+                  <span className="seo-internal-note">{sp.seoDescription}</span>
+                  <span className="seo-internal-cta">Elolvasom →</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Kapcsolódó személyek ── */}
         {relatedPersons.length > 0 && (

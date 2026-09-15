@@ -42,13 +42,20 @@ export interface BreakingUpdate {
   dateLabel: string;
   headline: string;
   lead: string;
+  /** Cégenkénti táblázat. Üres tömb = nincs táblázat, ilyenkor az
+   *  `articles` keretes hírkártyái kerülnek a helyére (l. volanbusz-ugy). */
   companies: BreakingUpdateCompanyRow[];
+  /** 2026-09-15 (Volánbusz-ügy): a lap tetején ülő breaking blokk nem mindig
+   *  egy táblázat — több forrásból összeálló fejleménynél a táblázat helyett
+   *  keretes hírkártyák jelennek meg, ugyanabban a formában, mint a
+   *  pinnedNews/suspiciousItems-nél. A kettő kizárja egymást. */
+  articles?: BreakingGroupArticle[];
   /** Amit a forrás NEM közöl cégenkénti bontásban (pl. árbevétel-növekedés
    *  %-ban) — csak összesítve/kvalitatívan, hogy ne kelljen hiányzó
    *  adatot kitalálni a táblázatba. */
   companiesNote?: string;
-  sourceUrl: string;
-  sourceLabel: string;
+  sourceUrl?: string;
+  sourceLabel?: string;
 }
 
 export type DescriptionBlock =
@@ -129,6 +136,143 @@ export const UGYEK_REDIRECTS: Record<string, string> = {
 };
 
 export const UGYEK: UgyekConfig[] = [
+  {
+    id: 'volanbusz-ugy',
+    eyebrow: 'Aktív · 3 személy őrizetben',
+    title: 'Volánbusz-ügy',
+    responsible: 'Szivek Norbert',
+    estimatedDamageLabel: 'Becsült vagyoni hátrány',
+    estimatedDamage: '~10 milliárd Ft — a Volán-társaságoknál 2015 és 2018 között',
+    responsiblePersons: [
+      'Szivek Norbert — az MNV Zrt. volt vezérigazgatója (2016–2019)',
+      'Jellinek Dániel — ingatlanbefektető, az Indotek-csoport tulajdonosa',
+    ],
+    crimeTypes: ['Vesztegetés elfogadása (bűnszövetségben)', 'Hűtlen kezelés', 'Pénzmosás'],
+    relatedPersonIds: [],
+    articleKeywords: ['Volánbusz', 'Volán-ügy', 'Jellinek'],
+    moreUrl: '/ugyek/volanbusz-ugy',
+    summary: 'A Volánbusz-ügy a Volán-társaságok 2015 és 2018 közötti autóbusz-beszerzéseiről szól: a nyomozás szerint az állami cégek súlyosan túlárazva vásároltak és béreltek használt buszokat, mintegy 10 milliárd forintos vagyoni hátrányt okozva. 2026. szeptember 11-én nyolc embert gyanúsítottak meg, négy nappal később a Központi Nyomozó Főügyészség összehangolt akciójában három személyt őrizetbe vettek. A hatóság egyetlen gyanúsított nevét sem közölte; a sajtó és a miniszterelnök parlamenti felszólalása Szivek Norbertet, az MNV volt vezérigazgatóját és Jellinek Dániel ingatlanbefektetőt nevezte meg.',
+    videoId: '3zF9ozF8bzA',
+    videoChannel: 'Kontroll',
+    videoTitle: 'Orbán volt miniszteréig érnek a szálak? | Lecsaptak a Volánbusz-maffiára',
+    videoSummary: 'A Kontroll összefoglalója a Volánbusz-ügyről: hogyan lett 236 millió forintos buszflottából három nap alatt 1,6 milliárd, miért fizetett a Volánbusz éveken át bérleti díjat olyan autóbuszokért, amelyeket olcsóbban megvehetett volna, és meddig érnek a szálak.',
+    additionalVideos: [
+      { id: 'kyqa2wkH228', label: 'ATV Magyarország', title: '10 milliárdos Volán-mutyi: Nyolc embert gyanúsítottak meg, köztük az MNV korábbi vezetőjét' },
+    ],
+    breakingUpdate: {
+      dateLabel: '2026. szeptember 15.',
+      headline: 'Három embert őrizetbe vett az ügyészség a Volánbusz-ügyben',
+      lead: 'A Központi Nyomozó Főügyészség közel 40 hivatalos személy részvételével összehangolt nyomozási cselekményeket hajtott végre a Volánbusz-ügyben: több helyszínen kutattak és foglaltak le, négy gyanúsítotti kihallgatás indult, közülük három személyt őrizetbe vettek. A főügyészség sem a gyanúsítottak nevét, sem további részletet nem közölt.',
+      companies: [],
+      articles: [
+        {
+          source: 'Ügyészség.hu',
+          headline: 'Bűnügyi akció a Volánbuszt érintő korrupciós ügyben',
+          lead: 'A Központi Nyomozó Főügyészség közleménye: bűnszövetségben és üzletszerűen elkövetett vesztegetés elfogadása és más korrupciós bűncselekmények miatt folyó nyomozásban közel 40 hivatalos személy vett részt az akcióban, a Nemzeti Védelmi Szolgálat, az NNI Vagyonvisszaszerzési Hivatala és a Készenléti Rendőrség közreműködésével. Négy gyanúsítotti kihallgatás van folyamatban, közülük hármat őrizetbe vettek.',
+          date: '2026. szeptember 15.',
+          url: 'https://ugyeszseg.hu/bunugyi-akcio-a-volanbuszt-erinto-korrupcios-ugyben/',
+        },
+        {
+          source: 'HVG',
+          headline: 'Három embert őrizetbe vett az ügyészség a túlárazott Volán-buszok ügyében',
+          lead: 'Az ügyészség nem árulta el a gyanúsítottak nevét. A miniszterelnök a parlamentben aznap délelőtt arról beszélt, hogy előállították Jellinek Dánielt és Szivek Norbertet, az MNV egykori vezérigazgatóját.',
+          date: '2026. szeptember 15.',
+          url: 'https://hvg.hu/itthon/20260915_orizetbe-vetel-ugyeszseg-volanbusz-korrupcio',
+        },
+        {
+          source: '444',
+          headline: 'Mentelmi joggal rendelkező személy is érintett a Volánbusz-ügyben, állítja az NNI szóvivője',
+          lead: 'Kész-Varga Mónika, a Nemzeti Nyomozó Iroda szóvivője szerint további személyek meggyanúsítása is megtörténhet, köztük mentelmi joggal rendelkezőké is. A nyomozás szerint a Volán-társaságoknál 2015 és 2018 között közel 10 milliárd forintos vagyoni hátrány keletkezett.',
+          date: '2026. szeptember 11.',
+          url: 'https://444.hu/2026/09/11/mentelmi-joggal-rendelkezo-szemely-is-erintett-a-volanbusz-ugyben-allitja-az-nni-szovivoje',
+        },
+        {
+          source: 'Portfolio',
+          headline: 'Nyolc gyanúsítottja van a Volánbuszhoz köthető, tízmilliárdos korrupciós ügynek',
+          lead: 'A Nemzeti Nyomozó Iroda nyolc embert gyanúsított meg korrupciós és pénzmosási ügyben. A vizsgált ügyletek között 85 lízingelt autóbusz, egy 2 milliárd forintos karbantartási megbízás, 250 használt busz bérlete és egy kecskeméti ingatlan két hónap alatti, 700 millióról 1,3 milliárd forintra ugró továbbadása szerepel.',
+          date: '2026. szeptember 11.',
+          url: 'https://www.portfolio.hu/gazdasag/20260911/nyolc-gyanusitottja-van-a-volanbuszhoz-kotheto-tizmilliardos-korrupcios-ugynek-861974',
+        },
+      ],
+    },
+    statusItems: [
+      { icon: '🔴', label: 'Kényszerintézkedés', value: '3 személy őrizetben (2026. szept. 15.) — a főügyészség nevet nem közölt; a miniszterelnök a parlamentben Jellinek Dánielt és Szivek Norbertet nevezte meg előállítottként' },
+      { icon: '👥', label: 'Gyanúsítottak', value: '8 fő (2026. szept. 11., NNI) — a szóvivő szerint mentelmi joggal rendelkező személy is érintett lehet' },
+      { icon: '⚖️', label: 'Eljárás', value: 'Központi Nyomozó Főügyészség — bűnszövetségben, üzletszerűen elkövetett vesztegetés elfogadása; az NNI-ágon hűtlen kezelés és pénzmosás' },
+      { icon: '💰', label: 'Becsült vagyoni hátrány', value: '~10 milliárd Ft (2015–2018, Volán-társaságok)' },
+    ],
+    sourceRefs: [],
+    description: `A Volánbusz-ügy öt éve húzódik: a feljelentés 2021 őszén érkezett meg a Nemzeti Nyomozó Irodához, érdemi előrelépés éveken át nem történt. 2026 szeptemberében aztán egy héten belül nyolc embert gyanúsítottak meg, majd hármat őrizetbe vettek.`,
+    descriptionBlocks: [
+      {
+        type: 'text',
+        content: 'A Volánbusz-ügy Magyarország egyik legrégebb óta húzódó állami korrupciós nyomozása: a feljelentés 2021 őszén érkezett meg a Nemzeti Nyomozó Irodához hűtlen kezelés és pénzmosás gyanújával, érdemi előrelépés azonban éveken át nem történt. A Volánbusz-ügy 2026 februárjában került vissza a nyilvánosságba, amikor Tordai Bence országgyűlési képviselő bírósági végzéseket és nyomozati iratokat hozott nyilvánosságra a dossziéból. A nyomozás a legfőbb ügyész lemondása után gyorsult fel látványosan, és 2026 szeptemberében egyetlen héten belül nyolc embert gyanúsítottak meg, majd három személyt őrizetbe vettek.',
+      },
+      {
+        type: 'text',
+        heading: 'Miről szól a Volánbusz-ügy',
+        content: 'A Volánbusz-ügy tárgya az állami tulajdonú Volán-társaságok 2015 és 2018 közötti autóbusz-beszerzése és -bérlete. A nyomozás jelenlegi állása szerint az állami cégek súlyosan túlárazva vásároltak és béreltek használt autóbuszokat, miközben a különbözet közbeiktatott magáncégeknél csapódott le. A Volánbusz-ügyben vizsgált teljes vagyoni hátrány mintegy 10 milliárd forint — ez az az összeg, amellyel a hatóság szerint a köz rosszabbul járt, mintha a Volán-társaságok közvetlenül, piaci áron intézték volna a beszerzést. A Központi Nyomozó Főügyészség 2026. május 15-e óta folytat saját erős felderítést, és ez vezetett el a megalapozott gyanú közölhetőségéig.',
+      },
+      {
+        type: 'text',
+        heading: 'A 85 busz, amely három nap alatt hétszereződött',
+        content: 'A Volánbusz-ügy első és legszemléletesebb szála egy 2006-ban indult lízingszerződés. A Volán akkor 85 autóbuszt lízingelt; a konstrukció 2016 végén járt le, ekkor a járműveket 236 millió forintért lehetett volna megvásárolni. Az állami cég helyett azonban egy magáncég vette meg őket ezen az áron — majd három nappal később 1,6 milliárd forintért adta tovább egy másik magáncégnek. A különbözet, 1,3 milliárd forint, a magánszférában maradt. Az állami vállalat ezután ugyanazokat a buszokat bérelte tovább, immár a felsrófolt értéken alapuló díjért. Ez a háromnapos árugrás a Volánbusz-ügy egyik legjobban dokumentált tétele.',
+      },
+      {
+        type: 'text',
+        heading: '431 millióért vett buszok, 6,3 milliárd forint bérleti díj',
+        content: 'A Volánbusz-ügy második szálán egy magáncég 161 autóbuszt vásárolt meg a korábbi alvállalkozóktól összesen 431 millió forintért, majd éveken át bérbe adta őket a Volánbusznak. A cég 2017 és 2019 között összesen 6,3 milliárd forintot kapott bérleti díjként. A nyomozati iratok szerint az állami vállalat mintegy 5,9 milliárd forinttal járt volna jobban, ha egyszerűen megveszi a járműveket ahelyett, hogy bérli őket. A Volánbusz-ügy iratanyaga szerint a konstrukció összesen 250 autóbuszt érintett, és nem egyszeri tévedés, hanem évekig fenntartott, ismétlődő gyakorlat volt.',
+      },
+      {
+        type: 'text',
+        heading: 'Karbantartás, amit nem végeztek el',
+        content: 'A Volánbusz-ügy harmadik szála a járművek karbantartása. A nyomozás szerint egy magáncég javítási és karbantartási munkákért is pénzt kapott a Volán-társaságoktól — olyan munkákért, amelyeket ténylegesen nem végzett el. A sajtóértesülések szerint mintegy 2 milliárd forintos karbantartási megbízás van a Volánbusz-ügy vizsgált tételei között. Ez a szál azért fontos, mert itt nem árazási vitáról vagy utólag rosszul sikerült üzleti döntésről van szó: a gyanú szerint a kifizetés mögött egyáltalán nem állt teljesítés, ami a hűtlen kezelés mellett a vesztegetés gyanúját is megalapozza.',
+      },
+      {
+        type: 'text',
+        heading: 'A kecskeméti telep: 763 millió be, 1,3 milliárd ki',
+        content: 'A Volánbusz-ügy negyedik szála egy ingatlan. A kecskeméti Fuvar utca 1. alatti telepet egy közbeiktatott cég 763,5 millió forintért vásárolta meg, majd az állami tulajdonú DAKK Zrt. 1,3 milliárd forintért vette meg tőle — a becsült állami kár ezen az egy tételen 538,5 millió forint. A telep a gyakorlatban alkalmatlan volt busztárolásra, a Volán-csoport mégis nettó 100 millió forint bérleti díjat fizetett érte félévente. Az ingatlanvásárlást és a hozzá felvett hitelt 2016 decemberében Szivek Norbert, az MNV Zrt. akkori vezérigazgatója írta alá.',
+      },
+      {
+        type: 'text',
+        heading: 'Hová lett a pénz',
+        content: 'A Volánbusz-ügy nyomozati szakaszának egyik kulcskérdése, hogy hová került a kivitt közpénz. A hatóság szerint az összegeket cégeken és látszólagos kölcsönügyleteken keresztül forgatták tovább, majd ingatlanprojektekbe és luxusautókba fektették — a XII. és a IX. kerületben, Balatonvilágoson és Törökbálinton zajló beruházások kerültek szóba. A sajtóértesülések szerint a Volánbusz-ügy egyik szálán egy 700 millió forintos kölcsönügylet végső haszonélvezője Jellinek Dániel egyik érdekeltsége volt. A vagyon felkutatását az akcióban részt vevő NNI Vagyonvisszaszerzési Hivatala végzi, amelynek bevonása önmagában is jelzi, hogy a nyomozás a pénz útját célozza.',
+      },
+      {
+        type: 'text',
+        heading: 'Ki kicsoda a Volánbusz-ügyben',
+        content: 'A Volánbusz-ügyben a hatóság egyetlen gyanúsított nevét sem közölte — a Központi Nyomozó Főügyészség kifejezetten úgy fogalmazott, hogy „a nyomozásról és a gyanúsítottak személyéről további adat nem közölhető”. A nevek két úton kerültek nyilvánosságra: a sajtó információi alapján, illetve a miniszterelnök parlamenti felszólalásából, aki 2026. szeptember 15-én délelőtt arról beszélt, hogy előállították Jellinek Dániel ingatlanbefektetőt és Szivek Norbertet, az MNV Zrt. 2016 és 2019 közötti vezérigazgatóját. Szivek Norbert szerepe a Volánbusz-ügyben azért kerül elő, mert az állami tulajdonosi jogok gyakorlójaként döntési pozícióban volt, és ő írta alá a kecskeméti ingatlanvásárlást.',
+      },
+      {
+        type: 'text',
+        heading: 'Meddig érnek a szálak',
+        content: 'A Volánbusz-ügy még távolról sem zárult le. A Nemzeti Nyomozó Iroda szóvivője, Kész-Varga Mónika szerint további gyanúsítások is várhatók, és mentelmi joggal rendelkező személy is érintett lehet — ilyen esetben, ahogy fogalmazott, „bekapcsolódik az ügyészség”, mert a rendőrségnek nincs hatásköre nyomozni. A sajtóban felmerült egy volt miniszter neve is a Volánbusz-ügy kapcsán; ezt hatóság nem erősítette meg, és a szóban forgó személy ellen nyilvánosan ismert eljárás nem folyik. A Korruptométer ezért nevet ebben az összefüggésben nem nevesít.',
+      },
+      {
+        type: 'text',
+        heading: 'Hol tart most az eljárás',
+        content: 'A Volánbusz-ügyben 2026. szeptember 11-én nyolc személyt hallgattak ki gyanúsítottként különösen jelentős vagyoni hátrányt okozó bűncselekmény miatt, az NNI-ágon hűtlen kezelés és pénzmosás a minősítés. Négy nappal később, szeptember 15-én a Központi Nyomozó Főügyészség összehangolt akciót hajtott végre: közel 40 hivatalos személy vett részt benne, a Nemzeti Védelmi Szolgálat, az NNI Vagyonvisszaszerzési Hivatala és a Készenléti Rendőrség közreműködésével. Több helyszínen kutattak és foglaltak le, négy gyanúsítotti kihallgatás indult, és a főügyészség három személyt őrizetbe vett. A gyanú itt bűnszövetségben, üzletszerűen elkövetett vesztegetés elfogadása és más korrupciós bűncselekmény.',
+      },
+      {
+        type: 'text',
+        heading: 'Mit jelent és mit nem jelent ez',
+        content: 'Fontos különbséget tenni: a Volánbusz-ügyben eddig gyanúsítás és őrizetbe vétel történt, nem ítélet. A gyanúsítotti státusz azt jelenti, hogy a hatóság megalapozott gyanút közölt, az őrizetbe vétel pedig legfeljebb 72 órás kényszerintézkedés, amelyet a bíróságnak kell felváltania letartóztatással vagy megszüntetnie. Egyetlen érintett bűnössége sem került megállapításra, és a nyomozás iránya is változhat. Oldalunk a hatósági közleményeket és a nyilvánosan dokumentált sajtóértesüléseket követi; amint a Volánbusz-ügyben bírósági döntés születik, azt külön is jelezzük.',
+      },
+      {
+        type: 'text',
+        heading: 'Miért került a Volánbusz-ügy a kiemelt ügyek közé',
+        content: 'A Volánbusz-ügy azért kerül a kiemelt ügyek közé, mert három olyan vonás egyszerre jellemzi, ami ritka. Egyrészt a kár tételesen kiszámolható és dokumentált: minden egyes szál mögött konkrét szerződés, vételár és kifizetés áll. Másrészt az állami vagyonkezelés legfelső szintjét érinti, hiszen az MNV Zrt. akkori vezérigazgatója maga is gyanúsított. Harmadrészt pedig a Volánbusz-ügy évekig állt, majd hetek alatt mozdult meg — ami önmagában is mond valamit arról, mitől függ Magyarországon, hogy egy korrupciós nyomozás halad-e. A közlekedési közszolgáltatás finanszírozása mindannyiunk pénze: a tízmilliárdos hátrány buszokban, járatokban és menetrendben hiányzik.',
+      },
+      {
+        type: 'article-card',
+        source: 'Kontroll',
+        headline: 'Tisztítótűz: Tiborcz üzlettársát, Jellineket és Sziveket is gyanúsítottként hallgatták ki a Volánbusz-ügyben',
+        lead: 'A Kontroll információi szerint a Nemzeti Nyomozó Iroda nyolc embert idézett be kihallgatásra az öt éve húzódó Volánbusz-ügyben, majd mindannyiukat meggyanúsították. A cikk tételesen végigveszi a buszflotta-ügyletet, a bérleti konstrukciót, az el nem végzett karbantartást és a kecskeméti ingatlan továbbadását.',
+        url: 'https://kontroll.hu/cikk/belfold/2026/09/10/tisztitotuz-jellineket-es-sziveket-is-kihallgattak-a-volanbusz-uegyben',
+        date: '2026. szeptember 10.',
+      },
+    ],
+  },
   {
     id: 'nka-botrany',
     eyebrow: 'Aktív · 7 személy előzetesben',

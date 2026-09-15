@@ -138,7 +138,7 @@ export function CrossUgyek() {
     <div className="cross-promo">
       <h2 className="cross-promo-title">Érdekelnek a legdurvább ügyek?</h2>
       <p className="cross-promo-deck">
-        7 kiemelt korrupciós ügy — bizonyítékokkal, becsült összegekkel, felelős személyekkel.
+        {UGYEK.length} kiemelt korrupciós ügy — bizonyítékokkal, becsült összegekkel, felelős személyekkel.
       </p>
       <div className="ugyek-more-grid">
         {UGYEK.map(e => (
