@@ -553,7 +553,6 @@ export const UGY_SUBPAGES: UgySubpage[] = [
     ],
     internalLinks: [
       { label: 'Börtönben van-e már?', href: '/birosagi-iteletek', note: 'Az összes NER-hez kapcsolható eljárás — nem csak az NKA-ügy — ugyanebből az adatbázisból.' },
-      { label: 'NKA pályázatok — hogyan működött a rendszer', href: '/ugyek/nka-botrany/nka-palyazatok', note: 'A 447-es és 790-es keret, és hogy min csúszott el az egész.' },
       { label: 'NKA botrány — a teljes ügy idővonala', href: '/ugyek/nka-botrany', note: 'Hatósági közlemények, videók, napi frissítéssel.' },
       { label: 'Lemondások és felmentések', href: '/lemondasok', note: 'Bús Balázs, Báán László és Vidnyánszky Attila NKA-s pozíciójának sorsa.' },
     ],

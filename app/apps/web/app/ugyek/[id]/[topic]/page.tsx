@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { UGYEK } from '../../../_home/ugyek-config';
-import { UGY_SUBPAGES, getSubpage, type InlineLink, type SubpageBlock, type TableCell, type UgySubpage } from '../../../_home/ugyek-subpages';
+import { UGY_SUBPAGES, getSubpage, getSubpagesForUgy, type InlineLink, type SubpageBlock, type TableCell, type UgySubpage } from '../../../_home/ugyek-subpages';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../../_home/cross-promo';
 import { loadCaseDetentions, isStillDetained, type CaseDetentionRow } from '@/lib/case-detentions';
 
@@ -336,6 +336,11 @@ export default async function UgySubPage({ params }: { params: Promise<{ id: str
     ? await loadCaseDetentions({ ugyId: detentionBlock.ugyId, acronym: detentionBlock.acronym })
     : [];
 
+  // Kereszt-linkelés az ügy többi aloldalára, ugyanazzal a keretes promóval,
+  // amit a szülő ügyoldal is használ (user kérés, 2026-09-15) — így az
+  // aloldalak egymást is erősítik, nem csak a szülő oldalról érhetők el.
+  const siblings = getSubpagesForUgy(sub.parentId).filter((s) => s.id !== sub.id);
+
   // Strukturált adat. A DR-0 domainnek ez az egyik kevés eszköze, amivel a
   // találati listán a puszta rangsoron felül is helyet foglalhat (GYIK-
   // kinyitható találat, morzsamenü a cím alatt).
@@ -457,6 +462,19 @@ export default async function UgySubPage({ params }: { params: Promise<{ id: str
             </ul>
           </div>
         </div>
+
+        {siblings.map((sp) => (
+          <Link
+            key={sp.id}
+            href={`/ugyek/${sp.parentId}/${sp.id}`}
+            className="ugy-subpage-promo"
+          >
+            <span className="ugy-subpage-promo-eyebrow">{sp.promo.eyebrow}</span>
+            <span className="ugy-subpage-promo-title">{sp.promo.title}</span>
+            <span className="ugy-subpage-promo-lead">{sp.promo.lead}</span>
+            <span className="ugy-subpage-promo-cta">{sp.promo.cta} →</span>
+          </Link>
+        ))}
 
         <div className="seo-internal-links">
           <h2 className="person-section-title">Hogyan tovább az oldalon</h2>
