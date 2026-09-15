@@ -264,7 +264,7 @@ const getCachedAllArticles = unstable_cache(
       eqF(schema.newsArticles.breakingOverride, true),
       eqF(schema.newsArticles.isBreakingCandidate, true),
       s`${schema.newsArticles.tag} IN ('NKA', 'MNB', 'volvo-gate')`,
-      s`${schema.newsArticles.headline} ILIKE ANY(ARRAY['%hatvanpuszta%','%aranykonvoj%','%volvo gate%','%volvo-gate%','%bánki erik%','%tüke busz%','%lélegeztetőgép%','%fourcardinal%','%parkfenntartás%','%parkfenntartá%','%Őrsi Gergely%','%Puskás Péter%','%KESMA%','%Mediaworks%','%batida%','%Mészáros Lőrinc%','%Rogán%','%Matolcsy%','%Tiborcz%','%Balásy%','%Lázár János%','%volvo%gate%','%pesti srácok%','%világgazdaság%','%parkfenntart%','%Mandiner%','%NKA%','%MNB%'])`,
+      s`${schema.newsArticles.headline} ILIKE ANY(ARRAY['%hatvanpuszta%','%aranykonvoj%','%volvo gate%','%volvo-gate%','%bánki erik%','%tüke busz%','%lélegeztetőgép%','%fourcardinal%','%parkfenntartás%','%parkfenntartá%','%Őrsi Gergely%','%Puskás Péter%','%KESMA%','%Mediaworks%','%batida%','%Mészáros Lőrinc%','%Rogán%','%Matolcsy%','%Tiborcz%','%Balásy%','%Lázár János%','%volvo%gate%','%pesti srácok%','%világgazdaság%','%parkfenntart%','%Mandiner%','%NKA%','%MNB%','%volánbusz%','%volán-busz%','%volán busz%','%jellinek%','%szivek norbert%'])`,
     ))
     .orderBy(d(schema.newsArticles.publishedAt))
     .limit(100);
@@ -739,6 +739,7 @@ export default async function HomePage() {
   const volvoArticles  = allArticlesRaw.filter(a => a.tag === 'volvo-gate' || (hl(a).includes('volvo') && (hl(a).includes('gate') || hl(a).includes('bánki') || hl(a).includes('tüke')))).slice(0, 5);
   const lelegArticles  = allArticlesRaw.filter(a => hl(a).includes('lélegeztetőgép') || hl(a).includes('fourcardinal')).slice(0, 5);
   const parkArticles   = allArticlesRaw.filter(a => hl(a).includes('parkfenntart') || hl(a).includes('őrsi') || hl(a).includes('puskás')).slice(0, 5);
+  const volanArticles  = allArticlesRaw.filter(a => hl(a).includes('volánbusz') || hl(a).includes('volán-busz') || hl(a).includes('volán busz') || hl(a).includes('jellinek') || hl(a).includes('szivek norbert')).slice(0, 5);
 
   const resignationCount = resignationCountRaw;
   const closureCount = closureCountRaw;
@@ -1106,6 +1107,33 @@ export default async function HomePage() {
       {/* ───── BIGGEST CASES ───── */}
       {(() => {
         const bigCases: BigCaseConfig[] = [
+          // 2026-09-15 — user kérés: a Volánbusz-ügy az ELSŐ helyre, mert így
+          // ez a desktop tab-nézet alapértelmezett ügye (BigCasesSection useState(0)).
+          // FIGYELEM: ugyanez az ügy a ugyek-config.ts UGYEK tömbjében is él —
+          // a két hely szándékosan külön tárolja a videót/összefoglalót, tehát
+          // frissítésnél MINDKETTŐT nézd meg (l. feedback-ugyek-config-duplicated-in-page-tsx).
+          {
+            id: 'volanbusz-ugy',
+            eyebrow: 'Aktív · 3 személy őrizetben',
+            title: 'Volánbusz-ügy',
+            responsible: 'Szivek Norbert',
+            summary: 'A Volán-társaságok 2015 és 2018 között súlyosan túlárazott használt autóbuszokat vásároltak és béreltek — a nyomozás szerint mintegy 10 milliárd forintos vagyoni hátrányt okozva. 2026. szeptember 11-én nyolc embert gyanúsítottak meg, négy nappal később a Központi Nyomozó Főügyészség összehangolt akciójában három személyt őrizetbe vettek.',
+            breakingAlert: {
+              source: 'Ügyészség.hu',
+              headline: 'Bűnügyi akció a Volánbuszt érintő korrupciós ügyben',
+              lead: 'A Központi Nyomozó Főügyészség közel 40 hivatalos személy részvételével összehangolt nyomozási cselekményeket hajtott végre: több helyszínen kutattak és foglaltak le, négy gyanúsítotti kihallgatás indult, közülük három személyt őrizetbe vettek.',
+              url: 'https://ugyeszseg.hu/bunugyi-akcio-a-volanbuszt-erinto-korrupcios-ugyben/',
+            },
+            videoId: '3zF9ozF8bzA',
+            statusItems: [
+              { icon: '🔴', label: 'Kényszerintézkedés', value: '3 személy őrizetben (szept. 15.) — a főügyészség nevet nem közölt; a miniszterelnök a parlamentben Jellinek Dánielt és Szivek Norbertet nevezte meg előállítottként' },
+              { icon: '👥', label: 'Gyanúsítottak', value: '8 fő (szept. 11., NNI) — a szóvivő szerint mentelmi joggal rendelkező személy is érintett lehet' },
+              { icon: '⚖️', label: 'Eljárás', value: 'Központi Nyomozó Főügyészség — bűnszövetségben, üzletszerűen elkövetett vesztegetés elfogadása; az NNI-ágon hűtlen kezelés és pénzmosás' },
+              { icon: '💰', label: 'Becsült vagyoni hátrány', value: '~10 milliárd Ft (2015–2018, Volán-társaságok)' },
+            ],
+            moreUrl: '/ugyek/volanbusz-ugy',
+            articles: volanArticles.map(a => ({ ...a })),
+          },
           {
             id: 'nka-botrany',
             eyebrow: 'Aktív · 7 személy előzetesben',
