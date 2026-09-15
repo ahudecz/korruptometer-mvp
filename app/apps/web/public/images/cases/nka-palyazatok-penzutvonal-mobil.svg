@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 1010" role="img"
+     aria-labelledby="nka-flow-m-title nka-flow-m-desc" width="440" height="1010">
+  <title id="nka-flow-m-title">Az NKA pályázati pénz két útja: nyílt kollégiumi pályázat és egyedi miniszteri keret</title>
+  <desc id="nka-flow-m-desc">Ábra két egymás alatti szakaszban. Fent a nyílt NKA-pályázat útja: 30 napos kiírás, regisztráció és nevezési díj, szakmai kollégium 60 napos bírálata, szerződés és kettős elszámolás. Lent az egyedi miniszteri keret útja: nincs nyilvános kiírás, nincs kollégiumi bírálat, a miniszter egyedi döntése, majd szerződés és elszámolás. A 2026-os NKA-botrány vitatott kifizetései az alsó ágról indultak.</desc>
+  <style>
+    .bg { fill: #f7f8fa; }
+    .card { fill: #ffffff; stroke: #dde3ea; stroke-width: 1.5; }
+    .card-warn { fill: #fff5f6; stroke: #e31937; stroke-width: 1.5; }
+    .h { font: 700 19px 'Segoe UI', system-ui, sans-serif; fill: #10243a; }
+    .h-warn { font: 700 16px 'Segoe UI', system-ui, sans-serif; fill: #e31937; }
+    .t { font: 600 15px 'Segoe UI', system-ui, sans-serif; fill: #1e3350; }
+    .s { font: 400 13px 'Segoe UI', system-ui, sans-serif; fill: #5b6b7f; }
+    .cap { font: 700 12.5px 'Segoe UI', system-ui, sans-serif; fill: #8a97a6; letter-spacing: .08em; }
+    .on-dark { font: 600 14px 'Segoe UI', system-ui, sans-serif; fill: #ffffff; }
+    .on-dark-2 { font: 400 13px 'Segoe UI', system-ui, sans-serif; fill: #c8d4e0; }
+    .arrow { stroke: #9fb0c2; stroke-width: 2; fill: none; }
+    .arrow-warn { stroke: #e31937; stroke-width: 2; fill: none; }
+  </style>
+  <defs>
+    <marker id="ma" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#9fb0c2"/>
+    </marker>
+    <marker id="maw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#e31937"/>
+    </marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="440" height="1010" rx="12"/>
+
+  <text class="cap" x="24" y="34">NEMZETI KULTURÁLIS ALAP — KÖZPÉNZ</text>
+  <text class="h" x="24" y="62">Ugyanaz a pénz, két út</text>
+
+  <!-- Felső szakasz: nyílt pályázat -->
+  <text class="cap" x="24" y="100">NYÍLT PÁLYÁZAT</text>
+  <rect class="card" x="24" y="112" width="392" height="66" rx="10"/>
+  <text class="t" x="44" y="139">Pályázati felhívás közzététele</text>
+  <text class="s" x="44" y="161">Legkésőbb a határidő előtt 30 nappal</text>
+
+  <path class="arrow" d="M220 178 L220 198" marker-end="url(#ma)"/>
+  <rect class="card" x="24" y="202" width="392" height="66" rx="10"/>
+  <text class="t" x="44" y="229">Regisztráció + nevezési díj</text>
+  <text class="s" x="44" y="251">1% + áfa, min. 10 000 Ft + áfa</text>
+
+  <path class="arrow" d="M220 268 L220 288" marker-end="url(#ma)"/>
+  <rect class="card" x="24" y="292" width="392" height="66" rx="10"/>
+  <text class="t" x="44" y="319">Szakmai kollégium bírálata</text>
+  <text class="s" x="44" y="341">60 nap; fellebbezésnek helye nincs</text>
+
+  <path class="arrow" d="M220 358 L220 378" marker-end="url(#ma)"/>
+  <rect class="card" x="24" y="382" width="392" height="66" rx="10"/>
+  <text class="t" x="44" y="409">Szerződés, kettős elszámolás</text>
+  <text class="s" x="44" y="431">Bizonylatok + szakmai beszámoló</text>
+
+  <!-- Alsó szakasz: miniszteri keret -->
+  <text class="cap" x="24" y="500">EGYEDI MINISZTERI KERET</text>
+  <rect class="card-warn" x="24" y="512" width="392" height="66" rx="10"/>
+  <text class="h-warn" x="44" y="539">Nincs nyilvános kiírás</text>
+  <text class="s" x="44" y="561">A pályázói kör nem versenyben állt össze</text>
+
+  <path class="arrow-warn" d="M220 578 L220 598" marker-end="url(#maw)"/>
+  <rect class="card-warn" x="24" y="602" width="392" height="66" rx="10"/>
+  <text class="h-warn" x="44" y="629">Nincs kollégiumi bírálat</text>
+  <text class="s" x="44" y="651">A szakmai szűrő kimaradt az útból</text>
+
+  <path class="arrow-warn" d="M220 668 L220 688" marker-end="url(#maw)"/>
+  <rect class="card-warn" x="24" y="692" width="392" height="66" rx="10"/>
+  <text class="h-warn" x="44" y="719">A miniszter egyedi döntése</text>
+  <text class="s" x="44" y="741">447-es és 790-es keret — egy aláírás</text>
+
+  <path class="arrow-warn" d="M220 758 L220 778" marker-end="url(#maw)"/>
+  <rect class="card" x="24" y="782" width="392" height="66" rx="10"/>
+  <text class="t" x="44" y="809">Szerződés, elszámolás</text>
+  <text class="s" x="44" y="831">Ugyanaz a végpont — szűrő nélkül</text>
+
+  <rect x="24" y="880" width="392" height="102" rx="10" fill="#10243a"/>
+  <text class="on-dark" x="44" y="912">2026. április 8. — négy nappal a</text>
+  <text class="on-dark" x="44" y="932">választás előtt közel 394 millió forintot</text>
+  <text class="on-dark" x="44" y="952">osztottak ki miniszteri keretből.</text>
+  <text class="on-dark-2" x="44" y="972">A NAV hűtlen kezelés gyanújával nyomoz.</text>
+</svg>
