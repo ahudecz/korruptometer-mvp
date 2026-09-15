@@ -8,6 +8,7 @@ import {
   decideStatus,
   findExistingVerdict,
   isPlaceholderName,
+  gateVerdictInsert,
   isSuspiciouslyEarlyDate,
   isWatchlistPerson,
   markChecked,
@@ -211,6 +212,30 @@ async function processVerdictArticle(
   // nem megy reviewStatus-on keresztül.
   if (!existingVerdict && reviewStatus === 'approved' && isSuspiciouslyEarlyDate(result.verdictDate, articleDateIso(article.publishedAt))) {
     reviewStatus = 'pending';
+  }
+
+  // 2026-09-15 — EGY kapu minden CourtVerdict-beszúrás előtt, l.
+  // packages/db/src/verdict-gate.ts. Korábban a dedup-védőhálók hívónként
+  // külön éltek (vagy sehol), ezért ment ki a "Jellinek Dániel, Szivek
+  // Norbert" gyűjtőnév-sor a két már meglévő, nevesített sor mellé. Csak az
+  // INSERT ágon fut: meglévő sor lifecycle-frissítésénél a név- és
+  // URL-egyezés nem duplikátum-jel, hanem maga a keresett sor.
+  if (!existingVerdict) {
+    const gate = await gateVerdictInsert(db, { personName: result.personName, sourceUrl: article.sourceUrl });
+    if (gate.verdict === 'discard') {
+      await markChecked(db, {
+        articleId: article.id,
+        detectorType: DETECTOR_TYPE,
+        outcome: 'discarded',
+        reason: gate.reason,
+        extractedName: result.personName,
+        confidence: result.confidence,
+      });
+      return { inserted: false, approved: false };
+    }
+    if (gate.verdict === 'flag' && reviewStatus === 'approved') {
+      reviewStatus = 'pending';
+    }
   }
 
   let recordId: string;

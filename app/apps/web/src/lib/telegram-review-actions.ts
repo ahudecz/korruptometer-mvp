@@ -15,6 +15,7 @@ import {
   decideStatus,
   findExistingComplaint,
   findExistingVerdict,
+  gateVerdictInsert,
   hasIndividualResignationForInstitution,
   isCalledToResignPerson,
   isCollectiveEntityName,
@@ -325,6 +326,21 @@ export async function processCourtVerdict(article: ArticleForReprocess, todayIso
   if (!article.sourceUrl) {
     await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'court_verdict', outcome: 'discarded', reason: 'missing_source', extractedName: result.personName, confidence: result.confidence });
     return { status: 'discarded', reason: 'missing_source' };
+  }
+
+  // 2026-09-15 — ugyanaz az EGY kapu, mint a cron-detektorban
+  // (packages/db/src/verdict-gate.ts). Ez az útvonal korábban teljesen
+  // kimaradt a dedup-védőhálókból, pedig ugyanabba a táblába ír — és
+  // `bypassConfidenceGate` mellett egészen 'approved'-ig jut.
+  if (!existingVerdict) {
+    const gate = await gateVerdictInsert(db, { personName: result.personName, sourceUrl: article.sourceUrl });
+    if (gate.verdict === 'discard') {
+      await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'court_verdict', outcome: 'discarded', reason: gate.reason, extractedName: result.personName, confidence: result.confidence });
+      return { status: 'discarded', reason: gate.reason };
+    }
+    if (gate.verdict === 'flag' && reviewStatus === 'approved') {
+      reviewStatus = 'pending';
+    }
   }
 
   const verdictDate = resolveDate(result.verdictDate, article.publishedAt);

@@ -5,6 +5,7 @@ import * as schema from './schema';
 
 export * from './schema';
 export * from './review';
+export * from './verdict-gate';
 export * from './watchlist';
 export * from './detection-check';
 export * from './kormanyhu-match';
