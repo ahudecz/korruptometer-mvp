@@ -5998,6 +5998,142 @@ button {
   border: none;
 }
 
+/* ── Facebook reel beágyazás (2026-09-15) ────────────────────────────────
+   A lejátszó csak kattintásra töltődik be (fb-reel-embed.tsx); addig a
+   poszterkép látszik. A 9:16 arányt aspect-ratio tartja, hogy a kártya
+   magassága ne ugorjon a betöltéskor. */
+.fb-reel {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  background: #111;
+  overflow: hidden;
+}
+
+.fb-reel-frame,
+.fb-reel-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.fb-reel-poster {
+  padding: 0;
+  margin: 0;
+  background: #111;
+  cursor: pointer;
+  display: block;
+}
+
+.fb-reel-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.fb-reel-poster-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* A szöveg a kártya aljára kerül, nem középre: középen a play gomb ül,
+     a kettő egymásra csúszna. */
+  justify-content: flex-end;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+  padding: 0 14px 16px;
+  background: linear-gradient(160deg, #23262c, #111);
+  color: #fff;
+  text-align: center;
+}
+
+.fb-reel-poster-empty-author {
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 1.25;
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+
+.fb-reel-poster-empty-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #b9bcc2;
+}
+
+.fb-reel-play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.62);
+  color: #fff;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.fb-reel-poster:hover .fb-reel-play,
+.fb-reel-poster:focus-visible .fb-reel-play {
+  background: rgba(227, 25, 55, 0.92);
+  transform: translate(-50%, -50%) scale(1.06);
+}
+
+.fb-reel-poster:focus-visible {
+  outline: 3px solid #e31937;
+  outline-offset: -3px;
+}
+
+/* Kurált reel-szekció a /podcastok oldalon. A rács álló (9:16) videókból
+   áll, ezért keskenyebb oszlopok kellenek, mint a podcast-rácsnál. */
+.reel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.reel-card {
+  margin: 0;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+}
+
+.reel-card-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.reel-card-author {
+  font-weight: 700;
+  font-size: 14px;
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+
+.reel-card-date {
+  font-size: 12px;
+  color: #6b6b6b;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .reel-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+  }
+}
+
 .social-post-footer {
   border-top: 1px solid #f0f0f0;
   padding-top: 10px;
