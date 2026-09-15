@@ -5,7 +5,6 @@ import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
 import { getDb, schema } from '@/lib/db';
 import { UGYEK, UGYEK_REDIRECTS, type DescriptionBlock, type BreakingGroupArticle, type BigCaseVideo } from '../../_home/ugyek-config';
-import { getSubpagesForUgy } from '../../_home/ugyek-subpages';
 import { GALERIA } from '../../_home/galeria-config';
 import { WATCH_LIST } from '../../_home/watchlist-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../_home/cross-promo';
@@ -316,9 +315,6 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
   // (fentebb már a hír-lekérdezéshez is felhasznált lista) újrahasznosítja,
   // nincs külön karbantartandó kulcsszólista.
   const relatedComplaints = await getRelatedComplaintsForUgy(entry.articleKeywords ?? []);
-  // SEO hub & spoke: az ügyhöz tartozó mély aloldalak (l. ugyek-subpages.ts).
-  // A belső link innen kötelező — enélkül a Google nem találja meg őket.
-  const subpages = getSubpagesForUgy(entry.id);
   const suspiciousItems = entry.suspiciousItems ?? [];
 
   const descParagraphs = entry.descriptionBlocks ? [] : entry.description.split('\n\n').filter(Boolean);
@@ -626,26 +622,6 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
             </div>
           )}
         </div>
-
-        {/* ── Részletes háttér-aloldalak (SEO hub & spoke, 2026-09-15) ── */}
-        {subpages.length > 0 && (
-          <div className="seo-internal-links">
-            <h2 className="person-section-title">Részletes háttér</h2>
-            <p className="person-section-note">
-              Egy-egy részkérdés önálló, alaposabb feldolgozása — hogyan működik a rendszer,
-              amelyben az ügy megtörtént.
-            </p>
-            <div className="seo-internal-grid">
-              {subpages.map(sp => (
-                <Link key={sp.id} href={`/ugyek/${entry.id}/${sp.id}`} className="seo-internal-card">
-                  <span className="seo-internal-title">{sp.h1}</span>
-                  <span className="seo-internal-note">{sp.seoDescription}</span>
-                  <span className="seo-internal-cta">Elolvasom →</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* ── Kapcsolódó személyek ── */}
         {relatedPersons.length > 0 && (
