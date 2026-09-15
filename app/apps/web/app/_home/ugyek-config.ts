@@ -77,6 +77,11 @@ export interface UgyekConfig {
   responsibleGaleriaId?: string;
   photo?: string;
   photoCredit?: string;
+  /** 2026-09-15 (Volánbusz-ügy): többszereplős ügynél a `responsible` több
+   *  nevet is tartalmaz, a hero-fotó viszont EGY embert ábrázol — az alt
+   *  szöveg ilyenkor nem jöhet a `responsible`-ből, mert azzal a kép olyan
+   *  személyt is megnevezne, aki nincs rajta. */
+  photoAlt?: string;
   photoPosition?: string;
   summary: string;
   description: string;
@@ -140,7 +145,10 @@ export const UGYEK: UgyekConfig[] = [
     id: 'volanbusz-ugy',
     eyebrow: 'Aktív · 3 személy őrizetben',
     title: 'Volánbusz-ügy',
-    responsible: 'Szivek Norbert',
+    responsible: 'Jellinek Dániel és Szivek Norbert',
+    photo: '/images/persons/jellinek-daniel-ahang.webp',
+    photoAlt: 'Jellinek Dániel',
+    photoCredit: 'Jellinek Dániel — eredeti fotó: ahang.hu',
     estimatedDamageLabel: 'Becsült vagyoni hátrány',
     estimatedDamage: '~10 milliárd Ft — a Volán-társaságoknál 2015 és 2018 között',
     responsiblePersons: [

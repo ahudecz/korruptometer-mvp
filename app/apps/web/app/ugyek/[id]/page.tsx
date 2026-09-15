@@ -367,7 +367,7 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
             {photoUrl ? (
               <img
                 src={imgSrc(photoUrl)}
-                alt={entry.responsible ?? entry.title}
+                alt={entry.photoAlt ?? entry.responsible ?? entry.title}
                 className="person-photo-img"
                 style={photoPosition ? { objectPosition: photoPosition } : undefined}
               />

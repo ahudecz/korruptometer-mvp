@@ -1116,7 +1116,7 @@ export default async function HomePage() {
             id: 'volanbusz-ugy',
             eyebrow: 'Aktív · 3 személy őrizetben',
             title: 'Volánbusz-ügy',
-            responsible: 'Szivek Norbert',
+            responsible: 'Jellinek Dániel és Szivek Norbert',
             summary: 'A Volán-társaságok 2015 és 2018 között súlyosan túlárazott használt autóbuszokat vásároltak és béreltek — a nyomozás szerint mintegy 10 milliárd forintos vagyoni hátrányt okozva. 2026. szeptember 11-én nyolc embert gyanúsítottak meg, négy nappal később a Központi Nyomozó Főügyészség összehangolt akciójában három személyt őrizetbe vettek.',
             breakingAlert: {
               source: 'Ügyészség.hu',
