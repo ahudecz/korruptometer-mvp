@@ -103,7 +103,10 @@ const KEYWORDS = [
   // Sajtó, média — csak specifikus, NER-közeli cégek/kiadványok
   'mediaworks',
   // KESMA csoport — nyomtatott
-  'kesma', 'magyar nemzet', 'pesti srácok', 'világgazdaság',
+  // 'világgazdaság' (a KESMA-lap neve) szándékosan NINCS itt puszta
+  // kulcsszóként — l. VILAGGAZDASAG_CONTEXT lejjebb, ugyanaz a hibaosztály,
+  // mint az 'ász'/Hamász és 'kelet-magyarország' eset.
+  'kesma', 'magyar nemzet', 'pesti srácok',
   'délmagyarország', 'észak-magyarország', 'kisalföld',
   'petőfi népe', 'somogyi hírlap', 'zalai hírlap',
   'vas népe', 'tolnai népújság', 'fejér megyei hírlap',
@@ -135,6 +138,18 @@ const KEYWORDS = [
 
 // 'tisztítótűz' csak akkor releváns, ha politikai kontextusban szerepel
 const TISZTITOTUZ_CONTEXT = ['magyar péter', 'fidesz', 'vagyonvisszaszerzés'];
+
+// 2026-07-26 — 'világgazdaság' a KESMA-lap NEVE, de ugyanilyen gyakori
+// köznévként ("világgazdaság" = world economy) is előfordul. Egy iráni-húszi
+// tanker-támadásról szóló, teljesen külföldi Telex-cikk ("...ijesztettek rá
+// a világgazdaságra...") emiatt jutott át a szűrőn ÉS lett kiemelt hír is —
+// ugyanaz a hibaosztály, mint az 'ász'/Hamász eset. Csak akkor számít, ha
+// tényleg a lapról/médiaügyről van szó.
+const VILAGGAZDASAG_CONTEXT = ['szerkesztőség', 'főszerkesztő', 'újságíró', 'megszűn', 'bezár', 'leépítés', 'kiadó', 'kesma'];
+
+function isVilaggazdasagMediaEvent(text: string): boolean {
+  return includesAsWord(text, 'világgazdaság') && VILAGGAZDASAG_CONTEXT.some((ctx) => includesAsWord(text, ctx));
+}
 
 // ─── Tisza-kormány / állami cégek — kirúgás-kombináció ────────────────────
 // Csak akkor 'in', ha a névre/cégre ÉS kirúgás/felmentés szóra egyszerre illeszkedik.
@@ -218,6 +233,7 @@ export function isRelevant(headline: string, excerpt: string, extraNames: readon
   if (KEYWORDS.some((kw) => includesAsWord(text, kw))) return true;
   if (extraNames.some((n) => includesAsWord(text, n))) return true;
   if (includesAsWord(text, 'tisztítótűz') && TISZTITOTUZ_CONTEXT.some((ctx) => includesAsWord(text, ctx))) return true;
+  if (isVilaggazdasagMediaEvent(text)) return true;
   if (isResignWatchlistEvent(headline, excerpt)) return true;
   return false;
 }
@@ -232,8 +248,9 @@ const FEATURED_KEYWORDS = [
   // Személyek / ügyek (mindig kiemelt)
   'balásy', 'hankó', 'nka ',
   'matolcsy', 'mnb ',
-  // Médiabezárások / újságíró-kirúgások
-  'pesti srácok', 'világgazdaság',
+  // Médiabezárások / újságíró-kirúgások — 'világgazdaság' kikerült innen,
+  // l. VILAGGAZDASAG_CONTEXT (kétértelmű köznév/lapnév)
+  'pesti srácok',
   // Volvo-gate
   'volvo gate', 'volvo-gate', 'bánki erik',
   // Vagyonvisszaszerzés, kegyelmi botrány
@@ -245,6 +262,7 @@ export function shouldFeature(headline: string, excerpt: string): boolean {
   const text = `${headline} ${excerpt}`.toLowerCase();
   if (FEATURED_KEYWORDS.some((kw) => includesAsWord(text, kw))) return true;
   if (includesAsWord(text, 'tisztítótűz') && TISZTITOTUZ_CONTEXT.some((ctx) => includesAsWord(text, ctx))) return true;
+  if (isVilaggazdasagMediaEvent(text)) return true;
   return false;
 }
 

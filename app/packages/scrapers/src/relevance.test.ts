@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isRelevant, scrapeRelevanceTier, isForeignOrJunk, isBreaking } from './relevance';
+import { isRelevant, scrapeRelevanceTier, isForeignOrJunk, isBreaking, shouldFeature } from './relevance';
 
 describe('scrapeRelevanceTier', () => {
   it('"in" for a strong Hungarian-political keyword (free, no AI)', () => {
@@ -43,6 +43,79 @@ describe('isRelevant — resign-watchlist trigger words', () => {
         'Az újonnan kinevezett főigazgató visszavonta a gazdasági igazgató megbízását.',
       ),
     ).toBe(true);
+  });
+});
+
+describe('isRelevant — substring false positives (2026-07-15)', () => {
+  // 'kelet-magyarország' (KESMA-napilap) korábban elkapta a "kelet-
+  // magyarországi" földrajzi jelzőt is — egy vasvillával autókat rongáló
+  // férfiról szóló 444-es bűnügyi hír emiatt jutott át a szűrőn.
+  it('does not match the generic "kelet-magyarországi" geographic adjective', () => {
+    expect(
+      isRelevant(
+        'Vasvillával esett neki autóknak a kelet-magyarországi férfi, a kiérkező rendőrt pedig megharapta',
+        'Sokkolóval kellett földre vinni.',
+      ),
+    ).toBe(false);
+  });
+
+  // 'nka ' (NKA) korábban elkapta a "munka" szót is (mestermunka volt) — egy
+  // Mbappé elleni spanyol védekezésről szóló 444-es sportcikk emiatt jutott át.
+  it('does not match "munka" as a false positive for NKA', () => {
+    expect(
+      isRelevant('Taktikai mestermunka volt, ahogy a spanyolok hatástalanították Mbappéékat', ''),
+    ).toBe(false);
+  });
+
+  it('still matches real NKA mentions', () => {
+    expect(isRelevant('Botrány az NKA körül', 'Az NKA-nál visszaélésekre derült fény.')).toBe(true);
+    expect(isRelevant('Az NKA pályázatai', '')).toBe(true);
+  });
+
+  it('shouldFeature also does not match "munka" as a false positive for NKA', () => {
+    expect(
+      shouldFeature('Taktikai mestermunka volt, ahogy a spanyolok hatástalanították Mbappéékat', ''),
+    ).toBe(false);
+  });
+
+  // A generikus szóhatár-fix mellékesen egy MÁSIK, korábban észrevétlen
+  // ütközést is kijavít: 'ligeti' (Ligeti Miklós, Transparency) illeszkedett
+  // a "Városligeti" szó belsejébe is (Városliget/Városligeti fasor stb. —
+  // teljesen más téma, semmi köze Ligeti Miklóshoz).
+  it('does not match "Városligeti" as a false positive for the "ligeti" keyword', () => {
+    expect(isRelevant('Megújul a Városligeti Nagycirkusz', 'Jövőre nyit az új épület.')).toBe(false);
+    expect(shouldFeature('Megújul a Városligeti Nagycirkusz', 'Jövőre nyit az új épület.')).toBe(false);
+  });
+
+  it('still matches real "ligeti" mentions (word-initial or suffixed)', () => {
+    expect(isRelevant('Ligeti Miklós nyilatkozott', '')).toBe(true);
+    expect(isRelevant('', 'Ligeti szerint korrupció történt')).toBe(true);
+  });
+
+  // A szóhatár-fix jobb oldalon szándékosan nem szigorít, hogy a magyar
+  // toldalékolás (pl. "Orbán Viktort", "fideszes") ne törjön el.
+  it('still matches Hungarian suffixed/inflected forms (right side stays open)', () => {
+    expect(isRelevant('Orbán Viktort bírálta a sajtó', '')).toBe(true);
+    expect(isRelevant('Egy fideszes politikus nyilatkozott', '')).toBe(true);
+  });
+
+  // 2026-07-26 — 'világgazdaság' (a KESMA-lap neve) elkapta a köznévi
+  // "világgazdaságra" szót is egy iráni-húszi tanker-támadásról szóló,
+  // teljesen külföldi Telex-cikkben ("...ijesztettek rá a világgazdaságra
+  // az iráni háború régi-új frontján..."), amely emiatt átjutott a szűrőn
+  // ÉS kiemelt hír is lett — pedig a /kulfold/ URL-szekció miatt
+  // isForeignOrJunk() kidobta volna, ha isRelevant() nem előzi meg.
+  it('does not match "világgazdaságra" as a false positive for the KESMA outlet name', () => {
+    const headline = 'Lángoló tankerrel ijesztettek rá a világgazdaságra az iráni háború régi-új frontján';
+    const excerpt = 'A húszik blokád alá vonták a Vörös-tenger egyik kulcsfontosságú szorosát.';
+    expect(isRelevant(headline, excerpt)).toBe(false);
+    expect(shouldFeature(headline, excerpt)).toBe(false);
+    expect(isForeignOrJunk(headline, excerpt, 'https://telex.hu/kulfold/2026/07/26/valami')).toBe(true);
+  });
+
+  it('still matches real "Világgazdaság" outlet mentions in a media-closure context', () => {
+    expect(isRelevant('Leépítés a Világgazdaságnál', 'Több újságírót is elküldött a szerkesztőség.')).toBe(true);
+    expect(shouldFeature('Leépítés a Világgazdaságnál', 'Több újságírót is elküldött a szerkesztőség.')).toBe(true);
   });
 });
 
