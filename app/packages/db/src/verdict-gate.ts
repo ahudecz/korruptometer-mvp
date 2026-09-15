@@ -98,14 +98,33 @@ export function isMultiPersonName(name: string): boolean {
   return parts.filter(looksLikeFullName).length >= 2;
 }
 
-/** Létezik-e már CourtVerdict sor, amely EBBŐL a cikkből született. */
-export async function findVerdictBySourceUrl(
+/**
+ * Melyik táblát védjük, és melyik oszlop hordozza a nevet.
+ *
+ * `fragmentMatch`: a töredék-név egyezést csak ott kapcsoljuk be, ahol a
+ * névoszlop TÉNYLEG egy személyt azonosít. A `CriminalComplaint.targetName`
+ * gyakran ügy-címke ("NKA-botrány"), ami szándékosan ismétlődik több soron —
+ * ott a töredék-egyezés tömegesen, hamisan jelezne, és a meglévő
+ * `findExistingComplaint()` (összeg- és bejelentő-egyeztetéssel) amúgy is
+ * sokkal pontosabb. A név-alaki és a forrás-URL jel viszont ott is érvényes.
+ */
+const GATE_TABLES = {
+  CourtVerdict: { nameColumn: 'personName', fragmentMatch: true },
+  CriminalComplaint: { nameColumn: 'targetName', fragmentMatch: false },
+} as const;
+
+export type GateTable = keyof typeof GATE_TABLES;
+
+/** Létezik-e már sor az adott táblában, amely EBBŐL a cikkből született. */
+export async function findRowBySourceUrl(
   db: Executable,
+  table: GateTable,
   sourceUrl: string,
 ): Promise<{ id: string; personName: string } | null> {
   if (!sourceUrl.trim()) return null;
   const rows = (await db.execute(sql`
-    SELECT id, "personName" FROM "CourtVerdict"
+    SELECT id, ${sql.identifier(GATE_TABLES[table].nameColumn)} AS "personName"
+    FROM ${sql.identifier(table)}
     WHERE ${sourceUrl} = ANY("sourceUrls")
     LIMIT 1
   `)) as unknown as Array<{ id: string; personName: string }>;
@@ -148,8 +167,9 @@ export async function findVerdictByNameFragment(
  * forrás-URL és a töredék-név egyezés nem duplikátum-jel, hanem maga a
  * keresett sor.
  */
-export async function gateVerdictInsert(
+export async function gateRowInsert(
   db: Executable,
+  table: GateTable,
   input: { personName: string; sourceUrl?: string | null },
 ): Promise<VerdictGateResult> {
   if (hasInitialsTokens(input.personName)) {
@@ -159,14 +179,35 @@ export async function gateVerdictInsert(
     return { verdict: 'flag', reason: 'multi_person_name' };
   }
   if (input.sourceUrl) {
-    const bySource = await findVerdictBySourceUrl(db, input.sourceUrl);
+    const bySource = await findRowBySourceUrl(db, table, input.sourceUrl);
     if (bySource) {
       return { verdict: 'flag', reason: 'source_url_reused', conflictsWith: bySource };
     }
   }
-  const byFragment = await findVerdictByNameFragment(db, input.personName);
-  if (byFragment) {
-    return { verdict: 'flag', reason: 'fragment_name_match', conflictsWith: byFragment };
+  if (GATE_TABLES[table].fragmentMatch) {
+    const byFragment = await findVerdictByNameFragment(db, input.personName);
+    if (byFragment) {
+      return { verdict: 'flag', reason: 'fragment_name_match', conflictsWith: byFragment };
+    }
   }
   return { verdict: 'ok' };
+}
+
+/** CourtVerdict-beszúrás kapuja. */
+export function gateVerdictInsert(
+  db: Executable,
+  input: { personName: string; sourceUrl?: string | null },
+): Promise<VerdictGateResult> {
+  return gateRowInsert(db, 'CourtVerdict', input);
+}
+
+/**
+ * CriminalComplaint-beszúrás kapuja. A `personName` mezőbe a `targetName`
+ * megy (a feljelentés tárgya) — l. GATE_TABLES.
+ */
+export function gateComplaintInsert(
+  db: Executable,
+  input: { personName: string; sourceUrl?: string | null },
+): Promise<VerdictGateResult> {
+  return gateRowInsert(db, 'CriminalComplaint', input);
 }

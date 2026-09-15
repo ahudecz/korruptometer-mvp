@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  gateComplaintInsert,
   gateVerdictInsert,
   hasInitialsTokens,
   isMultiPersonName,
@@ -108,5 +109,32 @@ describe('gateVerdictInsert', () => {
   it('forrás-URL nélkül is lefut (csak a név-ágakat nézi)', async () => {
     const r = await gateVerdictInsert(emptyDb, { personName: 'Teljesen Új Ember', sourceUrl: null });
     expect(r.verdict).toBe('ok');
+  });
+});
+
+describe('gateComplaintInsert (CriminalComplaint)', () => {
+  const emptyDb = { execute: async () => [] };
+
+  it('a monogramos gyűjtőnevet ott is eldobja', async () => {
+    const r = await gateComplaintInsert(emptyDb, { personName: INITIALS, sourceUrl: 'https://x.hu/a' });
+    expect(r.verdict).toBe('discard');
+  });
+
+  it('jelzi, ha ugyanabból a cikkből már született feljelentés-sor', async () => {
+    const db = { execute: async () => [{ id: 'c1', personName: 'Volánbusz-ügy' }] };
+    const r = await gateComplaintInsert(db, { personName: 'Másik ügy', sourceUrl: 'https://x.hu/a' });
+    expect(r.verdict).toBe('flag');
+    expect(r.reason).toBe('source_url_reused');
+  });
+
+  // A feljelentés-címkék szándékosan ismétlődnek ('NKA-botrány' több soron
+  // is), ezért a töredék-név egyezés ITT nincs bekapcsolva — különben
+  // tömegesen, hamisan küldene mindent jóváhagyásra.
+  it('NEM jelez töredék-név egyezésre', async () => {
+    let calls = 0;
+    const db = { execute: async () => { calls += 1; return []; } };
+    const r = await gateComplaintInsert(db, { personName: 'NKA-botrány', sourceUrl: 'https://uj.hu/c' });
+    expect(r.verdict).toBe('ok');
+    expect(calls).toBe(1); // csak a forrás-URL lekérdezés futott
   });
 });

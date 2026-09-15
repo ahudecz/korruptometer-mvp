@@ -34,6 +34,7 @@ import postgres from 'postgres';
 import { eq, sql as dsql } from 'drizzle-orm';
 import * as schema from './schema';
 import { decideStatus, findExistingComplaint, decideComplaintTransition, type ComplaintStatus } from './review';
+import { gateComplaintInsert } from './verdict-gate';
 import { isWatchlistPerson } from './watchlist';
 import {
   articleDateIso,
@@ -175,7 +176,7 @@ async function main() {
       }
 
       const isWatchlist = isWatchlistPerson(complaint.filerName) || isWatchlistPerson(complaint.targetName);
-      const reviewStatus = decideStatus(complaint.confidence, isWatchlist);
+      let reviewStatus = decideStatus(complaint.confidence, isWatchlist);
       if (reviewStatus === 'discard') {
         console.log(`\n  ↳ ${complaint.targetName}: alacsony bizonyosság (${complaint.confidence.toFixed(2)})`);
         lastReason = 'low_confidence';
@@ -221,6 +222,19 @@ async function main() {
           await notifyPending({ targetName: complaint.targetName, filerName: complaint.filerName, confidence: complaint.confidence, articleUrl: article.sourceUrl, recordId: existing.id });
         }
         continue;
+      }
+
+      // 2026-09-15 — ugyanaz az EGY kapu, mint a cron-detektorban és a
+      // Telegram-útvonalon (l. verdict-gate.ts). Ez a kézi pótló script
+      // ugyanabba a táblába ír, tehát ugyanaz a kapu kell elé.
+      const gate = await gateComplaintInsert(db, { personName: complaint.targetName, sourceUrl: article.sourceUrl });
+      if (gate.verdict === 'discard') {
+        console.log(`  kihagyva (${gate.reason}): ${complaint.targetName}`);
+        continue;
+      }
+      if (gate.verdict === 'flag' && reviewStatus === 'approved') {
+        console.log(`  jóváhagyásra küldve (${gate.reason}): ${complaint.targetName}`);
+        reviewStatus = 'pending';
       }
 
       const [row] = await db.insert(schema.criminalComplaints).values({

@@ -15,6 +15,7 @@ import {
   decideStatus,
   findExistingComplaint,
   findExistingVerdict,
+  gateComplaintInsert,
   gateVerdictInsert,
   hasIndividualResignationForInstitution,
   isCalledToResignPerson,
@@ -594,6 +595,19 @@ export async function processCriminalComplaint(article: ArticleForReprocess, tod
         updatedIds.push(existing.id);
       }
       continue;
+    }
+
+    // 2026-09-15 — ugyanaz az EGY kapu, mint az ítélet-ágon, l.
+    // packages/db/src/verdict-gate.ts. A CriminalComplaint-nél a töredék-név
+    // jel KI van kapcsolva (az ügy-címkék szándékosan ismétlődnek) — a
+    // név-alaki és a forrás-URL jel viszont itt is érvényes.
+    const gate = await gateComplaintInsert(db, { personName: complaint.targetName, sourceUrl: article.sourceUrl });
+    if (gate.verdict === 'discard') {
+      lastDiscardReason = gate.reason;
+      continue;
+    }
+    if (gate.verdict === 'flag' && reviewStatus === 'approved') {
+      reviewStatus = 'pending';
     }
 
     const [row] = await db.insert(schema.criminalComplaints).values({
