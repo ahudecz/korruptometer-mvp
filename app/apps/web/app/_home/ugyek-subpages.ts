@@ -58,6 +58,11 @@ export type SubpageBlock =
   /** `srcMobile`: külön, álló elrendezésű változat — a fekvő ábrák 400px-en
    *  olvashatatlanra zsugorodnak (user report, 2026-09-15). */
   | { type: 'image'; src: string; srcMobile?: string; alt: string; caption?: string }
+  /** A CourtVerdict táblából élőben töltött kényszerintézkedés-táblázat —
+   *  l. src/lib/case-detentions.ts. Ugyanabból a forrásból, mint a
+   *  /birosagi-iteletek oldal, hogy egy új letartóztatás magától
+   *  mindkét helyen megjelenjen. */
+  | { type: 'detention-table'; heading: string; id?: string; intro?: string; ugyId: string; acronym?: string; note?: string }
   | { type: 'article-card'; source: string; headline: string; lead: string; url: string; date?: string }
   | { type: 'video'; id: string; label?: string; title: string; summary?: string };
 
@@ -389,6 +394,168 @@ export const UGY_SUBPAGES: UgySubpage[] = [
       { label: 'Korrupciós adatbázis', href: '/adatbazis', note: 'Ügyenként dokumentált közpénz-érintettség és források.' },
       { label: 'Lemondások és felmentések', href: '/lemondasok', note: 'Bús Balázs, Báán László és Vidnyánszky Attila NKA-s pozíciójának sorsa is itt.' },
       { label: 'Visszaszerzett vagyon', href: '/visszaszerzett-vagyon', note: 'Mennyi közpénz folyt eddig vissza az államhoz — az 1,69 milliárd NKA-s visszautalással együtt.' },
+    ],
+  },
+  {
+    id: 'nka-letartoztatas',
+    parentId: 'nka-botrany',
+    seoTitle: 'NKA letartóztatás — kit tartóztattak le eddig az NKA-botrányban?',
+    seoDescription:
+      'Az NKA-botrány összes letartóztatottja egy listán, napra kész adatbázisból: ki van még előzetesben, kit engedtek szabadon, és mi a gyanú ellenük.',
+    h1: 'NKA letartóztatás: kit tartóztattak le eddig az NKA-botrányban?',
+    eyebrow: 'NKA-botrány · letartóztatások',
+    lead:
+      'Az első NKA letartóztatás 2026. június 23-án történt, amikor a NAV hat embert vett őrizetbe. Azóta az NKA-botrányban hét ember került előzetes letartóztatásba, közülük kettőt már szabadlábra helyeztek. Az alábbi lista az adatbázisunkból frissül: amint egy újabb NKA letartóztatás nyilvánossá válik, automatikusan megjelenik itt is.',
+    publishedAt: '2026-09-15',
+    updatedAt: '2026-09-15',
+    heroImage: {
+      src: '/images/persons/bus-balazs.webp',
+      alt: 'Bús Balázs, az NKA volt alelnöke, az NKA-botrány egyik letartóztatottja',
+      credit: 'Eredeti fotó: obuda.hu',
+    },
+    promo: {
+      eyebrow: 'Háttér · NKA-letartóztatások',
+      title: 'Ki ül most az NKA-botrány miatt? Nézd meg a teljes listát',
+      lead:
+        'Napra kész lista arról, kit tartóztattak le eddig az NKA-ügyben, ki van még előzetesben, és kit engedtek szabadon. Mellette az is, mi a gyanú ellenük, melyik bíróság döntött, és honnan tudjuk. Az adatbázisunkból frissül, tehát mindig a friss állapotot látod.',
+      cta: 'Megnézem a letartóztatottakat',
+    },
+    blocks: [
+      {
+        type: 'detention-table',
+        id: 'lista',
+        heading: 'Az NKA-botrány letartóztatottjai — a teljes lista',
+        intro:
+          'Ez a táblázat ugyanabból az adatbázisból jön, mint a „Börtönben van-e?” oldalunk, ezért nem kézi lista: minden új NKA letartóztatás automatikusan megjelenik itt, amint bekerül a nyilvántartásunkba. A státusz-oszlop a legutóbbi ismert bírósági döntést mutatja.',
+        ugyId: 'nka-botrany',
+        acronym: 'NKA',
+        note:
+          'Az előzetes letartóztatás kényszerintézkedés, nem büntetés, és nem jelenti a bűnösség megállapítását. Jogerős ítélet az NKA-ügyben eddig egyetlen érintett esetében sem született, tehát mindannyian ártatlannak tekintendők.',
+      },
+      {
+        type: 'text',
+        id: 'elso-hullam',
+        heading: 'Az első NKA letartóztatás: a 2026. június 23-i hajnali akció',
+        content:
+          'Az ügy első kényszerintézkedéseire 2026. június 23-án került sor. A Nemzeti Adó- és Vámhivatal nyomozói ezen a napon hat embert vettek őrizetbe hűtlen kezelés bűntettének megalapozott gyanújával, és ezzel indult el az a sorozat, amit ma NKA letartóztatás néven keres a legtöbb olvasó. A NAV saját közleménye szerint a nyomozás több mint 17 milliárd forintnyi pályázati kifizetést érint. Az őrizetbe vettek között volt a Nemzeti Kulturális Támogatáskezelő (NKTK) főigazgatója, Krucsainé Herter Anikó és kabinetvezetője, Unger Erika, továbbá a Kulturális és Innovációs Minisztérium két korábbi kabinetfőnök-helyettese, Burom Gábor és Zámbó Nóra. A hatodik őrizetbe vett Ughy Attila, Budapest XVIII. kerületének volt polgármestere volt. A hatóság mind a hat esetben indítványozta a letartóztatást az ügyészségnél.',
+      },
+      {
+        type: 'video',
+        id: 'Siut6OuE0rU',
+        label: 'ATV',
+        title: 'NKA-botrány: újabb gyanúsítások, újabb letartóztatások',
+        summary:
+          'Az ATV összefoglalója a bővülő gyanúsítotti körről — jól mutatja, hogyan gyűrűzött tovább az ügy az első hullám után.',
+      },
+      {
+        type: 'text',
+        id: 'bus-balazs',
+        heading: 'Bús Balázs: a legismertebb név az NKA letartóztatottjai között',
+        content:
+          'A leggyakrabban keresett NKA letartóztatás Bús Balázsé, az NKA korábbi alelnökéé, aki 2010 és 2019 között Óbuda–Békásmegyer fideszes polgármestere volt. Őt szintén a júniusi akcióban vették őrizetbe, és a sajtóértesülések szerint részletes vallomást tett. Az ő ügyében látszik a legjobban, hogy az előzetes letartóztatás nem egyszeri döntés, hanem ismételten felülvizsgált állapot: a Kecskeméti Járásbíróság 2026 júliusában három hónappal meghosszabbította Bús Balázs és további három gyanúsított letartóztatását. A bíróság indoklása szerint fennállt a szökés, az elrejtőzés és az eljárás befolyásolásának veszélye — ugyanaz a három klasszikus indok, amivel a bíróságok az NKA-ügy többi letartóztatását is elrendelték.',
+      },
+      {
+        type: 'video',
+        id: 'PASyBX6xh6c',
+        label: 'ATV',
+        title: 'NKA-botrány: őrizetbe vették és gyanúsítottként hallgatták ki Bús Balázst',
+        summary:
+          'A tudósítás Bús Balázs őrizetbe vételéről — ő az NKA korábbi alelnöke, és az ügy legismertebb letartóztatottja.',
+      },
+      {
+        type: 'text',
+        id: 'hetedik',
+        heading: 'A hetedik gyanúsított és az első szabadlábra helyezés',
+        content:
+          'A következő NKA letartóztatás 2026 júliusában történt: a Fidesz frakciójának egyik, kormánytisztviselőként is dolgozó munkatársát vitték el hajnalban otthonából. A párt először nem volt hajlandó megnevezni az érintettet, és politikailag motiváltnak nevezte az eljárásokat. Néhány nappal később derült ki, hogy Konczos Nóráról, Hankó Balázs volt kulturális miniszter egykori kabinetfőnökéről van szó; a gyanú szerint ő kérte egy e-mailben, hogy biztosítsák a pénzt Mága Zoltán pályázatára, amelyben 500 millió forintot szántak a cigány szavazók, az idősek és a politikailag bizonytalan választók megszólítására. Az ő esete lett az első, ahol a kényszerintézkedés enyhült: 2026. augusztus 19-én a bíróság megszüntette az előzetes letartóztatását, és bűnügyi felügyelet alá helyezte. Egy héttel később egy másik, a sajtó által soha nem nevesített gyanúsított is kikerült az előzetesből. Ez a két eset jól mutatja, hogy egy NKA letartóztatás nem végleges állapot — a bíróság bármikor enyhítheti vagy szigoríthatja.',
+      },
+      {
+        type: 'text',
+        id: 'fasy-szal',
+        heading: 'A Fásy-szál: a szeptemberi NKA letartóztatás egy dokumentumfilm miatt',
+        content:
+          'A 2026. szeptemberi NKA letartóztatás már nem hivatalnokokat, hanem a pénz végső felhasználóit érte el. A NAV szeptember 7-én vett őrizetbe két embert egy négyrészes dokumentumfilm támogatása miatt, majd a Kecskeméti Járásbíróság szeptember 9-én egy hónapra letartóztatta Fásyné Gurzó Máriát, Fásy Ádám feleségét, és Szabó Sándort, a megbízó Munkácsy Art Kft. tulajdonos-ügyvezetőjét. A gyanú bűnszövetségben elkövetett költségvetési csalás és hamis magánokirat felhasználása: a film első két részére 82,55 millió forint érkezett az NKA 790-es keretéből, a harmadik és negyedik részre pedig 89,9 millió forint Hankó Balázs 447-es miniszteri keretéből, az elszámolás határidejére viszont a film nem készült el, az elkészültét pedig fiktív számlákkal igazolták volna. Fontos pontosítás, mert sokan keverik: Fásy Ádám ellen tudomásunk szerint nem folyik eljárás, ő nem szerepel az NKA letartóztatottjai között.',
+      },
+      {
+        type: 'video',
+        id: 'OfMzRRIJ9WQ',
+        label: 'Telex',
+        title: 'Segélyszervezetnek tűnt, aztán rájöttünk, hogy ez a Fidesz – az NKA-botrány mélyére mentünk',
+        summary:
+          'A Telex oknyomozó videója arról a szervezeti hálóról, amelyből a pénz egy része kifolyt — ez a háttér vezetett a gyanúsításokhoz és a letartóztatásokhoz.',
+      },
+      {
+        type: 'text',
+        id: 'mit-jelent',
+        heading: 'Mit jelent pontosan az előzetes letartóztatás?',
+        content:
+          'Egy NKA letartóztatás hírének olvasásakor érdemes tudni, mit jelentenek a jogi fokozatok, mert a sajtó gyakran felcseréli őket. Az őrizetbe vétel legfeljebb 72 órás intézkedés; ezalatt az ügyészségnek indítványoznia kell a letartóztatást, különben az érintettet el kell engedni. A letartóztatásról már bíróság dönt, jellemzően egy hónapra, és ezt meghosszabbíthatja — Bús Balázs esetében három hónappal. A törvényi indokok kötöttek: a szökés vagy elrejtőzés veszélye, az eljárás befolyásolásának, például a tanúk megfélemlítésének veszélye, illetve a bűnismétlés veszélye. Enyhébb eszköz a bűnügyi felügyelet, ami lakhelyelhagyási tilalommal jár, de nem fogva tartás — Konczos Nóra ezt kapta. Egyik fokozat sem ítélet: a gyanúsított mindaddig ártatlannak tekintendő, amíg a bíróság jogerősen mást nem mond, és az NKA-ügyben ez eddig egyetlen esetben sem történt meg.',
+      },
+      {
+        type: 'video',
+        id: 'msRqbs0R_-c',
+        label: 'Molnár Áron',
+        title: 'Újabb NKA-botrány: 45 millió közpénz, mégis 0 Ft bevétel?!',
+        summary:
+          'Molnár Áron összeállítása egy újabb gyanús NKA-támogatásról — az ő bejelentései nyomán indult el az ügy jelentős része, a NAV őt tanúként hallgatta ki.',
+      },
+      {
+        type: 'text',
+        id: 'hol-tart',
+        heading: 'Hol tart most az ügy, és várható-e újabb NKA letartóztatás?',
+        content:
+          'A nyomozás 2026 őszén is zajlik, és földrajzilag is terjed: Budapest mellett Győrben is eljárás indult, ahol négy helyi kulturális szervezet kapott aránytalanul nagy összegeket úgy, hogy érdemi tevékenységet nem folytattak, és a bejegyzési dátumuk is közös volt. A gyanúsítotti kör kilenc fő fölé bővült, a vizsgált kifizetések összege pedig meghaladja a 17 milliárd forintot. Mivel az ügy a támogatások végső felhasználói felé halad — ezt mutatja a szeptemberi, dokumentumfilmes szál —, további NKA letartóztatás reálisan várható. A politikai felelősség kérdése külön szálon fut: Hankó Balázs volt kulturális miniszter ellen nem folyik eljárás, miközben a vitatott kifizetések az ő miniszteri keretéből indultak, és a mentelmi jogának kikérését többen is sürgetik. Ez az oldal a hatósági közleményeket és a dokumentált sajtóértesüléseket követi, és minden újabb kényszerintézkedéssel frissül.',
+      },
+      {
+        type: 'video',
+        id: 'KnzfHvXsZKg',
+        label: 'HETI NAPLÓ',
+        title: 'NKA-botrány: Molnár Áron miatt nem kapott állami támogatást Duda Éva táncművész',
+        summary:
+          'A Heti Napló riportja arról, hogy az NKA-nál a támogatás megvonása is politikai döntés lehetett — a botrány másik, ritkábban tárgyalt oldala.',
+      },
+    ],
+    faq: [
+      {
+        q: 'Hány embert tartóztattak le az NKA-botrányban?',
+        a: 'Eddig hét embert helyeztek előzetes letartóztatásba: hatot a 2026. június 23-i NAV-akció után, egyet júliusban. Közülük kettő már szabadlábon van, a többiek ellen az eljárás folyamatban van. A fenti lista mindig a friss állapotot mutatja.',
+      },
+      {
+        q: 'Ki volt az első letartóztatott az NKA-ügyben?',
+        a: 'Az első NKA letartóztatás a 2026. június 23-i NAV-akcióhoz köthető, amikor hat embert vettek őrizetbe egyszerre — köztük az NKTK főigazgatóját, Krucsainé Herter Anikót, az NKA korábbi alelnökét, Bús Balázst, és Ughy Attilát, Budapest XVIII. kerületének volt polgármesterét.',
+      },
+      {
+        q: 'Letartóztatták Fásy Ádámot?',
+        a: 'Nem. Fásy Ádám ellen tudomásunk szerint nem folyik eljárás. A feleségét, Fásyné Gurzó Máriát helyezte letartóztatásba a Kecskeméti Járásbíróság 2026. szeptember 9-én, Szabó Sándorral, a megbízó cég tulajdonos-ügyvezetőjével együtt.',
+      },
+      {
+        q: 'Meddig tarthat az előzetes letartóztatás?',
+        a: 'A bíróság jellemzően egy hónapra rendeli el, és ezt meghosszabbíthatja — Bús Balázs esetében három hónappal. Az őrizetbe vétel ettől külön intézkedés, az legfeljebb 72 óráig tarthat, azalatt kell az ügyészségnek a letartóztatást indítványoznia.',
+      },
+      {
+        q: 'Kit engedtek szabadon az NKA-ügyben?',
+        a: 'Konczos Nórát, Hankó Balázs egykori kabinetfőnökét 2026. augusztus 19-én bűnügyi felügyelet alá helyezték, megszüntetve az előzetes letartóztatását. Egy héttel később egy másik, a sajtó által nem nevesített gyanúsított is kikerült az előzetesből.',
+      },
+      {
+        q: 'Miért nem tartóztatták le Hankó Balázst?',
+        a: 'Hankó Balázs volt kulturális miniszter ellen tudomásunk szerint nem indult eljárás, noha a vitatott kifizetések jelentős része az ő 447-es miniszteri keretéből indult. A mentelmi jogának kikérését többen nyilvánosan is sürgették.',
+      },
+    ],
+    sources: [
+      { label: 'NAV.hu: Áttörés az NKA-ügyben — hat személyt vett őrizetbe a NAV (jún. 23.)', url: 'https://nav.gov.hu/sajtoszoba/hirek/Attores_az_NKA-ugyben' },
+      { label: 'Telex: NKA-botrány — hat személyt vett őrizetbe a NAV (jún. 23.)', url: 'https://telex.hu/belfold/2026/06/23/nka-botrany-hat-szemelyt-orizetbe-vett-a-nav-hanko-balazs-tarr-zoltan' },
+      { label: '444: Újabb fideszes gyanúsított és letartóztatás az NKA-ügyben (júl. 22.)', url: 'https://444.hu/2026/07/22/ujabb-fideszes-gyanusitott-es-letartoztatas-az-nka-ugyben' },
+      { label: 'Telex: Letartóztatták Hankó Balázs egykori kabinetfőnökét, Konczos Nórát (júl. 23.)', url: 'https://telex.hu/belfold/2026/07/23/nka-letartoztatas-hanko-kabinetfonok' },
+      { label: 'HVG: Bűnügyi felügyelet — kikerült az előzetesből az NKA-ügy egyik gyanúsítottja (aug. 26.)', url: 'https://hvg.hu/itthon/20260826_nka-botrany-gyanusitott-letartoztatas-bunugyi-felugyelet' },
+      { label: '444: Őrizetbe vettek két embert egy, a Fásy családhoz köthető dokumentumfilm miatt (szept. 8.)', url: 'https://444.hu/2026/09/08/orizetbe-vettek-ket-embert-egy-fasy-csaladhoz-kotheto-dokumentumfilm-miatt' },
+      { label: 'Telex: NKA-botrány — letartóztatták Fásy Ádám feleségét (szept. 9.)', url: 'https://telex.hu/belfold/2026/09/09/nka-botrany-fasy-dokumentumfilm-letartoztatas-birosag' },
+      { label: 'Portfolio: Dagad az NKA-botrány, már Győrben is nyomoznak (jún. 16.)', url: 'https://www.portfolio.hu/gazdasag/20260616/dagad-az-nka-botrany-mar-gyorben-is-nyomoznak-843584' },
+    ],
+    internalLinks: [
+      { label: 'Börtönben van-e már?', href: '/birosagi-iteletek', note: 'Az összes NER-hez kapcsolható eljárás — nem csak az NKA-ügy — ugyanebből az adatbázisból.' },
+      { label: 'NKA pályázatok — hogyan működött a rendszer', href: '/ugyek/nka-botrany/nka-palyazatok', note: 'A 447-es és 790-es keret, és hogy min csúszott el az egész.' },
+      { label: 'NKA botrány — a teljes ügy idővonala', href: '/ugyek/nka-botrany', note: 'Hatósági közlemények, videók, napi frissítéssel.' },
+      { label: 'Lemondások és felmentések', href: '/lemondasok', note: 'Bús Balázs, Báán László és Vidnyánszky Attila NKA-s pozíciójának sorsa.' },
     ],
   },
 ];

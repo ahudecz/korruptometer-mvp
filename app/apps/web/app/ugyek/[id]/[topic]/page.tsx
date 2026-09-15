@@ -5,12 +5,13 @@ import { notFound } from 'next/navigation';
 import { UGYEK } from '../../../_home/ugyek-config';
 import { UGY_SUBPAGES, getSubpage, type InlineLink, type SubpageBlock, type TableCell, type UgySubpage } from '../../../_home/ugyek-subpages';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../../_home/cross-promo';
+import { loadCaseDetentions, isStillDetained, type CaseDetentionRow } from '@/lib/case-detentions';
 
-// Ezek az oldalak tisztán statikus, konfigból jövő tartalmak (nincs DB-hívás),
-// ezért — a szülő ügyoldallal ellentétben — hagyjuk őket előrenderelni.
-// SEO-szempontból ez a lényeg: a Googlebot azonnal kiszolgált HTML-t kap.
-export const dynamic = 'force-static';
-export const revalidate = 3600;
+// SEO-szempontból a lényeg, hogy a Googlebot azonnal kiszolgált HTML-t
+// kapjon, ezért ISR-rel dolgozunk. 10 perc: a letartóztatás-táblázat élő
+// adatot olvas a CourtVerdict táblából (l. case-detentions.ts), és egy új
+// NKA-s letartóztatás ennyi időn belül magától megjelenik itt is.
+export const revalidate = 600;
 
 const SITE = 'https://www.kegyencjarat.hu';
 
@@ -110,7 +111,89 @@ function tableCell(cell: TableCell): React.ReactNode {
   );
 }
 
-function Block({ block }: { block: SubpageBlock }) {
+function DetentionTable({
+  block,
+  rows,
+}: {
+  block: Extract<SubpageBlock, { type: 'detention-table' }>;
+  rows: CaseDetentionRow[];
+}) {
+  // Előzetesben lévők előre, a szabadlábra helyezettek a lista végére —
+  // ugyanaz a partíció, mint a /birosagi-iteletek verdict-stats.ts-ében.
+  const sorted = [...rows].sort((a, b) => {
+    const da = isStillDetained(a.verdictType) ? 0 : 1;
+    const db = isStillDetained(b.verdictType) ? 0 : 1;
+    if (da !== db) return da - db;
+    return b.verdictDate.getTime() - a.verdictDate.getTime();
+  });
+  const detained = sorted.filter((r) => isStillDetained(r.verdictType)).length;
+  return (
+    <div className="ugy-block-text" id={block.id}>
+      <h2 className="ugy-block-heading">{block.heading}</h2>
+      {block.intro && <p>{block.intro}</p>}
+      {sorted.length === 0 ? (
+        <p className="seo-table-note">
+          A lista éppen nem elérhető — nézd meg addig a{' '}
+          <Link href="/birosagi-iteletek">Börtönben van-e? oldalt</Link>.
+        </p>
+      ) : (
+        <>
+          <p className="seo-detention-count">
+            <strong>{sorted.length}</strong> nyilvántartott kényszerintézkedés ·{' '}
+            <strong>{detained}</strong> érintett van jelenleg is előzetes letartóztatásban
+          </p>
+          <div className="seo-table-wrap">
+            <table className="seo-table seo-detention-table">
+              <thead>
+                <tr>
+                  <th scope="col">Név</th>
+                  <th scope="col">Pozíció</th>
+                  <th scope="col">Státusz</th>
+                  <th scope="col">Dátum</th>
+                  <th scope="col">Gyanú</th>
+                  <th scope="col">Forrás</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sorted.map((r) => (
+                  <tr key={r.id}>
+                    <th scope="row">{r.personName}</th>
+                    <td>{r.position}</td>
+                    <td>
+                      <span
+                        className={
+                          isStillDetained(r.verdictType)
+                            ? 'seo-status seo-status-in'
+                            : 'seo-status seo-status-out'
+                        }
+                      >
+                        {isStillDetained(r.verdictType) ? 'Előzetesben' : 'Szabadlábon'}
+                      </span>
+                    </td>
+                    <td>{huDate(r.verdictDate.toISOString().slice(0, 10))}</td>
+                    <td>{r.crimes.length > 0 ? r.crimes.join(', ') : '—'}</td>
+                    <td>
+                      {r.sourceUrl ? (
+                        <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer">
+                          {r.sourceName ?? 'Forrás'} →
+                        </a>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+      {block.note && <p className="seo-table-note">{block.note}</p>}
+    </div>
+  );
+}
+
+function Block({ block, detentions }: { block: SubpageBlock; detentions: CaseDetentionRow[] }) {
   switch (block.type) {
     case 'text':
       return (
@@ -185,6 +268,8 @@ function Block({ block }: { block: SubpageBlock }) {
           {block.note && <p className="seo-table-note">{block.note}</p>}
         </div>
       );
+    case 'detention-table':
+      return <DetentionTable block={block} rows={detentions} />;
     case 'image':
       // A fekvő ábrák 400px-en olvashatatlanra zsugorodnak, ezért ahol van
       // álló változat, ott a böngésző azt tölti le (és CSAK azt — a <picture>
@@ -241,6 +326,15 @@ export default async function UgySubPage({ params }: { params: Promise<{ id: str
 
   const url = `${SITE}/ugyek/${sub.parentId}/${sub.id}`;
   const toc = tocItems(sub);
+
+  // A letartóztatás-táblázat élő adata. Egyetlen lekérdezés akkor is, ha
+  // több ilyen blokk lenne; ha nincs ilyen blokk, nincs DB-hívás sem.
+  const detentionBlock = sub.blocks.find(
+    (b): b is Extract<SubpageBlock, { type: 'detention-table' }> => b.type === 'detention-table',
+  );
+  const detentions = detentionBlock
+    ? await loadCaseDetentions({ ugyId: detentionBlock.ugyId, acronym: detentionBlock.acronym })
+    : [];
 
   // Strukturált adat. A DR-0 domainnek ez az egyik kevés eszköze, amivel a
   // találati listán a puszta rangsoron felül is helyet foglalhat (GYIK-
@@ -334,12 +428,12 @@ export default async function UgySubPage({ params }: { params: Promise<{ id: str
             Jogerős ítélet hiányában minden érintett ártatlannak tekintendő.
           </p>
           <div className="ugy-description-body">
-            {sub.blocks.map((b, i) => <Block key={i} block={b} />)}
+            {sub.blocks.map((b, i) => <Block key={i} block={b} detentions={detentions} />)}
           </div>
 
           {sub.faq.length > 0 && (
             <div className="seo-faq" id="gyik">
-              <h2 className="person-section-title">Gyakran ismételt kérdések az NKA-pályázatokról</h2>
+              <h2 className="person-section-title">Gyakran ismételt kérdések</h2>
               {sub.faq.map((f, i) => (
                 <details key={i} className="seo-faq-item" open={i === 0}>
                   <summary className="seo-faq-q"><h3>{f.q}</h3></summary>

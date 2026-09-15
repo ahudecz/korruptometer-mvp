@@ -15699,3 +15699,32 @@ code {
     font-size: 17px;
   }
 }
+
+/* Letartóztatás-táblázat az SEO-aloldalon (CourtVerdict-adatból) */
+.seo-detention-count {
+  margin: 14px 0 0;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.seo-status {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.seo-status-in {
+  background: var(--accent-soft);
+  color: var(--crit);
+}
+.seo-status-out {
+  background: #e8f3ec;
+  color: var(--ok);
+}
+/* Hat oszlop 420px-en olvashatatlanra préselődne (minden cella 1-2 szavas
+   sorokra tördelődik), ezért ez a tábla inkább vízszintesen görgethető —
+   a .seo-table-wrap overflow-x-e adja a görgetést. */
+.seo-detention-table {
+  min-width: 680px;
+}
