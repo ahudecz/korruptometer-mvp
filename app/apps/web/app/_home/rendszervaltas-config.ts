@@ -25,6 +25,14 @@
 // Az ő anyaga (a hero-videó) április 13-i — reakció az eredményre, nem
 // hozzájárulás hozzá. A videó marad a bevezető záró elemeként, névvel.
 //
+// 2026-09-16: a Válasz Online és a Szabad Európa is lekerült (user döntés).
+// Mindkettő főállású, intézményi/előfizetői bevételből működő szerkesztőség
+// — ugyanaz a kategória, mint a 444 vagy a Telex —, ezért az elismerő
+// bekezdésbe kerültek át, linkkel. A falon maradó médiumok (Átlátszó,
+// Direkt36, K-Monitor, Partizán, Mérce, Kontroll) közadakozásból,
+// nonprofitként vagy civil szervezetként működnek. A Kontroll a user
+// döntése alapján marad.
+//
 // AMIT A NYERS VOLUMEN FÉLREVEZETŐEN MUTAT — ne erre tervezzünk:
 //  • „átlátszó" 14 800: ennek a java a MELLÉKNÉV (átlátszó ponyva 880,
 //    fogszabályzó 880, melltartó, szemüveg). A márkára ténylegesen 4 400 megy,
@@ -155,6 +163,8 @@ export const RENDSZERVALTAS_HUB = {
       { name: 'HVG', url: 'https://hvg.hu' },
       { name: 'Népszava', url: 'https://nepszava.hu' },
       { name: 'Magyar Hang', url: 'https://hang.hu' },
+      { name: 'Válasz Online', url: 'https://www.valaszonline.hu' },
+      { name: 'Szabad Európa', url: 'https://www.szabadeuropa.hu' },
     ],
     after:
       '. Pedig az ezen az oldalon szereplő ügyek jelentős része az ő oknyomozásaikból és interjúikból származik, és a forráshivatkozásaink tele vannak a nevükkel — nélkülük ez az adatbázis a töredéke lenne annak, ami. A kihagyás tehát nem értékítélet, hanem szűkítés: ez a fal tudatosan azokra koncentrál, akik elhivatottságból csinálták. A saját pénzükből, a szabadidejükben, munka mellett, vagy olvasói támogatásból fenntartott, nonprofit műhelyekben. Egy főállású, üzleti alapon működő szerkesztőségnél az oknyomozás — minden tiszteletünk mellett — valamennyire a munkaköri leírás része is. Itt azoké a hely, akiknek senki nem írta elő.',
@@ -299,42 +309,6 @@ export const FELTAROK: Feltaro[] = [
         'A Direkt36 néhány újságíróból álló, nonprofit oknyomozó műhely, amely tudatosan a lassú munkát választotta: nem napi híreket gyárt, hanem hónapokon át épít fel egy-egy ügyet dokumentumokból, háttérbeszélgetésekből és külföldi nyilvántartásokból.',
         'A műhely rendszeresen dolgozott együtt nemzetközi oknyomozó hálózatokkal. Ez több ügyben döntő volt: olyan adatokhoz és technikai szakértelemhez adott hozzáférést — például telefonos megfigyelési vizsgálatokhoz vagy külföldi cégnyilvántartásokhoz —, amelyeket egy magyar szerkesztőség önmagában nem tudott volna előállítani.',
         'A riportjaik jellemzően teljes forrásjegyzékkel, a megszólalók szerepének pontos megjelölésével jelentek meg, ami később a jogi támadásokkal szemben is védhetővé tette őket.',
-      ],
-    },
-  },
-  {
-    id: 'valasz-online',
-    name: 'Válasz Online',
-    kind: 'org',
-    group: 'media',
-    role: 'előfizetői finanszírozású közéleti portál',
-    badge: 'OKNYOMOZÓ',
-    tagline:
-      'Konzervatív alapállásból tárt fel kormányközeli ügyeket — és ezzel azt a védőfalat bontotta le, hogy a leleplezés „csak ellenzéki támadás".',
-    section: {
-      heading: 'Válasz Online — leleplezés a jobboldalon belülről',
-      paragraphs: [
-        'A Válasz Online olvasói előfizetésekből tartja fenn magát, és határozottan konzervatív szerkesztői alapállást vállal. Épp ezért volt kivételes hatása annak, amikor a saját politikai holdudvarán belüli visszaéléseket kezdte dokumentálni.',
-        'Ezeket az anyagokat sokkal nehezebb volt pártpolitikai támadásként elintézni, mint egy baloldali lap cikkeit — a szerkesztőség pontosan azoknak az olvasóknak írt, akik addig minden ilyen hírt eleve gyanakvással fogadtak.',
-        'A lap tényfeltáró riportjai közül több is olyan intézményi visszaélésekről szólt, amelyek a gyermekvédelem és a szociális ellátás területén évek óta ismertek voltak szakmai körökben, de a nyilvánosságban addig nem jelentek meg.',
-      ],
-    },
-  },
-  {
-    id: 'szabad-europa',
-    name: 'Szabad Európa',
-    kind: 'org',
-    group: 'media',
-    role: 'nemzetközi hátterű magyar szerkesztőség',
-    badge: 'FÜGGETLEN SZERKESZTŐSÉG',
-    tagline:
-      'Olyan tulajdonosi háttérrel dolgozott, amelyet a hazai hirdetéspiacon keresztül nem lehetett elérni — ezért olyan ügyekhez is hozzányúlt, amelyekhez mások nem mertek.',
-    section: {
-      heading: 'Szabad Európa — a megfoghatatlan tulajdonos',
-      paragraphs: [
-        'A magyar médiapiac átalakításának legfontosabb eszköze nem a cenzúra volt, hanem a tulajdonlás és a hirdetési pénz: egy szerkesztőséget elég volt megvásárolni vagy kiéheztetni. A Szabad Európa magyar szolgálata ebből a szempontból kivételes helyzetben volt, mert a fenntartója nem a magyar hirdetéspiacon mozgott.',
-        'Ez a függetlenség konkrét szerkesztőségi szabadságot jelentett: olyan hosszú, költséges vidéki riportokra és intézményi vizsgálatokra is volt kapacitás, amelyek egy hirdetésből élő lapnál elsőként estek volna ki a költségvetésből.',
-        'A szerkesztőség rendszeresen foglalkozott önkormányzati és regionális közpénzügyekkel is — azzal a réteggel, amely a budapesti központú médiafigyelemből a leggyakrabban kimarad.',
       ],
     },
   },
