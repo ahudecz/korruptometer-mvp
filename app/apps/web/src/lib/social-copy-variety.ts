@@ -104,11 +104,28 @@ export function looksLikeCrimeDescription(value: string): boolean {
  *  bűncselekmény-leírás (l. looksLikeCrimeDescription) — minden más esetben
  *  a kettőspontos forma megy, ami BÁRMILYEN szabad szövegre (targetName)
  *  nyelvtanilag biztonságos, sose igényel egyeztetést. */
+/**
+ * Brief 3.1 — „A hook legyen rövid." A bejelentő neve mögött gyakran ott van
+ * a teljes szervezeti megnevezés zárójelben („Király József (Szövetség a
+ * Hírös Városért Egyesület)"), amitől a poszt ELSŐ SORA egy bekezdés hosszú
+ * lett (valódi poszt, 2026-09-16).
+ *
+ * A zárójeles rész NEM VÉSZ EL (brief 6.): a teljes név a MI TÖRTÉNT blokkba
+ * kerül, l. complaintWhatHappened() `filerName` paraméterét.
+ */
+const TRAILING_PARENTHETICAL = /\s*\([^)]*\)\s*$/;
+
+export function hookShortName(value: string): string {
+  const stripped = value.replace(TRAILING_PARENTHETICAL, '').trim();
+  return stripped || value.trim();
+}
+
 export function complaintHeadline(filerName: string, targetEntity: string | null | undefined, targetName: string): string {
+  const filer = hookShortName(filerName);
   if (targetEntity && !looksLikeCrimeDescription(targetEntity)) {
-    return `${filerName} feljelentést tett ${targetEntity} ellen`;
+    return `${filer} feljelentést tett ${targetEntity} ellen`;
   }
-  return `${filerName} feljelentést tett: ${targetName}`;
+  return `${filer} feljelentést tett: ${targetName}`;
 }
 
 // 2026-09-08 user report ("levágod a szöveget mindkettőn a felénél") — a
@@ -213,4 +230,140 @@ export function fitCompleteSentences(value: string | null | undefined, maxChars:
 
   // 3. Végső tartalék: a régi viselkedés.
   return truncateAtWordBoundary(trimmed, maxChars);
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// BRIEF 3.2 — „MI TÖRTÉNT?" ÉS 3.3 — „MIÉRT ÉRDEKES?"
+//
+// 2026-09-16, user report: „ugyanazok a szar posztok mennek." A poszt törzse
+// eddig egy nyers mezőtöredék volt (pl. „főigazgató, Terror Háza Múzeum"),
+// a „miért érdekes" blokk pedig teljesen hiányzott. Mindkettő a brief
+// 3. pontjának kötelező eleme.
+//
+// A mondatsablonok szándékosan ÚGY vannak megírva, hogy a szabad szöveges
+// mezők (position, institution, targetName) KETTŐSPONT vagy gondolatjel UTÁN
+// álljanak, apozícióban — így semmilyen magyar toldalékolást nem igényelnek.
+// Ez ugyanaz az elv, amiért a complaintHeadline() is a kettőspontos formát
+// használja az „X ellen" helyett (2026-09-07, Waberer's-eset): egy ismeretlen
+// intézménynévre ráépített ragozás garantáltan előbb-utóbb értelmetlen
+// mondatot ad, és a hiba csak élesben derül ki.
+// ───────────────────────────────────────────────────────────────────────────
+
+/** MI TÖRTÉNT egy lemondás/kirúgás/felmentés posztban. */
+export function resignationWhatHappened(
+  name: string,
+  position: string | null | undefined,
+  institution: string | null | undefined,
+): string | undefined {
+  const pos = (position ?? '').trim().replace(/[.,;]+$/, '');
+  const inst = (institution ?? '').trim().replace(/[.,;]+$/, '');
+  if (!pos && !inst) return undefined;
+  const where = [pos, inst].filter(Boolean).join(' — ');
+  return `${name} a következő tisztséget töltötte be: ${where}.`;
+}
+
+/** MI TÖRTÉNT egy feljelentés-posztban. */
+export function complaintWhatHappened(
+  description: string | null | undefined,
+  amountLabel: string | null | undefined,
+  filerName?: string | null,
+): string | undefined {
+  const desc = (description ?? '').replace(/\s+/g, ' ').trim();
+  const amount = (amountLabel ?? '').trim();
+  const lines: string[] = [];
+  if (desc) lines.push(desc.endsWith('.') ? desc : `${desc}.`);
+  // Brief 6. — amit a hook a rövidítés miatt elhagyott, azt itt pótoljuk: ha
+  // a bejelentő teljes neve zárójeles kiegészítést is tartalmazott, a teljes
+  // alak ide kerül, hogy ne vesszen el.
+  const filer = (filerName ?? '').trim();
+  if (filer && hookShortName(filer) !== filer) {
+    lines.push(`A feljelentést tette: ${filer}.`);
+  }
+  // A brief 6. pontja tiltja az információ elhagyását: ha van összeg, az
+  // akkor is kimegy, ha a leírás nem említi.
+  if (amount) lines.push(`Az érintett összeg: ${amount}.`);
+  return lines.length ? lines.join('\n') : undefined;
+}
+
+/**
+ * MIÉRT ÉRDEKES — kontextus a nyilvántartás futó számaiból.
+ *
+ * Zéró költségű: sima COUNT-ok, semmilyen LLM-hívás (l.
+ * feedback-llm-cost-isolation). Szándékosan visszafogott megfogalmazás: a
+ * szám a MI nyilvántartásunk mérete, nem egy országos statisztika — ezért
+ * mindig „a nyilvántartásunkban" szerepel benne, hogy ne állítson többet,
+ * mint amennyit tudunk (brief 14. és 19. pont).
+ */
+export type ContextCounts = {
+  resignations: number;
+  pretrial: number;
+  verdicts: number;
+  complaints: number;
+  closures: number;
+  recoveredFtLabel: string | null;
+};
+
+export function whyItMattersFor(
+  triggerType: string,
+  counts: ContextCounts,
+  kicker?: string,
+): string | undefined {
+  switch (triggerType) {
+    case 'resignation':
+      return counts.resignations > 1
+        ? `Vele együtt már ${counts.resignations} távozást tartunk számon a nyilvántartásunkban.`
+        : undefined;
+    case 'court_verdict':
+      // Brief 11. pont: a jogi státuszok nem szinonimák — az „előzetesben"
+      // posztnál az előzetesek számát hozzuk, minden másnál a folyamatban
+      // lévő eljárásokét. SOSE „ítélet"-ként összegezve (l.
+      // [[project-verdict-label-conflation]]).
+      if (kicker === 'ELŐZETESBEN' || kicker === 'ŐRIZETBE VÉVE' || kicker === 'LETARTÓZTATVA') {
+        return counts.pretrial > 1
+          ? `Jelenleg ${counts.pretrial} ember van előzetesben a nyilvántartásunkban.`
+          : undefined;
+      }
+      return counts.verdicts > 1
+        ? `A nyilvántartásunkban ${counts.verdicts} büntetőeljárás szerepel NER-hez vagy közpénzhez köthető szereplők ellen.`
+        : undefined;
+    case 'criminal_complaint':
+      return counts.complaints > 1
+        ? `Ezzel együtt ${counts.complaints} feljelentés szerepel a nyilvántartásunkban.`
+        : undefined;
+    case 'media_closure':
+      return counts.closures > 1
+        ? `Vele együtt már ${counts.closures} megszűnt vagy leépített médiumot tartunk számon.`
+        : undefined;
+    case 'asset_recovery':
+      return counts.recoveredFtLabel
+        ? `A nyilvántartásunk szerint eddig összesen ${counts.recoveredFtLabel} közpénz került vissza.`
+        : undefined;
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * BRIEF 8. — a KÉPRE kerülő kiegészítő sor.
+ *
+ * A kép már hordozza a kickert és a headline-t (NÉV + ESEMÉNY), ez a harmadik,
+ * kiegészítő sor. A brief 3–7 szót ír elő az egész képre, ezért ez a sor
+ * RÖVID: legfeljebb `IMAGE_SUBLINE_MAX_WORDS` szó.
+ *
+ * Két konkrét, élesre ment hiba ellen véd (2026-09-15/16):
+ *   - ÜRES képszöveg ment ki több poszton (a kép alsó sora egyszerűen hiányzott);
+ *   - „felügyelőbizottsági elnök, Nemzeti Reorganizációs Nonprofit Kft. (NRN)"
+ *     — 7 szó, de se nevet, se eseményt nem közöl, csak beosztást.
+ */
+export const IMAGE_SUBLINE_MAX_WORDS = 7;
+
+export function imageSubline(value: string | null | undefined, fallback?: string | null): string {
+  const clean = (value ?? '').replace(/\s+/g, ' ').trim().replace(/[,;:—-]+$/, '');
+  const pick = clean || (fallback ?? '').replace(/\s+/g, ' ').trim();
+  if (!pick) return '';
+  const words = pick.split(' ');
+  if (words.length <= IMAGE_SUBLINE_MAX_WORDS) return pick;
+  // Szóhatáron vágunk, és NEM teszünk ki „…"-t: a képen az úgy néz ki,
+  // mintha elfogyott volna a szöveg (2026-09-10 user report).
+  return words.slice(0, IMAGE_SUBLINE_MAX_WORDS).join(' ').replace(/[,;:—-]+$/, '');
 }
