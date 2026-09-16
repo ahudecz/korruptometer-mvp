@@ -269,6 +269,7 @@ export default function RendszervaltasPage() {
                 ))}
                 {hub.mainstreamNote.after}
               </p>
+              <p>{hub.mainstreamNote.tail}</p>
             </div>
 
             <FeltaroVideo

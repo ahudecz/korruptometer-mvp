@@ -285,13 +285,13 @@ export const RENDSZERVALTAS_HUB = {
   publishedAt: '2026-09-16',
   updatedAt: '2026-09-16',
   lead:
-    'A 2026. április 12-i rendszerváltás nem egyetlen nap alatt történt meg. Évekig tartó, aprómunkás feltáró munka előzte meg: közbeszerzési adatbázisok átfésülése, elutasított adatigénylések miatt indított perek, offshore cégláncok kibogozása, olyan riportok, amelyekért kirúgás, lehallgatás vagy feljelentés járt. Ezen az oldalon azok vannak összegyűjtve, akik ezt a munkát elvégezték — újságírók, adat-aktivisták, képviselők, zenészek és civil műhelyek. A Kegyencjárat adatbázisában szereplő ügyek túlnyomó többsége az ő munkájukból származik: mi rendszerezzük, ők tárták fel.',
+    'A 2026. április 12-i rendszerváltás nem egyetlen nap alatt történt meg. Évekig tartó, aprólékos feltáró munka előzte meg: közbeszerzési adatbázisok átfésülése, elutasított adatigénylések miatt indított perek, offshore cégláncok kibogozása, olyan riportok, amelyekért kirúgás, lehallgatás vagy feljelentés járt. Ezen az oldalon azok vannak összegyűjtve, akik ezt a munkát elvégezték — újságírók, adat-aktivisták, képviselők, zenészek és civil műhelyek. A Kegyencjárat adatbázisában szereplő ügyek túlnyomó többsége az ő munkájukból származik: ők feltárták, mi rendszerezzük.',
   /** A rács fölötti bevezető. Külön mező, mert ez a lap legolvasottabb
    *  bekezdése: ez dönti el, hogy az olvasó legörget-e a hosszú szövegig. */
   gridIntro: [
-    'Egy korrupciós ügy soha nem egyetlen ember érdeme. Mire egy név eljut odáig, hogy kimondják a híradóban, addigra valaki átrágta magát több ezer oldal közbeszerzési iraton, valaki más három évig pereskedett egy elutasított adatigénylésért, egy harmadik pedig érthető mondatokká fordította az egészet. Ez a fal nekik szól.',
+    'Egy korrupciós ügy feltárása soha nem egyetlen ember érdeme. Mire egy név eljut odáig, hogy kimondják a híradóban, addigra valaki átrágta magát több ezer oldalnyi közbeszerzési iraton, valaki más három évig pereskedett egy elutasított adatigénylésért, egy harmadik pedig érthető mondatokká fordította az egészet. Ez a fal nekik szól.',
     'A lenti névsor nem rangsor, és nem is teljes — folyamatosan bővül. Három blokkra bontottuk, mert háromféle munkáról van szó. A **személyek** a saját nevüket adták egy-egy ügyhöz, és évekig kitartottak mellette. A **médiumok és műhelyek** azt az infrastruktúrát tartják fenn — ügyvédeket, adatbázisokat, hónapokig fizetett újságírói munkaidőt —, ami nélkül egy mélyfúrás elindulni sem tudna. A **Facebook- és YouTube-csatornák** pedig azt csinálják, amit a legkönnyebb lebecsülni és a legnehezebb pótolni: elviszik a kész sztorit több százezer emberhez, olyanokhoz is, akik hírportált soha nem nyitnak meg.',
-    'A Kegyencjárat adatbázisa ennek a munkának a másodlagos feldolgozása. Egyetlen ügyet sem mi tártunk fel: mi összegyűjtjük, rendszerezzük, összekötjük és követhetővé tesszük azt, amit ők kiástak. Ezért van ez az oldal — és ezért van a forrásmegjelölés minden egyes sor mellett.',
+    'A Kegyencjárat adatbázisa ennek a munkának a másodlagos feldolgozása. Egyetlen ügyet sem mi tártunk fel: mi összegyűjtjük, rendszerezzük, összekötjük és követhetővé tesszük azt, amit ők kiástak. Ezért van ez az oldal — és ezért van forrásmegjelölés minden egyes sor mellett.',
   ],
   /** A nagy független szerkesztőségek elismerése. Külön mező, mert a
    *  szerkesztőségneveknek kattintható külső linknek kell lenniük, a
@@ -317,7 +317,11 @@ export const RENDSZERVALTAS_HUB = {
       { name: 'Szabad Európa', url: 'https://www.szabadeuropa.hu' },
     ],
     after:
-      '. Pedig az ezen az oldalon szereplő ügyek jelentős része az ő oknyomozásaikból és interjúikból származik, és a forráshivatkozásaink tele vannak a nevükkel — nélkülük ez az adatbázis a töredéke lenne annak, ami. A kihagyás tehát nem értékítélet, hanem szűkítés: ez a fal tudatosan azokra koncentrál, akik elhivatottságból csinálták. A saját pénzükből, a szabadidejükben, munka mellett, vagy olvasói támogatásból fenntartott, nonprofit műhelyekben. Egy főállású, üzleti alapon működő szerkesztőségnél az oknyomozás — minden tiszteletünk mellett — valamennyire a munkaköri leírás része is. Itt azoké a hely, akiknek senki nem írta elő.',
+      '. Pedig az ezen az oldalon szereplő ügyek jelentős része az ő oknyomozásaikból és interjúikból származik, és a forráshivatkozásaink tele vannak a nevükkel — nélkülük ez az adatbázis a töredéke lenne annak, ami. A kihagyás tehát nem értékítélet, hanem szűkítés: ez a fal tudatosan azokra koncentrál, akik elhivatottságból csinálták. A saját pénzükből, a szabadidejükben, munka mellett, vagy olvasói támogatásból fenntartott nonprofit műhelyekben.',
+    /** Külön bekezdés — a szerkesztőség-felsorolással együtt egy tömbben
+     *  száz szó fölé menne, és pont ez a mondat a note lényege. */
+    tail:
+      'Egy főállású, üzleti alapon működő szerkesztőségnél az oknyomozás — minden tiszteletünk mellett — valamennyire a munkaköri leírás része is. Itt azoké a hely, akiknek senki nem írta elő.',
   },
   /** A bevezető ZÁRÓ eleme, közvetlenül a névsor előtt (user kérés,
    *  2026-09-16). Nem illusztráció: ez az érzelmi felütés, amiről az
@@ -536,6 +540,7 @@ export const FELTAROK: Feltaro[] = [
         'A formátum önmagában is politikai tett volt egy olyan médiakörnyezetben, ahol a közszereplők többsége már csak előre egyeztetett kérdésekre válaszolt. A Partizán adásaiban a kérdezett nem tudta lekapcsoltatni a mikrofont, és a néző maga döntötte el, mit lát: a teljes beszélgetés elérhető maradt.',
         'A csatorna emellett rendszeresen közölt saját oknyomozó anyagokat és élőben közvetített tüntetéseket, parlamenti eseményeket, választási éjszakákat — gyakran akkor, amikor más szerkesztőség nem volt jelen.',
       ],
+      links: [{ text: 'a Partizán', href: '/rendszervaltas/partizan' }],
     },
     related: [{ label: 'Videóriportok és podcastok', href: '/podcastok' }],
   },
@@ -1282,6 +1287,7 @@ export const FELTAROK: Feltaro[] = [
         'Olyan témákhoz nyúlt, amelyek a hatalom legféltettebb belső köreit és nemzetközi háttéralkuit érintették: az orosz befolyásszerzést, a keleti diplomáciai játszmákat és a titkos fegyverüzleteket. Ezek nem olyan ügyek, amelyekre az állam sajtóközleménnyel válaszol.',
         'A magyar sajtótörténet egyik legszemélyesebb tétű ügye fűződik a nevéhez: a katonai szintű kémszoftverrel végzett megfigyelések botrányában az egyik dokumentált célpont ő maga volt. Ez azonnal kirántotta az ügyet az elvont sajtószabadsági kérdések világából — a telefonján keresztül az állam nemcsak az ő magánéletéhez fért hozzá, hanem a magas pozícióban ülő informátorait is közvetlen veszélynek tette ki.',
       ],
+      links: [{ text: 'a Direkt36', href: '/rendszervaltas/direkt36' }],
     },
     related: [{ label: 'Kapcsolódó ügyek az adatbázisban', href: '/adatbazis' }],
     live: true,
