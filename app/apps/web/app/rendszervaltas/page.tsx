@@ -12,6 +12,7 @@ import {
   type InlineLink,
 } from '../_home/rendszervaltas-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../_home/cross-promo';
+import { FeltaroVideo } from '../_home/feltaro-video';
 import styles from './dicsosegfal.module.css';
 
 // Statikus tartalom, DB-hívás nélkül — nincs mit revalidálni óránként.
@@ -217,7 +218,7 @@ export default function RendszervaltasPage() {
   };
 
   return (
-    <div className="person-page ugy-page seo-subpage">
+    <div className="person-page ugy-page seo-subpage dicsosegfal-page">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -270,22 +271,13 @@ export default function RendszervaltasPage() {
               </p>
             </div>
 
-            <div className="ugy-block-video">
-              <div className="ugy-block-video-meta">
-                <span className="ugy-block-video-label">{hub.heroVideo.label}</span>
-                <span className="ugy-block-video-title">{hub.heroVideo.title}</span>
-              </div>
-              <p className="ugy-block-video-summary">{hub.heroVideo.summary}</p>
-              <div className="ugy-block-video-wrap">
-                <iframe
-                  src={`https://www.youtube-nocookie.com/embed/${hub.heroVideo.id}`}
-                  title={hub.heroVideo.title}
-                  loading="lazy"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            </div>
+            <FeltaroVideo
+              videoId={hub.heroVideo.id}
+              title={hub.heroVideo.title}
+              label={hub.heroVideo.label}
+              summary={hub.heroVideo.summary}
+              variant="wide"
+            />
 
             {GROUP_ORDER.map((g) => {
               const meta = GROUP_META[g];
@@ -337,26 +329,13 @@ export default function RendszervaltasPage() {
                       <p key={i}>{withLinks(para, f.section.links)}</p>
                     ))}
                     {f.section.video && (
-                      <div className="ugy-block-video">
-                        <div className="ugy-block-video-meta">
-                          {f.section.video.label && (
-                            <span className="ugy-block-video-label">{f.section.video.label}</span>
-                          )}
-                          <span className="ugy-block-video-title">{f.section.video.title}</span>
-                        </div>
-                        {f.section.video.summary && (
-                          <p className="ugy-block-video-summary">{f.section.video.summary}</p>
-                        )}
-                        <div className="ugy-block-video-wrap">
-                          <iframe
-                            src={`https://www.youtube-nocookie.com/embed/${f.section.video.id}`}
-                            title={f.section.video.title}
-                            loading="lazy"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                          />
-                        </div>
-                      </div>
+                      <FeltaroVideo
+                        videoId={f.section.video.id}
+                        title={f.section.video.title}
+                        label={f.section.video.label}
+                        summary={f.section.video.summary}
+                        variant="wide"
+                      />
                     )}
                     {f.related && f.related.length > 0 && (
                       <p>

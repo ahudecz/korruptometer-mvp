@@ -15911,3 +15911,109 @@ code {
   line-height: 1.7;
   color: var(--ink);
 }
+
+/* ── Dicsőségfal videókártya (/rendszervaltas) ──────────────────────────────
+   A podcast-card formanyelvét viszi tovább: előbb a lejátszó, alatta piros
+   csatorna-címke és cím. 2026-09-16, user kifogás: a korábbi megoldásnál a
+   leírás a lejátszó FÖLÉ került, keret nélkül. */
+.feltaro-video {
+  margin: 28px 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  background: var(--surface);
+}
+.feltaro-video--wide {
+  max-width: 100%;
+}
+/* A rácsos podcast-címnél kötelező a 2 soros clamp (a hero-igazítás miatt);
+   itt viszont a teljes cím kell, a kártya magassága szabad. */
+.feltaro-video .feltaro-video-title {
+  display: block;
+  -webkit-line-clamp: none;
+  overflow: visible;
+  min-height: 0;
+  font-size: 16px;
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+.feltaro-video-summary {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+/* Két kiemelt videó egymás mellett; 900px alatt egymás alá. */
+.feltaro-video-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 900px) {
+  .feltaro-video-pair {
+    grid-template-columns: 1fr;
+  }
+}
+/* Ügyön belüli forrás-doboz: ugyanaz a piros keret, csak szűkebb. */
+.feltaro-sources {
+  margin-top: 14px;
+  padding: 14px 16px;
+}
+
+/* A Dicsőségfal hivatkozás-blokkjai a „Kapcsolódó hírek" sorformát veszik át
+   (.person-news-list / .person-news-item), csak ügyön belüli címkével. */
+.feltaro-news {
+  margin-top: 14px;
+}
+.feltaro-news-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.feltaro-news-block {
+  margin-top: 32px;
+}
+
+/* Egyetlen videó a szövegoszlop TELJES szélességében (user, 2026-09-16: ne
+   legyen "kicsibe odabaszva"). A kétoszlopos .feltaro-video-pair csak akkor
+   él, ha tényleg két videó áll egymás mellett. */
+.feltaro-video--wide {
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
+.feltaro-video--wide .podcast-video-wrap {
+  width: 100%;
+}
+/* Egyetlen forrás-sornál is legyen lezáró vonal a blokk alatt. */
+.feltaro-news {
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* ── Dicsőségfal: bekezdés-térköz ─────────────────────────────────────────
+   A globális `.ugy-block-text p { margin: 0 }` miatt minden bekezdés
+   egybefolyt: a renderelő ugyan ~90 szavanként új <p>-t nyit, de vizuálisan
+   semmi nem jelezte (user, 2026-09-16). Itt visszaadjuk a térközt, egy teljes
+   üres sornyit — a saját gyökér-osztályra szűkítve, hogy a régi ügy-
+   aloldalak (/ugyek/<ügy>/<téma>) tördelése változatlan maradjon. */
+.dicsosegfal-page .ugy-block-text p,
+.dicsosegfal-page .caseHighlight p,
+.dicsosegfal-page .postNote p {
+  /* 1.75em == pontosan egy sormagasság (line-height: 1.75), vagyis a
+     bekezdések között egy TELJES üres sor áll. Kisebb érték (1.15em) még
+     nem olvasódik törésnek. */
+  margin: 0 0 1.75em;
+}
+.dicsosegfal-page .ugy-block-text p:last-child {
+  margin-bottom: 0;
+}
+/* A kiemelt doboz és a poszt-kommentár belső bekezdései ugyanígy. */
+.dicsosegfal-page aside p:last-child,
+.dicsosegfal-page .seo-callout p:last-child {
+  margin-bottom: 0;
+}

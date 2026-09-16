@@ -3,8 +3,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+// 2026-09-16 — a Galéria lekerült a DESKTOP navigációból (user kérés): a
+// nyolcadik elemtől a sor tördelni kezdett, és a hosszabb címkék
+// ("Kiemelt ügyek", "Börtönben van-e?") két sorba csúsztak. A Galéria
+// továbbra is elérhető a mobil menüből, a láblécből, a nyitóoldali 07-es
+// szekcióból és a kereszt-promókból, tehát nem lesz árva oldal.
 const NAV_LINKS = [
-  { href: '/galeria', label: 'Galéria' },
   { href: '/rendszervaltas', label: 'Dicsőségfal' },
   { href: '/ugyek', label: 'Kiemelt ügyek' },
   { href: '/adatbazis', label: 'Adatbázis' },

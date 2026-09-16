@@ -4,6 +4,7 @@ import { sql } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { UGYEK } from './_home/ugyek-config';
 import { visibleSubpages } from './_home/ugyek-subpages';
+import { liveFeltarok } from './_home/rendszervaltas-config';
 import { GALERIA } from './_home/galeria-config';
 import { WATCH_LIST } from './_home/watchlist-config';
 import { PERSON_ROLLUPS } from './_home/person-rollup-config';
@@ -91,6 +92,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     });
   }
+  // Dicsőségfal-végoldalak. A kanonikus URL pontos név-egyezés:
+  // /rendszervaltas/hadhazy-akos, /rendszervaltas/marki-zay-peter.
+  for (const f of liveFeltarok()) {
+    entries.push({
+      url: `${appUrl}/rendszervaltas/${f.id}`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    });
+  }
+
   for (const g of GALERIA) {
     entries.push({
       url: `${appUrl}/galeria/${g.id}`,

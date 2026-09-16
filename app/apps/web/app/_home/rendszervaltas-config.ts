@@ -118,10 +118,145 @@ export type Feltaro = {
   targetKeyword?: { phrase: string; volume: number; kd: number };
   /** Belső linkek a meglévő tartalmainkhoz — hub & spoke. */
   related?: { label: string; href: string }[];
-  /** Van-e már élő profil-aloldala. Amíg false, a kártya nem kattintható,
-   *  és a sitemapbe sem kerül be. Így a rács már most kitehető élesre
-   *  anélkül, hogy 15 db 404-et linkelnénk. */
+  /** Van-e már élő profil-aloldala (/rendszervaltas/<id>). Ha false, a
+   *  kártya nem kattintható és a sitemapbe sem kerül be. */
   live?: boolean;
+  /** A végoldal (/rendszervaltas/<id>) tartalma. A `section` bekezdései
+   *  mindenképp megjelennek rajta; ez a mező az, ami fölé épül. Ha
+   *  hiányzik, a végoldal akkor is működik — csak rövidebb. */
+  detail?: FeltaroDetail;
+};
+
+/** Egy konkrét, megnevezett ügy vagy tett a végoldalon. A `source` mindig
+ *  külső hivatkozás — sose írjunk ide állítást forrás nélkül. */
+/** Egy hivatkozott cikk. A megjelenés a site két bevált formája (user,
+ *  2026-09-16): alapból „Kapcsolódó hírek"-sor (FORRÁS · DÁTUM · CÍM), és
+ *  ahol a cikk önmagában is megáll, keretes article-card leaddel.
+ *  A `source` a Source tábla szerinti HIVATALOS név (hang.hu → Magyar Hang),
+ *  nem a domain. */
+export type FeltaroLink = {
+  source: string;
+  /** Emberi formátum: „2026. jún. 26." — a sorban jobbra igazítva. */
+  date?: string;
+  headline: string;
+  url: string;
+  /** Ha van, a hivatkozás KERETES article-cardként jelenik meg. */
+  lead?: string;
+};
+
+export type FeltaroCase = {
+  title: string;
+  /** Mikor történt, emberi formában („2025. augusztus 19."). Elhagyható. */
+  when?: string;
+  body: string;
+  /** További bekezdések a `body` után — ha egy ügynek több szakasza van. */
+  more?: string[];
+  /** Belső/külső linkek a `body` és a `more` szövegében (szó szerinti egyezés). */
+  links?: InlineLink[];
+  /** Az ügy ALSZAKASZAI. Számozatlan H3-ak: egy ügy több fejleménye nem
+   *  külön ügy (user, 2026-09-16 — a zebra-gate öt fejleménye nem öt ügy).
+   *  A sorszám csak az ügyeket illeti meg, az alszakaszokat nem. */
+  sections?: {
+    heading: string;
+    paragraphs: string[];
+    links?: InlineLink[];
+    sources?: FeltaroLink[];
+    videos?: { id: string; label?: string; title: string; summary?: string }[];
+  }[];
+  sources?: FeltaroLink[];
+  /** Az ÜGYHÖZ tartozó felvételek — a szöveg végén, még a kiemelés előtt.
+   *  Ott a helyük, ahol az ügyről szó van, nem a lap alján (user, 2026-09-16). */
+  videos?: { id: string; label?: string; title: string; summary?: string }[];
+  /** Keretes kiemelés AZ ÜGYÖN BELÜL: az az egy mozzanat, ami önmagában is
+   *  megállítja az olvasót (pl. amikor nekimentek a kocsijának). */
+  highlight?: {
+    heading: string;
+    body: string;
+    sources?: FeltaroLink[];
+    /** A kiemelésben szereplő esemény felvétele — ott jelenik meg, ahol az
+     *  eset le van írva, nem a lap alján (user, 2026-09-16). */
+    video?: { id: string; label?: string; title: string; summary?: string };
+  };
+  /** Keretes ajánló a saját kiemelt ügyoldalunkra. Kötelező minden olyan
+   *  ügynél, amelyhez van /ugyek/<id> oldalunk — user szabály, 2026-09-16:
+   *  ha egy feltáró egy KIEMELT ügyhöz kapcsolható, arra át kell hivatkozni. */
+  promo?: { href: string; eyebrow: string; title: string; lead: string; cta: string };
+};
+
+export type FeltaroDetail = {
+  /** <title>; ha hiányzik, a névből képződik. */
+  seoTitle?: string;
+  seoDescription?: string;
+  /** H1 alatti, önmagában is válaszoló bevezető (featured snippet cél). */
+  lead?: string;
+  /** „Mit tárt fel?" — a lap gerince. */
+  cases?: { heading: string; intro?: string; items: FeltaroCase[] };
+  /** További, szabad szöveges szakaszok a konkrét ügyek UTÁN. */
+  extra?: { heading: string; paragraphs: string[]; links?: InlineLink[] }[];
+  video?: { id: string; label?: string; title: string; summary?: string };
+  /** Több beágyazott videó egy blokkban, saját felvezetővel. Akkor kell,
+   *  amikor nem egy adás a bizonyíték, hanem az, hogy több szerkesztőség
+   *  egymástól függetlenül ugyanazt játszotta le. */
+  videoBlock?: {
+    heading: string;
+    intro?: string;
+    items: { id: string; label?: string; title: string; summary?: string }[];
+  };
+  /** Videórács (3x3). Szándékosan NEM iframe-enként töltjük be: kilenc
+   *  beágyazott lejátszó megölné az oldal betöltési idejét, ezért itt csak
+   *  a YouTube-borítókép van, és a kártya kifelé linkel. */
+  videoGrid?: {
+    heading: string;
+    intro?: string;
+    items: { id: string; title: string; note?: string }[];
+    channelUrl?: string;
+    channelLabel?: string;
+  };
+  /** Kézi kiemelés: PONTOSAN 3 nevezetes közösségi-média poszt (user döntés,
+   *  2026-09-16 — a Meta hivatalos beágyazója helyett, ami nyomkövetést
+   *  töltene be minden látogatónak, és App ID nélkül bármikor elszállhat).
+   *  Minden tétel forrásolt: vagy maga a poszt, vagy az azt feldolgozó cikk.
+   *  A `quote` SZÓ SZERINTI idézet lehet csak — parafrázis a `body`-ba megy. */
+  socialHighlights?: {
+    heading: string;
+    intro?: string;
+    platformLabel: string;
+    /** Az oldal neve, ahogy a kártya fejlécében megjelenik. */
+    pageName: string;
+    profileUrl?: string;
+    profileLabel?: string;
+    items: {
+      /** A poszt dátuma, ahogy a kártya fejlécében megjelenik. */
+      when: string;
+      /** A mi szerkesztői címünk — NEM a poszt szövege. */
+      title: string;
+      /** A mi kommentárunk: miért fontos ez a poszt. */
+      body: string;
+      /** A poszt SZÓ SZERINTI nyitánya. Sose írjuk át, sose egészítjük ki. */
+      quote?: string;
+      /** A poszt képe, LETÖLTVE a /public alá — a fbcdn-linkek alá vannak
+       *  írva és lejárnak, ezért sose hotlinkelünk rájuk. */
+      image?: string;
+      imageAlt?: string;
+      /** A poszt permalinkje. */
+      href?: string;
+      sources?: FeltaroLink[];
+      promo?: { href: string; eyebrow: string; title: string; lead: string; cta: string };
+    }[];
+  };
+  /** Összehasonlító táblázat. A forrás-oszlop mintáját követi: a cellák
+   *  sima szövegek, a tábla mobilon vízszintesen görgethető. */
+  table?: {
+    heading: string;
+    intro?: string;
+    columns: string[];
+    rows: string[][];
+    note?: string;
+  };
+  faq?: { q: string; a: string }[];
+  sources?: FeltaroLink[];
+  /** Semrush-célszó a végoldalhoz, ha más, mint a kártyán lévő. */
+  targetNote?: string;
 };
 
 export const RENDSZERVALTAS_HUB = {
@@ -196,15 +331,178 @@ export const FELTAROK: Feltaro[] = [
     section: {
       heading: 'Hadházy Ákos — aki egyesével olvasta végig a közbeszerzéseket',
       paragraphs: [
-        'Hadházy Ákos állatorvosként és helyi politikusként kezdte: Szekszárdon a Fidesz színeiben volt megyei közgyűlési tag, majd amikor a saját pártján belüli közpénzügyekről kezdett beszélni, kilépett. 2016-tól az LMP társelnöke, 2018 óta pedig független országgyűlési képviselő.',
-        'A munkamódszere nem a leleplező bejelentőkre épült, hanem a nyilvános adatokra: közbeszerzési értesítők, cégbírósági iratok, támogatási listák, EU-s pályázati adatbázisok. Ezekből állította össze azoknak az ügyeknek a sorozatát, amelyek később a Kegyencjárat adatbázisának is a gerincét adják — a felcsúti kisvasúttól a látványberuházásokon át a miniszteri keretekből kiosztott pénzekig. Több száz feljelentést tett; ezek jelentős része akkor elakadt, a nyomozati iratok viszont megmaradtak.',
-        'Emellett éveken át rendszeres utcai demonstrációkat szervezett, és az általa nyilvánosságra hozott dokumentumokat teljes terjedelmükben tette közzé, nem csak idézte őket. Ez a gyakorlat tette lehetővé, hogy az ügyek később függetlenül is ellenőrizhetők legyenek.',
+        'Hadházy Ákos az egyetemi tanulmányai után állatorvosként dolgozott, a közéletbe pedig helyi szinten, Szekszárdon kapcsolódott be — eredetileg a Fidesz színeiben, megyei közgyűlési tagként és önkormányzati képviselőként. A párttal akkor szakított véglegesen, amikor a saját politikai közösségén belüli súlyos visszaéléseket, különösen a helyi trafikmutyik rendszerét kezdte szóvá tenni: előbb belső körökben, majd a nyilvánosság előtt is.',
+        'A szakítás után az országos politikában az elszámoltatás lett a fő profilja. 2016-tól az LMP társelnökeként dolgozott, a 2018-as választás után viszont úgy döntött, elhagyja a pártpolitikai struktúrákat, és független országgyűlési képviselőként folytatja. Ez a független státusz adta meg azt a mozgásteret, amely az elkövetkező évek kimerítő oknyomozó munkájához kellett.',
+        'A módszere alapjaiban formálta át a magyar tényfeltáró politizálást. Nem szónoklatokra és nem is kiszivárogtatásokra épített, hanem arra, ami amúgy is nyilvános — csak senki nem olvasta végig.',
       ],
     },
     related: [
       { label: 'Feljelentések nyilvántartása', href: '/adatbazis' },
       { label: 'Kiemelt ügyek', href: '/ugyek' },
     ],
+    live: true,
+    detail: {
+      seoTitle: 'Hadházy Ákos: Hatvanpuszta, Volvo-gate és a feljelentései',
+      seoDescription:
+        'Mit tárt fel Hadházy Ákos? A hatvanpusztai luxusbirtok, a besétálás, a szafari túrák, a Volvo-gate újranyitása és a lélegeztetőgépek — konkrét ügyek, forrásokkal.',
+      lead:
+        'Hadházy Ákos független országgyűlési képviselő a 2026. április 12-i rendszerváltást előkészítő antikorrupciós küzdelem legmeghatározóbb, intézményesült bástyája. Az ő szisztematikus, évekig tartó adatbányászata és terepmunkája adja a Kegyencjárat adatbázisának gazdasági gerincét.',
+      cases: {
+        heading: 'A legfontosabb ügyei',
+        intro:
+          'A lista nem teljes — évekig tartó, folyamatos munkáról van szó. Ezek azok, amelyeknél a feltárás vagy az eljárás elindítása egyértelműen hozzá köthető, és amelyekhez saját ügyoldalunk is tartozik.',
+        items: [
+          {
+            title: 'Hatvanpuszta — a „mezőgazdasági létesítmény", amiből luxusrezidencia lett',
+            when: '2021-től folyamatosan',
+            body:
+              'A miniszterelnök édesapjához köthető alcsúti hatvanpusztai birtokról a kormányzati kommunikáció és a hivatalos papírok éveken át azt sulykolták, hogy a területen mindössze egy befejezetlen, funkcionális célokat szolgáló gazdasági majorság épül. Hadházy Ákos 2021-től indított el egy szisztematikus, éveken át tartó helyszíni megfigyelést: rendszeresen látogatta a helyszínt, légi felvételeket készített, és követte a területre belépő luxusjárműveket és építőipari gépeket.',
+            more: [
+              'Az általa nyilvánosságra hozott dokumentáció feltárta a valóságot: a területen egy mintegy hatezer négyzetméternyi nettó alapterületű épületegyüttes emelkedett ki a földből, a létező legdrágább építőanyagok és belsőépítészeti megoldások használatával.',
+              'Az oknyomozó hagyományt folytatta ezzel — közvetlenül építve a 2015-ben elhunyt Ferenczi Krisztina úttörő munkájára, aki elsőként kezdte módszeresen dokumentálni az Orbán és Mészáros családok dél-fejér megyei vagyonosodását. Hadházy tette viszont végleg közismertté a birtok valódi arcát: ő vezette be a közbeszédbe a „Luxuspuszta" kifejezést, amely azóta elválaszthatatlanul rajta ragadt az uradalmon.',
+              'A drónfelvételek és a távoli fotók egy idő után elveszítik az újdonság erejét — ezt felismerve két radikálisabb, a fizikai jelenlétre épülő eszközhöz nyúlt. 2025 augusztusában kihasználta, hogy az építkezés során a birtok egyik hátsó kapuját nyitva hagyták, és engedély nélkül besétált a szigorúan őrzött területre. Mobiltelefonnal, folyamatos felvételt készítve járta be a belső udvarokat, rögzítve a mélygarázsokat és a luxus szintű belső burkolatokat, mielőtt a kertész és a biztonsági személyzet távozásra szólította fel. Az érvelése frappáns volt: magánlaksértésről vagy birtokháborításról elvileg nem lehet szó egy olyan ingatlannál, amelyet a kormányzati kommunikáció befejezetlen mezőgazdasági üzemként definiál.',
+              'A másik eszköze az volt, hogy a nyilvánosságot vitte oda: rendszeres buszos túrákat szervezett a birtokhoz, zuglói indulással, alkalmanként több busznyi érdeklődővel. A lényeg az volt, hogy a választópolgárok ne a képernyőn keresztül, hanem a saját szemükkel döntsék el, gazdasági épületet vagy luxuskastélyt látnak-e. A meghívókban tüntetéssel egybekötött „szafari túrának" hívták; az utolsó nagy körutat 2026 márciusában, közvetlenül a választás előtt tartotta.',
+            ],
+            highlight: {
+              heading: 'Amikor felborult a biztonsági őr autója — 2025. augusztus 19.',
+              body:
+                'Hadházy éppen a birtok környéki nyilvános utakon autózott, amikor a hatvanpusztai birtok védelmét ellátó biztonsági szolgálat egyik terepjárós őre agresszívan üldözőbe vette a kocsiját, majd az üldözés során oldalról nekiütközött. Az ütközés erejétől a vagyonőr saját járműve elvesztette a stabilitását és felborult. Az esetet az anyósülésen utazó Gulyás Balázs, a Gulyáságyú Média újságírója az első másodperctől videóra vette — enélkül az ügy megmaradt volna a klasszikus „állítás állítással szemben" szintjén. A Bicskei Rendőrkapitányság közúti veszélyeztetés bűntettének alapos gyanúja miatt indított eljárást a sofőr ellen, akiről kiderült, hogy Mészáros Lőrinc biztonságtechnikai cégének alkalmazásában állt. A nyomozást 2025 novemberében megszüntették, arra hivatkozva, hogy az őr nem veszélyeztette a képviselő testi épségét; az ügyet átminősítették, és az őr végül szabálysértési eljárásban 80 ezer forint pénzbírságot és három hónap járművezetéstől eltiltást kapott.',
+              video: {
+                id: 'ahlzM1ub9IA',
+                label: 'Gulyáságyú Média',
+                title: 'Így ÜLDÖZTÉK HADHÁZY autóját Hatvanpusztán',
+                summary: 'A teljes felvétel az anyósülésről — az üldözéstől az ütközésen át a borulásig.',
+              },
+              sources: [
+                { source: '444', date: '2025. aug. 25.', headline: 'Videón, ahogy a hatvanpusztai biztonsági őr nekimegy Hadházy Ákos autójának', url: 'https://444.hu/2025/08/25/videon-ahogy-a-hatvanpusztai-biztonsagi-or-nekimegy-hadhazy-akos-autojanak' },
+                { source: 'Telex', date: '2025. nov. 12.', headline: 'A rendőrség szerint a hatvanpusztai birtok őre nem veszélyeztette Hadházy Ákos testi épségét, amikor nekiment a kocsijának', url: 'https://telex.hu/belfold/2025/11/12/hadhazy-akos-hatvanpuszta-utkozes-baleset-borulas-biztonsagi-or-rendorseg-nyomozas-lezaras' },
+                { source: 'Népszava', headline: 'Pénzbírságot kapott a hatvanpusztai vagyonőr, aki nekiment Hadházy Ákos autójának', url: 'https://nepszava.hu/3307453_hatvanpuszta-hadhazy-rendorseg-szabalysertesi-birsag' },
+              ],
+            },
+            sources: [
+              { source: 'Szabad Európa', headline: 'Hadházy Ákos Hatvanpusztáról: „Itt 6000 négyzetmétert építettek fel a legdrágább anyagokból"', url: 'https://www.szabadeuropa.hu/a/hatvanpuszta-orban-meszaros-gazdasag-vagyonosodas/33540911.html', lead: 'Elsőként a 2015-ben elhunyt Ferenczi Krisztina dokumentálta az Orbán- és a Mészáros-család dél-fejér megyei vagyonosodását.' },
+              { source: '444', date: '2025. aug. 27.', headline: 'Hadházy Ákos múlt héten bement Hatvanpusztára, most kitette az ott készült videót', url: 'https://444.hu/2025/08/27/hadhazy-akos-mult-heten-bement-hatvanpusztara-most-kitette-az-ott-keszult-videot' },
+              { source: 'Index', headline: 'Luxuspusztának nevezte Hadházy Ákos az Orbán család birtokát', url: 'https://index.hu/belfold/2025/09/05/hadhazy-akos-hatvanpuszta-luxuspuszta-garancsi-istvan-tiborcz-istvan-orban-viktor-miniszterelnok-golfklub/' },
+              { source: 'Telex', date: '2026. márc. 17.', headline: 'Hadházy Ákos még szervez egy túrát Hatvanpusztára a választások előtt', url: 'https://telex.hu/belfold/2026/03/17/hadhazy-akos-hatvanpuszta-kirandulas' },
+            ],
+            promo: {
+              href: '/ugyek/hatvanpuszta',
+              eyebrow: 'Kiemelt ügy · Hatvanpuszta',
+              title: 'Mennyit ér valójában a hatvanpusztai birtok?',
+              lead:
+                'Becsült ingatlanérték, ismeretlen vagyonforrás, vagyonnyilatkozat — az ügy teljes feldolgozása a saját oldalán: ki a felelős, mi a gyanú, és hol tart most.',
+              cta: 'Az ügy megnyitása',
+            },
+          },
+          {
+            title: 'Pécsi Volvo-gate — az újranyitott nyomozás',
+            when: '2026',
+            body:
+              'Pécs városa használt Volvo autóbuszokat vásárolt a tömegközlekedési flotta megújítására, ám a beszerzést egy bonyolult közvetítői hálózaton keresztül, mesterségesen feltornászott felárral bonyolították le — a várost és a költségvetést 700 millió forintnyi bizonyított közkár érte. A nyomozás adatai szerint az elcsalt pénzek jelentős része offshore csatornákon keresztül Thaiföldre vándorolt.',
+            more: [
+              'Bár a bírósági eljárásban születtek részleges ítéletek és felmentések, a politikai szempontból igazán fontos háttérszereplőket a korábbi hatóságok érintetlenül hagyták. Hadházy 2026-ban benyújtott, új bizonyítékokkal alátámasztott feljelentése nyomán a Fejér Megyei Rendőr-főkapitányság hivatalosan elrendelte a nyomozás újbóli megnyitását — immár kifejezetten azokra a szereplőkre fókuszálva, akiket a vádemelés korábban nem érintett.',
+              'Az ügy mellékszálaként 2024-ben nagy vihart kavart fotót készített a Parlament mélygarázsában: dokumentálta, hogy Bánki Erik fideszes képviselő egy olyan luxus sport BMW-vel érkezett a törvényhozáshoz, amely egy közétkeztetési tendereken rendkívül sikeres cégcsoport tulajdonában állt. A szimbolikus pikantériát a rendszám adta: a betűkombináció a pécsi Volvo-gate harmadrendű vádlottjának nevére utalt.',
+            ],
+            sources: [
+              { source: 'RTL', date: '2024. júl. 9.', headline: 'A fideszes Bánki Erik egy közétkeztetési tendereken sikeres csoporthoz köthető cégtől bérel sportautót', url: 'https://rtl.hu/belfold/2024/07/09/banki-erik-hungast-csoport-sportauto-bmw-hadhazy-akos' },
+            ],
+            promo: {
+              href: '/ugyek/pecsi-volvo-gate',
+              eyebrow: 'Kiemelt ügy · Pécsi Volvo-gate',
+              title: 'Hogyan lett 700 millió forint közkár egy buszbeszerzésből?',
+              lead:
+                'Felárral vett használt buszok, Thaiföldre vándorolt pénz, felmentés, majd az ítélet megsemmisítése és újratárgyalás. A teljes ügy időrendben, szereplőkkel.',
+              cta: 'Az ügy megnyitása',
+            },
+          },
+          {
+            title: 'Lélegeztetőgépek — a járvány árnyékában',
+            body:
+              'A rendkívüli jogrend időszaka biztosította a legátláthatatlanabb terepet a hirtelen állami beszerzéseknek. Hadházy a teljes lezárások és a titkosítások idején is módszeresen nekilátott a lélegeztetőgép-beszerzés átvilágításának. Az általa feltárt adatsorok három rendszerszintű problémát hoztak felszínre: a gépeket a világpiaci árhoz képest sokszoros felárral vásárolta meg az állam; gyanús hátterű, sokszor frissen alapított cégek iktatódtak be a láncolatba; a beszerzett sok ezer berendezés jelentős része pedig raktárakban ragadt, mert technikailag alkalmatlan volt a magyar egészségügyi hálózatban való üzemeltetésre.',
+            more: [
+              'Nem elégedett meg a parlamenti írásbeli kérdésekkel: a megszerzett számlákból és vámáru-nyilatkozatokból számokkal alátámasztott pénzügyi modellt és videós összefoglalót készített, amely azóta is a Kegyencjárat ügyoldalának szakmai és vizuális alapját képezi.',
+            ],
+            promo: {
+              href: '/ugyek/lelegeztetogep',
+              eyebrow: 'Kiemelt ügy · Lélegeztetőgépek',
+              title: 'Mennyibe kerültek valójában a lélegeztetőgépek?',
+              lead:
+                'A járvány legnagyobb beszerzési ügye: árak, közvetítők, és hogy mi lett a sok ezer géppel. Az ügy teljes feldolgozása a saját oldalán.',
+              cta: 'Az ügy megnyitása',
+            },
+          },
+        ],
+      },
+      table: {
+        heading: 'Hogyan aránylanak egymáshoz a legfontosabb ügyei?',
+        intro:
+          'Röviden összefoglalva a hozzá köthető legfontosabb tényfeltáró projektek jellemzőit — a közkár nagyságrendjét és azt, milyen módszerrel jutott el hozzájuk.',
+        columns: ['Ügy', 'Érintett terület és főszereplők', 'Feltárt közkár / jellemző', 'Munkamódszer'],
+        rows: [
+          ['Hatvanpuszta', 'Orbán- és Mészáros-család uradalma', '6000 m²-es luxusrezidencia', 'Helyszíni szafarik, besétálás, légi felvételek'],
+          ['Pécsi Volvo-gate', 'Buszbeszerzés, Bánki Erik szála', '700 millió forint bizonyított kár', 'Cégiratok, 2026-os új feljelentés'],
+          ['Lélegeztetőgépek', 'Járványügyi veszélyhelyzeti beszerzések', 'Sok ezer raktárban ragadt gép', 'Vámadatok és számlák végigvezetése'],
+        ],
+      },
+      videoBlock: {
+        heading: 'Hatvanpuszta, ahogy ő mutatta meg',
+        items: [
+          {
+            id: 'AnJ-SfY8tjA',
+            label: 'ATV',
+            title: 'Hadházy Ákos gond nélkül besétált a hatvanpusztai birtokra, amit tudott, levideózott',
+            summary:
+              'A nyitva hagyott hátsó kapu, néhány perc a birtokon, majd a kertész. A felvétel maga a válasz arra a kérdésre, hogy befejezetlen gazdasági épületről van-e szó.',
+          },
+        ],
+      },
+      extra: [
+        {
+          heading: 'A módszer: nyilvános adatból épített ügyek',
+          paragraphs: [
+            'A módszertana öt pilléren nyugszik: a közbeszerzési értesítők szisztematikus átfésülésén, a cégbírósági iratokból kibogozott offshore cégláncokon és tulajdonosi összefonódásokon, a miniszteri keretekből kiosztott egyedi támogatások nyomon követésén, az uniós pályázati portálok tételes ellenőrzésén — és ötödikként azon, hogy a dokumentumokat csonkítatlanul, teljes terjedelemben közzétette.',
+            'Ez a megközelítés lassú és monoton munkát igényel, cserébe viszont az így nyert bizonyítékok jogilag és politikailag is megtámadhatatlanok. A teljes közzététellel pedig elérte, hogy az állításait független újságírók, sőt szkeptikus állampolgárok is lépésről lépésre ellenőrizhessék. A parlamenti munkája mellett rendszeres utcai demonstrációkat és blokádokat is szervezett, hogy közvetlen nyomást gyakoroljon a hatóságokra.',
+          ],
+        },
+        {
+          heading: 'A bedarált feljelentésekből lett a 2026 utáni elszámoltatás gerince',
+          paragraphs: [
+            'Politikai pályája során több száz hivatalos feljelentést tett a nyomozó hatóságoknál és az ügyészségen. Az esetek túlnyomó többségében az ügyészségi szervezet és a rendőrség még a nyomozati szakban elutasította a beadványokat, vagy bűncselekmény hiányában megszüntette az eljárásokat.',
+            'Ez a látszólagos kudarcsorozat a 2026. április 12-i fordulat után teljesen új értelmet nyert. Az a gyakorlata, hogy a feljelentések mellé a teljes, rendszerezett bizonyítéki dokumentációt is csatolta és megőrizte, megmentette ezeket az ügyeket az elenyészéstől. Az újonnan felállított független antikorrupciós szervek így nem a nulláról kezdik a munkát, hanem a kész aktákat veszik elő.',
+            'A pécsi buszbeszerzés 2026-os sikeres újraindítása a precedens: bizonyítja, hogy az évekig elfektetett ügyekben is el lehet érni valós felelősségre vonást, ha megváltozik a nyomozóhatósági akarat.',
+          ],
+        },
+        {
+          heading: 'Milyen kritikák érték a munkáját?',
+          paragraphs: [
+            'Hadházy megítélése sosem volt egységes, még a kormánykritikus oldalon sem. A leggyakoribb kritika a „magányos harcos" attitűd volt: sokan felrótták neki, hogy a szisztematikus adatgyűjtés közben hajlamos volt elszigetelődni az országos szövetségépítéstől, és a szélesebb pártstruktúrák kialakítása helyett egyéni akciókra koncentrált.',
+            'A 2024-es és 2025-ös politikai földrengés idején többször hangoztatta, hogy a személyi cserék önmagukban nem elegendőek: szigorú strukturális és jogi garanciákra van szükség ahhoz, hogy a korrupció rendszerszinten se térhessen vissza. Ez a kompromisszumot nem ismerő hozzáállás alkalmanként súlyos vitákhoz vezetett a gyors politikai győzelemre törekvő új formációkkal. Az idő azonban őt igazolta: a kormányváltás után az új adminisztráció is kénytelen elismerni, hogy az általa felhalmozott tudásbázis és adatváz nélkül az elszámoltatási ígéretek üres jelszavak maradtak volna.',
+          ],
+        },
+      ],
+      faq: [
+        {
+          q: 'Ki Hadházy Ákos?',
+          a: 'Állatorvos, korábban a Fidesz helyi politikusa Szekszárdon, aki a helyi trafikmutyik rendszerét kezdte szóvá tenni, majd kilépett. 2016-tól az LMP társelnöke, 2018 óta független országgyűlési képviselő.',
+        },
+        {
+          q: 'Mit tárt fel Hadházy Ákos Hatvanpusztán?',
+          a: 'Azt, hogy a hivatalosan befejezetlen mezőgazdasági létesítménynek nevezett birtokon mintegy hatezer négyzetméternyi épületegyüttes áll a legdrágább anyagokból. Ő vezette be a „Luxuspuszta" kifejezést, buszos túrákat szervezett oda, 2025 augusztusában pedig be is sétált és levideózta, amit látott.',
+        },
+        {
+          q: 'Mi történt 2025. augusztus 19-én Hatvanpusztán?',
+          a: 'A birtok egy terepjárós biztonsági őre üldözőbe vette Hadházy autóját, majd oldalról nekiütközött; az őr saját járműve felborult. Az esetet a kocsiban ülő Gulyás Balázs videóra vette. A nyomozást megszüntették, az őr végül szabálysértésért 80 ezer forint bírságot és három hónap eltiltást kapott.',
+        },
+        {
+          q: 'Mi köze Hadházy Ákosnak a Volvo-gate-hez?',
+          a: 'A 2026-os feljelentése nyomán rendelte el a Fejér Megyei Rendőr-főkapitányság a pécsi buszbeszerzési ügy nyomozásának újranyitását, azokra a szereplőkre fókuszálva, akiket a korábbi vádemelés nem érintett.',
+        },
+        {
+          q: 'Hány feljelentést tett?',
+          a: 'Több százat. A többségüket még a nyomozati szakban elutasították, de mivel a teljes bizonyítéki dokumentációt is csatolta és megőrizte, ezek az akták a 2026 utáni elszámoltatás kiindulópontjai lettek.',
+        },
+      ],
+    },
   },
   {
     id: 'gulyas-marton',
@@ -253,6 +551,159 @@ export const FELTAROK: Feltaro[] = [
       },
     },
     related: [{ label: 'Videóriportok és podcastok', href: '/podcastok' }],
+    live: true,
+    detail: {
+      seoTitle: 'Partizán: a csatorna, ami médiatörténelmet írt',
+      seoDescription:
+        'A Partizán közösségi finanszírozású videós műhely. Az első Magyar Péter-interjú, a Szabó Bence-ügy, a 4iG-bizniszek — és a legfrissebb adások egy helyen.',
+      lead:
+        'A Partizán nézői támogatásból fenntartott videós műhely, amely hosszú, vágatlan, élőben közvetített beszélgetésekre épül. 2024 februárjában itt adott először interjút az a Magyar Péter, akinek a fellépéséből a 2026-hoz vezető politikai folyamat elindult — de a műhely azóta sem állt le: a legfrissebb oknyomozó adásaik továbbra is milliós nagyságrendű közönséget érnek el.',
+      cases: {
+        heading: 'Amit a Partizán megváltoztatott',
+        intro:
+          'Egy YouTube-csatornáról nehéz elhinni, hogy politikatörténeti tényező. Ez a négy eset megmutatja, pontosan hogyan lett azzá — és hogy nem egyetlen szerencsés adásról van szó.',
+        items: [
+          {
+            title: 'Az első Magyar Péter-interjú',
+            when: '2024. február 11.',
+            body:
+              'Varga Judit volt igazságügyi miniszter exférje a Partizán stúdiójában szólalt meg először nyilvánosan, néhány nappal a kegyelmi botrány kirobbanása után. Az adást hetvenezren nézték élőben, néhány óra alatt félmillióan, azóta pedig milliós nagyságrendben.',
+            more: [
+              'Ami ezt médiatörténeti pillanattá tette, nem a nézettség volt, hanem a formátum. Egy órákig tartó, vágatlan beszélgetésből nem lehet kiemelni egyetlen mondatot és arra építeni a cáfolatot: a néző maga hallotta az egészet, a kontextussal együtt. Innentől számítható az a politikai folyamat, amely 2026. április 12-ig vezetett.',
+              'Az interjú kirobbanó hatásához az is hozzátartozik, hogy máshol nem készülhetett volna el. Egy hirdetésből élő kereskedelmi csatornán egy ilyen beszélgetés tulajdonosi, hirdetői és jogi egyeztetések sorozatán ment volna keresztül — ha egyáltalán eljut az adásig.',
+            ],
+            sources: [
+              { source: 'Mérce', date: '2024. febr. 12.', headline: 'Öt pontban Magyar Péter Partizán-interjújáról', url: 'https://merce.hu/2024/02/12/magyar-peter-partizan-interju-rogan-antal-elemzes/' },
+            ],
+          },
+          {
+            title: 'A Szabó Bence-interjú — amikor a titkosszolgálat került a képbe',
+            when: '2026. március',
+            body:
+              'Néhány héttel a választás előtt egy volt őrnagy, Szabó Bence adott csaknem másfél órás interjút a Partizánnak arról, hogyan gyakorolt rá nyomást az Alkotmányvédelmi Hivatal, hogy ellenzéki párthoz köthető informatikusokat vizsgáljanak. Az élő adást kilencvenezren nézték egyszerre, a folytatás pedig másfél nap alatt egymilliós megtekintésnél járt.',
+            more: [
+              'Ez az az eset, ahol a csatorna szerepe már nem a nyilvánosság megteremtése volt, hanem a védelemé: egy bejelentő számára az jelentette a biztonságot, hogy amit elmond, azt egyszerre több százezren hallják, és nem lehet utólag „félreértésnek" minősíteni.',
+              'A sztori nem itt kezdődött: Szabó Bence az első interjúját a Direkt36-nak adta, néhány nappal korábban. A Partizán szerepe az volt, hogy ezt a történetet élő adásban, nagy tömeg előtt is elmondhatóvá tette. Két különböző műhely, két különböző funkció — a Direkt36 profilja is megtalálható ezen a falon.',
+            ],
+            videos: [
+              {
+                id: 'roI9C9zraLE',
+                label: 'Partizán · 2026',
+                title: 'A Tisza elleni titkosszolgálati akcióról kérdezzük Szabó Bence volt nyomozót',
+                summary: 'A teljes, vágatlan beszélgetés — ez az az adás, amelyet másfél nap alatt egymillióan néztek meg.',
+              },
+            ],
+            promo: {
+              href: '/rendszervaltas/direkt36',
+              eyebrow: 'A falon · Direkt36',
+              title: 'Itt adta az első interjúját Szabó Bence',
+              lead:
+                'A Partizán-adás előtt néhány nappal a Direkt36-nak szólalt meg először a nyomozó. Az az interjú — és ami utána történt vele — a Direkt36 oldalán nézhető meg.',
+              cta: 'Tovább a Direkt36-hoz',
+            },
+            sources: [
+              { source: '444', date: '2026. márc. 27.', headline: 'Szabó Bence: Üdvözlöm Gulyás Gergely nyilatkozatát, hiszen beigazolta, hogy titkosszolgálatok álltak az egész művelet mögött', url: 'https://444.hu/2026/03/27/szabo-bence-letaglozo-volt-visszanezni-a-reakciokat', lead: 'A Partizánnak nyilatkozott a volt rendőrszázados, akit sokan hősnek tartanak, miután részletesen beszélt arról, milyen titkosszolgálati akció folyhatott a Tisza ellen.' },
+              { source: 'Magyar Hang', date: '2026. márc. 27.', headline: 'Szabó Bence: Elég megterhelő volt az elmúlt két nap', url: 'https://hang.hu/belfold/szabo-bence-partizan-186936' },
+            ],
+          },
+          {
+            title: 'A nézőkből felépített szerkesztőség',
+            body:
+              'A műhely hirdetői és állami pénz nélkül, a nézők havi támogatásából működik. Ez nem pénzügyi részlet, hanem a lényeg: pontosan azt a nyomásgyakorlási felületet szüntette meg, amellyel a magyar médiapiac nagy részét kezelni lehetett.',
+            more: [
+              'A 2010-es évek magyar médiaátalakításának a legfontosabb eszköze nem a cenzúra volt, hanem a tulajdonlás és a hirdetési pénz. Egy szerkesztőséget elég volt megvásárolni, vagy kiéheztetni azzal, hogy az állami és az állami közelben lévő vállalatok hirdetései elkerülik. Ez a fogás olyan lapoknál is működött, ahol egyetlen újságírót sem kellett elbocsátani — elég volt a tulajdonos.',
+              'Egy több tízezer apró támogatóból élő szerkesztőségnél viszont nincs az az egy telefon, amivel el lehet intézni a dolgot. Ezért volt a finanszírozási forma önmagában is politikai állítás.',
+            ],
+          },
+          {
+            title: 'Élő közvetítés ott, ahol más nem volt jelen',
+            body:
+              'Tüntetések, parlamenti események, választási éjszakák: a Partizán rendszeresen közvetített élőben olyan helyszínekről, ahonnan más szerkesztőségnek nem volt kapacitása vagy szándéka. A YouTube-alapú terjesztés miatt egy-egy adás elérése független volt attól, hogy a nagy hírportálok átvették-e — nem kellett hozzá se kábelcsomag, se címlap.',
+          },
+        ],
+      },
+      videoBlock: {
+        heading: 'És azóta is folytatják a tényfeltárást',
+        intro:
+          'A fordulat után sok minden abbamaradt a magyar közéletben — ez nem. Az alábbi két adás néhány napja jelent meg, és nagyjából egymilliós nagyságrendű nézettségnél jár. Ez a válasz arra a kérdésre, hogy a Partizán csak a rendszerváltás előtti időszak jelensége volt-e.',
+        items: [
+          {
+            id: 'FnJbu5IpTPc',
+            label: 'Partizán · oknyomozás',
+            title: 'Mészáros vadászházától a csillagos égig: Orbán és a 4iG bizniszei',
+            summary:
+              'A vadászháztól az űriparig: hogyan épült fel egy cégbirodalom állami megrendelésekből. Néhány nap alatt közel egymillió megtekintés.',
+          },
+          {
+            id: 'ge5S3g4XWXY',
+            label: 'Partizán · oknyomozás',
+            title: 'Családi ebéden döntött Orbán a kirúgásáról | Színre lép a titkos informátor',
+            summary:
+              'Egy informátor, aki a kormányzat belsejéből beszél arról, hogyan születtek a személyi döntések.',
+          },
+        ],
+      },
+      videoGrid: {
+        heading: 'A csatorna friss adásaiból',
+        intro:
+          'Kilenc adás a Partizán műsoraiból — oknyomozó riportoktól hosszú interjúkig és politikai elemzésekig. A borítókra kattintva a YouTube-on nyílnak meg.',
+        channelUrl: 'https://www.youtube.com/@Partiz%C3%A1nm%C3%A9dia/videos',
+        channelLabel: 'A csatorna összes videója',
+        items: [
+          { id: '6T0FUhK8WF0', title: 'Így népszerűsíti az öngyilkosságot a TikTok algoritmusa', note: 'Oknyomozás' },
+          { id: 'Szhl6pt5C6s', title: 'Akkumulátor, gumiabroncs és WC-kagyló – medertisztítással küzdenek a Velencei-tóért', note: 'Riport' },
+          { id: 'wO14KNVKD5s', title: 'AI hatalomátvétel: már csak hónapokra vagyunk?', note: 'Beszélgetés' },
+          { id: 'MByz6N0QTtM', title: 'Régi eljárás, új arcok: mit várjunk a frissített Alkotmánybíróságtól?', note: 'Elemzés' },
+          { id: 'TIZwnKPy7JE', title: '„Orbán Viktor szavazói nevében beszélek” | Interjú Gajdics Ottóval', note: 'Interjú' },
+          { id: '3qDfG6YqjHY', title: 'Orbán magyarázza a vereségét | elemzés Sarkadi Zsolttal és Gulyás Marcival', note: 'Elemzés' },
+          { id: 'OH0sM6Qkb40', title: 'Magyar a Partizán kérdésére: változtatunk az örökbefogadás szabályain', note: 'Interjú' },
+          { id: 'Oa1MA2swCQY', title: 'Drogfüggés, szegénység: van megoldása a Tiszának? Interjú Bódis Krisztával', note: 'Interjú' },
+          { id: 'PkYHZ0FLJIk', title: 'Gulyás Marci: Elköltözöm.', note: 'Bejelentés' },
+        ],
+      },
+      extra: [
+        {
+          heading: 'Mit jelent a közösségi finanszírozás a gyakorlatban?',
+          paragraphs: [
+            'A „nézői támogatásból működik" mondat könnyen hangzik üres marketingnek, pedig nagyon konkrét működési következményei vannak. Egy hirdetésből élő szerkesztőségnél minden téma mögött ott van a kérdés, hogy melyik hirdető melyik cikktől lesz ideges. Egy előfizetői modellnél ez enyhül, de nem tűnik el: az előfizetőt is el lehet veszíteni. Egy több tízezer apró támogatóra épülő modellnél viszont egyetlen szereplő kiesése sem jelent egzisztenciális fenyegetést.',
+            'A másik oldala, hogy ez a modell folyamatos, látható teljesítménykényszert jelent. Aki havonta fizet, az bármikor le tudja mondani — nem egy évre elkötelezett hirdetési szerződésről van szó. Ez a szerkesztőségeket arra kényszeríti, hogy folyamatosan bizonyítsanak a nézőik felé, nem pedig egy tulajdonos felé.',
+            'Magyarországon ez a forma azért vált kritikus fontosságúvá, mert a hagyományos utak sorra zárultak be. Nem elvi döntés volt tehát a közösségi finanszírozás, hanem a maradék járható út — amiről utólag kiderült, hogy egyben a legvédhetőbb is.',
+          ],
+        },
+        {
+          heading: 'Vezetőváltás a fordulat után',
+          paragraphs: [
+            'A Partizánt Gulyás Márton alapította, és éveken át ő volt a műhely arca és főszerkesztője. 2026 augusztusában bejelentette, hogy lemond a főszerkesztői pozíciójáról — a csatorna viszont működik tovább, és a friss adások nézettsége azt mutatja, hogy a közönség nem egyetlen személyhez kötődött.',
+            'Ez önmagában is fontos állítás egy ilyen műhelyről. Sok közösségi finanszírozású projekt lényegében egy ember köré épül, és vele együtt ér véget. Az intézményesülés próbája pontosan az, hogy az alapító távozása után is megy-e tovább a munka.',
+          ],
+        },
+        {
+          heading: 'A Partizán és a Kegyencjárat',
+          paragraphs: [
+            'A Kegyencjárat podcast- és videórovata rendszeresen hivatkozik partizános anyagokra: számos olyan ügy van az adatbázisunkban, amelynek az első részletes, kontextusba helyezett feldolgozása itt jelent meg. A mi munkánk ebből a szempontból másodlagos — mi rendszerezzük és összekötjük azt, amit ők és a többi műhely kiásott.',
+            'Ez a fal azért létezik, hogy ez a viszony látható legyen. Egy adatbázis könnyen kelti azt a látszatot, mintha az adatok maguktól állnának össze. Nem így van: minden sor mögött ott van valaki, aki elment a helyszínre, leült egy kamera elé, vagy végigolvasott több ezer oldalt.',
+          ],
+        },
+      ],
+      faq: [
+        {
+          q: 'Ki alapította a Partizánt?',
+          a: 'Gulyás Márton, aki korábban a Krétakör színházi műhelyéből és a Közös Ország Mozgalomból volt ismert. 2026 augusztusában bejelentette, hogy lemond a főszerkesztői pozíciójáról; a csatorna azóta is működik. A saját profilja is megtalálható ezen az oldalon.',
+        },
+        {
+          q: 'Miből él a Partizán?',
+          a: 'Közösségi finanszírozásból: a nézők havi támogatásából. Nem hirdetői és nem állami bevételből — pont ez adja a függetlenségét.',
+        },
+        {
+          q: 'Mikor volt az első Magyar Péter-interjú a Partizánon?',
+          a: '2024. február 11-én. Az adást hetvenezren nézték élőben, néhány óra alatt félmillióan, azóta pedig milliós nagyságrendben.',
+        },
+        {
+          q: 'Aktív még a Partizán a 2026-os fordulat után?',
+          a: 'Igen. A legfrissebb oknyomozó adásaik — például a 4iG-bizniszekről szóló riport — néhány nap alatt közel egymilliós nézettséget érnek el.',
+        },
+      ],
+    },
   },
   {
     id: 'atlatszo',
@@ -270,6 +721,76 @@ export const FELTAROK: Feltaro[] = [
         'Az Átlátszó 2011-ben indult oknyomozó portálként, és azóta is közadakozásból és pályázatokból működik. A legfontosabb eszköze nem a bennfentes forrás, hanem a közérdekűadat-igénylés: ha egy intézmény megtagadta az adatot, az Átlátszó pert indított, és a bírósági úton kikényszerített iratokat közzétette.',
         'Ez a módszer lassú, drága és sok éven át tartó pereskedést jelent — cserébe viszont az így megszerzett dokumentum megtámadhatatlan. Számos, ma már közismert ügy első hiteles forrása egy ilyen perben kiadott irat volt.',
         'Emellett az Átlátszó építette ki a magyar oknyomozás egyik legfontosabb technikai infrastruktúráját: drónfelvételeket, adatvizualizációkat és nyilvános adatbázisokat, amelyek más szerkesztőségek számára is használhatók maradtak.',
+      ],
+    },
+    detail: {
+      seoTitle: 'Átlátszó: pert nyert adatok, drónfelvételek, oknyomozás',
+      seoDescription:
+        'Az Átlátszó közérdekű adatigénylésekkel és perekkel kényszerítette ki a nyilvánosságot. Samsung-bírságok, Szuverenitásvédelmi Hivatal, Hatvanpuszta — konkrét ügyek.',
+      lead:
+        'Az Átlátszó 2011 óta működő, közadakozásból és pályázatokból fenntartott oknyomozó portál. A legfontosabb eszköze nem a bennfentes forrás, hanem a közérdekűadat-igénylés — és ha megtagadják, a per.',
+      cases: {
+        heading: 'Perek, amiket megnyertek — és amiket nem elég megnyerni',
+        intro:
+          'Egy adatper évekig tart és pénzbe kerül. Cserébe viszont a végén kiadott dokumentum megtámadhatatlan: nem „állítás szemben állítással", hanem irat.',
+        items: [
+          {
+            title: 'A gödi Samsung-gyár bírságai',
+            when: '2026. május',
+            body:
+              'Jogerősen megnyerték a pert a gödi akkumulátorgyárra kiszabott hatósági bírságok adatainak kiadásáért. Egy ilyen ügyben az összeg és a jogcím önmagában is válasz arra a kérdésre, amit a hivatalos kommunikáció évekig kerülgetett.',
+            sources: [
+              { source: 'Hírextra', date: '2026. máj. 27.', headline: 'Jogerősen pert nyert az Átlátszó a gödi Samsung-gyár bírságai ügyében - Hírextra', url: 'https://www.hirextra.hu/2026/05/27/jogerosen-pert-nyert-az-atlatszo-a-godi-samsung-gyar-birsagai-ugyeben/', lead: 'Másodfokon is az Átlátszónak adott igazat a bíróság a Pest Vármegyei Kormányhivatallal szemben indított perben. A döntés értelmében a hivatalnak ki kell adnia a gödi Samsung-gyárra kiszabott munkavédelmi, tűzvédelmi és egyéb bírságokról szóló határozatokat.' },
+            ],
+          },
+          {
+            title: 'Szuverenitásvédelmi Hivatal — az a per, amit a hivatal nem fogadott el',
+            when: '2026',
+            body:
+              'Az Átlátszó pert nyert a Szuverenitásvédelmi Hivatallal szemben, mire a hivatal fellebbezett — az érvelésük szerint a bíróságnak nincs hatásköre felettük. Másodfokon végül az eljárás megismétlését rendelték el. Ez a fajta elhúzódás önmagában is része a módszertannak: sokszor nem a per elvesztése a cél, hanem az idő.',
+            sources: [
+              { source: 'Átlátszó', date: '2026. márc. 19.', headline: 'Láncziék fellebbeztek az elmarasztaló ítélet ellen, szerintük a bíróságnak nincs hatalma felettük', url: 'https://atlatszo.hu/kozugy/2026/03/19/lancziek-fellebbeztek-az-elmarasztalo-itelet-ellen-szerintuk-a-birosagnak-nincs-hatalma-felettuk/' },
+              { source: 'HVG', date: '2026. máj. 28.', headline: 'Csatát nyert a Szuverenitásvédelmi Hivatal, meg kell ismételni az eljárást az Átlátszó-perben', url: 'https://hvg.hu/itthon/20260528_szuverenitasvedelmi-hivatal-atlatszo-birosag-masodfoku-dontes-b' },
+            ],
+          },
+          {
+            title: 'Amikor a jogerős ítélet sem elég',
+            when: '2026. január',
+            body:
+              'Egy honvédelmi tárcához köthető cég jogerős bírósági ítélet ellenére sem adta ki, ki engedélyezte egy szolgálati villa felújítását. Ez a másik oldal, amiről ritkán esik szó: az adatper megnyerése nem azonos az adat megszerzésével.',
+            sources: [
+              { source: 'Átlátszó', date: '2026. jan. 8.', headline: 'Jogerős ítélet ellenére sem adja ki a HM cége, ki adott engedélyt a Ruszin-Szendi Romulusz által használt villa felújítására', url: 'https://atlatszo.hu/kozadat/2026/01/08/jogeros-itelet-ellenere-sem-adja-ki-a-hm-cege-ki-adott-engedelyt-a-ruszin-szendi-romulusz-altal-hasznalt-villa-felujitasara/' },
+            ],
+          },
+          {
+            title: 'Hatvanpuszta a levegőből és az időben',
+            body:
+              'A portál drónfelvételekkel és archív műholdképekkel dokumentálta, hogyan alakult át a hatvanpusztai birtok az évek során, és megírta azt is, hogy a majorság generálkivitelezője Mészárosék családi cége volt. A módszer itt az összehasonlítás: nem egyetlen kép, hanem ugyanaz a helyszín öt és tíz évvel korábban.',
+            sources: [
+              { source: 'Átlátszó', date: '2025. szept. 12.', headline: 'Mészárosék közpénzbajnok családi cége a hatvanpusztai majorság generálkivitelezője', url: 'https://atlatszo.hu/kozpenz/2025/09/12/meszarosek-kozpenzbajnok-csaladi-cege-a-hatvanpusztai-majorsag-generalkivitelezoje/' },
+              { source: 'Átlátszó', date: '2025. aug. 12.', headline: 'Miből lesz a cserebogár? Így festett a hatvanpusztai birtok öt és tíz évvel ezelőtt', url: 'https://atlatszo.hu/impakt/2025/08/12/mibol-lesz-a-cserebogar-igy-festett-a-hatvanpusztai-birtok-ot-es-tiz-evvel-ezelott/' },
+            ],
+          },
+        ],
+      },
+      extra: [
+        {
+          heading: 'Az infrastruktúra, amit másoknak is építettek',
+          paragraphs: [
+            'Az Átlátszó nemcsak cikkeket írt, hanem eszközöket is létrehozott: drónos felvételi kapacitást, adatvizualizációkat, és nyilvános adatbázisokat, amelyeket más szerkesztőségek is használhattak. Üzemeltetik azt a felületet is, amelyen keresztül bárki benyújthat és nyomon követhet közérdekűadat-igénylést.',
+            'Ez a fal legfontosabb tanulsága kicsiben: a feltárás nem sztorikból áll, hanem képességekből. Aki egy képességet felépít, az nemcsak a saját cikkeit teszi lehetővé, hanem mindenki másét is.',
+          ],
+        },
+      ],
+      faq: [
+        {
+          q: 'Mivel foglalkozik az Átlátszó?',
+          a: 'Oknyomozó újságírással, adatújságírással és közérdekűadat-igénylésekkel. 2011 óta működik, közadakozásból és pályázatokból, nonprofit formában.',
+        },
+        {
+          q: 'Mi az a közérdekűadat-igénylés?',
+          a: 'Olyan kérelem, amellyel bárki kikérheti egy állami vagy önkormányzati szerv kezelésében lévő, közérdekű adatot. Ha a szerv megtagadja, az igénylő bírósághoz fordulhat — az Átlátszó módszertanának ez a második fele.',
+        },
       ],
     },
   },
@@ -293,6 +814,51 @@ export const FELTAROK: Feltaro[] = [
       links: [{ text: 'a Kegyencjárat adatbázisa', href: '/adatbazis' }],
     },
     related: [{ label: 'Forráshivatkozások', href: '/forrashivatkozasok' }],
+    detail: {
+      seoTitle: 'K-Monitor: a korrupciós ügyek kereshető adatbázisa',
+      seoDescription:
+        'A K-Monitor antikorrupciós civil szervezet, amely a magyar sajtóban megjelent közpénzes cikkeket gyűjti kereshető adatbázisba. Mire jó ez, és hogyan használjuk mi is?',
+      lead:
+        'A K-Monitor antikorrupciós civil szervezet. Nem egyedi botrányokat robbant ki, hanem valami sokkal ritkábbat csinál: rendszerezve megőrzi őket. A magyar sajtóban megjelent, közpénzzel kapcsolatos cikkeket gyűjti és címkézi egy nyilvános, kereshető adatbázisban.',
+      cases: {
+        heading: 'Mit csinál pontosan a K-Monitor',
+        items: [
+          {
+            title: 'A korrupciós cikkek közös archívuma',
+            body:
+              'Évek óta folyamatosan gyűjtik és címkézik a közpénzzel kapcsolatos sajtóanyagokat, szereplők és intézmények szerint rendszerezve. A jelentősége akkor mutatkozik meg, amikor egy ügy évekkel később újra előkerül: e nélkül minden egyes alkalommal elölről kellene kezdeni a kutatást, és minden újságírónak külön.',
+          },
+          {
+            title: 'Nyílt adat — ezért van itt a Kegyencjárat is',
+            body:
+              'Az adatbázisuk nyílt licenc alatt érhető el, és a Kegyencjárat több ponton is erre támaszkodik: az ügy-ontológia és a forráshivatkozások jelentős része innen származik. Ez az oldal szó szerint nem létezne abban a formában, ahogy most van, ha a K-Monitor nem végezte volna el a rendszerezés munkáját.',
+          },
+          {
+            title: 'Szakértői jelenlét az uniós forrásvitákban',
+            body:
+              'A gyűjtés mellett folyamatosan jelen voltak szakértői anyagokkal az uniós források átláthatóságáról szóló vitákban — abban a technikai, jogi rétegben, ahol egy-egy feltételrendszer megfogalmazása dönt arról, mennyi közpénz hová folyhat.',
+          },
+          {
+            title: 'A pontosság mint alapkövetelmény',
+            body:
+              'Egy archívumnál a hiba nem egy cikkben marad benne, hanem beépül mindenki más munkájába, aki onnan dolgozik. A K-Monitor jelzéseire a Kegyencjárat is javított már hibás forrásattribúciókat a saját adatbázisában — ez a fajta visszacsatolás a szakmai minimum, és nem magától értetődő.',
+          },
+        ],
+      },
+      faq: [
+        {
+          q: 'Mi az a K-Monitor?',
+          a: 'Antikorrupciós civil szervezet, amely a magyar sajtóban megjelent, közpénzzel kapcsolatos cikkeket gyűjti és címkézi egy nyilvános, kereshető adatbázisban, szereplők és intézmények szerint.',
+        },
+        {
+          q: 'Használja a Kegyencjárat a K-Monitor adatait?',
+          a: 'Igen. Az ügy-ontológia és a forráshivatkozások jelentős része a K-Monitor nyílt licencű adatbázisából származik; a forrásmegjelölés minden érintett ügynél szerepel.',
+        },
+      ],
+      sources: [
+        { source: 'Kegyencjárat', headline: 'Forráshivatkozások', url: 'https://www.kegyencjarat.hu/forrashivatkozasok' },
+      ],
+    },
   },
   {
     id: 'direkt36',
@@ -309,6 +875,90 @@ export const FELTAROK: Feltaro[] = [
         'A Direkt36 néhány újságíróból álló, nonprofit oknyomozó műhely, amely tudatosan a lassú munkát választotta: nem napi híreket gyárt, hanem hónapokon át épít fel egy-egy ügyet dokumentumokból, háttérbeszélgetésekből és külföldi nyilvántartásokból.',
         'A műhely rendszeresen dolgozott együtt nemzetközi oknyomozó hálózatokkal. Ez több ügyben döntő volt: olyan adatokhoz és technikai szakértelemhez adott hozzáférést — például telefonos megfigyelési vizsgálatokhoz vagy külföldi cégnyilvántartásokhoz —, amelyeket egy magyar szerkesztőség önmagában nem tudott volna előállítani.',
         'A riportjaik jellemzően teljes forrásjegyzékkel, a megszólalók szerepének pontos megjelölésével jelentek meg, ami később a jogi támadásokkal szemben is védhetővé tette őket.',
+      ],
+    },
+    live: true,
+    detail: {
+      seoTitle: 'Direkt36: a Szabó Bence-interjú és a hosszú lélegzetű oknyomozás',
+      seoDescription:
+        'A Direkt36-nak szólalt meg először Szabó Bence nyomozó a Tisza elleni titkosszolgálati műveletről. Mi derült ki, és mi történt utána? Konkrét ügyek, forrásokkal.',
+      lead:
+        'A Direkt36 néhány újságíróból álló, nonprofit oknyomozó műhely, amely tudatosan a lassú munkát választotta: nem napi híreket gyárt, hanem hónapokon át épít fel egy-egy ügyet dokumentumokból, háttérbeszélgetésekből és külföldi nyilvántartásokból. A legnagyobb hatású munkájuk az az interjú, amelyben egy aktív állományú nyomozó belülről beszélt egy titkosszolgálati műveletről.',
+      cases: {
+        heading: 'A legfontosabb ügyeik',
+        items: [
+          {
+            title: 'Szabó Bence — a nyomozó, aki belülről beszélt',
+            when: '2026. március 25.',
+            body:
+              'A Nemzeti Nyomozó Iroda kiberbűnözés elleni főosztályának vezető nyomozója adott interjút arról, hogyan zajlott az ellenzéki párt informatikusai elleni eljárás, és hogyan próbált abba az Alkotmányvédelmi Hivatal ismételten beavatkozni. Az elmondása szerint a hivatal megfelelő dokumentáció nélkül vitt el adatokat a nyomozó egységtől.',
+            more: [
+              'A következtetése az volt, hogy közvetlen, kézi irányítás alatt álló, speciális titkosszolgálati egység dolgozhatott a párt bedöntésén. Az interjú azért volt kivételes, mert nem egy egykori, hanem egy akkor is aktív állományú nyomozó vállalta a nevét — néhány héttel a választás előtt. A belügyminiszter is kénytelen volt reagálni az állításokra.',
+              'Az ára is megmutatkozott: a cikk megjelenése után házkutatást tartottak a munkahelyén a Nemzeti Nyomozó Irodában, majd az otthonában is, ahol adathordozókat foglaltak le.',
+              'Néhány nappal később a Partizánnak is adott egy csaknem másfél órás, élő interjút — az az adás másfél nap alatt egymilliós megtekintésnél járt. A két műhely szerepe különbözik: itt készült el a dokumentált, ellenőrzött anyag, ott jutott el több százezer emberhez.',
+            ],
+            videos: [
+              {
+                id: 'IXmuE2TX9yE',
+                label: 'Direkt36 · 2026. március 25.',
+                title: '„Egy ideális rendszerben nem kellene itt ülnöm" — megszólal a nyomozó a Tisza-műveletről',
+                summary:
+                  'Az első interjú. Innen indult minden, ami utána következett — a miniszteri reakciótól a házkutatásokig.',
+              },
+            ],
+            sources: [
+              { source: 'Telex', date: '2026. márc. 25.', headline: 'Megszólal a nyomozó, aki belülről ismeri a Tisza elleni művelet ügyét', url: 'https://telex.hu/direkt36/2026/03/25/megszolal-a-nyomozo-aki-belulrol-ismeri-a-tisza-elleni-muvelet-ugyet' },
+              { source: 'Telex', date: '2026. márc. 25.', headline: 'Egy kézi irányítás alatt álló, speciális titkosszolgálati egység dolgozhatott a Tisza Párt bedöntésén, mondta a Direkt36-nak megszólaló nyomozó', url: 'https://telex.hu/belfold/2026/03/25/tisza-part-titkosszolgalat-hazkutatas-informatikusok' },
+              { source: 'Népszava', date: '2026. márc. 25.', headline: 'Nyilvánosság elé állt a Tisza Párt bedöntésére irányuló titkos műveletet ismerő nyomozó', url: 'https://nepszava.hu/3316627_tisza-part-bedontese-titkosszolgalati-muvelet-nyomozo-interju-direkt36' },
+            ],
+            promo: {
+              href: '/rendszervaltas/partizan',
+              eyebrow: 'A falon · Partizán',
+              title: 'A folytatás: a vágatlan, élő interjú',
+              lead:
+                'Néhány nappal a Direkt36-anyag után Szabó Bence a Partizánnak is megszólalt, élő adásban. Az az adás másfél nap alatt egymilliós megtekintésnél járt.',
+              cta: 'Tovább a Partizánhoz',
+            },
+          },
+          {
+            title: 'A megfigyelési ügy magyar szála',
+            when: '2021',
+            body:
+              'A katonai szintű kémszoftverrel végzett megfigyelések magyarországi ügyét szintén itt tárták fel, nemzetközi újságírói együttműködés keretében. A sztorit jegyző Panyi Szabolcs egyike volt az öt dokumentáltan megfigyelt magyar újságírónak — a részletes feldolgozás az ő profilján olvasható.',
+            promo: {
+              href: '/rendszervaltas/panyi-szabolcs',
+              eyebrow: 'A falon · Panyi Szabolcs',
+              title: 'Az újságíró, akit magát is megfigyeltek',
+              lead:
+                'A kémszoftveres ügy, a Szijjártó–Lavrov-felvételek és a kémkedési vád — a teljes történet időrendben.',
+              cta: 'Tovább Panyi Szabolcshoz',
+            },
+          },
+        ],
+      },
+      extra: [
+        {
+          heading: 'Miért működik a lassú módszer?',
+          paragraphs: [
+            'A Direkt36 tudatosan nem versenyez a napi hírversenyben. Egy anyag hónapokig, néha évekig készül: dokumentumokból, háttérbeszélgetésekből és külföldi nyilvántartásokból épül fel. Ennek az az ára, hogy sokkal kevesebb cikk jelenik meg — cserébe viszont mindegyik mögött ott van az a fajta bizonyítékrendszer, amelyet jogilag is nehéz megtámadni.',
+            'A műhely rendszeresen dolgozott együtt nemzetközi oknyomozó hálózatokkal. Ez több ügyben döntő volt: olyan adatokhoz és technikai szakértelemhez adott hozzáférést — például telefonos megfigyelési vizsgálatokhoz vagy külföldi cégnyilvántartásokhoz —, amelyeket egy magyar szerkesztőség önmagában nem tudott volna előállítani.',
+            'A harmadik jellemzőjük a forma: a riportjaik teljes forrásjegyzékkel, a megszólalók szerepének pontos megjelölésével jelennek meg. Ez nem stílus kérdése. Egy olyan környezetben, ahol a feltárásra érkező első válasz rendszerint a hitelesség megkérdőjelezése, a pontos forrásolás maga a védekezés.',
+          ],
+        },
+      ],
+      faq: [
+        {
+          q: 'Kinek adta az első interjúját Szabó Bence?',
+          a: 'A Direkt36-nak, 2026. március 25-én. Néhány nappal később a Partizánnak is megszólalt egy csaknem másfél órás élő adásban.',
+        },
+        {
+          q: 'Mi történt Szabó Bencével az interjú után?',
+          a: 'A cikk megjelenése után házkutatást tartottak a munkahelyén a Nemzeti Nyomozó Irodában, majd az otthonában is, ahol adathordozókat foglaltak le.',
+        },
+        {
+          q: 'Mivel foglalkozik a Direkt36?',
+          a: 'Nonprofit oknyomozó újságíró műhely, amely hónapokig épít fel egy-egy ügyet dokumentumokból és háttérbeszélgetésekből, gyakran nemzetközi oknyomozó hálózatokkal együttműködve.',
+        },
       ],
     },
   },
@@ -500,6 +1150,113 @@ export const FELTAROK: Feltaro[] = [
       ],
     },
     related: [{ label: 'Kapcsolódó ügyek az adatbázisban', href: '/adatbazis' }],
+    live: true,
+    detail: {
+      seoTitle: 'Panyi Szabolcs: a Szijjártó–Lavrov-felvételek és a kémkedési vád',
+      seoDescription:
+        'Panyi Szabolcs hozta nyilvánosságra, hogy Szijjártó Péter az EU-tárgyalások szünetében is egyeztetett Lavrovval. Néhány nappal később kémkedéssel vádolták meg.',
+      lead:
+        'Panyi Szabolcs nemzetbiztonsági és külpolitikai ügyekre szakosodott oknyomozó újságíró. Ő hozta nyilvánosságra azokat a Szijjártó–Lavrov-telefonbeszélgetéseket, amelyekből kiderült: a magyar külügyminiszter az uniós tárgyalások szünetében is egyeztetett az orosz külügyminiszterrel. Három nappal a teljes beszélgetés közzététele után az állam kémkedés gyanújával feljelentette.',
+      cases: {
+        heading: 'A Szijjártó–Lavrov-ügy — időrendben',
+        intro:
+          'Ez a sorrend a lényeg. Nem egy újságírót jelentettek fel, aki mellesleg írt valamit — hanem azt az újságírót, aki épp akkor tette közzé a külügyminiszter és az orosz külügyminiszter beszélgetéseit.',
+        items: [
+          {
+            title: 'A nyílt titok, amit valaki leírt',
+            body:
+              'Az európai politika legfelsőbb köreiben régóta beszéltek arról, hogy a magyar külügyminiszter az uniós tárgyalások szünetében kimegy a teremből, és lényegében tájékoztatja orosz kollégáját arról, ami odabent elhangzott. Panyi Szabolcs erről már 2024-ben is írt cikket. A különbség az, hogy a pletykából dokumentum lett.',
+          },
+          {
+            title: 'Az „elővágás" — hangfelvétel őróla',
+            when: '2026. március 23.',
+            body:
+              'Néhány nappal a cikke megjelenése előtt egy kormányközeli lapnál jelent meg egy hangfelvétel róla. Panyi állítása szerint ez elővágás volt: azért került ki, mert a Szijjártó Lavrovnak szivárogtatásáról szóló oknyomozó cikke a finisben járt. Ő maga azt közölte, hogy Szijjártó lehallgatásához semmi köze nem volt. Ugyanezen a napon tett közzé egy teljes Szijjártó–Lavrov-beszélgetést.',
+            sources: [
+              { source: 'Telex', date: '2026. márc. 23.', headline: 'Panyi Szabolcs: Szijjártó lehallgatásához nekem az égvilágon semmi közöm nem volt', url: 'https://telex.hu/belfold/2026/03/23/panyi-szabolcs-szergej-lavrov-szijjarto-peter-mandiner-hangfelvetel-titkosszolgalat-lehallgatas' },
+              { source: 'HVG', date: '2026. márc. 23.', headline: 'Panyi Szabolcs szerint a róla kitett hangfelvétel egy elővágás, amiért a Lavrovnak szivárogtató Szijjártóról ír cikket', url: 'https://hvg.hu/itthon/20260323_panyi-szabolcs-szijjarto-peter-szergej-lavrov-lehallgatas-mandiner-hangfelvetel-titkosszolgalat' },
+            ],
+          },
+          {
+            title: 'Kémkedés gyanújával feljelentették',
+            when: '2026. március 26.',
+            body:
+              'Három nappal később, néhány héttel a választás előtt az állam büntetőeljárást kezdeményezett ellene: „külföldi országgal összehangolt" kémkedés gyanújával. Vagyis nem a felvételeken elhangzottakra érkezett érdemi válasz, hanem arra, aki közzétette őket. Nemzetközi újságíró- és emberi jogi szervezetek — köztük a Committee to Protect Journalists és a Human Rights Watch — élesen bírálták a lépést.',
+            sources: [
+              { source: 'Committee to Protect Journalists', date: '2026. ápr. 1.', headline: 'Hungary files espionage charges against investigative journalist Szabolcs Panyi - Committee to Protect Journalists', url: 'https://cpj.org/2026/04/hungary-files-espionage-charges-against-investigative-journalist-szabolcs-panyi/', lead: 'Berlin, April 1, 2026—The Committee to Protect Journalists calls on Hungarian authorities to immediately drop all espionage charges against investigative journalist Szabolcs Panyi, and ensure that journalists can cover national security issues without intimidation or threats of imprisonment. On…' },
+              { source: 'Human Rights Watch', date: '2026. márc. 27.', headline: 'Hungary Orders Investigation of Journalist on Espionage Accusation', url: 'https://www.hrw.org/news/2026/03/27/hungary-orders-investigation-of-journalist-on-espionage-accusation' },
+            ],
+          },
+          {
+            title: 'A felvételek attól még jöttek tovább',
+            when: '2026. március 31. és április 8.',
+            body:
+              'A feljelentés nem állította meg az ügyet. Néhány nappal később kikerült az a beszélgetés, amelyen a külügyminiszter készségesen megígéri, hogy teljesíti Lavrov kérését az uniós szankciókkal kapcsolatban; áprilisban pedig olyan felvételek, amelyek szerint uniós dokumentumokat is megkapott az orosz külügyminiszter. Szó esett Ukrajna uniós csatlakozásáról és a magyar vétóról, valamint arról is, hogy Putyin fogadja-e a miniszterelnököt egy NATO-csúcs előtt.',
+            sources: [
+              { source: 'HVG', date: '2026. márc. 31.', headline: 'Szijjártó készségesen megígéri, hogy teljesíti Lavrov kérését egy most kikerült hangfelvételen', url: 'https://hvg.hu/itthon/20260331_szijjarto-lavrov-telefonbeszelgetes-felvetele-panyi-szabolcs-eu-szankciok' },
+              { source: 'Index', date: '2026. ápr. 8.', headline: 'Újabb hangfelvételek kerültek elő Szijjártó Péter telefonbeszélgetéseiről', url: 'https://index.hu/kulfold/2026/04/08/szijjarto-peter-szergej-lavrov-hangfelvetel-europai-unio-dokumentum/' },
+              { source: 'Forbes', date: '2026. ápr. 8.', headline: 'Újabb hangfelvételek kerültek ki Lavrov és Szijjártó beszélgetéseiről: európai uniós dokumentumokat is kapott az orosz külügyminiszter', url: 'https://www.forbes.hu/tarsadalom/hangfelvetel-lavrov-szijjarto-unios-dokumentum-oroszorszag-usa-fidesz/' },
+            ],
+          },
+          {
+            title: 'A Pegasus-előzmény',
+            when: '2021',
+            body:
+              'Ez nem az első eset volt, amikor az állam eszközei rá irányultak. A katonai szintű kémszoftverrel végzett megfigyelések magyarországi ügyét szintén ő tárta fel a Direkt36-nál — és az öt dokumentáltan megfigyelt magyar újságíró egyike ő maga volt. Az Amnesty International Secure Lab elemzése szerint a telefonja elleni támadás egy nappal azután indult, hogy megkereséssel fordult minisztériumokhoz egy nemzetközi pénzintézettel kapcsolatos cikk ügyében. Öt hónapba telt, mire a Pegasus megvásárlását hivatalosan is elismerték.',
+            sources: [
+              { source: 'Committee to Protect Journalists', date: '2021. dec. 13.', headline: 'Hungary’s Szabolcs Panyi on how Pegasus surveillance has hindered his reporting - Committee to Protect Journalists', url: 'https://cpj.org/2021/12/hungarys-szabolcs-panyi-on-how-pegasus-surveillance-has-hindered-his-reporting/' },
+              { source: 'VSquare', date: '2021. júl. 19.', headline: 'Szabolcs Panyi: I was hacked with Pegasus software', url: 'https://vsquare.org/szabolcs-panyi-i-was-hacked-with-pegasus-software/' },
+            ],
+          },
+        ],
+      },
+      videoBlock: {
+        heading: 'A felvételek — ahogy több szerkesztőség lejátszotta',
+        intro:
+          'Egy leírt idézetet könnyű letagadni. Egy hangfelvételt, amit egymástól függetlenül több szerkesztőség is lejátszik a nézőinek, sokkal nehezebb. Az alábbi adásokban a Szijjártó–Lavrov-beszélgetések, illetve a rájuk adott miniszteri reakciók hallhatók.',
+        items: [
+          {
+            id: '91VhoqZjU9M',
+            label: 'ATV',
+            title: 'Újabb titkos Szijjártó–Lavrov hangfelvételek szivárogtak ki',
+            summary: 'A kikerült beszélgetések és a tartalmuk végigvéve.',
+          },
+          {
+            id: 'zQjM7PSFfws',
+            label: 'ATV',
+            title: 'Kiszivárgott Szijjártó és Lavrov újabb telefonbeszélgetése, gúnyosan reagált a külügyminiszter',
+            summary: 'A felvétel, és ami legalább annyira sokatmondó: a miniszter reakciója rá.',
+          },
+          {
+            id: 'DIXUEhHogkw',
+            label: 'Telex',
+            title: 'Szijjártó a Lavrovval egyeztetésről: Ebben nem tudom, mi annyira különleges',
+            summary:
+              'A külügyminiszter saját szavai. Nem cáfolat — magyarázat arra, hogy szerinte ez normális működés.',
+          },
+          {
+            id: '7W9tZ8jCeXI',
+            label: 'KecsUP Hírek',
+            title: 'Panyi Szabolcs Kecskeméten: Csak az nem hallgatta le Szijjártót, aki nem akarta',
+            summary: 'Maga az újságíró beszél arról, mi történt és miért.',
+          },
+        ],
+      },
+      faq: [
+        {
+          q: 'Miért jelentették fel Panyi Szabolcsot kémkedésért?',
+          a: 'A feljelentés három nappal azután érkezett, hogy közzétett egy teljes Szijjártó–Lavrov-telefonbeszélgetést, és néhány héttel a 2026-os választás előtt. Az indok „külföldi országgal összehangolt" kémkedés gyanúja volt; nemzetközi újságíró- és emberi jogi szervezetek élesen bírálták.',
+        },
+        {
+          q: 'Mi derült ki a Szijjártó–Lavrov-felvételekből?',
+          a: 'Hogy a magyar külügyminiszter az uniós tárgyalások szünetében is egyeztetett orosz kollégájával, szó esett uniós szankciókról, Ukrajna csatlakozásáról és a magyar vétóról, és a felvételek szerint uniós dokumentumok is eljutottak az orosz külügyminiszterhez.',
+        },
+        {
+          q: 'Panyi Szabolcs hallgatta le Szijjártót?',
+          a: 'Nem, és ezt ő maga is határozottan cáfolta: állítása szerint a lehallgatáshoz semmi köze nem volt. Újságíróként a hozzá eljutott felvételeket hozta nyilvánosságra.',
+        },
+      ],
+    },
   },
   {
     id: 'kunetz-zsombor',
@@ -576,6 +1333,240 @@ export const FELTAROK: Feltaro[] = [
       ],
     },
     related: [{ label: 'Videóriportok és podcastok', href: '/podcastok' }],
+    live: true,
+    detail: {
+      seoTitle: 'Gulyáságyú Média: a hatvanpusztai zebrák és ami utána jött',
+      seoDescription:
+        'A Gulyáságyú Média találta meg a zebrákat Mészáros Lőrinc telephelyén. Mi lett az ügyből? Tagadás, hatósági adatok, elpusztult állatok — a teljes történet.',
+      lead:
+        'A Gulyáságyú Média helyszíni, utcai videós műhely: kampánygyűlésekre, birtokhatárokra és vidéki helyszínekre jár ki kamerával. A legismertebb munkájuk a „zebra-gate" — az az eset, ahol egy néhány perces felvételből kétéves hatósági ügy lett.',
+      cases: {
+        heading: 'A zebra-gate és a többi ügyük',
+        intro:
+          'Ez a fal legjobb példája arra, mire jó a puszta jelenlét egy helyszínen. Nem adatbázist fésültek át, nem pereskedtek: kimentek, és felvették, ami ott van. A következmények viszont évekig gyűrűztek.',
+        items: [
+          {
+            title: 'Zebra-gate — megtalálták a zebrákat',
+            when: '2024. november 12.',
+            body:
+              'Olvasói tippre mentek ki Mészáros Lőrinc egyik cégének, a Talentis Group Zrt.-nek a Hatvanpuszta és Bicske közötti, alcsútdobozi külterületi telephelyére. Az eldugott, kerítéssel és mesterséges dombbal takart területen afrikai zebrákat, egzotikus ankole-watusi szarvú marhagulyát — és egy szamarat — videóztak.',
+            more: [
+              'A felvétel azért lett országos ügy, mert nem kellett hozzá magyarázat. Egy közpénzből felépült cégbirodalom mezőgazdasági telephelyén legelésző zebracsorda önmagában elmond mindent arról, mire megy el a pénz. Néhány napon belül már a parlamentben is kérdésként hangzott el az ügy.',
+            ],
+            sources: [
+              { source: 'Gulyáságyú Média', date: '2024. nov. 12.', headline: 'Zebrák Mészáros Lőrinc cégének telephelyén Hatvanpuszta és Bicske között (videó)', url: 'https://gulyasagyu.media/2024/11/12/meszaros-lorinc-zebrak-hatvanpuszta-bicske-alcsut/' },
+              { source: 'Telex', date: '2024. nov. 12.', headline: 'Zebracsorda és különleges gulya legelészik Mészáros Lőrinc cégtelephelyén', url: 'https://telex.hu/belfold/2024/11/12/zebra-ankole-watusi-marha-hatvanpuszta-talentis-meszaros-lorinc', lead: 'A Gulyáságyú Média vette észre a Fejér vármegyei szafarit.' },
+            ],
+            videos: [
+              {
+                id: 'JHsdnuogC7o',
+                label: 'Gulyáságyú Média · 2024',
+                title: 'Zebrák Mészáros Lőrincéknél Hatvanpuszta és Bicske között',
+                summary:
+                  'Ez az a felvétel, aminek a létezését később tagadni próbálták. Kerítés, mesterséges domb, mögötte zebracsorda.',
+              },
+            ],
+            sections: [
+              {
+                heading: 'A tagadás — a felvétel ellenére',
+                paragraphs: [
+                  'A történet érdekesebb része az, ami utána jött. A kampány idején kormánypárti oldalról teljes erővel próbálták tagadni, hogy egyáltalán lennének ott zebrák — miközben a felvétel nyilvánosan elérhető volt, és mint később kiderült, a Mészároshoz köthető vadásztársaság akkor már kilenc éve tartott zebrákat a területen.',
+                  'A területhez köthető vadásztársaság közben más magyarázattal állt elő: szerintük „mentett állatokról" van szó, amelyeket rossz körülmények közül hoztak el. Ez a két érvelés — hogy nincsenek is zebrák, illetve hogy vannak, de állatvédelmi okból — egyszerre nem lehet igaz. Épp ez a felvétel értéke: nem vélemények ütköztek, hanem egy videó és egy állítás.',
+                ],
+              },
+              {
+                heading: 'Hadházy kiderítette, hány zebra van',
+                paragraphs: [
+                  'Miután feltűnt, hogy az állatok egy részét szűkebb karámba zárták, Hadházy Ákos hatósági úton kérdezett rá a számokra. A Nébih válasza szerint a Mészáros Lőrinchez köthető Vál-völgye Vadásztársaság tulajdonában és tartásában tíz zebra volt. Itt kapcsolódik össze a két munkamódszer: a helyszíni felvétel megmutatta, hogy vannak; az adatigénylés megmondta, hogy hányan.',
+                ],
+                links: [{ text: 'Hadházy Ákos', href: '/rendszervaltas/hadhazy-akos' }],
+                sources: [
+                  { source: 'Index', date: '2026. ápr. 18.', headline: 'Kiderült, pontosan hány zebra található Hatvanpusztán', url: 'https://index.hu/belfold/2026/04/18/hadhazy-akos-nebih-zebra-vadasztarsasag-hatvanpuszta/' },
+                ],
+              },
+              {
+                heading: 'Három zebra elpusztult',
+                paragraphs: [
+                  'Néhány héttel később, 2026. május 4-én három zebra elpusztult a Hatvanpuszta melletti területen, a Vál-völgye Vadásztársaság állományából. A kormányhivatal júniusban eljárást indított az ügyben. Egy sztori, amely másfél évvel korábban kuriózumként indult, ezen a ponton már állatvédelmi hatósági ügy volt.',
+                ],
+                sources: [
+                  { source: '444', date: '2026. máj. 29.', headline: 'Három zebra elpusztult a Hatvanpuszta melletti területen', url: 'https://444.hu/2026/05/29/harom-zebra-elpusztult-a-hatvanpuszta-melletti-teruleten' },
+                  { source: '444', date: '2026. jún. 2.', headline: 'A kormányhivatal eljárást indított a Hatvanpuszta mellett elpusztult zebrák ügyében', url: 'https://444.hu/2026/06/02/a-kormanyhivatal-eljarast-inditott-a-hatvanpuszta-mellett-elpusztult-zebrak-ugyeben' },
+                ],
+              },
+              {
+                heading: 'Papírok nélküli állatok, és öt eltűnt zebra',
+                paragraphs: [
+                  'A hatósági vizsgálat szerint 2024 és 2026 között összesen tizenhét zebra fordult meg a területen, ötükről viszont semmilyen információ nincs. Az állatok nagy részének nem volt származási igazolása, a papírok jelentős részét pedig utólag készítették el.',
+                  'Idáig jutott tehát az ügy attól, hogy néhány ember kiment egy dűlőútra kamerával. Ez a válasz arra a kérdésre, hogy mire jó a helyszíni videózás egy olyan médiában, ahol mindenki adatbázisokról beszél.',
+                ],
+                sources: [
+                  { source: 'Telex', date: '2026. júl. 24.', headline: 'Gajdos László a hatvanpusztai zebrákról: Nagy részüknek semmi származási igazolása nincsen, a papírok nagy részét utólag készítették el', url: 'https://telex.hu/belfold/2026/07/24/gajdos-laszlo-zebrak-hatvanpuszta' },
+                  { source: 'Telex', date: '2026. júl. 22.', headline: 'Gajdos Lászlóék nyomoznak a hatvanpusztai zebrák ügyében', url: 'https://telex.hu/belfold/2026/07/22/gajdos-laszloek-nyomoznak-a-hatvanpusztai-zebrak-ugyeben' },
+                ],
+              },
+              {
+                heading: 'Antilopok és magasles ugyanott',
+                paragraphs: [
+                  'A zebrák után visszatértek: 2025. július 31-én antilopokat és egy magaslest videóztak ugyanazon a Hatvanpuszta melletti, Mészáros-érdekeltségű területen. Az egyszeri felvétel még lehet véletlen — a sorozat viszont azt mutatta meg, hogy egy folyamatosan bővülő állatállományról van szó.',
+                ],
+                sources: [
+                  { source: '444', date: '2025. júl. 31.', headline: 'Antilopokat videóztak Mészáros Lőrinc alcsútdobozi földjein', url: 'https://444.hu/2025/07/31/antilopokat-videoztak-meszaros-lorinc-alcsutdobozi-majorsaganal' },
+                  { source: 'Telex', date: '2025. júl. 31.', headline: 'Most antilopokat és vadlest videóztak Hatvanpuszta mellett', url: 'https://telex.hu/belfold/2025/07/31/hatvanpuszta-gulyasagyu-antilop-zebra-vadles' },
+                ],
+                videos: [
+                  {
+                    id: '6VDrlZ11Gis',
+                    label: 'Gulyáságyú Média · 2025',
+                    title: 'Újabb egzotikus állatokat és MAGASLEST videóztunk Hatvanpuszta és Bicske között',
+                    summary: 'A folytatás ugyanazon a területen, nyolc hónappal a zebrák után.',
+                  },
+                ],
+              },
+            ],
+            promo: {
+              href: '/ugyek/hatvanpuszta',
+              eyebrow: 'Kiemelt ügy · Hatvanpuszta',
+              title: 'Mi épült valójában Hatvanpusztán?',
+              lead:
+                'A birtok teljes feldolgozása a saját oldalán: becsült ingatlanérték, ismeretlen vagyonforrás, és hogy hol tart most az ügy.',
+              cta: 'Az ügy megnyitása',
+            },
+          },
+          {
+            title: 'A hatvanpusztai autós támadás felvétele',
+            when: '2025. augusztus 19.',
+            body:
+              'A műhely újságírója, Gulyás Balázs Hadházy Ákos autójában ült, amikor a hatvanpusztai birtok biztonsági őre nekiment a kocsinak. A felvétel nélkül az eset állítás szemben állítással lett volna; így viszont az egész ország látta, mi történt.',
+            links: [{ text: 'Hadházy Ákos', href: '/rendszervaltas/hadhazy-akos' }],
+            sources: [
+              { source: 'HVG', date: '2025. aug. 25.', headline: 'Videón, ahogy nekimennek Hadházy Ákos autójának Hatvanpusztánál', url: 'https://hvg.hu/itthon/20250825_Videon-ahogy-megprobaljak-felboritani-Hadhazy-Akos-autojat-Hatvanpusztanal' },
+            ],
+            videos: [
+              {
+                id: 'ahlzM1ub9IA',
+                label: 'Gulyáságyú Média',
+                title: 'Így ÜLDÖZTÉK HADHÁZY autóját Hatvanpusztán',
+                summary: 'A teljes felvétel az anyósülésről — az üldözéstől az ütközésen át a borulásig.',
+              },
+            ],
+          },
+          {
+            title: 'Az opatijai villa — ahol a miniszterelnök nyaralt',
+            when: '2023. augusztus 11.',
+            body:
+              'Egy hozzájuk eljutott videóval indult: a felvételen a miniszterelnök egy lépcsőn kimászik az Adriai-tengerből, majd törölközőbe csavarva bemegy egy tengerparti villába. A helyszínt és az időpontot külön ellenőrizték — a horvátországi Abbáziában készült, 2023. augusztus 11-én dél körül. Ezután ingatlan-nyilvántartási és egyéb adatokból derítették ki, kié az épület.',
+            more: [
+              'A közel 350 négyzetméteres villa tulajdonosa az ellenzéki LMP társelnökének, Ungár Péternek a nővére, Ungár Anna. A sztori épp ettől lett kényelmetlen mindenkinek: nem egy kormánypárti oligarcha nyaralójáról volt szó. Ungár Péter a megkeresésre azt válaszolta, hogy a nővére valóban tulajdonos, de abba nincs beleszólása, kit lát ott vendégül.',
+              'Ez az eset mutatja meg a legjobban, mit tud egy ilyen műhely: a videó önmagában semmit nem bizonyított volna, ha nem hitelesítik a helyszínt, a dátumot és a tulajdonost. Az anyagot ezután az összes nagy szerkesztőség átvette.',
+            ],
+            videos: [
+              {
+                id: 'w8ncDqBxGmA',
+                label: 'Gulyáságyú Média · 2023',
+                title: 'Orbán Viktor az egyik ellenzéki pártelnök testvérének villájában nyaralt',
+                summary: 'A felvétel, amelyből a sztori indult — és amelynek a helyszínét és dátumát külön ellenőrizték.',
+              },
+            ],
+            sources: [
+              { source: 'Gulyáságyú Média', date: '2023. szept. 8.', headline: 'Orbán Viktor az egyik ellenzéki pártelnök testvérének villájában nyaralt (videó)', url: 'https://gulyasagyu.media/2023/09/08/orban-viktor-nyaralas-ungar-peter-lmp-ellenzek-video/' },
+              { source: 'Telex', date: '2023. szept. 8.', headline: 'Az LMP-társelnök Ungár Péter testvérének horvátországi villájában nyaralt Orbán', url: 'https://telex.hu/belfold/2023/09/08/orban-viktor-nyaralas-horvarorszag-adria-ungar-peter-testvere-nyaralo' },
+              { source: 'HVG', date: '2023. szept. 9.', headline: 'Megtudtunk mindent az Ungár-villáról, amelynek tövében Orbán a tengerben csobbant', url: 'https://hvg.hu/itthon/20230909_Ungar_villa_Orban_nyaralas_Horvatorszag_Opatija_Abbazia' },
+            ],
+          },
+          {
+            title: 'K. Endre — hol dolgozott a kegyelmi ügy szereplője',
+            when: '2024. február 12.',
+            body:
+              'A kegyelmi botrány kellős közepén hozták nyilvánosságra, hogy K. Endre — a bicskei gyermekotthon volt igazgatóhelyettese, akit kényszerítés miatt ítéltek el, majd elnöki kegyelmet kapott — 2016 és 2018 között a bicskei Csokonai Vitéz Mihály Általános Iskolában dolgozott. Az iskola igazgatója Bárányos József fideszes önkormányzati képviselő volt. A lap megszerzett egy rendőrségi dokumentumot is egy feljelentésről, amelyet az alkalmazás miatt tettek.',
+            more: [
+              'Fontos pontosítás, és a Kegyencjárat nem is állít mást: magát a kegyelmi botrányt nem a Gulyáságyú robbantotta ki — azt a Vidéki Prókátor, akinek szintén van profilja ezen a falon. Ez viszont már valódi, saját információval kiegészített feltárás volt, amely a történet egy addig ismeretlen szálát nyitotta meg.',
+              'Az ügynek következménye is lett: az igazgató pályázatát 2024 nyarán szakmai és etikai kifogásokra hivatkozva nem támogatták, így 27 év után távoznia kellett a posztjáról. A tankerület már 2018-ban kifogásolta, hogy K. Endrét — aki akkor büntetőeljárás alatt állt — testnevelő tanárként foglalkoztatták.',
+            ],
+            links: [{ text: 'a Vidéki Prókátor', href: '/rendszervaltas/videki-prokator' }],
+            sources: [
+              { source: 'Gulyáságyú Média', date: '2024. febr. 12.', headline: 'Fideszes képviselő által vezetett iskolában dolgozott a pedofilügyben kegyelemben részesített K. Endre', url: 'https://gulyasagyu.media/2024/02/12/fideszes-kepviselo-altal-vezetett-iskolaban-dolgozott-a-pedofilugyben-kegyelemben-reszesitett-k-endre/' },
+              { source: '444', date: '2024. júl. 9.', headline: 'Leváltják a bicskei iskolaigazgatót, aki testnevelő tanárként alkalmazta K. Endrét', url: 'https://444.hu/2024/07/09/levaltjak-a-bicskei-iskolaigazgatot-aki-testnevelo-tanarkent-alkalmazta-k-endret' },
+              { source: 'Telex', date: '2024. júl. 9.', headline: '27 év után leváltják a bicskei iskolaigazgatót, aki még 2018-ban foglalkoztatta K. Endrét', url: 'https://telex.hu/belfold/2024/07/09/baranyos-jozsef-iskolaigazgato-bicske-k-endre-levaltas' },
+            ],
+          },
+          {
+            title: 'Buszoztatás a kormánypárti rendezvényekre',
+            when: '2023. október 23.',
+            body:
+              'Több alkalommal foglalkoztak azzal, hogy kormánypárti rendezvényekre települési buszokkal szerveztek résztvevőket. A veszprémi október 23-i beszédnél „több tucat" buszról írtak, amelyek többek között Nagykanizsáról és Bicskéről érkeztek.',
+            more: [
+              'A módszer itt is a puszta jelenlét volt: a beszéd után néhány száz méterrel a helyszíntől videóra vették, ahogy több százan szállnak fel a hazafelé induló buszokra — a járműveket sorszámmal látták el, hogy az utasok megtalálják a sajátjukat. Ugyanezeket a sorszámozott buszokat később a 8-as főúton is viszontlátták.',
+              'Néhány nappal később becslést is közöltek a rendezvény tényleges létszámáról. Ez az a fajta anyag, amely egyetlen iratot sem tartalmaz, mégis pontosan megmutatja, hogyan áll össze egy tömeg a képernyőn.',
+            ],
+            videos: [
+              {
+                id: 'I1lJ8X6BNKI',
+                label: 'Gulyáságyú Média · 2023',
+                title: 'Buszoztatták a résztvevőket Orbán október 23-i beszédére',
+                summary: 'A sorszámozott buszok, ahogy a beszéd után felszállnak rájuk a résztvevők.',
+              },
+            ],
+            sources: [
+              { source: 'Gulyáságyú Média', date: '2023. okt. 23.', headline: 'Buszoztatták a résztvevőket Orbán október 23-i beszédére (videó)', url: 'https://gulyasagyu.media/2023/10/23/buszoztatas-orban-oktober-23-veszprem/' },
+              { source: 'HVG', date: '2023. okt. 23.', headline: 'Videó: Százakat buszoztattak Orbán Viktor veszprémi beszédére', url: 'https://hvg.hu/itthon/20231023_Video_Orban_Viktor_Veszprem_beszed_buszoztatas' },
+              { source: 'Gulyáságyú Média', date: '2023. okt. 26.', headline: 'Nagyjából ezren lehettek Orbán Viktor október 23-i veszprémi beszédén', url: 'https://gulyasagyu.media/2023/10/26/ezer_resztvevo-orban-viktor-oktober-23-veszprem-beszed/' },
+            ],
+          },
+          {
+            title: 'A százmilliós páncélozott BMW Párizsban',
+            when: '2025. március 6.',
+            body:
+              'Azonosították, hogy a miniszterelnök egy magyar rendszámú, mintegy százmillió forint értékű páncélozott BMW 760i xDrive Protection limuzinnal érkezett az Élysée-palotába Emmanuel Macronhoz. Az autó biztonsági felszereltségét és értékét külön is megvizsgálták.',
+            more: [
+              'A történet pikantériája a forrás volt: a miniszterelnök saját közösségi oldalának szerkesztői ügyeltek rá, hogy a jármű ne látsszon a felvételeken — a vele utazó kormánypárti influenszer által közzétett videón viszont jól kivehető volt. A beszerzésnek a közbeszerzési nyilvántartásokban nem volt nyoma.',
+              'Ez nem politikai kommentár volt, hanem egy konkrét, nehezen hozzáférhető tárgyi információból felépített sztori — és jól mutatja a műhely másik erősségét: észreveszik azt, amit mindenki lát, de senki nem néz meg alaposan.',
+            ],
+            sources: [
+              { source: 'Népszava', date: '2025. márc. 6.', headline: 'Orbán Viktor százmillió forintos páncélozott BMW-vel ment tárgyalni Emmanuel Macronhoz', url: 'https://nepszava.hu/3271312_orban-viktor-parizs-emmanuel-macron-bmw-szazmillios-pancelozott' },
+              { source: 'HVG', date: '2025. márc. 6.', headline: 'Orbán Viktor százmilliós páncélozott BMW-t villantott', url: 'https://hvg.hu/itthon/20250306_orban-viktor-bmw-franciaorszag' },
+              { source: 'Telex', date: '2025. márc. 11.', headline: 'Védelem golyózápor és robbantás ellen, bő 250 millió forintért: ilyen BMW-vel jár Orbán Viktor', url: 'https://telex.hu/belfold/2025/03/11/bmw-760li-protection-pancelozott-auto-orban-viktor' },
+            ],
+          },
+        ],
+      },
+      extra: [
+        {
+          heading: 'Miért számít a helyszíni videózás?',
+          paragraphs: [
+            'A magyar közéleti nyilvánosságban az elmúlt években a feltárás jellemzően adatokból történt: közbeszerzési értesítőkből, cégiratokból, kiszivárgott dokumentumokból. Ez fontos munka, de van egy gyengesége — a számokat könnyű vitatni, átkeretezni vagy egyszerűen unalmassá tenni.',
+            'Egy felvétel mást csinál. Nem érvel, hanem mutat. A zebra-gate pontosan azért lett akkora ügy, amekkora, mert nem kellett hozzá szakértő, aki elmagyarázza: mindenki azonnal értette, mit lát. És amikor a tagadás megindult, a videó ott volt továbbra is, változatlanul.',
+            'A másik érték az időbeliség. A Gulyáságyú többször visszatért ugyanarra a helyszínre, és ebből lett a sorozat: nem egy kép, hanem egy folyamat dokumentációja. Ez az, amit egyetlen adatigénylés sem tud pótolni.',
+          ],
+        },
+        {
+          heading: 'A műhely többi munkája',
+          paragraphs: [
+            'A zebrákon túl a Gulyáságyú műfaja a helyszíni, utcai riport: kampánygyűlések, lakossági fórumok, tiltakozások, vidéki helyszínek. Az anyagaik ritkán tartalmaznak pénzügyi kimutatást — viszont rögzítik azt, ami a hivatalos beszámolókból mindig kimarad.',
+            'Ez a fajta munka azért értékes, mert dokumentum értékű felvételt hoz létre olyan eseményekről, amelyekről egyébként csak a szervezők saját, vágott közvetítése maradna fenn. A csatorna a Kegyencjárat videórovatában is folyamatosan jelen van.',
+          ],
+          links: [{ text: 'a Kegyencjárat videórovatában', href: '/podcastok' }],
+        },
+      ],
+      faq: [
+        {
+          q: 'Mi az a zebra-gate?',
+          a: 'A Gulyáságyú Média 2024 novemberében afrikai zebrákat és egzotikus marhákat videózott Mészáros Lőrinc egyik cégének Hatvanpuszta és Bicske közötti telephelyén. Az ügy azóta hatósági vizsgálatig jutott.',
+        },
+        {
+          q: 'Hány zebra van Hatvanpusztán?',
+          a: 'Hadházy Ákos adatigénylésére a Nébih 2026 áprilisában tíz zebrát jelölt meg a Vál-völgye Vadásztársaság tulajdonában. A későbbi vizsgálat szerint 2024 és 2026 között összesen tizenhét zebra fordult meg a területen, ötükről nincs információ.',
+        },
+        {
+          q: 'Igaz, hogy elpusztultak a hatvanpusztai zebrák?',
+          a: 'Három zebra 2026. május 4-én elpusztult a Hatvanpuszta melletti területen. A kormányhivatal júniusban eljárást indított az ügyben.',
+        },
+        {
+          q: 'Mivel foglalkozik a Gulyáságyú Média?',
+          a: 'Helyszíni, utcai videós riportokkal: kampánygyűlésekkel, lakossági fórumokkal, tiltakozásokkal és vidéki helyszínekkel — azt rögzítik, ami a hivatalos beszámolókból kimarad.',
+        },
+      ],
+    },
   },
   {
     id: 'ahang',
@@ -754,6 +1745,238 @@ export const FELTAROK: Feltaro[] = [
       ],
     },
     related: [{ label: 'Videóriportok és podcastok', href: '/podcastok' }],
+  },
+  {
+    id: 'molnar-aron',
+    name: 'Molnár Áron',
+    kind: 'person',
+    group: 'person',
+    role: 'színész, aktivista (noÁr)',
+    badge: 'NKA-BOTRÁNY',
+    tagline:
+      'Ő robbantotta ki az NKA-botrányt — a rendszerváltás UTÁN, amikor már senki nem várta, hogy jöjjön még egy ekkora ügy.',
+    section: {
+      heading: 'Molnár Áron — a botrány, ami a fordulat után jött',
+      paragraphs: [
+        'Molnár Áron színészként és aktivistaként évek óta jelen van a közéletben, de a legnagyobb hatású munkája időben kilóg mindenki máséból ezen a falon: ő az NKA-botrányt nem április 12. előtt robbantotta ki, hanem utána.',
+        'Elsőként ő beszélt arról a rejtett, nagyságrendileg 17 milliárdos keretről, amelyből a Nemzeti Kulturális Alap a kormányzati holdudvar gazdasági, közéleti és művészeti szereplőit támogatta — köztük egy addig ismeretlen, „Kiemelt Kulturális Programok Ideiglenes Kollégiuma" nevű testület döntései alapján. Az ügy azóta is gyűrűzik: 2026 nyarán újabb szervezeteket nevezett meg, ősszel pedig mentelmi jogok felfüggesztését követelte.',
+        'Ez a fal arról szól, kinek köszönhetjük a fordulatot — Molnár Áron viszont arra a kérdésre a válasz, hogy mi történik utána. Egy rendszerváltás nem ér véget azzal, hogy leváltanak egy kormányt: az elszámoltatás akkor kezdődik. Az is a képhez tartozik, hogy a feltárást követően őt magát is megvádolták NKA-pénzek elfogadásával, amit ő visszautasított.',
+      ],
+    },
+    related: [
+      { label: 'NKA-botrány', href: '/ugyek/nka-botrany' },
+      { label: 'Videóriportok és podcastok', href: '/podcastok' },
+    ],
+    detail: {
+      seoTitle: 'Molnár Áron és az NKA-botrány: mit tárt fel?',
+      seoDescription:
+        'Molnár Áron (noÁr) robbantotta ki az NKA-botrányt: elsőként beszélt a rejtett, 17 milliárdos keretről és az ismeretlen kollégiumról. Mi történt pontosan?',
+      lead:
+        'Molnár Áron színész és aktivista, az NKA-botrány kirobbantója. Az ügy időben kilóg a többi feltárásból: nem a 2026. április 12-i fordulat előtt robbant, hanem utána — és épp ezért mutat rá arra, hogy egy kormányváltás nem zárja le az elszámoltatást, hanem elkezdi.',
+      cases: {
+        heading: 'Az NKA-botrány — mit tárt fel',
+        items: [
+          {
+            title: 'A rejtett, 17 milliárdos keret',
+            body:
+              'Elsőként ő beszélt arról, hogy a Nemzeti Kulturális Alapnál létezett egy nagyságrendileg 17 milliárd forintos keret, amelyből a kormányzati holdudvar gazdasági, közéleti és művészeti szereplői részesültek. A pénz egy részéről egy addig gyakorlatilag ismeretlen testület, a „Kiemelt Kulturális Programok Ideiglenes Kollégiuma" döntött — vagyis a szakmai kollégiumi rendszert meg lehetett kerülni.',
+            sources: [
+              { source: 'Index', date: '2026. ápr. 28.', headline: 'Nem csitul a botrány a Fidesz-holdudvarnak kifizetett milliárdok körül', url: 'https://index.hu/kultur/2026/04/28/nemzeti-kulturalis-alap-fidesz-holdudvar-milliardok-hanko-balazs-molnar-aron/' },
+            ],
+          },
+          {
+            title: 'Az ügy nem állt meg egy bejelentésnél',
+            when: '2026 nyara és ősze',
+            body:
+              'A feltárás nem egyszeri poszt volt: augusztusban újabb szervezeteket nevezett meg a kedvezményezettek közül, szeptemberben pedig mentelmi jogok felfüggesztését követelte az érintett politikusoknál. Ez a kitartás a különbség a botrány és az ügy között.',
+          },
+          {
+            title: 'A visszatámadás',
+            body:
+              'A feltárás után őt magát is megvádolták azzal, hogy NKA-pénzeket fogadott el — amit visszautasított. Ez a mintázat ismerős: a feltáró hitelességének megkérdőjelezése rendszerint gyorsabban érkezik, mint az érdemi válasz a feltárt tényekre.',
+            sources: [
+              { source: '444', date: '2026. júl. 2.', headline: 'Az NKA-pénzek elfogadásával vádolt Molnár Áron szerint nem fogadott el NKA-pénzeket', url: 'https://444.hu/2026/07/02/az-nka-penzek-elfogadasaval-vadolt-molnar-aron-szerint-nem-fogadott-el-nka-penzeket' },
+            ],
+          },
+        ],
+      },
+      faq: [
+        {
+          q: 'Ki robbantotta ki az NKA-botrányt?',
+          a: 'Molnár Áron színész-aktivista. Elsőként ő beszélt a Nemzeti Kulturális Alap rejtett, nagyságrendileg 17 milliárdos kereteiről és az azokról döntő, addig ismeretlen ideiglenes kollégiumról.',
+        },
+        {
+          q: 'Mikor robbant ki az NKA-botrány?',
+          a: '2026 tavaszán, vagyis a április 12-i rendszerváltás UTÁN. Ezért is különleges eset: azt mutatja, hogy a feltárás nem ér véget egy kormányváltással.',
+        },
+      ],
+      sources: [
+        { source: 'Kegyencjárat', headline: 'NKA-botrány', url: 'https://www.kegyencjarat.hu/ugyek/nka-botrany' },
+      ],
+    },
+  },
+  {
+    id: 'videki-prokator',
+    name: 'Vidéki Prókátor',
+    kind: 'person',
+    group: 'channel',
+    role: 'Fülöp Botond ügyvéd Facebook-oldala',
+    badge: 'KEGYELMI ÜGY',
+    tagline:
+      'Egy vidéki ügyvéd, aki reggelente átolvasta a bírósági határozatokat — és az egyikből kiesett a kegyelmi botrány.',
+    section: {
+      heading: 'Vidéki Prókátor — az egy ember, akivel az egész elindult',
+      paragraphs: [
+        'A Vidéki Prókátor éveken keresztül egy anonim, kizárólag a Facebookon publikáló közéleti és jogi elemző oldal volt. A profil mögött álló szerző stílusát a kezdetektől fogva a rendkívül precíz jogi érvelés, a klasszikus polgári, konzervatív értékrend és a regnáló hatalom működésének tűpontos, száraz, mégis szarkasztikus kritikája jellemezte.',
+        'Sokáig csak annyit lehetett tudni róla, amit a neve is sugallt: egy vidéki Magyarországon alkotó, a mindennapi praxisában aktív jogász, aki nem a fővárosi politikai buborékból szemléli az eseményeket. Írásai azért lettek népszerűek, mert nem a megszokott pártpolitikai paneleket ismételgette, hanem törvényszövegek, bírósági ítéletek és hivatalos határozatok alapján mutatta be a jogállam szisztematikus leépítését.',
+        'A profil politikai gyökerei mélyre nyúlnak. Mint az később, a névtelenség feladása után kiderült, a szerző a rendszerváltás hajnalán először a Magyar Demokrata Fórum tagjaként politizált, majd a korai, még polgári korszakát élő Fideszhez csatlakozott. Innen nézve vált a rendszer egyik legveszélyesebb külső kritikusává: pontosan ismerte azt az értékrendet, amelyet a kormánypártok hivatalosan hirdettek, és azt a valóságot is, amelyet a jogi csűrcsavarásokkal eltakarni igyekeztek.',
+      ],
+    },
+    live: true,
+    detail: {
+      seoTitle: 'Vidéki Prókátor (dr. Fülöp Botond) — ki ő, és mit robbantott ki?',
+      seoDescription:
+        'A komlói ügyvéd, aki egyetlen kúriai határozatból kirobbantotta a kegyelmi botrányt. Ki a Vidéki Prókátor, mik a legfontosabb posztjai, és miért fedte fel magát?',
+      lead:
+        'A Kegyencjárat Dicsőségfalának egyik legrejtélyesebb, majd később leglátványosabban előlépő alakja a Vidéki Prókátor álnéven elhíresült jogász. Nélküle — a jogi adatbázisok makacs böngészése nélkül — valószínűleg nem indult volna el az a lavina, amely a 2026. április 12-i fordulathoz vezetett. Hogyan talált rá egy eldugott kúriai határozatra, milyen posztokkal mozgósította a nyilvánosságot, és ki rejtőzik a profil mögött?',
+      cases: {
+        heading: 'A három bejegyzés, ami a legtöbbet számított',
+        intro:
+          'A Vidéki Prókátor legmeghatározóbb tevékenységei nemcsak elméleti jogi elemzések voltak, hanem a társadalmi elégedetlenség fókuszpontjai is — mindhárom komoly sajtóvisszhangot kapott.',
+        items: [
+          {
+            title: 'A kegyelmi ügy: a kúriai határozat, amit rajta kívül senki nem vett észre',
+            when: '2024. február',
+            body:
+              'Rutinmunka és egy sajátos reggeli szokás részeként a Kúria hivatalos határozatait böngészte a bírósági döntések adatbázisában, amikor rábukkant egy dokumentumra. A határozat szövege tartalmazta, hogy a köztársasági elnök elnöki kegyelemben részesítette a bicskei gyermekotthon korábbi igazgatóhelyettesét, akit a bíróság kényszerítés miatt ítélt el jogerősen — azért, mert megpróbálta rávenni a pedofil igazgató áldozatait a vallomásuk visszavonására.',
+            more: [
+              'Azonnal felismerte a határozat morális és politikai súlyát. Ahelyett viszont, hogy maga próbálta volna a nyilvánosság elé tárni, a dokumentumot és a jogi kontextust elküldte a független sajtónak, köztük a 444 szerkesztőségének. Ezzel párhuzamosan a saját oldalán is közzétette a jogi háttérelemzést, amely feketén-fehéren bizonyította: a kegyelem ténye jogilag és dokumentáltan megtörtént, a hatalom nem tudja letagadni.',
+              'A poszt lényege egyetlen mondatban: a jog nem ismer politikai opportunizmust. Ha a határozat kint van a bírósági tárban, akkor az tény — az elnöki kegyelem nem titkolható el a társadalom elől. A botrány hatására a köztársasági elnök és a volt igazságügyi miniszter is lemondani kényszerült, ami közvetlenül megágyazott Magyar Péter színre lépésének.',
+            ],
+          },
+          {
+            title: 'A rokkantnyugdíjasok kisemmizése — amire a legbüszkébb',
+            body:
+              'Bár a közvélemény a kegyelmi botrány miatt ismerte meg a nevét, ő maga nyilvánosan kifejtette, hogy szakmailag és emberileg erre a jogi harcára a legbüszkébb. Konkrét eseteken és ügyvédi tapasztalatain keresztül bizonyította be, hogyan vágta meg az állam jogellenesen — megalázó orvosi felülvizsgálatokra hivatkozva — a megváltozott munkaképességű emberek juttatásait.',
+            more: [
+              'Ez nem posztolásban merült ki: az általa benyújtott alkotmányjogi panasz indított el azt a folyamatot, amelynek végén az Alkotmánybíróság hibát állapított meg a joggyakorlatban. Vagyis itt nem egy botrány kirobbantásáról van szó, hanem arról a lassú, láthatatlan munkáról, amiből ritkán lesz címlap.',
+            ],
+            sources: [
+              { source: 'Szeretlek Magyarország', headline: 'A Vidéki prókátor egy dologra még a kegyelmi ügynél is büszkébb', url: 'https://www.szeretlekmagyarorszag.hu/' },
+            ],
+          },
+          {
+            title: '„A maffiafőnök be van tojva" — reakció az elszámoltatásra',
+            when: '2026. szeptember 15.',
+            body:
+              'A rendszerváltást követő elszámoltatási hullám során kemény hangvételben reagált a volt miniszterelnök azon interjújára, amelyben az új Nemzeti Vagyonvisszaszerzési és Vagyonvédelmi Hivatalt támadta és ÁVH-t emlegetett. Szerinte a bukott rendszer politikusainak fenyegetőzése valójában a totális pánik jele, a jogállami elszámoltatást pedig már nem lehet megállítani.',
+            sources: [
+              { source: 'ATV', date: '2026. szept. 15.', headline: '„A maffiafőnök be van tojva” – Elszabadultak az indulatok az NVVH miatt', url: 'https://www.atv.hu/belfold/20260915/videki-prokator-fulop-botond-nvvh/' },
+              { source: 'Szeretlek Magyarország', headline: 'Vidéki Prókátor: A bukott maffiafőnök be van tojva, ez jó jel', url: 'https://www.szeretlekmagyarorszag.hu/szempont/videki-prokator-a-bukott-maffiafonok-be-van-tojva/' },
+              { source: 'Contextus', headline: 'Orbán Viktor ÁVH-t emleget, a Vidéki Prókátor szerint viszont félelem látszik az elszámoltatás elindulásakor', url: 'https://contextus.hu/videki-prokator-elszamoltatas-nvvh-orban-viktor/' },
+            ],
+          },
+        ],
+      },
+      socialHighlights: {
+        heading: 'Az a poszt, amivel az egész elkezdődött',
+        intro:
+          'Itt írja le a saját szavaival, hogyan és miért robbantotta ki a kegyelmi botrányt. A posztot szándékosan nem a Meta beágyazójával jelenítjük meg — az minden látogatónknak nyomkövetést töltene be —, hanem saját kártyán, a bejegyzés saját képével. A kép maga az a kúriai határozat, amelyből az egész kiindult.',
+        platformLabel: 'Facebook',
+        pageName: 'Vidéki prókátor',
+        items: [
+          {
+            when: '2024',
+            title: 'Hogyan és miért robbantotta ki a kegyelmi botrányt',
+            quote:
+              'Hogyan és miért robbantottam ki a kegyelmi botrányt? A közvéleményt és a politikai életet felforgató, a köztársasági elnök, a kormánypárt EP-listavezetőjének és a református egyház első emberének…',
+            image: '/images/rendszervaltas/posts/videki-prokator-kegyelmi.jpg',
+            imageAlt: 'A Vidéki prókátor Facebook-posztja a BH 2024.1.3. kúriai határozat képernyőképével',
+            href: 'https://www.facebook.com/permalink.php?story_fbid=pfbid0256SLYmsRquJvYFSUUABysuzMwTCCbA9p8P7tB59SpAAxjgBsiYttJWYCqHyEg3yzl&id=61556624432810',
+            body:
+              'A poszt megjelenésekor még senki nem tudta, ki áll az oldal mögött. A képen az a bírósági határozat látszik, amelyet reggeli rutinból nyitott meg — és amelynél megállt.',
+          },
+        ],
+      },
+      table: {
+        heading: 'Hol helyezkedik el a Dicsőségfalon?',
+        intro:
+          'A Kegyencjárat láncmunka-elmélete alapján a Vidéki Prókátor a tökéletes kapocs a feltáró és a terjesztő szerepkörök között. Érdemes összevetni a fal más szereplőivel, hogy látsszon, ki mit tett hozzá.',
+        columns: ['Szereplő', 'Elsődleges funkció', 'Módszertan', 'Miért volt pótolhatatlan?'],
+        rows: [
+          [
+            'Vidéki Prókátor',
+            'Jogi adathalászat és politikai gyújtópont',
+            'Hivatalos bírósági és kúriai határozattárak napi szintű, manuális átfésülése',
+            'Ő találta meg a rendszer morális Achilles-sarkát, a kegyelmi döntést.',
+          ],
+          [
+            'Hadházy Ákos',
+            'Közbeszerzés-vadászat és terepbejárás',
+            'Uniós pályázati adatbázisok és cégiratok tételes elemzése, helyszíni fotózás',
+            'Éveken át dokumentálta a gazdasági háttérügyeket, fenntartva a korrupciós nyomást.',
+          ],
+          [
+            'Vastagbőr',
+            'Közéleti blogolás, napirenden tartás',
+            'A sajtóban megjelent ügyek szatirikus, könnyen fogyasztható reciklálása',
+            'Nem hagyta elfelejteni a botrányokat azután sem, hogy a hírciklus továbblépett.',
+          ],
+          [
+            'Jólvanezígy',
+            'Tömeges, vizuális magyarázat',
+            'A közéleti abszurdumok pár másodperces, görgetés közben fogyasztható fordítása',
+            'Elvitte az információt a hírportálokat egyáltalán nem olvasó generációkhoz.',
+          ],
+        ],
+      },
+      extra: [
+        {
+          heading: 'Ki rejtőzik a név mögött, és miért fedte fel magát?',
+          paragraphs: [
+            'A 2026. április 12-i rendszerváltás után az inkognitó fenntartása funkciótlanná vált. 2026. május 11-én a Vidéki Prókátor hivatalosan is felfedte kilétét: a profil mögött dr. Fülöp Botond komlói ügyvéd áll.',
+            'Elmondta, hogy nagyon szerette az addigi nyugodt, vidéki ügyvédi életét, de a kezdetektől az volt a célja, hogy amint a politikai viszonyok normalizálódnak, a saját nevével vállalja a gondolatait. A bemutatkozás után személyesen találkozott Magyar Péter miniszterelnökkel is, aki úgy hivatkozott rá, mint az emberre, „aki nélkül valószínűleg nincs rendszerváltás". 2026. augusztus 20-án állami kitüntetést kapott a rendszerváltás elősegítéséért.',
+          ],
+        },
+        {
+          heading: 'Milyen vitái voltak a rendszerváltó erőkkel?',
+          paragraphs: [
+            'Fülöp Botond polgári autonómiáját jól mutatja, hogy az inkognitó eldobása után sem vált az új hatalom feltétlen kiszolgálójává. Amikor felmerült a teljes kegyelmi akta nyilvánosságra hozatala, szakmai alapon intett óvatosságra, figyelmeztetve a személyes adatok és a jogi eljárásrendek szigorú betartására.',
+            'Nyíltan bírálta a kormányfő egyes külpolitikai és diplomáciai megnyilvánulásait is, kijelentve, hogy azok túlmutatnak a választóktól kapott közvetlen felhatalmazáson. Ugyanakkor a korábbi kormánypártoknak is keményen üzent: felszólította őket, hogy kérjenek bocsánatot az országtól a jogállam szétveréséért, megjegyezve, hogy „rá sem ismerni" a hirtelen a kulturált párbeszéd mellett érvelő ellenzéki Fideszre.',
+          ],
+        },
+        {
+          heading: 'Mit mondanak róla a kritikusok és a támogatók?',
+          paragraphs: [
+            'A támogatói szerint valódi civil hős, aki nem a saját politikai karrierjét építette, hanem állampolgári kötelességből, makacs és precíz szakmai munkával robbantotta fel a rendszert. Elvhűségét épp az bizonyítja, hogy az új kormánnyal is kész vitába szállni, ha a jogállami elveket veszélyben látja.',
+            'A kritikusai szerint bizonyos kérdésekben túlságosan merev, elméleti jogászi szemléletet képvisel, amely nehezen veszi figyelembe a gyakorlati politikai realitásokat. Korábbi konzervatív múltja miatt a radikálisabb baloldali körök gyanakvással kezelik, míg a régi rendszer maradványai a mai napig támadják.',
+            'Az írásaiból a Magyar Hang gondozásában könyv is megjelent „Én, a Vidéki prókátor — Gondolatok a polgári Magyarországért" címmel, amely rendszerváltástól rendszerváltásig mutatja be a szerző szellemi ívét.',
+          ],
+        },
+      ],
+      faq: [
+        {
+          q: 'Ki a Vidéki Prókátor?',
+          a: 'dr. Fülöp Botond komlói ügyvéd. Éveken át anonim, kizárólag Facebookon publikáló közéleti és jogi elemzőként írt; a kilétét 2026. május 11-én fedte fel.',
+        },
+        {
+          q: 'Hogyan robbantotta ki a kegyelmi botrányt?',
+          a: '2024 februárjában a Kúria határozatait böngészve rábukkant arra a dokumentumra, amely szerint a köztársasági elnök kegyelmet adott a bicskei gyermekotthon volt igazgatóhelyettesének, akit kényszerítés miatt ítéltek el jogerősen. A dokumentumot és a jogi kontextust elküldte a független sajtónak, és a saját oldalán is közzétette az elemzést.',
+        },
+        {
+          q: 'Mire a legbüszkébb?',
+          a: 'Saját elmondása szerint nem a kegyelmi ügyre, hanem a megváltozott munkaképességű emberek juttatásaiért folytatott jogi harcára: az általa benyújtott alkotmányjogi panasz nyomán az Alkotmánybíróság hibát állapított meg a joggyakorlatban.',
+        },
+        {
+          q: 'Miért fedte fel magát 2026 májusában?',
+          a: 'A rendszerváltás után az inkognitó fenntartása funkciótlanná vált. A kezdetektől az volt a célja, hogy amint a politikai viszonyok normalizálódnak, a saját nevével vállalja a gondolatait.',
+        },
+        {
+          q: 'Kritizálja az új kormányt is?',
+          a: 'Igen. Óvatosságra intett a teljes kegyelmi akta nyilvánosságra hozatalánál, és bírálta a kormányfő egyes külpolitikai megnyilvánulásait is — miközben a korábbi kormánypártoktól bocsánatkérést követelt a jogállam szétveréséért.',
+        },
+      ],
+    },
   },
 ];
 
