@@ -555,10 +555,29 @@ a.card:hover {
 /* ── Összehasonlító táblázat ──────────────────────────────────────────────
    Mobilon vízszintesen görgethető: inkább görgessen a tábla, mint hogy a
    cellák olvashatatlanra préselődjenek. */
+/* A site bevált görgethető-táblázat mintája (.res-table-wrap, nyitóoldali
+   „Legfrissebb lemondások", illetve .ugy-breaking-update-table-wrap):
+   vékony piros scrollbar, és ahol a tábla tényleg kilóg, ott a jobb szél
+   elhalványul — ez jelzi, hogy van még adat oldalra. User kérés,
+   2026-09-16: a saját, jelzés nélküli overflow helyett ezt kell használni. */
 .tableWrap {
   margin-top: 18px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+.tableWrap::-webkit-scrollbar {
+  height: 3px;
+}
+.tableWrap::-webkit-scrollbar-thumb {
+  background: var(--accent, #e31937);
+  border-radius: 2px;
+}
+@media (max-width: 860px) {
+  .tableWrap {
+    overscroll-behavior-x: contain;
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 36px), transparent 100%);
+    mask-image: linear-gradient(to right, black calc(100% - 36px), transparent 100%);
+  }
 }
 .table {
   width: 100%;
