@@ -3,6 +3,7 @@ import { ImageResponse } from 'next/og';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { amountFontSize, formatMilliardLabel } from './social-milestone';
+import { emojiForKicker } from './social-caption';
 
 /**
  * Márkázott, 1080×1080-as (FB + TikTok fotó-karusszel kompatibilis) PNG
@@ -119,6 +120,56 @@ export async function renderMilestoneImage(
  *  nem tördeli a "\n"-t egy szövegdobozon belül (user report, 2026-09-03:
  *  a szavazás-poszton a top 3 egybefolyt), ezért egy tömb minden eleme
  *  külön <div>-be kerül, ami valódi sortörést ad. */
+/**
+ * BRIEF 8–9. — a képre kerülő szöveg legyen „rövid, jól olvasható, mobilon is
+ * azonnal értelmezhető, vizuálisan domináns".
+ *
+ * 2026-09-16, user kérés („és a képsablont is oldd meg"). Négy baja volt:
+ *
+ *   1. A headline FIX 72px volt, akármilyen hosszú. Egy feljelentés-fejléc
+ *      („Király József feljelentést tett: Csapó Ágnes kecskeméti
+ *      önkormányzati tanácsadó") ezen a méreten kitöltötte az egész képet, és
+ *      pont az ellenkezőjét érte el a „vizuálisan domináns"-nak.
+ *   2. A kicker-badge MINDEN kategóriára a generikus 🚨-t rajzolta, miközben
+ *      a poszt szövege már kategória-emojit használ (brief 5.: az emojinak
+ *      funkciója van). A kettő láthatóan szétcsúszott.
+ *   3. A headline-nak nem volt maxWidth-e, így kifutott a padding széléig.
+ *   4. A detail-sor ugyanígy fix méretű volt.
+ *
+ * A méretezés lépcsős, nem folytonos: így ugyanaz a hossz mindig ugyanazt a
+ * méretet adja, és a kép determinisztikus marad (a Telegram-jóváhagyó
+ * ugyanazt látja újra, ha a jelölt újraépül).
+ */
+function headlineFontSize(text: string): number {
+  const n = text.length;
+  if (n <= 34) return 78;
+  if (n <= 52) return 66;
+  if (n <= 76) return 54;
+  if (n <= 110) return 44;
+  return 38;
+}
+
+/**
+ * A badge PIROS alapon áll, ezért a színes körös emojik (🔴 előzetes/őrizet,
+ * ⚪ eljárás megszűnt) ott gyakorlatilag láthatatlanok — renderelve egy
+ * mosott szürke pötty lett belőlük (2026-09-16, mért, nem feltételezett: a
+ * kirenderelt mintaképen látszott). A poszt SZÖVEGÉBEN viszont jól működnek
+ * és jelentésük van, ezért ott maradnak; csak a badge-ről esnek le.
+ */
+const BADGE_HIDDEN_EMOJI = new Set(['🔴', '⚪']);
+
+function badgePrefix(kicker: string): string {
+  const e = emojiForKicker(kicker);
+  return BADGE_HIDDEN_EMOJI.has(e) ? '' : `${e} `;
+}
+
+function detailFontSize(lines: string[]): number {
+  const longest = lines.reduce((m, l) => Math.max(m, l.length), 0);
+  if (longest <= 40 && lines.length <= 2) return 38;
+  if (longest <= 70) return 32;
+  return 28;
+}
+
 export async function renderBreakingImage(
   params: {
     kicker: string; // pl. "LEMONDÁS" / "ÍTÉLET" / "MEGSZŰNÉS" / "VAGYONVISSZASZERZÉS"
@@ -162,18 +213,28 @@ export async function renderBreakingImage(
               borderRadius: 8,
             }}
           >
-            🚨 {params.kicker}
+            {badgePrefix(params.kicker)}{params.kicker}
           </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center' }}>
-          <div style={{ display: 'flex', color: headlineColor, fontSize: 72, fontWeight: 900, lineHeight: 1.15, marginTop: 24 }}>
+          <div
+            style={{
+              display: 'flex',
+              color: headlineColor,
+              fontSize: headlineFontSize(params.headline),
+              fontWeight: 900,
+              lineHeight: 1.12,
+              marginTop: 24,
+              maxWidth: 900,
+            }}
+          >
             {params.headline}
           </div>
           {detailLines.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 28, maxWidth: 880 }}>
               {detailLines.map((line, i) => (
-                <div key={i} style={{ display: 'flex', color: detailColor, fontSize: 38, fontWeight: 500, lineHeight: 1.35 }}>
+                <div key={i} style={{ display: 'flex', color: detailColor, fontSize: detailFontSize(detailLines), fontWeight: 500, lineHeight: 1.35 }}>
                   {line}
                 </div>
               ))}

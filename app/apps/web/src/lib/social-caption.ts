@@ -98,6 +98,13 @@ const CTA_BY_KICKER: Record<string, string> = {
  *  kategorizált trigger-típusra maradjon. */
 const FALLBACK_CTA = '👉 Nézd meg a teljes ügyet a Kegyencjáraton.';
 
+/** A kickerhez tartozó funkcionális emoji — a poszt első sora ÉS a kép
+ *  badge-e is EBBŐL dolgozik, hogy a kettő ne csússzon szét (a kép eddig
+ *  minden kategóriára a generikus 🚨-t rajzolta, l. brief 5. pont). */
+export function emojiForKicker(kicker: string): string {
+  return KICKER_EMOJI[kicker] ?? '🚨';
+}
+
 export function ctaForKicker(kicker: string): string {
   return CTA_BY_KICKER[kicker] ?? FALLBACK_CTA;
 }
@@ -111,7 +118,7 @@ export function ctaForKicker(kicker: string): string {
 // KÍVÜL is. Zárt lista, mert a brief konkrét emoji-t ír elő kategóriánként,
 // nem "bármi odaillő"-t — ha egy kicker nincs a listán, a semleges 🚨 marad
 // a fallback (pl. jövőbeli, még nem kategorizált trigger-típus).
-const KICKER_EMOJI: Record<string, string> = {
+export const KICKER_EMOJI: Record<string, string> = {
   'LEMONDÁS': '👋',
   'KIRÚGÁS': '❌',
   // Brief 12. pont: a felmentés NEM kirúgás. Eddig mindkettő '❌'-et kapott,
@@ -216,7 +223,7 @@ export function breakingCaption(
   cta?: string,
   whyItMatters?: string,
 ): string {
-  const emoji = KICKER_EMOJI[kicker] ?? '🚨';
+  const emoji = emojiForKicker(kicker);
   const blocks: string[] = [`${emoji} ${headline}`];
 
   const what = (whatHappened ?? '').trim();

@@ -16,6 +16,12 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./apps/web/src', import.meta.url)),
     },
   },
+  // A Next.js az automatikus JSX-runtime-ot használja (tsconfig: "jsx":
+  // "preserve" → a bundler dönt). Vitest alatt az esbuild alapértelmezése a
+  // KLASSZIKUS transzform, ami `React.createElement`-et vár — emiatt minden
+  // .tsx modul (pl. social-image.tsx) "React is not defined"-dal halt el, és
+  // a kép-render egyáltalán nem volt tesztelhető.
+  esbuild: { jsx: 'automatic' },
   test: {
     environment: 'node',
     globals: false,
