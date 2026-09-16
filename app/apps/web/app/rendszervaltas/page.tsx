@@ -256,6 +256,18 @@ export default function RendszervaltasPage() {
               {hub.gridIntro.map((para, i) => (
                 <p key={i}>{withBold(para)}</p>
               ))}
+              <p>
+                {hub.mainstreamNote.before}
+                {hub.mainstreamNote.outlets.map((o, i, arr) => (
+                  <React.Fragment key={o.url}>
+                    {i > 0 && (i === arr.length - 1 ? ' és a ' : ', a ')}
+                    <a href={o.url} target="_blank" rel="noopener noreferrer">
+                      {o.name}
+                    </a>
+                  </React.Fragment>
+                ))}
+                {hub.mainstreamNote.after}
+              </p>
             </div>
 
             <div className="ugy-block-video">

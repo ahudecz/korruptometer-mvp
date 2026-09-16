@@ -135,6 +135,30 @@ export const RENDSZERVALTAS_HUB = {
     'A lenti névsor nem rangsor, és nem is teljes — folyamatosan bővül. Három blokkra bontottuk, mert háromféle munkáról van szó. A **személyek** a saját nevüket adták egy-egy ügyhöz, és évekig kitartottak mellette. A **médiumok és műhelyek** azt az infrastruktúrát tartják fenn — ügyvédeket, adatbázisokat, hónapokig fizetett újságírói munkaidőt —, ami nélkül egy mélyfúrás elindulni sem tudna. A **Facebook- és YouTube-csatornák** pedig azt csinálják, amit a legkönnyebb lebecsülni és a legnehezebb pótolni: elviszik a kész sztorit több százezer emberhez, olyanokhoz is, akik hírportált soha nem nyitnak meg.',
     'A Kegyencjárat adatbázisa ennek a munkának a másodlagos feldolgozása. Egyetlen ügyet sem mi tártunk fel: mi összegyűjtjük, rendszerezzük, összekötjük és követhetővé tesszük azt, amit ők kiástak. Ezért van ez az oldal — és ezért van a forrásmegjelölés minden egyes sor mellett.',
   ],
+  /** A nagy független szerkesztőségek elismerése. Külön mező, mert a
+   *  szerkesztőségneveknek kattintható külső linknek kell lenniük, a
+   *  gridIntro pedig sima szöveg. Fontos, hogy a szöveg kimondja, MIÉRT
+   *  nincsenek a falon — különben úgy néz ki, mintha lefelejtettük volna
+   *  őket, miközben az adatbázisunk forráshivatkozásai tele vannak velük.
+   *  A „nekik ez a dolguk is" megkülönböztetés a főállású, üzleti alapon
+   *  működő szerkesztőségre vonatkozik — a falon szereplő médiumok
+   *  (Átlátszó, Direkt36, Partizán, Mérce) olvasói támogatásból vagy
+   *  nonprofitként működnek, ezt a szöveg külön ki is mondja, hogy ne
+   *  legyen ellentmondás. */
+  mainstreamNote: {
+    before:
+      'Feltűnhet, hogy hiányoznak innen a nagy független szerkesztőségek: a ',
+    outlets: [
+      { name: '444', url: 'https://444.hu' },
+      { name: 'Telex', url: 'https://telex.hu' },
+      { name: '24.hu', url: 'https://24.hu' },
+      { name: 'HVG', url: 'https://hvg.hu' },
+      { name: 'Népszava', url: 'https://nepszava.hu' },
+      { name: 'Magyar Hang', url: 'https://hang.hu' },
+    ],
+    after:
+      '. Pedig az ezen az oldalon szereplő ügyek jelentős része az ő oknyomozásaikból és interjúikból származik, és a forráshivatkozásaink tele vannak a nevükkel — nélkülük ez az adatbázis a töredéke lenne annak, ami. A kihagyás tehát nem értékítélet, hanem szűkítés: ez a fal tudatosan azokra koncentrál, akik elhivatottságból csinálták. A saját pénzükből, a szabadidejükben, munka mellett, vagy olvasói támogatásból fenntartott, nonprofit műhelyekben. Egy főállású, üzleti alapon működő szerkesztőségnél az oknyomozás — minden tiszteletünk mellett — valamennyire a munkaköri leírás része is. Itt azoké a hely, akiknek senki nem írta elő.',
+  },
   /** A bevezető ZÁRÓ eleme, közvetlenül a névsor előtt (user kérés,
    *  2026-09-16). Nem illusztráció: ez az érzelmi felütés, amiről az
    *  egész fal szól — a rendszerváltás utáni első reggel. A szöveg
