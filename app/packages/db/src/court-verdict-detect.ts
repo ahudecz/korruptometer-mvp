@@ -12,6 +12,7 @@ export type VerdictExtraction = {
   sentenceYears: number;
   sentenceMonths: number | null;
   sentenceLabel: string;
+  evidenceQuote: string;
   verdictType: 'előzetesben' | 'elsőfokú' | 'jogerős' | 'vádemelés' | 'szabadlábra helyezve' | 'eljárás megszűnt' | 'felmentve' | 'egyéb';
   verdictDate: string;
   court: string;
@@ -64,6 +65,10 @@ const TOOL: LlmToolSpec = {
         type: 'string',
         description: 'Human-readable sentence label in Hungarian (e.g. "3 év börtön", "előzetes letartóztatás", "vádemelés", "felmentés", "gyanúsítottként kihallgatva"). It MUST be consistent with verdictType — an interrogation label may not accompany verdictType="előzetesben". Empty string if isVerdict is false.',
       },
+      evidenceQuote: {
+        type: 'string',
+        description: 'VERBATIM quote (one sentence, copied EXACTLY from the article text above) that states the core fact of this entry. Copy it character-for-character from the article — do NOT paraphrase, translate, summarise or reconstruct it. If the article does not contain a sentence stating this fact, return an empty string rather than inventing one.',
+      },
       verdictType: {
         type: 'string',
         enum: ['előzetesben', 'elsőfokú', 'jogerős', 'vádemelés', 'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve', 'egyéb'],
@@ -92,7 +97,7 @@ const TOOL: LlmToolSpec = {
     },
     required: [
       'isVerdict', 'personName', 'position', 'crimes', 'sentenceYears',
-      'sentenceMonths', 'sentenceLabel', 'verdictType', 'verdictDate',
+      'sentenceMonths', 'sentenceLabel', 'evidenceQuote', 'verdictType', 'verdictDate',
       'court', 'summary', 'description', 'confidence',
     ],
   },
@@ -188,6 +193,9 @@ Mai dátum: ${todayIso}`;
     system: SYSTEM_PROMPT,
     user: userMsg,
     tool: TOOL,
-    maxTokens: 512,
+    // 2026-09-16: +evidenceQuote (szó szerinti mondat) — a csonkolt tool-call
+    // JSON-parse hibát adna, azaz elveszne a találat. A plafon emelése csak
+    // felső korlát, a számlázás a TÉNYLEGES output-tokenekre megy.
+    maxTokens: 768,
   });
 }

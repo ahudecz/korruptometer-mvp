@@ -13,6 +13,10 @@ export type ComplaintEvent = {
   description: string;
   amountLabel: string;
   status: ComplaintStatusExtracted;
+  /** Szó szerinti mondat a cikkből, ami ezt a bejegyzést alátámasztja —
+   *  l. extraction-guards.ts evidenceQuoteSupported(). Üres string, ha a
+   *  cikk nem tartalmaz ilyen mondatot. */
+  evidenceQuote: string;
   confidence: number;
 };
 
@@ -66,12 +70,16 @@ const TOOL: LlmToolSpec = {
               description:
                 'feljelentés = a complaint was just filed, nothing further reported yet; nyomozás = police/authority investigation confirmed opened as a result; vádemelés = formal indictment followed; ítélet = a court verdict was reached; elutasítva = the complaint was rejected/dismissed or the case was dropped. Use the HIGHEST stage explicitly confirmed in THIS article — if the article only reports the filing, use "feljelentés" even if you suspect more happened elsewhere.',
             },
+            evidenceQuote: {
+              type: 'string',
+              description: 'VERBATIM quote (one sentence, copied EXACTLY from the article text above) that states the core fact of this entry. Copy it character-for-character from the article — do NOT paraphrase, translate, summarise or reconstruct it. If the article does not contain a sentence stating this fact, return an empty string rather than inventing one.',
+            },
             confidence: {
               type: 'number',
               description: 'Confidence 0–1 that THIS SPECIFIC entry is a real criminal complaint meeting the relevance criteria.',
             },
           },
-          required: ['targetName', 'filerName', 'description', 'amountLabel', 'status', 'confidence'],
+          required: ['targetName', 'filerName', 'description', 'amountLabel', 'status', 'evidenceQuote', 'confidence'],
         },
       },
     },
@@ -133,6 +141,7 @@ Mai dátum: ${todayIso}`;
     system: SYSTEM_PROMPT,
     user: userMsg,
     tool: TOOL,
-    maxTokens: 1024,
+    // 2026-09-16: +evidenceQuote bejegyzésenként, l. court-verdict-detect.ts.
+    maxTokens: 1280,
   });
 }

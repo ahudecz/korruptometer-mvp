@@ -6,6 +6,7 @@ import { renderMilestoneImage, renderBreakingImage, renderSummaryImage } from '@
 import { milestoneCaption, breakingCaption, summaryCaption, resignationLinkPath } from '@/lib/social-caption';
 import { sendTelegramPhoto, type InlineKeyboardMarkup } from '@/lib/telegram';
 import { computeComplaintTotal } from '@app/birosagi-iteletek/complaint-stats';
+import { countActualVerdicts } from '@app/birosagi-iteletek/verdict-stats';
 import { computeNextMilestone, formatMilliardLabel } from '@/lib/social-milestone';
 import { UGYEK } from '@app/_home/ugyek-config';
 import { toAsciiId, autoDisplayTitle, RETIRED_SCANDAL_IDS } from '@app/_home/case-detail-config';
@@ -545,11 +546,14 @@ async function buildPollFinalResultTrigger(db: ReturnType<typeof getDb>): Promis
 // ─── Tartalék-posztok (csak ha egy napra nincs elég friss esemény) ────────
 
 async function buildSummaryStatsTrigger(db: ReturnType<typeof getDb>): Promise<OutboxInsert | null> {
-  const [[resignationCount], [closureCount], [complaintCount], [verdictCount], [recoverySum]] = await Promise.all([
+  const [[resignationCount], [closureCount], [complaintCount], verdictRows, [recoverySum]] = await Promise.all([
     db.select({ c: sql<number>`count(*)::int` }).from(schema.politicalResignations).where(eq(schema.politicalResignations.reviewStatus, 'approved')),
     db.select({ c: sql<number>`count(*)::int` }).from(schema.mediaClosures).where(eq(schema.mediaClosures.reviewStatus, 'approved')),
     db.select({ c: sql<number>`count(*)::int` }).from(schema.criminalComplaints).where(eq(schema.criminalComplaints.reviewStatus, 'approved')),
-    db.select({ c: sql<number>`count(*)::int` }).from(schema.courtVerdicts).where(eq(schema.courtVerdicts.reviewStatus, 'approved')),
+    // NEM count(*): a CourtVerdict tábla az eljárás TELJES életútját tárolja
+    // (előzetes, vádemelés, kiengedés, gyanúsítás is), abból csak az
+    // 'elsőfokú'/'jogerős' sor ítélet — l. countActualVerdicts().
+    db.select({ verdictType: schema.courtVerdicts.verdictType }).from(schema.courtVerdicts).where(eq(schema.courtVerdicts.reviewStatus, 'approved')),
     db.select({ s: sql<string>`COALESCE(SUM("amountFt"), 0)` }).from(schema.assetRecoveries),
   ]);
 
@@ -557,8 +561,15 @@ async function buildSummaryStatsTrigger(db: ReturnType<typeof getDb>): Promise<O
     { label: 'lemondás / kirúgás / felmentés eddig', value: String(resignationCount?.c ?? 0) },
     { label: 'megszűnt médium', value: String(closureCount?.c ?? 0) },
     { label: 'feljelentés a nyilvántartásban', value: String(complaintCount?.c ?? 0) },
-    { label: 'jogerős/elsőfokú ítélet', value: String(verdictCount?.c ?? 0) },
   ];
+
+  // 2026-09-16 — a "0 jogerős/elsőfokú ítélet" sor önmagában félrevezető
+  // lenne egy összegző poszton (úgy olvasódik, mintha a rendszer nem
+  // működne), ezért nulla ítéletnél a sor kimarad, nem 0-val megy ki.
+  const actualVerdicts = countActualVerdicts(verdictRows);
+  if (actualVerdicts > 0) {
+    stats.push({ label: 'jogerős/elsőfokú ítélet', value: String(actualVerdicts) });
+  }
   const recoveredFt = recoverySum?.s ? BigInt(recoverySum.s) : 0n;
   if (recoveredFt > 0n) {
     stats.push({ label: 'visszaszerzett vagyon', value: formatFtLabel(recoveredFt) });

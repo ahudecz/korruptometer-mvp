@@ -21,6 +21,33 @@ export function isReleased(t: string): t is ReleasedType {
   return (RELEASED_TYPES as readonly string[]).includes(t);
 }
 
+/**
+ * TÉNYLEGES ÍTÉLET — a 8 verdictType közül csak kettő az.
+ *
+ * 2026-09-16, a leltárból: a Facebook tartalék-poszt (summary_stats,
+ * check-social-triggers.ts) nyers `count(*)`-ot írt ki a CourtVerdict
+ * táblából "jogerős/elsőfokú ítélet" címkével — vagyis az előzetesben lévők,
+ * a vádemelések, a kiengedettek és a gyanúsítottak is "ítéletnek" számítottak.
+ * Ez a hibaosztály HÁROMSZOR ment ki élesre (l. [[project-verdict-label-conflation]]),
+ * legutóbb egy FB-poszton "21 jogerős/elsőfokú ítélet" — miközben a valós
+ * szám 0 volt.
+ *
+ * A facebook-content-brief.md 11. pontja külön kimondja: az őrizet, az
+ * előzetes, a vádemelés és az ítélet NEM szinonimák. Ezért a számláló innen,
+ * EGY helyről jön, és nem a hívó oldalon ismétlődik meg a feltétel.
+ */
+export const ACTUAL_VERDICT_TYPES = ['elsőfokú', 'jogerős'] as const;
+export type ActualVerdictType = (typeof ACTUAL_VERDICT_TYPES)[number];
+
+export function isActualVerdict(t: string): t is ActualVerdictType {
+  return (ACTUAL_VERDICT_TYPES as readonly string[]).includes(t);
+}
+
+/** Hány soron született TÉNYLEGES (első- vagy jogerős fokú) ítélet. */
+export function countActualVerdicts(rows: Array<{ verdictType: string }>): number {
+  return rows.filter((r) => isActualVerdict(r.verdictType)).length;
+}
+
 export type VerdictStatRow = { verdictType: string; sentenceYears: number };
 
 export interface VerdictStats {

@@ -33,9 +33,38 @@ export const BACKLOG_DAYS = 7;
  * same guard and can't drift apart again (see project-detector-drift-pattern
  * in the assistant's memory for this exact class of bug).
  */
+const PLACEHOLDER_NAMES = new Set([
+  '', 'unknown', 'ismeretlen', 'n/a', 'na', 'n.a', 'n.a.', 'null', 'undefined', 'none',
+  'nincs', 'nincs adat', 'nem ismert', 'nem tudni', 'nem elérhető', 'tbd',
+  '-', '--', '?', '??', '...', 'x', 'xxx',
+  // A modell néha a mező NEVÉT vagy a séma példáját írja vissza értéknek.
+  'név', 'nev', 'name', 'személy', 'szemely', 'ismeretlen személy',
+  'ismeretlen nevű személy', 'ismeretlen tettes', 'ismeretlen elkövető',
+]);
+
+/**
+ * 2026-09-16 — a leltárból: a `<UNKNOWN>` bejelentő ÉLESRE ment
+ * (CriminalComplaint 85f00a63, Volánbusz/Pilz), mert a guard eddig csak a
+ * célpont nevét nézte, a másodlagos mezőket nem, és a felismert alakok
+ * listája is szűk volt. Két bővítés:
+ *   - több alak (kötőjel, kérdőjel, "nincs adat", visszaírt mezőnév stb.),
+ *   - a záró írásjelek és a szögletes/kapcsos zárójel is lekerül, mert a
+ *     modell `<UNKNOWN>`, `[unknown]` és `(ismeretlen)` alakban is ad ilyet.
+ *
+ * FONTOS: az "ismeretlen tettes" ITT placeholder-NÉVNEK számít (senkit nem
+ * azonosít), de maga az ismeretlen tettes elleni feljelentés VALÓS
+ * jogi helyzet — azt nem eldobni kell, hanem ügy-címkével rögzíteni. Ezt a
+ * megkülönböztetést a extraction-guards.ts
+ * namedTargetContradictsUnknownPerpetrator() őre kezeli.
+ */
 export function isPlaceholderName(value: string): boolean {
-  const v = value.trim().toLowerCase().replace(/^<|>$/g, '');
-  return v === '' || v === 'unknown' || v === 'ismeretlen' || v === 'n/a' || v === 'null' || v === 'undefined';
+  const v = value
+    .trim()
+    .toLowerCase()
+    .replace(/^[<\[({"']+|[>\])}"'.,;:!]+$/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return PLACEHOLDER_NAMES.has(v);
 }
 
 /**

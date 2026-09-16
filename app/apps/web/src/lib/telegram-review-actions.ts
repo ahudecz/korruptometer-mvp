@@ -13,6 +13,7 @@ import {
   articleDateIso,
   coercePretrialClaim,
   decideComplaintTransition,
+  evidenceQuoteSupported,
   decideStatus,
   findExistingComplaint,
   findExistingVerdict,
@@ -25,7 +26,9 @@ import {
   isPermanentBreakingPerson,
   isBlacklistedComplaintFiler,
   isPlaceholderName,
+  isRelationalOnlyMention,
   isTransientLlmFailure,
+  namedTargetContradictsUnknownPerpetrator,
   isWatchlistPerson,
   NEAR_MISS_MIN,
   slugifyCaseLabel,
@@ -358,6 +361,19 @@ export async function processCourtVerdict(article: ArticleForReprocess, todayIso
     }
   }
 
+  // 2026-09-16, folyamatjavaslat 1–2. pont — ugyanaz a két tényellenőrzés,
+  // mint a cron-detektorban (l. packages/db/src/extraction-guards.ts). A
+  // `bypassConfidenceGate` a BIZONYOSSÁGOT írja felül, nem azt, hogy a
+  // kinyert állítás egyáltalán benne van-e a cikkben — ezért ez itt is fut.
+  const verdictArticleText = `${article.headline}
+${article.excerpt}`;
+  if (reviewStatus === 'approved' && !evidenceQuoteSupported(result.evidenceQuote, verdictArticleText)) {
+    reviewStatus = 'pending';
+  }
+  if (reviewStatus === 'approved' && isRelationalOnlyMention(result.personName, verdictArticleText)) {
+    reviewStatus = 'pending';
+  }
+
   const verdictDate = resolveDate(result.verdictDate, article.publishedAt);
   const todaySlice = todayIso;
   let recordId: string;
@@ -552,7 +568,11 @@ export async function processCriminalComplaint(article: ArticleForReprocess, tod
     lastName = complaint.targetName || lastName;
     lastConfidence = complaint.confidence;
 
-    if (!complaint.targetName || isPlaceholderName(complaint.targetName) || !complaint.filerName) {
+    // 2026-09-16 — a bejelentő is érdemi mező, l. detect-criminal-complaints.ts
+    if (
+      !complaint.targetName || isPlaceholderName(complaint.targetName)
+      || !complaint.filerName || isPlaceholderName(complaint.filerName)
+    ) {
       lastDiscardReason = 'missing_fields';
       continue;
     }
@@ -562,6 +582,15 @@ export async function processCriminalComplaint(article: ArticleForReprocess, tod
       lastDiscardReason = 'blacklisted_filer';
       continue;
     }
+
+    // 2026-09-16, folyamatjavaslat 1–3. pont — ugyanaz a három tényellenőrzés,
+    // mint a cron-detektorban (packages/db/src/extraction-guards.ts).
+    const complaintArticleText = `${article.headline}
+${article.excerpt}`;
+    const factCheckFailed =
+      !evidenceQuoteSupported(complaint.evidenceQuote, complaintArticleText)
+      || isRelationalOnlyMention(complaint.targetName, complaintArticleText)
+      || namedTargetContradictsUnknownPerpetrator(complaint.targetName, complaintArticleText);
 
     let reviewStatus: 'approved' | 'pending' | 'discard' = 'approved';
     if (!bypassConfidenceGate) {
@@ -574,6 +603,9 @@ export async function processCriminalComplaint(article: ArticleForReprocess, tod
         }
         continue;
       }
+    }
+    if (reviewStatus === 'approved' && factCheckFailed) {
+      reviewStatus = 'pending';
     }
 
     if (!article.sourceUrl) {

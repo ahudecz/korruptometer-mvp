@@ -8,7 +8,10 @@ import {
   gateComplaintInsert,
   findExistingComplaint,
   isBlacklistedComplaintFiler,
+  evidenceQuoteSupported,
   isPlaceholderName,
+  isRelationalOnlyMention,
+  namedTargetContradictsUnknownPerpetrator,
   isSameComplainant,
   isSameComplainantAi,
   isWatchlistPerson,
@@ -63,7 +66,15 @@ async function processComplaintArticle(
     lastName = complaint.targetName || lastName;
     lastConfidence = complaint.confidence;
 
-    if (!complaint.targetName || isPlaceholderName(complaint.targetName) || !complaint.filerName) {
+    // 2026-09-16 — a placeholder-guard eddig CSAK a célpontot nézte, ezért a
+    // `<UNKNOWN>` BEJELENTŐ élesre ment (CriminalComplaint 85f00a63,
+    // Pilz/Tisza Világ; a cikk valójában feljelentést sem említett).
+    // A bejelentő ugyanolyan érdemi mező, mint a célpont: placeholder
+    // értékkel a sor nem publikálható.
+    if (
+      !complaint.targetName || isPlaceholderName(complaint.targetName)
+      || !complaint.filerName || isPlaceholderName(complaint.filerName)
+    ) {
       lastDiscardReason = 'missing_fields';
       continue;
     }
@@ -78,6 +89,22 @@ async function processComplaintArticle(
 
     const isWatchlist = isWatchlistPerson(complaint.filerName) || isWatchlistPerson(complaint.targetName);
     let reviewStatus = decideStatus(complaint.confidence, isWatchlist);
+
+    // 2026-09-16, folyamatjavaslat 1–3. pont (packages/db/src/extraction-guards.ts).
+    // Egyik őr sem dob el sort, csak leveszi az automatikus publikálást.
+    const articleText = `${article.headline}
+${article.excerpt}`;
+    if (reviewStatus === 'approved' && !evidenceQuoteSupported(complaint.evidenceQuote, articleText)) {
+      reviewStatus = 'pending';
+    }
+    if (reviewStatus === 'approved' && isRelationalOnlyMention(complaint.targetName, articleText)) {
+      reviewStatus = 'pending';
+    }
+    // Ismeretlen tettes elleni feljelentésnél a célpont ÜGY-címke lehet, nem
+    // személynév — ha a modell mégis nevesít valakit, az ráfogás.
+    if (reviewStatus === 'approved' && namedTargetContradictsUnknownPerpetrator(complaint.targetName, articleText)) {
+      reviewStatus = 'pending';
+    }
     if (reviewStatus === 'discard') {
       lastDiscardReason = 'low_confidence';
       if (complaint.confidence >= NEAR_MISS_MIN) {

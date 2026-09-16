@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeVerdictStats, isReleased, partitionVerdicts, type VerdictStatRow } from './verdict-stats';
+import { computeVerdictStats, countActualVerdicts, isActualVerdict, isReleased, partitionVerdicts, type VerdictStatRow } from './verdict-stats';
 
 // Forrás: supabase/migrations/0050_court_verdict_type_check.sql — a
 // verdictType oszlop szabad text, ez a CHECK constraint az egyetlen hely,
@@ -59,5 +59,39 @@ describe('computeVerdictStats', () => {
     expect(isReleased('felmentve')).toBe(true);
     expect(isReleased('jogerős')).toBe(false);
     expect(isReleased('előzetesben')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 2026-09-16 — a Facebook tartalék-poszt (summary_stats) nyers count(*)-ot
+// írt ki "jogerős/elsőfokú ítélet" címkével. Ugyanez a hibaosztály háromszor
+// ment ki élesre; ez a teszt zárja le, a CHECK constraint mind a 8 értékére.
+// ---------------------------------------------------------------------------
+
+describe('countActualVerdicts', () => {
+  it('a 8 verdictType közül PONTOSAN kettő számít ítéletnek', () => {
+    const actual = ALL_TYPES.filter(isActualVerdict);
+    expect(actual).toEqual(['elsőfokú', 'jogerős']);
+  });
+
+  it('a teljes tábla nyers hossza SOSEM az ítéletek száma', () => {
+    const rows = ALL_TYPES.map((verdictType) => ({ verdictType }));
+    expect(countActualVerdicts(rows)).toBe(2);
+    expect(countActualVerdicts(rows)).not.toBe(rows.length);
+  });
+
+  // A konkrét élesre kiment eset: csupa előzetes/vádemelés/gyanúsítás, egy
+  // ítélet sem — a poszt mégis "21 jogerős/elsőfokú ítéletet" írt.
+  it('ítélet nélküli táblára 0-t ad', () => {
+    const rows = [
+      { verdictType: 'előzetesben' }, { verdictType: 'előzetesben' },
+      { verdictType: 'vádemelés' }, { verdictType: 'egyéb' },
+      { verdictType: 'szabadlábra helyezve' },
+    ];
+    expect(countActualVerdicts(rows)).toBe(0);
+  });
+
+  it('a kiengedett elítéltet is számolja (az ítélet attól még megszületett)', () => {
+    expect(countActualVerdicts([{ verdictType: 'jogerős' }, { verdictType: 'elsőfokú' }])).toBe(2);
   });
 });

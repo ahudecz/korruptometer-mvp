@@ -6,6 +6,8 @@ import {
   articleDateIso,
   cleanPositionTitle,
   coercePretrialClaim,
+  evidenceQuoteSupported,
+  isRelationalOnlyMention,
   decideStatus,
   findExistingVerdict,
   isPlaceholderName,
@@ -148,6 +150,19 @@ async function processVerdictArticle(
   // állapotváltás, itt a legindokoltabb az előzetes emberi megerősítés, nem
   // az utólagos visszavonási esély.
   if (reviewStatus === 'approved' && (verdictType === 'elsőfokú' || verdictType === 'jogerős')) {
+    reviewStatus = 'pending';
+  }
+
+  // 2026-09-16, folyamatjavaslat 1–2. pont (l. packages/db/src/extraction-guards.ts).
+  // Mindkettő a 2026-09-08-i Fásy/NKA-esetre válasz: hallucinált dátum +
+  // egy rokonra túlállított név. Egyik sem dob el sort, csak leveszi az
+  // automatikus publikálást — a Telegram-jóváhagyás amúgy is működő út.
+  const articleText = `${article.headline}
+${article.excerpt}`;
+  if (reviewStatus === 'approved' && !evidenceQuoteSupported(result.evidenceQuote, articleText)) {
+    reviewStatus = 'pending';
+  }
+  if (reviewStatus === 'approved' && isRelationalOnlyMention(result.personName, articleText)) {
     reviewStatus = 'pending';
   }
 
