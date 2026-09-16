@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { PodcastVideoBox } from './podcast-video-box';
 
 export interface BigCaseArticle {
   id: string;
@@ -67,14 +68,7 @@ function CaseDetail({ c }: { c: BigCaseConfig }) {
       )}
 
       {c.videoId && (
-        <div className="big-case-video-wrap">
-          <iframe
-            src={`https://www.youtube.com/embed/${c.videoId}`}
-            title={c.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </div>
+        <PodcastVideoBox videoId={c.videoId} title={c.title} wrapClassName="big-case-video-wrap" />
       )}
 
       {c.statusItems && c.statusItems.length > 0 && (
