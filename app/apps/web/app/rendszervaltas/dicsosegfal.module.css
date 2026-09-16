@@ -375,6 +375,7 @@ a.card:hover {
   border-color: #c8992a;
 }
 .videoThumb {
+  display: block;
   position: relative;
   display: block;
   aspect-ratio: 16 / 9;
@@ -413,6 +414,7 @@ a.card:hover {
   background: #e31937;
 }
 .videoNote {
+  display: block;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -421,6 +423,7 @@ a.card:hover {
   padding: 10px 12px 0;
 }
 .videoTitle {
+  display: block;
   font-size: 13px;
   font-weight: 700;
   line-height: 1.35;
