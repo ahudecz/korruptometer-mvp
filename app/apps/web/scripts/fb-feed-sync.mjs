@@ -16,9 +16,11 @@
 //  3. Idempotens: postUrl a természetes kulcs, a meglévő sorokat nem
 //     duplikáljuk (a repó írói-konvenciója szerint).
 //
-// KORLÁT: az imageUrl egy fbcdn-link, ami hetek múlva lejár. Ugyanez volt
-// igaz az Apify-os megoldásra is. Ha tartós kép kell, Supabase Storage-ba
-// kellene menteni — az külön kör.
+// KÉPEK: az og:image egy fbcdn-link, ami alá van írva és hetek múlva 404-re
+// vált (ez az Apify-os megoldás gyengéje is volt). Ezért minden képet
+// ÁTMÁSOLUNK a Supabase `social-images` bucketjébe (fb-<id>.jpg néven, a
+// korábbi szinkron konvenciója szerint), és a SocialPost.imageUrl már a
+// saját, tartós URL-t kapja. Így a feed képei nem tűnnek el.
 
 const GOOGLEBOT =
   'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
@@ -79,6 +81,74 @@ function og(html, prop) {
     .trim();
 }
 
+const BUCKET = 'social-images';
+
+/**
+ * Átmásolja a Facebook képét a saját Storage-unkba, és a tartós URL-t adja
+ * vissza. Ha bármi hibázik, `null` — inkább kép nélküli kártya, mint egy
+ * link, ami két hét múlva 404.
+ */
+async function mirrorImage(fbUrl, postId) {
+  if (!fbUrl) return null;
+  try {
+    const res = await fetch(fbUrl, {
+      headers: { 'User-Agent': FBBOT },
+      signal: AbortSignal.timeout(45_000),
+    });
+    if (!res.ok) return null;
+    const buf = Buffer.from(await res.arrayBuffer());
+    // A pár kilobájtos válasz jellemzően hibakép vagy placeholder.
+    if (buf.byteLength < 8000) return null;
+
+    const name = `fb-${postId}.jpg`;
+    const up = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${name}`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'image/jpeg',
+        'x-upsert': 'true',
+      },
+      body: buf,
+      signal: AbortSignal.timeout(60_000),
+    });
+    if (!up.ok) {
+      console.error(`    kép-feltöltés hiba (${up.status}):`, (await up.text()).slice(0, 120));
+      return null;
+    }
+    return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${name}`;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Poszt-azonosító → megjelenési idő. A Meta a keresőrobotnak kiszolgált
+ * oldal-HTML-be beágyazza a publish_time/creation_time mezőket; ezeket a
+ * poszt-azonosítóhoz a dokumentumbeli KÖZELSÉG alapján párosítjuk (a mérés
+ * szerint ~96%-os találati arány). Enélkül csak a beolvasás ideje lenne
+ * ismert, és a feed sorrendje a scrape sorrendjét tükrözné, nem a valóságot.
+ */
+function pairTimestamps(html) {
+  const ids = [...html.matchAll(/(pfbid[0-9A-Za-z]{20,}|\/posts\/(\d{10,}))/g)].map((m) => ({
+    pos: m.index ?? 0,
+    id: m[2] ?? m[1],
+  }));
+  const times = [...html.matchAll(/"(?:publish_time|creation_time)"\s*:\s*(\d{9,11})/g)].map(
+    (m) => ({ pos: m.index ?? 0, ts: Number(m[1]) }),
+  );
+  const out = new Map();
+  for (const { pos, id } of ids) {
+    if (out.has(id)) continue;
+    let best = null;
+    for (const t of times) {
+      if (Math.abs(t.pos - pos) < 20_000 && (best === null || t.ts > best)) best = t.ts;
+    }
+    if (best) out.set(id, new Date(best * 1000).toISOString());
+  }
+  return out;
+}
+
 /** Poszt-azonosítók az oldal HTML-jéből, a megjelenés sorrendjében. */
 function discoverPostIds(html, limit = 60) {
   const ids = [];
@@ -117,8 +187,16 @@ async function main() {
   );
   console.log(`${existing.size} ismert poszt az adatbázisban.`);
 
+  // Azok a már ismert posztok, amelyeknél hiányzik a megjelenési idő.
+  const missingRes = await sb('SocialPost?select=postUrl&postedAt=is.null&limit=5000');
+  const missingPostedAt = new Set(
+    ((await missingRes.json()) ?? []).map((r) => r.postUrl).filter(Boolean),
+  );
+  console.log(`${missingPostedAt.size} sornál hiányzik a megjelenési idő.`);
+
   let inserted = 0;
   let skipped = 0;
+  let backfilled = 0;
 
   for (const page of pages) {
     const ident = page.pageHandle ?? page.pageId;
@@ -130,6 +208,7 @@ async function main() {
 
     const html = await getText(pageUrl, GOOGLEBOT);
     const ids = discoverPostIds(html);
+    const postedAtById = pairTimestamps(html);
     if (ids.length === 0) {
       console.log(`  ${page.pageName}: nincs találat (${html.length} bájt)`);
       continue;
@@ -146,11 +225,29 @@ async function main() {
         : `https://www.facebook.com/${page.pageId}/posts/${pfbid}`;
       if (existing.has(postUrl)) {
         skipped += 1;
+        // Visszamenőleg pótoljuk a hiányzó megjelenési időt, hogy a feed
+        // időrendje a régi sorokra is helyes legyen.
+        const known = postedAtById.get(pfbid);
+        if (known && !DRY_RUN && missingPostedAt.has(postUrl)) {
+          await sb(`SocialPost?postUrl=eq.${encodeURIComponent(postUrl)}`, {
+            method: 'PATCH',
+            headers: { Prefer: 'return=minimal' },
+            body: JSON.stringify({ postedAt: known }),
+          });
+          backfilled += 1;
+        }
         continue;
       }
       const post = await getText(postUrl, FBBOT);
       const content = og(post, 'og:description');
       if (!content) continue; // megosztás / szöveg nélküli bejegyzés
+
+      // A kép a saját Storage-unkba kerül át, hogy ne járjon le. A pfbid
+      // túl hosszú fájlnévnek, ezért a rövidített azonosítót használjuk.
+      const shortId = String(pfbid).slice(-24);
+      const imageUrl = DRY_RUN
+        ? og(post, 'og:image')
+        : await mirrorImage(og(post, 'og:image'), shortId);
 
       const row = {
         authorName: page.pageName,
@@ -158,7 +255,8 @@ async function main() {
         platform: 'facebook',
         postUrl,
         content,
-        imageUrl: og(post, 'og:image'),
+        imageUrl,
+        postedAt: postedAtById.get(pfbid) ?? null,
         hidden: false,
       };
 
@@ -182,7 +280,10 @@ async function main() {
     console.log(`  ${page.pageName}: ${taken} új`);
   }
 
-  console.log(`\nKÉSZ — ${inserted} új poszt, ${skipped} már megvolt.${DRY_RUN ? ' (DRY RUN)' : ''}`);
+  console.log(
+    `\nKÉSZ — ${inserted} új poszt, ${skipped} már megvolt, ` +
+      `${backfilled} kapott megjelenési időt.${DRY_RUN ? ' (DRY RUN)' : ''}`,
+  );
 }
 
 main().catch((e) => {

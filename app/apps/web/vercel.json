@@ -5,7 +5,6 @@
   "buildCommand": "cd ../.. && rm -rf apps/web/.next && pnpm --filter @korr/web build",
   "regions": ["dub1"],
   "crons": [
-    { "path": "/api/cron/facebook-sync", "schedule": "0 5 * * *" },
     { "path": "/api/cron/youtube-sync", "schedule": "10 8 * * *" }
   ]
 }

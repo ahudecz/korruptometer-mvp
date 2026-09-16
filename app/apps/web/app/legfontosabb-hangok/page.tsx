@@ -2,8 +2,13 @@ import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
 
 import { SocialFeedClient } from '../_home/social-feed-client';
+import { orderFeed } from '../_home/social-feed-select';
 
-const PAGE_SIZE = 20;
+// Az egész feedet egyben kérjük le, és itt, a szerveren rakjuk sorba: a
+// szerzőnkénti keretet nem lehet SQL-lapozással megtartani (a 2. oldal nem
+// tudná, ki hányszor szerepelt az elsőn). A tábla pár száz soros, ez olcsó.
+const FETCH_POOL = 1000;
+const PER_AUTHOR = 2;
 
 export const dynamic = 'force-dynamic';
 
@@ -23,10 +28,11 @@ export default async function LegfontosabbHangokPage() {
       .from('SocialPost')
       .select('*')
       .eq('hidden', false)
-      .order('createdAt', { ascending: false })
-      .range(0, PAGE_SIZE - 1);
+      // A megjelenés ideje szerint, nem a beolvasásé szerint — l. social-feed-select.ts
+      .order('postedAt', { ascending: false, nullsFirst: false })
+      .range(0, FETCH_POOL - 1);
     if (error) console.error('[LegfontosabbHangok] Supabase hiba:', error);
-    if (data) posts = data;
+    if (data) posts = orderFeed(data, PER_AUTHOR);
   }
 
   return (
@@ -51,7 +57,7 @@ export default async function LegfontosabbHangokPage() {
         {posts.length === 0 ? (
           <p>Jelenleg nincs megjeleníthető poszt.</p>
         ) : (
-          <SocialFeedClient initialPosts={posts} initialHasMore={posts.length === PAGE_SIZE} />
+          <SocialFeedClient posts={posts} />
         )}
 
         <div className="modszertan-back">

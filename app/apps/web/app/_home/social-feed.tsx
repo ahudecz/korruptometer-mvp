@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
 import { SocialPostCard, type SocialPost } from './social-post-card';
+import { pickDiverse } from './social-feed-select';
 
 const TEASER_SIZE = 18;
-const FETCH_POOL = 200; // elég nagy merítés, hogy minden aktív oldalhoz jusson legalább 1 poszt
+const FETCH_POOL = 400; // elég nagy merítés, hogy minden aktív oldalhoz jusson legalább 1 poszt
 
 export async function SocialFeed() {
   try {
@@ -16,7 +17,8 @@ export async function SocialFeed() {
       .from('SocialPost')
       .select('*')
       .eq('hidden', false)
-      .order('createdAt', { ascending: false })
+      // A megjelenés ideje szerint, nem a beolvasásé szerint — l. social-feed-select.ts
+      .order('postedAt', { ascending: false, nullsFirst: false })
       .range(0, FETCH_POOL - 1);
 
     if (error) {
@@ -25,16 +27,9 @@ export async function SocialFeed() {
     }
     if (!pool || pool.length === 0) return null;
 
-    // Oldalanként csak 1 (a legfrissebb) poszt, hogy a teaser változatosnak tűnjön.
-    const seenAuthors = new Set<string>();
-    const posts: SocialPost[] = [];
-    for (const post of pool) {
-      const authorKey = post.authorHandle ?? post.authorName;
-      if (seenAuthors.has(authorKey)) continue;
-      seenAuthors.add(authorKey);
-      posts.push(post);
-      if (posts.length >= TEASER_SIZE) break;
-    }
+    // Oldalanként csak 1 (a legfrissebb) poszt, hogy a teaser változatos legyen,
+    // és a sorrend időrendi maradjon — a legfrissebb elöl.
+    const posts = pickDiverse(pool as SocialPost[], { perAuthor: 1, limit: TEASER_SIZE });
 
     return (
       <section className="section social-feed-section" id="social">
