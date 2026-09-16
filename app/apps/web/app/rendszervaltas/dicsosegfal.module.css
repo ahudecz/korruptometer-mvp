@@ -375,12 +375,24 @@ a.card:hover {
   border-color: #c8992a;
 }
 .videoThumb {
-  display: block;
   position: relative;
   display: block;
+  width: 100%;
   aspect-ratio: 16 / 9;
   background: #14141c;
   overflow: hidden;
+}
+/* A kattintásra betöltődő iframe és a thumbnail-gomb is KITÖLTI a dobozt.
+   Enélkül a YouTube saját 303x153-as alapmérete érvényesül, és a lejátszó
+   balra-fölre csúszik a keretben (user report, 2026-09-16). */
+.videoThumb iframe,
+.videoThumb > button {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
 }
 .videoThumb img {
   width: 100%;
@@ -410,9 +422,6 @@ a.card:hover {
   border-width: 6px 0 6px 10px;
   border-color: transparent transparent transparent #fff;
 }
-.videoCard:hover .videoPlay {
-  background: #e31937;
-}
 .videoNote {
   display: block;
   font-size: 10px;
@@ -431,13 +440,29 @@ a.card:hover {
   hyphens: auto;
   overflow-wrap: break-word;
 }
+/* „A csatorna összes videója" — gomb, jobbra igazítva, a rácstól elválasztva
+   (user, 2026-09-16). */
 .videoGridMore {
-  margin-top: 14px;
-  font-size: 13px;
-  font-weight: 700;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 28px;
 }
-.videoGridMore a {
+.videoGridBtn {
+  display: inline-block;
+  padding: 11px 20px;
+  border-radius: 999px;
+  background: var(--accent, #e31937);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-decoration: none;
   white-space: nowrap;
+  transition: background 0.18s, transform 0.18s;
+}
+.videoGridBtn:hover {
+  background: #b5122c;
+  transform: translateY(-1px);
 }
 
 /* ── Kézi közösségi-média kiemelés ────────────────────────────────────────
@@ -630,4 +655,75 @@ a.card:hover {
   color: var(--ink, #171a20);
   hyphens: auto;
   overflow-wrap: break-word;
+}
+
+/* ── Közösségi feed ───────────────────────────────────────────────────────
+   Az oldal legutóbbi posztjai, a mi kártyáinkkal. Nincs Meta-beágyazó és
+   nyomkövetés; a képek letöltve.
+
+   2026-09-16 (user): desktopon UGYANAZ a kártya, mint mobilon — kép felül,
+   alatta a szöveg —, csak több fér egymás mellé. A képnek NINCS magassági
+   korlátja: a fix magasság + object-fit: cover levágta az arcokat.
+   Ezért a rács tetejére igazít (align-items: start), a kártyák magassága
+   a képarányból adódik. */
+.feed {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: start;
+  gap: 18px;
+  margin-top: 20px;
+}
+@media (max-width: 1000px) {
+  .feed { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 620px) {
+  .feed { grid-template-columns: 1fr; }
+}
+.feedItem {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid var(--line, #e6e6e6);
+  border-left: 4px solid #1877f2;
+  border-radius: 0 8px 8px 0;
+  overflow: hidden;
+  background: #fff;
+  transition: box-shadow 0.18s, transform 0.18s;
+}
+.feedItem:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+/* A kép a maga arányában jelenik meg — semmit nem vágunk le belőle. */
+.feedThumb {
+  display: block;
+  width: 100%;
+  background: #14141c;
+}
+.feedThumb img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.feedBody {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px 16px;
+  min-width: 0;
+}
+.feedText {
+  font-size: 15px;
+  line-height: 1.55;
+}
+.feedCta {
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1877f2;
+}
+.feedNote {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--muted, #5c5e62);
 }

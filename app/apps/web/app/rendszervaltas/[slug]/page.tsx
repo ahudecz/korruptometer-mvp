@@ -15,6 +15,7 @@ import {
 } from '../../_home/rendszervaltas-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../_home/cross-promo';
 import { FeltaroVideo } from '../../_home/feltaro-video';
+import { PodcastVideoBox } from '../../_home/podcast-video-box';
 import styles from '../dicsosegfal.module.css';
 
 // Statikus tartalom, DB-hívás nélkül. Napi újragenerálás bőven elég ahhoz,
@@ -504,39 +505,78 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
               </div>
             )}
 
+            {d?.socialFeed && d.socialFeed.items.length > 0 && (
+              <div className="ugy-block-text" id="feed">
+                <h2 className="ugy-block-heading">{d.socialFeed.heading}</h2>
+                {d.socialFeed.intro && <p>{d.socialFeed.intro}</p>}
+                <div className={styles.feed}>
+                  {d.socialFeed.items.map((item) => (
+                    <a
+                      key={item.url}
+                      className={styles.feedItem}
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {item.image && (
+                        <span className={styles.feedThumb}>
+                          {/* eslint-disable-next-line @next/next/no-img-element -- letöltött poszt-kép */}
+                          <img src={item.image} alt="" loading="lazy" />
+                        </span>
+                      )}
+                      <span className={styles.feedBody}>
+                        <span className={styles.feedText}>{item.text}</span>
+                        <span className={styles.feedCta}>Teljes poszt →</span>
+                      </span>
+                    </a>
+                  ))}
+                </div>
+                {d.socialFeed.profileUrl && (
+                  <div className={styles.videoGridMore}>
+                    <a
+                      className={styles.videoGridBtn}
+                      href={d.socialFeed.profileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {d.socialFeed.pageName} a {d.socialFeed.platformLabel}on →
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+
             {d?.videoGrid && d.videoGrid.items.length > 0 && (
               <div className="ugy-block-text" id="adasok">
                 <h2 className="ugy-block-heading">{d.videoGrid.heading}</h2>
                 {d.videoGrid.intro && <p>{d.videoGrid.intro}</p>}
                 <div className={styles.videoGrid}>
                   {d.videoGrid.items.map((v) => (
-                    <a
-                      key={v.id}
-                      className={styles.videoCard}
-                      href={`https://www.youtube.com/watch?v=${v.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <span className={styles.videoThumb}>
-                        <img
-                          src={`https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`}
-                          alt={v.title}
-                          loading="lazy"
-                          decoding="async"
-                        />
-                        <span className={styles.videoPlay} aria-hidden="true" />
-                      </span>
+                    <div className={styles.videoCard} key={v.id}>
+                      {/* Helyben játszódik le, nem a YouTube-on nyílik meg
+                          (user, 2026-09-16): a borítóra kattintva itt töltődik
+                          be a lejátszó, így az olvasó az oldalon marad. */}
+                      <PodcastVideoBox
+                        videoId={v.id}
+                        title={v.title}
+                        wrapClassName={styles.videoThumb ?? ''}
+                      />
                       {v.note && <span className={styles.videoNote}>{v.note}</span>}
                       <span className={styles.videoTitle}>{v.title}</span>
-                    </a>
+                    </div>
                   ))}
                 </div>
                 {d.videoGrid.channelUrl && (
-                  <p className={styles.videoGridMore}>
-                    <a href={d.videoGrid.channelUrl} target="_blank" rel="noopener noreferrer">
+                  <div className={styles.videoGridMore}>
+                    <a
+                      className={styles.videoGridBtn}
+                      href={d.videoGrid.channelUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       {d.videoGrid.channelLabel ?? 'A csatorna'} →
                     </a>
-                  </p>
+                  </div>
                 )}
               </div>
             )}
@@ -613,7 +653,9 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
 
       <div className="person-more-section">
         <div className="person-more-inner">
-          <div className="person-more-label">Többi {group.title.toLowerCase()} a falon</div>
+          <div className="person-more-label">
+            További {group.title.toLowerCase()} a Dicsőségfalon
+          </div>
           <div className="ugyek-more-grid">
             {siblings.map((sb) => (
               <Link key={sb.id} href={`/rendszervaltas/${sb.id}`} className="ugyek-more-card">

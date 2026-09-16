@@ -212,6 +212,21 @@ export type FeltaroDetail = {
     channelUrl?: string;
     channelLabel?: string;
   };
+  /** Friss közösségi-média feed: az oldal legutóbbi nyilvános posztjai,
+   *  a saját kártyáinkkal renderelve. A tartalom a Facebook hivatalos
+   *  og:-adataiból származik, a képek le vannak töltve a /public alá (az
+   *  fbcdn-linkek alá vannak írva és lejárnak). A weboldal futásidőben
+   *  SOHA nem hívja a Facebookot — a feedet egy külön script frissíti. */
+  socialFeed?: {
+    heading: string;
+    intro?: string;
+    platformLabel: string;
+    pageName: string;
+    profileUrl?: string;
+    /** Mikor frissítettük utoljára — a feed nem élő, ezt ki kell írni. */
+    updatedAt: string;
+    items: { text: string; image?: string; url: string }[];
+  };
   /** Kézi kiemelés: PONTOSAN 3 nevezetes közösségi-média poszt (user döntés,
    *  2026-09-16 — a Meta hivatalos beágyazója helyett, ami nyomkövetést
    *  töltene be minden látogatónak, és App ID nélkül bármikor elszállhat).
@@ -646,7 +661,7 @@ export const FELTAROK: Feltaro[] = [
       videoGrid: {
         heading: 'A csatorna legnézettebb adásai',
         intro:
-          'A Partizán teljes feltöltési listájából (több mint négyezer videó) a mindenkori legnézettebbek, a rövid poénvideók nélkül. A borítókra kattintva a YouTube-on nyílnak meg.',
+          'A Partizán teljes feltöltési listájából (több mint négyezer videó) a mindenkori legnézettebbek.',
         channelUrl: 'https://www.youtube.com/@Partizánmédia/videos',
         channelLabel: 'A csatorna összes videója',
         items: [
@@ -1678,6 +1693,27 @@ export const FELTAROK: Feltaro[] = [
           },
         ],
       },
+      videoGrid: {
+        heading: 'A csatorna legnézettebb videói',
+        intro:
+          'A Gulyáságyú teljes feltöltési listájából a mindenkori legnézettebb adások. Jól látszik rajtuk a műhely profilja: birtokhatár, börtönkapu, parlamenti folyosó — ott vannak, ahol történik valami.',
+        channelUrl: 'https://www.youtube.com/@gulyasagyumedia/videos',
+        channelLabel: 'A csatorna összes videója',
+        items: [
+          { id: 'QzreNZpVByI', title: 'Magyar felirattal: Deutsch Tamás és az angol nyelv egy strapás napja az Európai Parlamentben', note: '338 E megtekintés' },
+          { id: '0DikkoiYX08', title: 'A hatvanpusztai Orbán-birtok madártávlatból', note: '295 E megtekintés' },
+          { id: 'VLEP11Yzix0', title: 'MNB-ügy: 90 milliárd Ft LEFOGLALÁS – A rendőrség és az ügyészség teljes sajtótájékoztatója', note: '228 E megtekintés' },
+          { id: 'kAAJd3aMnYg', title: 'A GYÁSZMUNKÁRÓL kérdeztünk fideszes hírességeket – Nagy Feró, Deák Dániel, Gajdics Ottó és mások', note: '220 E megtekintés' },
+          { id: '2FK7voy8f_A', title: 'Megszólal Bese Gergő atya családja: Lelki beszélgetésre hívták, melegorgia lett a vége', note: '211 E megtekintés' },
+          { id: 'BB2LbhgDZbM', title: 'Kiszabadult a bicskei pedofil igazgató – Ott voltunk a börtönajtóban', note: '198 E megtekintés' },
+          { id: '55-8B0Djuc0', title: 'Orbán VOLT SAJTÓFŐNÖKE a teraszon cigizett, miközben MAGYAR PÉTER bejárást tartott a minisztériumban', note: '196 E megtekintés' },
+          { id: 'UZxwM8iZJTk', title: 'Újabb személyekkel fog bővülni az USA szankciós listája! – Radványi Miklós a Gulyáságyú podcastban', note: '169 E megtekintés' },
+          { id: 'SuZzEP9e6KE', title: 'Elkezdődött a HATVANPUSZTAI biztonsági őr büntetőügye, aki nekihajtott HADHÁZYNAK és munkatársunknak', note: '150 E megtekintés' },
+          { id: 's8KgAi4yIRE', title: 'Stábunkra támadt K. Endre „családi barátja” Bicskén', note: '140 E megtekintés' },
+          { id: 'rH4uheuPD7U', title: 'A sükösdi Sugo Tamburazenekar előadása az Országgyűlés alakuló ülésén – 2026. május 9.', note: '140 E megtekintés' },
+          { id: '1y7ejPJIORg', title: 'Kérdésekkel PROVOKÁLTUK az ÚJ KÉPVISELŐKET az Országgyűlésben – Nehéz lesz a RENDSZERVÁLTÁS?', note: '139 E megtekintés' },
+        ],
+      },
       extra: [
         {
           heading: 'Miért számít a helyszíni videózás?',
@@ -2024,6 +2060,69 @@ export const FELTAROK: Feltaro[] = [
               { source: 'Contextus', headline: 'Orbán Viktor ÁVH-t emleget, a Vidéki Prókátor szerint viszont félelem látszik az elszámoltatás elindulásakor', url: 'https://contextus.hu/videki-prokator-elszamoltatas-nvvh-orban-viktor/' },
             ],
           },
+        ],
+      },
+      socialFeed: {
+        heading: 'Mit ír most a Vidéki prókátor?',
+        intro:
+          'A legutóbbi nyilvános bejegyzései a Facebook-oldaláról. Nem a Meta beágyazójával jelenítjük meg — az minden látogatónknak nyomkövetést töltene be —, hanem saját kártyákon, a posztok saját képével. A szöveg a bejegyzés eleje, a teljes poszt a linken olvasható.',
+        platformLabel: 'Facebook',
+        pageName: 'Vidéki prókátor',
+        profileUrl: 'https://www.facebook.com/profile.php?id=61556624432810',
+        updatedAt: '2026-09-16',
+        items: [
+        { text: 'Úgy tűnik, hogy az elvileg független ügyészség számára a valódi függetlenség követelményének érvényesítése feszültséget okoz, mert egyesek olyannyira hozzászoktak a pórázhoz, hogy nem nagyon tudnak...',
+        image: '/images/rendszervaltas/posts/vp-1.jpg',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid0cdDfQUxG8sjeu7z9fjbMxgbP1gk7a2CfN2Sd3PfByr1c6vpQtXkyaGoga9KDQcgql&id=61556624432810' },
+        { text: 'Úgy tűnik, hogy a bukott maffiafőnök be van tojva. Ez jó jel. Remélem, meg is van rá minden oka. Hajrá NVVH! KATTANJON!',
+        image: '/images/rendszervaltas/posts/vp-2.jpg',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid0erdhTsxJ6V2SvV6tH45rtzp2p8XLwqpyCeJugRyZawzmuhAioRGfq1gpoVUSa6Y3l&id=61556624432810' },
+        { text: 'Orbán Viktor az ombudsmani jelentés ismeretében kitüntetésre javasolta a korábban már büntetőeljárás alá vont bicskei rémet, Novák Katalin pedig Balog Zoltán közbenjárására megkegyelmezett a...',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid0gUfS4NnFRMyS99HpGRuJSdTdvvkbcuo1J2cao7XeswwmBqWTLdXSJs1VisiREPpql&id=61556624432810' },
+        { text: 'BALLA-LAJKA, AVAGY VIDÁM HÉTVÉGÉT! (Bevallom, én a rendszerváltásnak köszönhetően tudtam meg, hogy mi a neve ennek a már fene tudja mióta a Parlamentben üldögélő mameluknak, akit mindig ott lehetett...',
+        image: '/images/rendszervaltas/posts/vp-4.jpg',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid0LBVDNarSgiwvz5xWdsK5PLASJ7duhJJSjfHKj9aKfXgsEQd9Rby1nfJ9fSuSCoE5l&id=61556624432810' },
+        { text: '"Az igazán félelmetes ebben a történetben az, hogy az erőszakszervezetek politikai célú felhasználása olyan súlyos határvonal-átlépést jelent, mely joggal alakíthatja ki a szemlélőben azt a rémképet,...',
+        image: '/images/rendszervaltas/posts/vp-5.jpg',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid0v3juw19zBQfeNtwC68EXxb2HvehcX3qrEtxEDcLYn7Qd4wwL6XaCsWgfmdwBBTGol&id=61556624432810' },
+        { text: 'Jelzem az aranykonvoj-ügyön dolgozó ügyészeknek, hogy O. Viktor Mihály korábbi miniszterelnököt holnap Kötcsén megtalálhatják...',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid04nauZa96LW9skiEaE5h2y8RvXf34ADzEKLLAkAMAHshX2ARqKAkeLZ8B9fGng7eBl&id=61556624432810' },
+        { text: 'Mindenkinek ajánlom megnézni és elolvasni. Orbán nem egy politikus volt, hanem egy maffiafőnök, a kormánya pedig egy bűnszervezet. Számunkra pedig mindebből egy tanulság és egy feladat adódik,...',
+        image: '/images/rendszervaltas/posts/vp-7.jpg',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid0tEnm4Era21J11XfmZKbJDAXZ3Ho674r3Sp65WCsinJGVh6HFCdebt1hxfHLvYLkwl&id=61556624432810' },
+        { text: 'Egy kis szórakoztató olvasmány így estére: Schmidt Mária Leslie Mándokinak köszönhetően megvilágosul, rájön arra, hogy az elvtelen s..ggnyalókat csak a pénz érdekli és leírja nekünk, hogy milyen...',
+        image: '/images/rendszervaltas/posts/vp-8.jpg',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid02GgTvhqYMFcrYhdt4TMVwd7V3dZCbKLBrbih6c1d5YbYSeZxFWeFahxAYCqY71W67l&id=61556624432810' },
+        { text: 'Arra gondoltam, hogy ha én lennék most a köztársasági elnök, akkor azzal az ügyésszel biztosan leülnék beszélgetni, aki annak idején Vásárhelyi Jánost Bicskén „elkapta”, mert akárki is az illető,...',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid028bWvwai6qUH4NE9dB83LRbKGTuL2na2E1bcQUNNMmRJ8he9B26GXUGfyYGQHHhg9l&id=61556624432810' },
+        { text: 'Hogy is mondta a minap a bukott maffiafőnök, Vlagyimir Putyin és Alice Weidel alázatos szolgája? Ja, igen, megvan: "Kapaszkodjatok meg! Ez még csak a kezdet!" Úgy legyen! KATTANJON!',
+        image: '/images/rendszervaltas/posts/vp-10.jpg',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid02Ew1U5ZPioJoJj4PG71MY9W5wDLH2LTDBRrMf8CcmfqrwCG9wcAHaGdYngW5noRctl&id=61556624432810' },
+        { text: 'Na, Lánczi bohóc, eljött az elszámolás és a felelősségvállalás ideje. Jó nagy marha voltál, hogy a maffia érdekében hagytad magad rávenni erre a piszkos munkára! KATTANJON!',
+        image: '/images/rendszervaltas/posts/vp-11.jpg',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid0iQpcmHFh1t9bmVrD7jDkGeDhJkojNoaVWC1gfzyU2UJxs3hmqsXXGpubm35Z8cGul&id=61556624432810' },
+        { text: 'Eötvös Károly nyaralója Balatonszemesen, illetve, legalábbis az e telken álló ház volt a nyaralója 1908 és 1912 között. "A Balaton ábránd és költészet, történelem és hagyomány, édes-bús mesék...',
+        image: '/images/rendszervaltas/posts/vp-12.jpg',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid02Z7S34KMkD1znW2EG67dh9M4xZDRdbPrWcxv7XUExXaLJqVj9bAg5SVhgoM4qznQFl&id=61556624432810' },
+        { text: 'Szóval megérte... Csak azt nem értem, hogy miért a szakadék felé rohanó EU általuk nem kért valutájában és miért nem jó magyar forintban, vagy rubelben tartja a megtakarítását...Az az igazság,...',
+        image: '/images/rendszervaltas/posts/vp-13.jpg',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid08VcwjrrS8ngSRnpQ3WqjTJorULBoaxZE2jtFuBUAVkq2iHr9QtadNA1ypNXhdBVul&id=61556624432810' },
+        { text: 'A tegnapi német tartományi választás apropóján az alábbiakban újra közzéteszem két 2025 februári bejegyzésemet, mert úgy tűnik, hogy az azóta eltelt idő sajnos igazolta az azokban megfogalmazott...',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid02JAdaJWPRu3mcPaBzkRQssvKL3zrARyrPQCYBDNcmEdF87ZV1W4D7p33Kv9nLEZqRl&id=61556624432810' },
+        { text: 'Azért, amit Pokol Béla ebben a bejegyzésében összehordott, bukás járna a jogi egyetemen. Az általa említett jogelvek - a nullum crimen sine lege és a nulla poena sine lege - ugyanis nem a büntető...',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid037JNvfgutr2CddCoGC9MBKXkrVFa62RCV5au4Kr4gfwnD4DroDYLbeXeRUEsgaoCMl&id=61556624432810' },
+        { text: 'Ne féljetek! 2.0 A közpénzen túl is van élet!',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid02jzLdX8TmQ4wYbPQaCzPXKGwnsqjm1xLTrBDBLBckbV3HLyaXAvgzNQDzZ9tKqmx2l&id=61556624432810' },
+        { text: 'Bizony. Ha komolyan fel kívánjuk tárni a korrupciós ügyekben folyó büntetőeljárások elhúzódásának okait, akkor szerencsénk van, mert ehhez most van két nagyon jól használható „vizsgálati tárgyunk”:...',
+        image: '/images/rendszervaltas/posts/vp-17.jpg',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid0FLGi5x3syHMGUd31nR2Woq2tPqCqf3XJ1AHM3ZuEexbwqMXD7dccN8myFSvjZuMwl&id=61556624432810' },
+        { text: 'Az évnek ebben a szakában a leghangulatosabb talán vidéki prókátornak lenni. Ülök az íróasztalomnál és a nyitott ablakon keresztül hallom, ahogy "zeng az erdő", bőgnek a szarvasok.',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid02Mo5aQHQEhuQfgdeSFZnztuLs3MTLn5nc9qpKs88uvRATHUEBWF3VKTjR8YrH6Weal&id=61556624432810' },
+        { text: 'HOPPÁL PÉTER MEGINT ELSZABADULT Hoppál Péter, az Orbán-kormány egykori kulturális államtitkára és Komló korábbi országgyűlési képviselője ekként találta illendőnek köszönteni a 75 éves Komlót a...',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid02GfovQd1hgcw58RcDZWSk8vM4GkEgSq9sNroQuvCJo8ETYrcQcBfCRkfvwDxu38xrl&id=61556624432810' },
+        { text: 'Az orbánista propagandisták mindig tiltakoztak, amikor azt mondták róluk, hogy közpénzből tartják el őket, meg a munkahelyeiket. Most bebizonyosodott az, amiben sokan eddig is biztosak voltunk, hogy...',
+        image: '/images/rendszervaltas/posts/vp-20.jpg',
+        url: 'https://www.facebook.com/permalink.php?story_fbid=pfbid0n42xYUYvKZwWwzvFAZLRDS5JzSuAitaqfu3f84Pnr9QCRrtQ4aPpM2jAfVZScABNl&id=61556624432810' },
         ],
       },
       socialHighlights: {
