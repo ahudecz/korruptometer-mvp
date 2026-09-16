@@ -20,6 +20,11 @@
 //   k-monitor / kmonitor    1 000 / KD 21
 //   giorgio                   720 / KD 30  (= Fekete Giorgio, Carson Coma)
 //
+// 2026-09-16: Magyarósi Csaba lekerült a névsorról (user döntés). A próba,
+// amin elbukott: mit tett április 12. ELŐTT, ami hozzájárult a fordulathoz?
+// Az ő anyaga (a hero-videó) április 13-i — reakció az eredményre, nem
+// hozzájárulás hozzá. A videó marad a bevezető záró elemeként, névvel.
+//
 // AMIT A NYERS VOLUMEN FÉLREVEZETŐEN MUTAT — ne erre tervezzünk:
 //  • „átlátszó" 14 800: ennek a java a MELLÉKNÉV (átlátszó ponyva 880,
 //    fogszabályzó 880, melltartó, szemüveg). A márkára ténylegesen 4 400 megy,
@@ -139,7 +144,7 @@ export const RENDSZERVALTAS_HUB = {
     label: '2026. április 13. — az első reggel',
     title: 'Jóóóó reggelt MAGYARORSZÁÁÁÁG!',
     summary:
-      'Ilyen volt kimenni az utcára azon a reggelen. Ez a videó nem oknyomozó riport és nem elemzés — ez a jutalomjáték. Csakhogy április 13-a nem magától virradt fel: hogy azon a reggelen ezt lehessen érezni, előtte évekig kellett valakinek közbeszerzési iratokat olvasnia hajnalig, pereket vinnie egy megtagadott adatért, kamerát tartania ott, ahol nem szívesen látták, és kimondania olyan mondatokat, amelyeknek akkor még ára volt. Ők jönnek most — név szerint.',
+      'Ilyen volt kimenni az utcára azon a reggelen — Magyarósi Csaba felvétele. Ez a videó nem oknyomozó riport és nem elemzés: ez a jutalomjáték. Csakhogy április 13-a nem magától virradt fel. Hogy azon a reggelen ezt lehessen érezni, előtte évekig kellett valakinek közbeszerzési iratokat olvasnia hajnalig, pereket vinnie egy megtagadott adatért, kamerát tartania ott, ahol nem szívesen látták, és kimondania olyan mondatokat, amelyeknek akkor még ára volt. Ők jönnek most — név szerint.',
   },
 } as const;
 
@@ -751,24 +756,6 @@ export const FELTAROK: Feltaro[] = [
       ],
     },
     related: [{ label: 'Videóriportok és podcastok', href: '/podcastok' }],
-  },
-  {
-    id: 'magyarosi-csaba',
-    name: 'Magyarósi Csaba',
-    kind: 'person',
-    group: 'channel',
-    role: 'videós tartalomgyártó, vlogger',
-    badge: 'NAGY ELÉRÉS',
-    tagline:
-      'Nem közéleti csatornát épített — és pont ezért ért el olyan nézőket, akikhez politikai tartalom soha nem jut el.',
-    section: {
-      heading: 'Magyarósi Csaba — közönség, amit nem a politika hozott össze',
-      paragraphs: [
-        'Magyarósi Csaba a magyar YouTube egyik régi, nagy elérésű alkotója: napi vlogokkal, utazós, kütyüs és gasztrotartalommal épített fel egy több százezres közönséget. A profilja alapján nem tartozna erre a falra — épp ez a lényeg.',
-        'Egy közéleti csatorna nézője eleve érdeklődő: őt nem kell meggyőzni arról, hogy oda kell figyelni. A nagy elérésű, nem politikai csatornák közönsége viszont pontosan az a réteg, amelyet a hagyományos és az ellenzéki média egyaránt elveszített. Amikor egy ilyen csatorna gazdája közéleti kérdésben megszólal, az olyan emberekhez jut el, akikhez semmilyen hírportál nem.',
-        'Ennek az ára is megvan: egy nem politikai profilú alkotónál minden állásfoglalás közönséget kockáztat. Aki mégis megteszi, az tudatosan vállal veszteséget. Magyarósi Csaba megtette — az ő videója fogadja a látogatót ennek az oldalnak a tetején.',
-      ],
-    },
   },
 ];
 
