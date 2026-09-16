@@ -872,30 +872,138 @@ export const FELTAROK: Feltaro[] = [
     section: {
       heading: 'Direkt36 — a hosszú lélegzetű nyomozás',
       paragraphs: [
-        'A Direkt36 néhány újságíróból álló, nonprofit oknyomozó műhely, amely tudatosan a lassú munkát választotta: nem napi híreket gyárt, hanem hónapokon át épít fel egy-egy ügyet dokumentumokból, háttérbeszélgetésekből és külföldi nyilvántartásokból.',
-        'A műhely rendszeresen dolgozott együtt nemzetközi oknyomozó hálózatokkal. Ez több ügyben döntő volt: olyan adatokhoz és technikai szakértelemhez adott hozzáférést — például telefonos megfigyelési vizsgálatokhoz vagy külföldi cégnyilvántartásokhoz —, amelyeket egy magyar szerkesztőség önmagában nem tudott volna előállítani.',
-        'A riportjaik jellemzően teljes forrásjegyzékkel, a megszólalók szerepének pontos megjelölésével jelentek meg, ami később a jogi támadásokkal szemben is védhetővé tette őket.',
+        'A Direkt36 független, nonprofit oknyomozó újságírói műhely, amely nem a napi politikai adok-kapok közvetítéséből, nem hirdetésekből és nem kattintásszám-alapú bevételekből tartja fenn magát: a működésük alapját az olvasói támogatások és a szakmai alapítványi pályázatok adják.',
+        'A piac döntő többségével szemben tudatosan elengedték a napi hírversenyt. Egy-egy tényfeltáró anyaguk hónapokig, esetenként több mint egy évig készül. A módszertanuk alapja az aprólékos háttérmunka: eldugott állami és külföldi cégnyilvántartások elemzése, sokszorosan ellenőrzött háttérbeszélgetések az államapparátus belső embereivel, és kiszivárgott adatsorok, szerződések strukturált feldolgozása.',
+        'Ez a lassúság nem hátrány, hanem a legnagyobb fegyverük: az így megszülető cikkek olyan bizonyítékrendszerre épülnek, amelyet sajtóperekkel vagy politikai tagadással sem lehet megtámadni. Egy olyan környezetben, ahol a tényekre az első válasz szisztematikusan a hitelesség megkérdőjelezése volt, a patikamérlegen kimért forrásolás vált a védekezés eszközévé.',
       ],
     },
     live: true,
     detail: {
-      seoTitle: 'Direkt36: a Szabó Bence-interjú és a hosszú lélegzetű oknyomozás',
+      seoTitle: 'Direkt36: az öt ügy, amivel a lassú oknyomozás bizonyított',
       seoDescription:
-        'A Direkt36-nak szólalt meg először Szabó Bence nyomozó a Tisza elleni titkosszolgálati műveletről. Mi derült ki, és mi történt utána? Konkrét ügyek, forrásokkal.',
+        'Elios, magánrepülők, Pegasus, orosz hackerek a Külügyminisztériumban, Szabó Bence vallomása. Mi az a Direkt36, és hogyan dolgoznak? Ügyek, forrásokkal.',
       lead:
-        'A Direkt36 néhány újságíróból álló, nonprofit oknyomozó műhely, amely tudatosan a lassú munkát választotta: nem napi híreket gyárt, hanem hónapokon át épít fel egy-egy ügyet dokumentumokból, háttérbeszélgetésekből és külföldi nyilvántartásokból. A legnagyobb hatású munkájuk az az interjú, amelyben egy aktív állományú nyomozó belülről beszélt egy titkosszolgálati műveletről.',
+        'Egy olyan korszakban, amikor a hírverseny a másodpercekről és a kattintásvadász címekről szólt, a Direkt36 tudatosan a lassú, hónapokig tartó feltáró munkát választotta. De hogyan tud egy alig néhány újságíróból álló csapat állami szintű titkosszolgálati műveleteket leleplezni?',
       cases: {
-        heading: 'A legfontosabb ügyeik',
+        heading: 'Az öt legfontosabb ügyük',
+        intro:
+          'A műhely története során beigazolódott, hogy a szívós adatbányászat és a belső források megszólaltatása közvetlenül hozzájárult a rendszer működésének leleplezéséhez — és a Kegyencjárat adatbázisának megalapozásához.',
         items: [
           {
-            title: 'Szabó Bence — a nyomozó, aki belülről beszélt',
+            title: 'Az Elios-ügy — a miniszterelnöki vej felemelkedése',
+            when: '2015-től folyamatosan',
+            body:
+              'A műhely egyik legkorábbi, iskolateremtő sorozata a Tiborcz Istvánhoz köthető Elios Innovatív Zrt. uniós közvilágítási tendereinek teljes körű bemutatása volt. Az újságírók megszerezték és tételesen összehasonlították az önkormányzatok által kiírt pályázatok feltételeit.',
+            more: [
+              'Hónapok munkájával bizonyították be, hogy a tendereket szisztematikusan, szinte pontról pontra úgy szabták rá az Eliosra, hogy a konkurenciát kizárják: olyan specifikus technikai és referencia-követelményeket határoztak meg, amelyeket kizárólag az akkori érdekeltség tudott teljesíteni. A közpénzek elfolyása tehát nem véletlenszerű volt, hanem rendszerszintű, közvetlenül a legfelsőbb politikai családi körökhöz csatornázva az uniós forrásokat.',
+              'A sorozat több szálon futott. Kiderült, hogy a Miniszterelnökség hogyan segítette a pályázati sikereket; hangfelvétel bizonyította, hogy a Tiborcz-cég már azelőtt tárgyalt egy projektről, hogy a pályázatot egyáltalán kiírták volna; és a cikkek azt is dokumentálták, hogy a pályázatokba mélyebben belenyúltak, mint ahogy addig látszott.',
+              'A cikkek és a nyilvánosságra hozott dokumentumok szolgáltak alapul az Európai Csalás Elleni Hivatal, az OLAF vizsgálatához, amely megállapította a rendszerszintű csalás tényét, és javasolta a támogatási összeg megvonását. Ez lett a hazai oligarchikus gazdagodás első teljesen dokumentált és nemzetközileg is elismert mintapéldája.',
+            ],
+            sources: [
+              { source: 'Direkt36', date: '2016. máj. 25.', headline: 'Így segítette a Miniszterelnökség Orbán vejének közbeszerzési sikereit', url: 'https://www.direkt36.hu/igy-segitette-a-miniszterelnokseg-orban-vejenek-kozbeszerzesi-sikereit/' },
+              { source: 'Direkt36', date: '2017. jan. 31.', headline: 'Hangfelvétel bizonyítja, hogy a Tiborcz-cég már akkor tárgyalt egy projektről, amikor még ki sem írták rá a pályázatot', url: 'https://www.direkt36.hu/hangfelvetel-bizonyitja-hogy-a-tiborcz-ceg-mar-akkor-targyalt-egy-projektrol-amikor-meg-ki-sem-irtak-ra-a-palyazatot/' },
+              { source: 'Direkt36', date: '2018. jan. 18.', headline: 'Összevissza beszél Lázár János Tiborczék gyanússá vált közbeszerzéseiről', url: 'https://www.direkt36.hu/osszevissza-beszel-lazar-janos-tiborczek-gyanussa-valt-kozbeszerzeseirol/' },
+              { source: 'Direkt36', date: '2018. febr. 20.', headline: 'Mélyebben belenyúltak az Elios pályázataiba, mint ahogy eddig látszott', url: 'https://www.direkt36.hu/melyebben-belenyultak-az-elios-palyazataiba-mint-ahogy-eddig-latszott/' },
+            ],
+            videos: [
+              {
+                id: 'DIZq687qGgg',
+                label: 'Juhász Péter | Juhi · NER100 #5',
+                title: 'Az Elios-ügy: A 13 milliárdos kár',
+                summary:
+                  'Az ügy videós feldolgozása a NER100 sorozatban — jó példa arra, hogyan lesz egy hónapokig épített oknyomozó anyagból követhető, nézhető történet.',
+              },
+            ],
+          },
+          {
+            title: 'A lélegeztetőgép-biznisz anatómiája — 300 milliárd forint',
+            when: '2020-tól folyamatosan',
+            body:
+              'A koronavírus-járvány kitörésekor a kormány ellenőrzés nélkül, pánikszerűen vásárolt be egészségügyi felszereléseket — ebből lett a rendszer egyik legnagyobb beszerzési visszaélése. A Direkt36 kórházi források, lélegeztetőgépekkel foglalkozó szakemberek, vámdokumentumok, nemzetközi kereskedelmi adatsorok és belső szerződések megszerzésével indított vizsgálatot.',
+            more: [
+              'Az újságírók hónapokig elemezték a beáramló árukat és a beiktatott, sokszor frissen alapított, gyanús hátterű közvetítő cégek kifizetéseit. Ez az a fajta munka, amelyben nincs egyetlen leleplező pillanat: számlák, vámáru-nyilatkozatok és cégadatok összevetéséből áll össze a kép.',
+            ],
+            sections: [
+              {
+                heading: 'Amit a számok mutattak',
+                paragraphs: [
+                  'A feltárás szerint a kormány összesen durván tizenhatezer kínai lélegeztetőgépet vásárolt megközelítőleg 300 milliárd forintért. Az adatok azt is leleplezték, hogy Magyarország kötötte a legrosszabb üzletet az egész Európai Unióban: Németországhoz és Olaszországhoz képest többszörös, esetenként tízszeres egységárat fizettünk ugyanazokért a gépekért.',
+                  'A beszerzett gépek nagy része ráadásul raktárakban ragadt vagy hibásnak bizonyult. Több intézményben a Kínából érkezett berendezések egyszerűen füstölni kezdtek, alkatrészhiányosak voltak, az eladó pedig semmilyen garanciát vagy karbantartást nem vállalt rájuk.',
+                  'A tárolásuk önmagában is pénzbe került: az Átlátszó adatigénylése szerint a 300 milliárdért beszerzett gépek parkoltatása 2022 végéig 390 millió forintot emésztett fel.',
+                ],
+                sources: [
+                  { source: 'Direkt36', date: '2020. aug. 27.', headline: 'A kormány dicsekedett a lélegeztetőgépek vásárlásával, mégis ők kötötték a legrosszabb üzletet Kínával az egész EU-ból', url: 'https://www.direkt36.hu/a-kormany-dicsekedett-a-lelegeztetogepek-vasarlasaval-megis-ok-kotottek-a-legrosszabb-uzletet-kinaval-az-egesz-eu-bol/' },
+                  { source: 'Direkt36', date: '2021. dec. 21.', headline: '„Eladó nem vállalja a karbantartást" – küszködtek a kórházak a füstölő, alkatrészhiányos kínai lélegeztetőgépekkel', url: 'https://www.direkt36.hu/elado-nem-vallalja-a-karbantartast-kuszkodtek-a-korhazak-a-fustolo-alkatreszhianyos-kinai-lelegeztetogepekkel/' },
+                  { source: 'Forbes', date: '2021. dec. 21.', headline: 'Mikor bedugták, füstölni kezdett – így küszködtek a magyar kórházak a kínai lélegeztetőgépekkel', url: 'https://www.forbes.hu/uzlet/kina-lelegezetogep-direkt36/' },
+                  { source: 'Átlátszó', date: '2022. nov. 28.', headline: 'Eddig 390 millió forintot emésztett fel a 300 milliárdért beszerzett lélegeztetőgépek parkoltatása', url: 'https://atlatszo.hu/kozadat/2022/11/28/eddig-390-millio-forintot-emesztett-fel-a-300-milliardert-beszerzett-lelegeztetogepek-parkoltatasa/' },
+                ],
+              },
+              {
+                heading: 'A hatás: feljelentés hat évvel később',
+                paragraphs: [
+                  'A cikkek kézzelfoghatóvá tették az egészségügyi válsághelyzetre épített nyerészkedést. Az összegyűjtött bizonyítékok és a hiányos dokumentációk képezték annak a külügyminisztériumi átvilágításnak a közvetlen alapját, amely 2026 augusztusában hivatalos büntetőfeljelentéshez vezetett a korábbi beszerzések miatt — a tárca akkori közlése szerint százmilliárdos nagyságrendű károkozást vélelmezve.',
+                  'Ez a legjobb érv a lassú módszer mellett: az anyag 2020-ban készült, a jogi következménye 2026-ban jött. Egy napi hírciklusra dolgozó szerkesztőségnél addigra nem maradt volna meg a dokumentáció.',
+                ],
+                sources: [
+                  { source: 'HVG', date: '2026. aug. 26.', headline: 'A külügy százmilliárdos nagyságrendűre taksálja a Szijjártó-féle lélegeztetőgép-biznisz kárát', url: 'https://hvg.hu/gazdasag/20260826_lelegeztetogep-biznisz-feljelentes-szijjarto-szazmilliardos-kar' },
+                  { source: 'Az én pénzem', headline: 'A lélegeztetőgépek miatt is megszületett végre a feljelentés', url: 'https://www.azenpenzem.hu/cikkek/a-lelegeztetogepek-miatt-is-megszuletett-vegre-a-feljelentes/11855/' },
+                ],
+              },
+            ],
+            promo: {
+              href: '/ugyek/lelegeztetogep',
+              eyebrow: 'Kiemelt ügy · Lélegeztetőgépek',
+              title: 'Mennyibe kerültek valójában a lélegeztetőgépek?',
+              lead:
+                'A járvány legnagyobb beszerzési ügye a saját oldalán: árak, közvetítők, és hogy mi lett a sok ezer géppel. Szereplőkkel, összegekkel, időrendben.',
+              cta: 'Az ügy megnyitása',
+            },
+          },
+          {
+            title: 'A Pegasus-botrány — a megfigyelési ügy magyar szála',
+            when: '2021',
+            body:
+              'A műhely nemzetközi szinten is az újságírói jogokért folyó küzdelem élvonalába került, amikor globális partnerségben feltárta a katonai kémszoftverek hazai visszaéléseit. A Forbidden Stories nevű nemzetközi hálózattal és az Amnesty International Secure Lab kiberszakértőivel dolgoztak együtt.',
+            more: [
+              'A szakértők laboratóriumi körülmények között vizsgálták át a célpontok telefonjait. Az ujjlenyomatok és naplófájlok elemzése során derült ki, hogy a kormány az izraeli NSO Group katonai szintű Pegasus kémszoftverét vetette be civilek ellen.',
+              'A történet legsúlyosabb része, hogy a műhely vezető külpolitikai újságírója, Panyi Szabolcs az öt dokumentáltan megfigyelt magyar újságíró egyike volt. A szívós, nemzetközi visszhangot kiváltó cikksorozat kényszerítette ki, hogy öt hónap tagadás után a parlamenti szakbizottságban hivatalosan is elismerjék: a magyar állam megvásárolta és alkalmazta a szoftvert.',
+            ],
+            links: [{ text: 'Panyi Szabolcs', href: '/rendszervaltas/panyi-szabolcs' }],
+            sources: [
+              { source: 'Committee to Protect Journalists', headline: 'Hungary\u2019s Szabolcs Panyi on how Pegasus surveillance has hindered his reporting', url: 'https://cpj.org/2021/12/hungarys-szabolcs-panyi-on-how-pegasus-surveillance-has-hindered-his-reporting/' },
+            ],
+          },
+          {
+            title: 'Orosz hackerek a Külügyminisztériumban',
+            when: '2022',
+            body:
+              'Ez a munka a magyar külügyi adminisztráció legsúlyosabb nemzetbiztonsági csődjére világított rá. Az újságírók diplomáciai forrásokkal, titkosszolgálati tisztek belső vallomásaival és megszerzett minisztériumi jelentésekkel dolgoztak, lépésről lépésre modellezve az orosz titkosszolgálatok által elkövetett kibertámadásokat.',
+            more: [
+              'A cikkek bizonyították be, hogy orosz hackerek éveken keresztül hozzáféréssel rendelkeztek a Külügyminisztérium belső informatikai hálózatához. A külügyi vezetés tudott arról, hogy az oroszok élőben látják a titkosított uniós és NATO-dokumentumokat — a kormány mégis elhallgatta a botrányt a nyilvánosság elől.',
+              'Ez az ügy alapjaiban rengette meg a magyar diplomácia szövetségesi bizalmát, és közvetlen előzménye lett a 2026 tavaszán kirobbant Szijjártó–Lavrov-hangfelvételeknek: ez az oknyomozás bizonyította be először hitelesen a külügy oroszok felé való kitettségét.',
+            ],
+            sources: [
+              { source: 'Direkt36', date: '2022. márc. 29.', headline: 'Putyin hekkerei is látják a magyar külügy titkait, az Orbán-kormány évek óta nem bírja elhárítani őket', url: 'https://www.direkt36.hu/putyin-hekkerei-is-latjak-a-magyar-kulugy-titkait-az-orban-kormany-evek-ota-nem-birja-elharitani-oket/' },
+            ],
+            videos: [
+              {
+                id: '6QmrRO2b4q4',
+                label: '444',
+                title: 'Szembesítettük Szijjártót: tudnia kellett az orosz hekkertámadásokról',
+                summary:
+                  'A legendás jelenet: a külügyminiszter szembesítése a kérdéssel — és a riporternek címzett reakció. Az oknyomozó anyag és a válasz közötti különbség önmagában is dokumentum.',
+              },
+            ],
+          },
+          {
+            title: 'Szabó Bence vallomása a Tisza-műveletről',
             when: '2026. március 25.',
             body:
-              'A Nemzeti Nyomozó Iroda kiberbűnözés elleni főosztályának vezető nyomozója adott interjút arról, hogyan zajlott az ellenzéki párt informatikusai elleni eljárás, és hogyan próbált abba az Alkotmányvédelmi Hivatal ismételten beavatkozni. Az elmondása szerint a hivatal megfelelő dokumentáció nélkül vitt el adatokat a nyomozó egységtől.',
+              'A műhely történetének és a 2026-os kampánynak a legrobbanásveszélyesebb feltárása egy aktív állami tisztviselő megszólaltatása volt. Szabó Bence nem leszerelt ex-alkalmazott volt, hanem a Nemzeti Nyomozó Iroda kiberbűnözés elleni főosztályának aktív állományú vezető nyomozója. Az újságírók hosszú heteken át egyeztettek vele, ellenőrizve a szavait és a birtokában lévő dokumentumokat.',
             more: [
-              'A következtetése az volt, hogy közvetlen, kézi irányítás alatt álló, speciális titkosszolgálati egység dolgozhatott a párt bedöntésén. Az interjú azért volt kivételes, mert nem egy egykori, hanem egy akkor is aktív állományú nyomozó vállalta a nevét — néhány héttel a választás előtt. A belügyminiszter is kénytelen volt reagálni az állításokra.',
-              'Az ára is megmutatkozott: a cikk megjelenése után házkutatást tartottak a munkahelyén a Nemzeti Nyomozó Irodában, majd az otthonában is, ahol adathordozókat foglaltak le.',
-              'Néhány nappal később a Partizánnak is adott egy csaknem másfél órás, élő interjút — az az adás másfél nap alatt egymilliós megtekintésnél járt. A két műhely szerepe különbözik: itt készült el a dokumentált, ellenőrzött anyag, ott jutott el több százezer emberhez.',
+              'Elmondta, hogyan zajlott az ellenzéki párt informatikusai elleni eljárás, és hogyan próbált abba az Alkotmányvédelmi Hivatal ismételten és törvénytelenül beavatkozni: a hivatal megfelelő dokumentáció, engedélyek és jegyzőkönyvek nélkül vitt el fizikai adathordozókat és bizalmas adatokat a rendőrségtől. A következtetése az volt, hogy közvetlen, kézi irányítás alatt álló, speciális titkosszolgálati egység dolgozott a politikai ellenfél szisztematikus bedöntésén.',
+              'Az interjú ára azonnal megmutatkozott: a cikk megjelenése után házkutatást tartottak a munkahelyén a Nemzeti Nyomozó Irodában, majd az otthonában is, ahol az adathordozóit lefoglalták. A belügyminiszter magyarázkodásra kényszerült.',
+              'Ez az anyag volt a lavina elindítója: a dokumentált cikk után a nyomozó beült a Partizán élő adásába, amely másfél nap alatt elérte az egymilliós megtekintést, visszafordíthatatlanul megváltoztatva a kampány menetét.',
             ],
             videos: [
               {
@@ -920,44 +1028,52 @@ export const FELTAROK: Feltaro[] = [
               cta: 'Tovább a Partizánhoz',
             },
           },
-          {
-            title: 'A megfigyelési ügy magyar szála',
-            when: '2021',
-            body:
-              'A katonai szintű kémszoftverrel végzett megfigyelések magyarországi ügyét szintén itt tárták fel, nemzetközi újságírói együttműködés keretében. A sztorit jegyző Panyi Szabolcs egyike volt az öt dokumentáltan megfigyelt magyar újságírónak — a részletes feldolgozás az ő profilján olvasható.',
-            promo: {
-              href: '/rendszervaltas/panyi-szabolcs',
-              eyebrow: 'A falon · Panyi Szabolcs',
-              title: 'Az újságíró, akit magát is megfigyeltek',
-              lead:
-                'A kémszoftveres ügy, a Szijjártó–Lavrov-felvételek és a kémkedési vád — a teljes történet időrendben.',
-              cta: 'Tovább Panyi Szabolcshoz',
-            },
-          },
+        ],
+      },
+      table: {
+        heading: 'Hol helyezkedik el a láncolatban?',
+        intro:
+          'A Kegyencjárat láncmunka-elmélete szerint az igazság kiderítése és a politikai változás elérése a különböző funkciót betöltő műhelyek egymásra épüléséből fakad. A Szabó Bence-ügy végigvezetve:',
+        columns: ['A láncolat fázisa', 'Szereplő', 'Konkrét funkció'],
+        rows: [
+          ['1. Adatbányászat és szivárogtatás', 'Direkt36', 'Hetekig egyeztet a forrással, ellenőrzi a dokumentumokat, és elkészíti a megdönthetetlen, forrásolt alapanyagot.'],
+          ['2. Tömeges terjesztés', 'Partizán', 'Átveszi az anyagot, stúdióba hívja a szereplőt, és érthető, százezrek által megosztott videós formátumba önti.'],
+          ['3. Digitális emlékezet', 'Kegyencjárat', 'Rendszerezi az ügyet, összeköti a felelősök adatlapjával, és nyomon követi a jogi következményeket.'],
         ],
       },
       extra: [
         {
           heading: 'Miért működik a lassú módszer?',
           paragraphs: [
-            'A Direkt36 tudatosan nem versenyez a napi hírversenyben. Egy anyag hónapokig, néha évekig készül: dokumentumokból, háttérbeszélgetésekből és külföldi nyilvántartásokból épül fel. Ennek az az ára, hogy sokkal kevesebb cikk jelenik meg — cserébe viszont mindegyik mögött ott van az a fajta bizonyítékrendszer, amelyet jogilag is nehéz megtámadni.',
-            'A műhely rendszeresen dolgozott együtt nemzetközi oknyomozó hálózatokkal. Ez több ügyben döntő volt: olyan adatokhoz és technikai szakértelemhez adott hozzáférést — például telefonos megfigyelési vizsgálatokhoz vagy külföldi cégnyilvántartásokhoz —, amelyeket egy magyar szerkesztőség önmagában nem tudott volna előállítani.',
-            'A harmadik jellemzőjük a forma: a riportjaik teljes forrásjegyzékkel, a megszólalók szerepének pontos megjelölésével jelennek meg. Ez nem stílus kérdése. Egy olyan környezetben, ahol a feltárásra érkező első válasz rendszerint a hitelesség megkérdőjelezése, a pontos forrásolás maga a védekezés.',
+            'A műhely tudatosan nem vesz részt a napi politikai viták gyors feldolgozásában. Egy-egy anyaguk hónapokig készül, amiért cserébe olyan bizonyítékrendszert kapnak az olvasók, amelyet jogilag sem lehet megdönteni.',
+            'Rendszeresen dolgoznak együtt nemzetközi oknyomozó hálózatokkal, ami olyan technikai szakértelemhez és külföldi nyilvántartásokhoz biztosít hozzáférést, amelyet egy magyar szerkesztőség egyedül nem tudna előállítani.',
+            'A harmadik jellemzőjük a forma: a riportjaik teljes forrásjegyzékkel, a szereplők pontos jogi és intézményi felelősségének megjelölésével jelennek meg. Ez nem stílus kérdése, hanem védekezés.',
+          ],
+        },
+        {
+          heading: 'Mit mondanak róluk a kritikusok és a támogatók?',
+          paragraphs: [
+            'A támogatóik szerint a legmagasabb szakmai színvonalat képviselő független műhely, amely nélkül a rendszer legmélyebb titkosszolgálati és nemzetbiztonsági visszaélései rejtve maradtak volna. Szabó Bence és Panyi Szabolcs története a módszertanuk hatékonyságának bizonyítéka.',
+            'A kritikusaik — a korábbi rendszer politikusai és propagandistái — rendszeresen vádolták őket azzal, hogy külföldi alapítványok által finanszírozott ügynökségként nemzetközi érdekeket szolgálnak, és a kényes állami adatok kiszivárogtatásával veszélyeztetik Magyarország szuverenitását.',
           ],
         },
       ],
       faq: [
+        {
+          q: 'Mi az a Direkt36?',
+          a: 'Független, nonprofit oknyomozó újságírói műhely, amely olvasói támogatásokból és alapítványi pályázatokból működik. Egy-egy anyaguk hónapokig, esetenként több mint egy évig készül.',
+        },
         {
           q: 'Kinek adta az első interjúját Szabó Bence?',
           a: 'A Direkt36-nak, 2026. március 25-én. Néhány nappal később a Partizánnak is megszólalt egy csaknem másfél órás élő adásban.',
         },
         {
           q: 'Mi történt Szabó Bencével az interjú után?',
-          a: 'A cikk megjelenése után házkutatást tartottak a munkahelyén a Nemzeti Nyomozó Irodában, majd az otthonában is, ahol adathordozókat foglaltak le.',
+          a: 'A cikk megjelenése után házkutatást tartottak a munkahelyén a Nemzeti Nyomozó Irodában, majd az otthonában is, ahol az adathordozóit lefoglalták.',
         },
         {
-          q: 'Mivel foglalkozik a Direkt36?',
-          a: 'Nonprofit oknyomozó újságíró műhely, amely hónapokig épít fel egy-egy ügyet dokumentumokból és háttérbeszélgetésekből, gyakran nemzetközi oknyomozó hálózatokkal együttműködve.',
+          q: 'Mi volt az Elios-ügy?',
+          a: 'A Tiborcz Istvánhoz köthető Elios uniós közvilágítási tendereinek feltárása. A műhely bizonyította be, hogy a pályázatokat a konkurencia kizárására szabták; a cikkek alapján az OLAF rendszerszintű csalást állapított meg.',
         },
       ],
     },
@@ -1144,68 +1260,80 @@ export const FELTAROK: Feltaro[] = [
     section: {
       heading: 'Panyi Szabolcs — az újságíró, akit magát is megfigyeltek',
       paragraphs: [
-        'Panyi Szabolcs nemzetbiztonsági, külpolitikai és fegyverkereskedelmi ügyekre szakosodott oknyomozó újságíró, aki nemzetközi újságírói hálózatokkal együttműködve dolgozott. A magyar sajtótörténet egyik legszemélyesebb tétű sztorija fűződik a nevéhez: a katonai szintű kémszoftverrel végzett megfigyelések magyarországi ügyében az egyik dokumentált célpont ő maga volt.',
-        'Ez a tény a szokásosnál élesebben világította meg, mi forog kockán egy ilyen feltárásnál. Nem elvont sajtószabadsági kérdésről volt szó, hanem arról, hogy egy újságíró telefonján keresztül a forrásai is azonosíthatóvá váltak.',
-        'A külpolitikai szálon a magyar diplomácia és Moszkva kapcsolatáról közölt anyagait a Kegyencjárat adatbázisa is forrásként használja — például a Szijjártó Péterhez köthető ügyek dokumentálásánál.',
+        'Panyi Szabolcs nemzetbiztonsági, külpolitikai és fegyverkereskedelmi ügyekre szakosodott oknyomozó újságíró, a Direkt36 és a VSquare munkatársa, aki rendszeresen működik együtt nagy nemzetközi újságírói hálózatokkal.',
+        'Olyan témákhoz nyúlt, amelyek a hatalom legféltettebb belső köreit és nemzetközi háttéralkuit érintették: az orosz befolyásszerzést, a keleti diplomáciai játszmákat és a titkos fegyverüzleteket. Ezek nem olyan ügyek, amelyekre az állam sajtóközleménnyel válaszol.',
+        'A magyar sajtótörténet egyik legszemélyesebb tétű ügye fűződik a nevéhez: a katonai szintű kémszoftverrel végzett megfigyelések botrányában az egyik dokumentált célpont ő maga volt. Ez azonnal kirántotta az ügyet az elvont sajtószabadsági kérdések világából — a telefonján keresztül az állam nemcsak az ő magánéletéhez fért hozzá, hanem a magas pozícióban ülő informátorait is közvetlen veszélynek tette ki.',
       ],
     },
     related: [{ label: 'Kapcsolódó ügyek az adatbázisban', href: '/adatbazis' }],
     live: true,
     detail: {
-      seoTitle: 'Panyi Szabolcs: a Szijjártó–Lavrov-felvételek és a kémkedési vád',
+      seoTitle: 'Panyi Szabolcs: a Pegasustól a Szijjártó–Lavrov-felvételekig',
       seoDescription:
-        'Panyi Szabolcs hozta nyilvánosságra, hogy Szijjártó Péter az EU-tárgyalások szünetében is egyeztetett Lavrovval. Néhány nappal később kémkedéssel vádolták meg.',
+        'Az oknyomozó, akit az állam saját kémszoftverével figyelt meg, majd kémkedéssel vádolt. Mi az a Pegasus, mi volt a felvételeken, és mi lett a következménye?',
       lead:
-        'Panyi Szabolcs nemzetbiztonsági és külpolitikai ügyekre szakosodott oknyomozó újságíró. Ő hozta nyilvánosságra azokat a Szijjártó–Lavrov-telefonbeszélgetéseket, amelyekből kiderült: a magyar külügyminiszter az uniós tárgyalások szünetében is egyeztetett az orosz külügyminiszterrel. Három nappal a teljes beszélgetés közzététele után az állam kémkedés gyanújával feljelentette.',
+        'A Kegyencjárat Dicsőségfalának egyik legfontosabb külpolitikai és nemzetbiztonsági bástyája Panyi Szabolcs, a Direkt36 és a VSquare oknyomozó újságírója. Az ő története mutatja meg a legélesebben, mit jelent a legmagasabb szintű kockázatvállalás a magyar sajtóban: nemcsak feltárta a titkosszolgálati módszereket, hanem ő maga is az állami megfigyelés célpontjává vált.',
       cases: {
-        heading: 'A Szijjártó–Lavrov-ügy — időrendben',
+        heading: 'A két korszakos ügye',
         intro:
-          'Ez a sorrend a lényeg. Nem egy újságírót jelentettek fel, aki mellesleg írt valamit — hanem azt az újságírót, aki épp akkor tette közzé a külügyminiszter és az orosz külügyminiszter beszélgetéseit.',
+          'Öt év telt el a két sztori között, és a különbség mindent elmond arról, mi változott. 2021-ben az állam titokban figyelte meg. 2026-ban már nyíltan, büntetőeljárással válaszolt.',
         items: [
           {
-            title: 'A nyílt titok, amit valaki leírt',
-            body:
-              'Az európai politika legfelsőbb köreiben régóta beszéltek arról, hogy a magyar külügyminiszter az uniós tárgyalások szünetében kimegy a teremből, és lényegében tájékoztatja orosz kollégáját arról, ami odabent elhangzott. Panyi Szabolcs erről már 2024-ben is írt cikket. A különbség az, hogy a pletykából dokumentum lett.',
-          },
-          {
-            title: 'Az „elővágás" — hangfelvétel őróla',
-            when: '2026. március 23.',
-            body:
-              'Néhány nappal a cikke megjelenése előtt egy kormányközeli lapnál jelent meg egy hangfelvétel róla. Panyi állítása szerint ez elővágás volt: azért került ki, mert a Szijjártó Lavrovnak szivárogtatásáról szóló oknyomozó cikke a finisben járt. Ő maga azt közölte, hogy Szijjártó lehallgatásához semmi köze nem volt. Ugyanezen a napon tett közzé egy teljes Szijjártó–Lavrov-beszélgetést.',
-            sources: [
-              { source: 'Telex', date: '2026. márc. 23.', headline: 'Panyi Szabolcs: Szijjártó lehallgatásához nekem az égvilágon semmi közöm nem volt', url: 'https://telex.hu/belfold/2026/03/23/panyi-szabolcs-szergej-lavrov-szijjarto-peter-mandiner-hangfelvetel-titkosszolgalat-lehallgatas' },
-              { source: 'HVG', date: '2026. márc. 23.', headline: 'Panyi Szabolcs szerint a róla kitett hangfelvétel egy elővágás, amiért a Lavrovnak szivárogtató Szijjártóról ír cikket', url: 'https://hvg.hu/itthon/20260323_panyi-szabolcs-szijjarto-peter-szergej-lavrov-lehallgatas-mandiner-hangfelvetel-titkosszolgalat' },
-            ],
-          },
-          {
-            title: 'Kémkedés gyanújával feljelentették',
-            when: '2026. március 26.',
-            body:
-              'Három nappal később, néhány héttel a választás előtt az állam büntetőeljárást kezdeményezett ellene: „külföldi országgal összehangolt" kémkedés gyanújával. Vagyis nem a felvételeken elhangzottakra érkezett érdemi válasz, hanem arra, aki közzétette őket. Nemzetközi újságíró- és emberi jogi szervezetek — köztük a Committee to Protect Journalists és a Human Rights Watch — élesen bírálták a lépést.',
-            sources: [
-              { source: 'Committee to Protect Journalists', date: '2026. ápr. 1.', headline: 'Hungary files espionage charges against investigative journalist Szabolcs Panyi - Committee to Protect Journalists', url: 'https://cpj.org/2026/04/hungary-files-espionage-charges-against-investigative-journalist-szabolcs-panyi/', lead: 'Berlin, April 1, 2026—The Committee to Protect Journalists calls on Hungarian authorities to immediately drop all espionage charges against investigative journalist Szabolcs Panyi, and ensure that journalists can cover national security issues without intimidation or threats of imprisonment. On…' },
-              { source: 'Human Rights Watch', date: '2026. márc. 27.', headline: 'Hungary Orders Investigation of Journalist on Espionage Accusation', url: 'https://www.hrw.org/news/2026/03/27/hungary-orders-investigation-of-journalist-on-espionage-accusation' },
-            ],
-          },
-          {
-            title: 'A felvételek attól még jöttek tovább',
-            when: '2026. március 31. és április 8.',
-            body:
-              'A feljelentés nem állította meg az ügyet. Néhány nappal később kikerült az a beszélgetés, amelyen a külügyminiszter készségesen megígéri, hogy teljesíti Lavrov kérését az uniós szankciókkal kapcsolatban; áprilisban pedig olyan felvételek, amelyek szerint uniós dokumentumokat is megkapott az orosz külügyminiszter. Szó esett Ukrajna uniós csatlakozásáról és a magyar vétóról, valamint arról is, hogy Putyin fogadja-e a miniszterelnököt egy NATO-csúcs előtt.',
-            sources: [
-              { source: 'HVG', date: '2026. márc. 31.', headline: 'Szijjártó készségesen megígéri, hogy teljesíti Lavrov kérését egy most kikerült hangfelvételen', url: 'https://hvg.hu/itthon/20260331_szijjarto-lavrov-telefonbeszelgetes-felvetele-panyi-szabolcs-eu-szankciok' },
-              { source: 'Index', date: '2026. ápr. 8.', headline: 'Újabb hangfelvételek kerültek elő Szijjártó Péter telefonbeszélgetéseiről', url: 'https://index.hu/kulfold/2026/04/08/szijjarto-peter-szergej-lavrov-hangfelvetel-europai-unio-dokumentum/' },
-              { source: 'Forbes', date: '2026. ápr. 8.', headline: 'Újabb hangfelvételek kerültek ki Lavrov és Szijjártó beszélgetéseiről: európai uniós dokumentumokat is kapott az orosz külügyminiszter', url: 'https://www.forbes.hu/tarsadalom/hangfelvetel-lavrov-szijjarto-unios-dokumentum-oroszorszag-usa-fidesz/' },
-            ],
-          },
-          {
-            title: 'A Pegasus-előzmény',
+            title: 'A Pegasus-akció anatómiája — hogyan vadászták le a telefonját',
             when: '2021',
             body:
-              'Ez nem az első eset volt, amikor az állam eszközei rá irányultak. A katonai szintű kémszoftverrel végzett megfigyelések magyarországi ügyét szintén ő tárta fel a Direkt36-nál — és az öt dokumentáltan megfigyelt magyar újságíró egyike ő maga volt. Az Amnesty International Secure Lab elemzése szerint a telefonja elleni támadás egy nappal azután indult, hogy megkereséssel fordult minisztériumokhoz egy nemzetközi pénzintézettel kapcsolatos cikk ügyében. Öt hónapba telt, mire a Pegasus megvásárlását hivatalosan is elismerték.',
+              'Nemzetközi újságíró-csapatok és az Amnesty International Secure Lab igazságügyi kiberszakértői vetették mélyreható vizsgálat alá a telefonját. Az eszköz digitális ujjlenyomataiból és naplófájljaiból tűpontosan sikerült rekonstruálni a támadás indítékát és menetrendjét.',
+            more: [
+              'Panyi akkor egy rendkívül kényes, nemzetközi pénzintézettel kapcsolatos cikken dolgozott: a budapesti központú, orosz hátterű Nemzetközi Beruházási Bankról, amelyet a sajtó csak „kémbankként" emlegetett. A bevett szakmai szabályok szerint hivatalos kérdésekkel fordult az érintett minisztériumokhoz.',
+              'A technikai elemzés ezután bizonyította be a lényeget: a telefonja elleni Pegasus-támadás pontosan egy nappal azután indult el, hogy elküldte ezeket a megkereséseket. A hatalom nem válaszolni akart, hanem azonnal látni akarta, kik a forrásai az államapparátuson belül.',
+              'Amikor a Direkt36 és a nemzetközi sajtó kirobbantotta a botrányt, a kormányzati kommunikáció hetekig terelt és álhírnek nevezte a megfigyeléseket. Öt hónapig tartó küzdelembe telt, mire a parlament honvédelmi és rendészeti bizottságának ülésén kormánypárti politikusok kénytelenek voltak hivatalosan is elismerni: a magyar állam megvásárolta és használta az izraeli kémszoftvert.',
+            ],
             sources: [
-              { source: 'Committee to Protect Journalists', date: '2021. dec. 13.', headline: 'Hungary’s Szabolcs Panyi on how Pegasus surveillance has hindered his reporting - Committee to Protect Journalists', url: 'https://cpj.org/2021/12/hungarys-szabolcs-panyi-on-how-pegasus-surveillance-has-hindered-his-reporting/' },
-              { source: 'VSquare', date: '2021. júl. 19.', headline: 'Szabolcs Panyi: I was hacked with Pegasus software', url: 'https://vsquare.org/szabolcs-panyi-i-was-hacked-with-pegasus-software/' },
+              { source: 'Committee to Protect Journalists', headline: 'Hungary\u2019s Szabolcs Panyi on how Pegasus surveillance has hindered his reporting', url: 'https://cpj.org/2021/12/hungarys-szabolcs-panyi-on-how-pegasus-surveillance-has-hindered-his-reporting/' },
+              { source: 'VSquare', headline: 'Szabolcs Panyi: I was hacked with Pegasus software', url: 'https://vsquare.org/szabolcs-panyi-i-was-hacked-with-pegasus-software/' },
+            ],
+          },
+          {
+            title: 'A Szijjártó–Lavrov-felvételek — és a kémkedési vád',
+            when: '2026. március',
+            body:
+              'Az európai diplomáciai körökben régóta keringett a nyílt titok, hogy a magyar külügyminiszter az uniós, zárt ajtók mögötti tárgyalások szüneteiben rendszeresen elhagyja a termet, hogy telefonon tájékoztassa orosz kollégáját a bent elhangzottakról. Panyi erről korábban is írt — 2026 márciusára viszont megszerezte a legkeményebb bizonyítékot: magukat a nyers hangfelvételeket.',
+            sections: [
+              {
+                heading: 'A kormányzati „elővágás" kísérlete',
+                paragraphs: [
+                  'Amikor kormányzati körök fülest kaptak arról, hogy a cikk utolsó simításai zajlanak, ellenakcióba kezdtek. Egy kormányközeli oldalon 2026. március 23-án megjelent egy titokban rögzített hangfelvétel, amelyen maga az újságíró szerepelt.',
+                  'Panyi azonnal reagált: közölte, hogy ez klasszikus lejárató célú elővágás, amivel a közeledő Lavrov-sztorit akarják eljelentékteleníteni. Leszögezte, hogy a külügyminiszter lehallgatásához neki az égvilágon semmi köze nem volt — ő újságíróként a forrásaitól kapott anyagot dolgozta fel. Még ugyanezen a napon közzétette az első teljes Szijjártó–Lavrov-hanganyagot.',
+                ],
+                sources: [
+                  { source: 'Telex', date: '2026. márc. 23.', headline: 'Panyi Szabolcs: Szijjártó lehallgatásához nekem az égvilágon semmi közöm nem volt', url: 'https://telex.hu/belfold/2026/03/23/panyi-szabolcs-szergej-lavrov-szijjarto-peter-mandiner-hangfelvetel-titkosszolgalat-lehallgatas' },
+                  { source: 'HVG', date: '2026. márc. 23.', headline: 'Panyi Szabolcs szerint a róla kitett hangfelvétel egy elővágás, amiért a Lavrovnak szivárogtató Szijjártóról ír cikket', url: 'https://hvg.hu/itthon/20260323_panyi-szabolcs-szijjarto-peter-szergej-lavrov-lehallgatas-mandiner-hangfelvetel-titkosszolgalat' },
+                ],
+              },
+              {
+                heading: 'Kémkedésért jelentették fel az újságírót',
+                paragraphs: [
+                  'Három nappal a felvételek megjelenése után, 2026. március 26-án az államigazgatás ellentámadásba lendült: „külföldi országgal összehangolt" kémkedés gyanújával büntetőeljárást kezdeményeztek ellene. Nem a nemzetbiztonsági szivárgást és nem a külügyminiszter egyeztetéseit vizsgálták, hanem azt, aki a felvételeket közzétette.',
+                  'A lépés nemzetközi felháborodást váltott ki. A Human Rights Watch és a Committee to Protect Journalists éles hangú nyilatkozatban követelte az eljárás leállítását, hangsúlyozva, hogy a nemzetbiztonsági ügyek bemutatása alapvető újságírói feladat.',
+                ],
+                sources: [
+                  { source: 'Committee to Protect Journalists', headline: 'Hungary files espionage charges against investigative journalist Szabolcs Panyi', url: 'https://cpj.org/2026/04/hungary-files-espionage-charges-against-investigative-journalist-szabolcs-panyi/' },
+                  { source: 'Human Rights Watch', headline: 'Hungary Orders Investigation of Journalist on Espionage Accusation', url: 'https://www.hrw.org/news/2026/03/27/hungary-orders-investigation-of-journalist-on-espionage-accusation' },
+                ],
+              },
+              {
+                heading: 'Mit tartalmaztak a felvételek?',
+                paragraphs: [
+                  'A feljelentés nem fojtotta el a botrányt: 2026. március 31. és április 8. között újabb hanganyagok kerültek nyilvánosságra. Az egyik márciusi felvételen hallható, amint a magyar külügyminiszter készségesen megígéri Lavrovnak, hogy teljesíti az orosz fél kéréseit a készülő uniós szankciós csomagok módosításával kapcsolatban.',
+                  'Az április 8-án kikerült felvételek szerint a magyar külügyi vezetés bizalmas, belső uniós dokumentumokat és munkaanyagokat is továbbított az orosz külügyminiszternek. A beszélgetésekben egyeztettek Ukrajna uniós csatlakozási tárgyalásairól és a tervezett magyar vétók időzítéséről, valamint arról, mikor fogadja Putyin a magyar miniszterelnököt a következő NATO-csúcs előtt.',
+                  'Szijjártó Péter a nyilvánosság előtt nem cáfolta a felvételek valódiságát. A Telex kamerái előtt gúnyosan mindössze annyit kérdezett: „Ebben nem tudom, mi annyira különleges" — megpróbálva mindennapi diplomáciai működésként beállítani a háborús agresszor féllel való folyamatos egyeztetést.',
+                ],
+                sources: [
+                  { source: 'HVG', date: '2026. márc. 31.', headline: 'Szijjártó készségesen megígéri, hogy teljesíti Lavrov kérését egy most kikerült hangfelvételen', url: 'https://hvg.hu/itthon/20260331_szijjarto-lavrov-telefonbeszelgetes-felvetele-panyi-szabolcs-eu-szankciok' },
+                  { source: 'Index', date: '2026. ápr. 8.', headline: 'Újabb hangfelvételek kerültek elő Szijjártó Péter telefonbeszélgetéseiről', url: 'https://index.hu/kulfold/2026/04/08/szijjarto-peter-szergej-lavrov-hangfelvetel-europai-unio-dokumentum/' },
+                  { source: 'Forbes', headline: 'Újabb hangfelvételek kerültek ki Lavrov és Szijjártó beszélgetéseiről: európai uniós dokumentumokat is kapott az orosz külügyminiszter', url: 'https://www.forbes.hu/tarsadalom/hangfelvetel-lavrov-szijjarto-unios-dokumentum-oroszorszag-usa-fidesz/' },
+                ],
+              },
             ],
           },
         ],
@@ -1213,43 +1341,60 @@ export const FELTAROK: Feltaro[] = [
       videoBlock: {
         heading: 'A felvételek — ahogy több szerkesztőség lejátszotta',
         intro:
-          'Egy leírt idézetet könnyű letagadni. Egy hangfelvételt, amit egymástól függetlenül több szerkesztőség is lejátszik a nézőinek, sokkal nehezebb. Az alábbi adásokban a Szijjártó–Lavrov-beszélgetések, illetve a rájuk adott miniszteri reakciók hallhatók.',
+          'Egy leírt idézetet könnyű letagadni. Egy hangfelvételt, amit egymástól függetlenül több szerkesztőség is lejátszik a nézőinek, sokkal nehezebb.',
         items: [
-          {
-            id: '91VhoqZjU9M',
-            label: 'ATV',
-            title: 'Újabb titkos Szijjártó–Lavrov hangfelvételek szivárogtak ki',
-            summary: 'A kikerült beszélgetések és a tartalmuk végigvéve.',
-          },
-          {
-            id: 'zQjM7PSFfws',
-            label: 'ATV',
-            title: 'Kiszivárgott Szijjártó és Lavrov újabb telefonbeszélgetése, gúnyosan reagált a külügyminiszter',
-            summary: 'A felvétel, és ami legalább annyira sokatmondó: a miniszter reakciója rá.',
-          },
-          {
-            id: 'DIXUEhHogkw',
-            label: 'Telex',
-            title: 'Szijjártó a Lavrovval egyeztetésről: Ebben nem tudom, mi annyira különleges',
-            summary:
-              'A külügyminiszter saját szavai. Nem cáfolat — magyarázat arra, hogy szerinte ez normális működés.',
-          },
-          {
-            id: '7W9tZ8jCeXI',
-            label: 'KecsUP Hírek',
-            title: 'Panyi Szabolcs Kecskeméten: Csak az nem hallgatta le Szijjártót, aki nem akarta',
-            summary: 'Maga az újságíró beszél arról, mi történt és miért.',
-          },
+          { id: '91VhoqZjU9M', label: 'ATV', title: 'Újabb titkos Szijjártó–Lavrov hangfelvételek szivárogtak ki', summary: 'A kikerült beszélgetések és a tartalmuk végigvéve.' },
+          { id: 'zQjM7PSFfws', label: 'ATV', title: 'Kiszivárgott Szijjártó és Lavrov újabb telefonbeszélgetése, gúnyosan reagált a külügyminiszter', summary: 'A felvétel, és ami legalább annyira sokatmondó: a miniszter reakciója rá.' },
+          { id: 'DIXUEhHogkw', label: 'Telex', title: 'Szijjártó a Lavrovval egyeztetésről: Ebben nem tudom, mi annyira különleges', summary: 'A külügyminiszter saját szavai. Nem cáfolat — magyarázat arra, hogy szerinte ez normális működés.' },
+          { id: '7W9tZ8jCeXI', label: 'KecsUP Hírek', title: 'Panyi Szabolcs Kecskeméten: Csak az nem hallgatta le Szijjártót, aki nem akarta', summary: 'Maga az újságíró beszél arról, mi történt és miért.' },
         ],
       },
-      faq: [
+      table: {
+        heading: 'A két ügy összevetése',
+        intro:
+          'Panyi Szabolcs két korszakos ügye jól mutatja be az államapparátus és a független oknyomozás közötti aszimmetrikus háborút — és azt, hogyan változott a hatalom válasza öt év alatt.',
+        columns: ['Szempont', 'Pegasus-botrány (2021)', 'Szijjártó–Lavrov-ügy (2026)'],
+        rows: [
+          ['Az újságíró szerepe', 'Célpont: az állam a telefonját figyelte meg a forrásai azonosítására.', 'Feltáró: a hozzá eljuttatott felvételeket hozta nyilvánosságra.'],
+          ['Alkalmazott technológia', 'Katonai szintű izraeli zéró-klikk kémszoftver.', 'Telefonvonalak lehallgatása, illetve belső szivárogtatás.'],
+          ['A hatalom reakciója', 'Hónapokig tartó tagadás, majd a vásárlás elismerése a szakbizottságban.', 'Azonnali büntetőjogi válasz: feljelentés kémkedés gyanújával, a választás előtt.'],
+          ['A sztori tétje', 'Az újságírók és állampolgárok elleni megfigyelési hálózat leleplezése.', 'A külpolitikai orientáció és az oroszoknak való szivárogtatás dokumentálása.'],
+        ],
+      },
+      extra: [
         {
-          q: 'Miért jelentették fel Panyi Szabolcsot kémkedésért?',
-          a: 'A feljelentés három nappal azután érkezett, hogy közzétett egy teljes Szijjártó–Lavrov-telefonbeszélgetést, és néhány héttel a 2026-os választás előtt. Az indok „külföldi országgal összehangolt" kémkedés gyanúja volt; nemzetközi újságíró- és emberi jogi szervezetek élesen bírálták.',
+          heading: 'Mi az a Pegasus, és miért nem átlagos lehallgatás?',
+          paragraphs: [
+            'Sokan a mai napig egy kalap alá veszik a Pegasust a hagyományos telefonlehallgatással vagy a híváslisták lekérésével. A valóságban ez egy katonai szintű, kiberfegyvernek minősülő kémszoftver, amelyet az izraeli NSO Group fejlesztett ki, és amelyet a cég kizárólag szuverén államok kormányainak és titkosszolgálatainak értékesíthet — hivatalosan terrorizmus és súlyos bűncselekmények felszámolására.',
+            'A legfélelmetesebb tulajdonsága a zéró-klikk technológia. A hagyományos vírusokkal ellentétben a telepítéséhez a célszemélynek nem kell rákattintania semmilyen gyanús linkre, nem kell megnyitnia fertőzött csatolmányt: a szoftver láthatatlanul, például egy hívás vagy egy üzenet háttérfolyamatán keresztül, az operációs rendszer biztonsági réseit kihasználva települ.',
+            'Amint bejut, az eszköz gyakorlatilag megszűnik a tulajdonosáé lenni. Hozzáfér a végpontig titkosított alkalmazásokhoz is, mert a leírt üzenetekhez még az elküldésük és titkosításuk előtt hozzájut. Emellett távolról, láthatatlanul bekapcsolhatja a mikrofont és a kamerát, rögzítheti a környezeti hangokat, és folyamatosan küldi a szerverekre a GPS-helyadatokat és a teljes galériát.',
+            'Egy újságírónál ez nem magánéleti kérdés. A telefon a forrásrendszer: a névjegyzék, az üzenetváltások és a mozgás együtt gyakorlatilag megmutatja, ki beszélt az újságíróval az államapparátuson belül.',
+          ],
         },
         {
-          q: 'Mi derült ki a Szijjártó–Lavrov-felvételekből?',
-          a: 'Hogy a magyar külügyminiszter az uniós tárgyalások szünetében is egyeztetett orosz kollégájával, szó esett uniós szankciókról, Ukrajna csatlakozásáról és a magyar vétóról, és a felvételek szerint uniós dokumentumok is eljutottak az orosz külügyminiszterhez.',
+          heading: 'Mit mondanak róla a kritikusok és a támogatók?',
+          paragraphs: [
+            'A támogatói szerint a modern magyar újságírás bátor szimbóluma, aki nem hátrált meg akkor sem, amikor kiderült, hogy a zsebében lévő telefonnal maguk a titkosszolgálatok figyelik minden lépését. A munkássága nélkül a Kegyencjárat nemzetbiztonsági anyaga vak lenne, a választások előtti külügyi botrány pedig azt bizonyította, hogy az oknyomozás képes alapjaiban megrengetni a propagandára épített falakat.',
+            'A kritikusai — a régi rendszer maradványai és radikális nemzeti körök — a mai napig azzal vádolják, hogy nemzetközi hálózatok tagjaként idegen érdekeket szolgál, és a titkos hangfelvételek közzétételével veszélyeztette Magyarország diplomáciai mozgásterét.',
+          ],
+        },
+      ],
+      faq: [
+        {
+          q: 'Ki Panyi Szabolcs?',
+          a: 'Nemzetbiztonsági, külpolitikai és fegyverkereskedelmi ügyekre szakosodott oknyomozó újságíró, a Direkt36 és a VSquare munkatársa.',
+        },
+        {
+          q: 'Mi az a Pegasus?',
+          a: 'Katonai szintű, kiberfegyvernek minősülő izraeli kémszoftver, amelyet kizárólag államok vásárolhatnak meg. Zéró-klikk módszerrel, a felhasználó bármilyen közreműködése nélkül települ, és teljes hozzáférést ad a telefonhoz — a titkosított üzenetekhez, a mikrofonhoz és a kamerához is.',
+        },
+        {
+          q: 'Miért figyelték meg Panyi Szabolcsot?',
+          a: 'A technikai vizsgálat szerint a telefonja elleni támadás egy nappal azután indult, hogy hivatalos megkeresésekkel fordult minisztériumokhoz egy orosz hátterű nemzetközi pénzintézettel kapcsolatos cikk ügyében.',
+        },
+        {
+          q: 'Miért jelentették fel kémkedésért?',
+          a: 'A feljelentés három nappal azután érkezett, hogy közzétett egy teljes Szijjártó–Lavrov-telefonbeszélgetést, és néhány héttel a 2026-os választás előtt. Nemzetközi újságíró- és emberi jogi szervezetek élesen bírálták.',
         },
         {
           q: 'Panyi Szabolcs hallgatta le Szijjártót?',
