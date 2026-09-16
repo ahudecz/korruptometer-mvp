@@ -1,0 +1,51 @@
+name: Daily Facebook feed sync
+
+# 2026-09-16 — user kérés: naponta reggel 9-kor frissüljenek a Facebook-posztok
+# (nyitóoldali feed, /legfontosabb-hangok, Dicsőségfal-profilok).
+#
+# MIÉRT NEM AZ APIFY: a meglévő Apify-alapú szinkron (fb-sync-apify.ts,
+# /api/cron/facebook-sync 05:00) 2026-09-09 óta nem hozott új posztot, és
+# futásonként pénzbe kerül. Ez a job ugyanazokat az oldalakat olvassa be
+# ugyanabba a SocialPost táblába, nulla külső költséggel.
+#
+# MIÉRT ITT FUT, ÉS NEM VERCEL-CRONBAN: a poszt-azonosítók felderítéséhez
+# keresőrobot user-agent kell (l. scripts/fb-feed-sync.mjs fejléc). Ez
+# szándékosan CI-ben történik — a publikus kegyencjarat.hu futásidőben soha
+# nem hívja a Facebookot, és soha nem ad ki magát robotnak.
+#
+# 07:00 UTC = 09:00 Budapest (nyári időszámítás). Télen 1 órával korábban
+# fut, mint a többi napi cron — ugyanaz az elfogadott eltérés, mint a
+# daily-kormanyhu-sync.yml esetében.
+
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Csak próbafutás, írás nélkül'
+        type: boolean
+        default: false
+      per_page:
+        description: 'Oldalanként legfeljebb ennyi új poszt'
+        default: '8'
+
+jobs:
+  sync-fb-feed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # A script függőség nélküli: a Node 20 beépített fetch-ét használja,
+      # ezért nincs pnpm install lépés — így a job néhány másodperc alatt fut.
+      - name: Facebook-posztok szinkronizálása
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+          PER_PAGE: ${{ inputs.per_page || '8' }}
+        run: node app/apps/web/scripts/fb-feed-sync.mjs
