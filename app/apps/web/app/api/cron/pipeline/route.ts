@@ -8,6 +8,7 @@ import { runMediaClosureDetectionCore } from '@/inngest/functions/detect-media-c
 import { runAssetRecoveryDetectionCore } from '@/inngest/functions/detect-asset-recoveries';
 import { runCriminalComplaintDetectionCore } from '@/inngest/functions/detect-criminal-complaints';
 import { runWatchlistRemovalDetectionCore } from '@/inngest/functions/detect-watchlist-removals';
+import { runCustodyExpiryCheckCore } from '@/inngest/functions/check-custody-expiry';
 
 /**
  * 2026-07-22 — Inngest-bypass, l. cron-bypass.ts fejléce. Vercel natív
@@ -54,6 +55,11 @@ export async function GET(req: Request) {
     ['detect-asset-recoveries', () => runAssetRecoveryDetectionCore({ step: makeBypassStep('detect-asset-recoveries'), logger: bypassLogger })],
     ['detect-criminal-complaints', () => runCriminalComplaintDetectionCore({ step: makeBypassStep('detect-criminal-complaints'), logger: bypassLogger })],
     ['detect-watchlist-removals', () => runWatchlistRemovalDetectionCore({ step: makeBypassStep('detect-watchlist-removals'), logger: bypassLogger })],
+    // 2026-09-16 — a detektorok UTÁN fut szándékosan: ha ugyanebben a körben
+    // érkezett kiengedésről szóló cikk, az már frissítette a sort, és ez a
+    // lépés nem riaszt feleslegesen. Nincs benne LLM-hívás (SELECT +
+    // Telegram), tehát a napi keretre nulla hatással van.
+    ['check-custody-expiry', () => runCustodyExpiryCheckCore({ step: makeBypassStep('check-custody-expiry'), logger: bypassLogger })],
   ];
 
   const results: Record<string, unknown> = {};

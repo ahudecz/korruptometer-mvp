@@ -11,6 +11,7 @@ import { checkRemoval, type RemovalCheck } from '@korr/db/ai-watchlist';
 import { WATCH_LIST, type WatchPerson } from '@app/_home/watchlist-config';
 import {
   articleDateIso,
+  coercePretrialClaim,
   decideComplaintTransition,
   decideStatus,
   findExistingComplaint,
@@ -307,6 +308,19 @@ export async function processCourtVerdict(article: ArticleForReprocess, todayIso
     return { status: 'discarded', reason: 'missing_fields' };
   }
 
+  // 2026-09-16, user report ("Pilz Tamás nincs előzetesben, ha valakit
+  // kihallgatnak, attól még nem kerül előzetesbe"): ugyanaz a szűkítés, mint
+  // a cron-detektorban (detect-verdicts.ts) — 'előzetesben' csak tényleges
+  // fogvatartás-jel mellett maradhat. Innentől MINDENHOL ezt a `verdictType`
+  // változót használjuk a nyers `result.verdictType` helyett, a
+  // duplikátum-összehasonlítást is beleértve.
+  const verdictType = coercePretrialClaim(result.verdictType, {
+    sentenceLabel: result.sentenceLabel,
+    summary: result.summary,
+    headline: article.headline,
+    excerpt: article.excerpt,
+  });
+
   let reviewStatus: 'approved' | 'pending' | 'discard' = 'approved';
   if (!bypassConfidenceGate) {
     reviewStatus = decideStatus(result.confidence, isWatchlistPerson(result.personName));
@@ -320,7 +334,7 @@ export async function processCourtVerdict(article: ArticleForReprocess, todayIso
   }
 
   const existingVerdict = await findExistingVerdict(db, result.personName);
-  if (existingVerdict && existingVerdict.verdictType === result.verdictType) {
+  if (existingVerdict && existingVerdict.verdictType === verdictType) {
     await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'court_verdict', outcome: 'discarded', reason: 'duplicate', extractedName: result.personName, confidence: result.confidence });
     return { status: 'discarded', reason: 'duplicate' };
   }
@@ -350,7 +364,7 @@ export async function processCourtVerdict(article: ArticleForReprocess, todayIso
   let outcomeStatus: 'inserted' | 'updated';
   if (existingVerdict) {
     await getDb().update(schema.courtVerdicts).set({
-      verdictType: result.verdictType,
+      verdictType,
       sentenceYears: result.sentenceYears ?? 0,
       sentenceMonths: result.sentenceMonths ?? null,
       sentenceLabel: (result.sentenceLabel ?? '').slice(0, 200),
@@ -373,7 +387,7 @@ export async function processCourtVerdict(article: ArticleForReprocess, todayIso
       sentenceYears: result.sentenceYears ?? 0,
       sentenceMonths: result.sentenceMonths ?? null,
       sentenceLabel: (result.sentenceLabel ?? '').slice(0, 200),
-      verdictType: result.verdictType,
+      verdictType,
       verdictDate,
       court: (result.court || 'Ismeretlen bíróság').slice(0, 200),
       summary: result.summary.slice(0, 1000),

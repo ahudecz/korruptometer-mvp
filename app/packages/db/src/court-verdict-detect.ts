@@ -62,12 +62,12 @@ const TOOL: LlmToolSpec = {
       },
       sentenceLabel: {
         type: 'string',
-        description: 'Human-readable sentence label in Hungarian (e.g. "3 év börtön", "előzetes letartóztatás", "vádemelés", "felmentés"). Empty string if isVerdict is false.',
+        description: 'Human-readable sentence label in Hungarian (e.g. "3 év börtön", "előzetes letartóztatás", "vádemelés", "felmentés", "gyanúsítottként kihallgatva"). It MUST be consistent with verdictType — an interrogation label may not accompany verdictType="előzetesben". Empty string if isVerdict is false.',
       },
       verdictType: {
         type: 'string',
         enum: ['előzetesben', 'elsőfokú', 'jogerős', 'vádemelés', 'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve', 'egyéb'],
-        description: 'előzetesben = held in custody/pretrial detention; elsőfokú = first-degree verdict; jogerős = final/binding verdict; vádemelés = indictment filed; szabadlábra helyezve = released from custody/detention (article reports the person was let go — this is itself a reportable status change, not "nothing happened"); eljárás megszűnt = proceedings terminated/dropped; felmentve = acquitted; egyéb = other.',
+        description: 'előzetesben = ACTUALLY held in custody/pretrial detention (arrested, taken into police custody, or detained) — NOT merely questioned, named a suspect, summoned, or searched, and NOT a pending motion for detention; elsőfokú = first-degree verdict; jogerős = final/binding verdict; vádemelés = indictment filed; szabadlábra helyezve = released from custody/detention (article reports the person was let go — this is itself a reportable status change, not "nothing happened"); eljárás megszűnt = proceedings terminated/dropped; felmentve = acquitted; egyéb = other.',
       },
       verdictDate: {
         type: 'string',
@@ -137,6 +137,25 @@ eljárást, ez ÖNMAGÁBAN is isVerdict=true, verdictType='szabadlábra helyezve
 (vagy 'eljárás megszűnt'/'felmentve') — NEM "nem történt semmi". Ez egy
 állapotváltozás, amit a korábbi letartóztatás-bejegyzés frissítéséhez
 használunk.
+
+FONTOS — KIHALLGATÁS ≠ ELŐZETES LETARTÓZTATÁS (2026-09-16, user report):
+Ha valakit gyanúsítottként KIHALLGATNAK, MEGGYANÚSÍTANAK, BEIDÉZNEK, vagy
+házkutatást tartanak nála, attól még NEM kerül előzetesbe. A letartóztatásról
+bíróság dönt. Ilyenkor verdictType SOHA nem 'előzetesben' — a helyes érték
+'egyéb' (folyamatban lévő eljárás, még nincs fogvatartás vagy vádemelés).
+'előzetesben'-t CSAK akkor adj, ha a cikk kimondja, hogy az illetőt
+letartóztatták, őrizetbe vették, vagy fogva tartják. A "letartóztatását
+kezdeményezték / indítványozták / a letartóztatásról bíróság dönt" még NEM
+elrendelt letartóztatás.
+A sentenceLabel és a verdictType nem mondhat ellent egymásnak: ha a címke
+"kihallgatás", a típus nem lehet 'előzetesben'.
+
+FONTOS — az ŐRIZET legfeljebb 72 óra: ha a cikk arról szól, hogy egy korábban
+ŐRIZETBE VETT embert a bíróság nem tartóztatott le, elengedték, vagy lejárt az
+őrizete, az verdictType='szabadlábra helyezve' — akkor is, ha a cikk nem
+nevezi néven, hanem csak "a gyanúsítottak"-ként hivatkozik rá. Ilyenkor a
+personName mezőbe azt a nevet írd, akit a cikk konkrétan megnevez; ha egyetlen
+nevet sem közöl, hagyd üresen (a rendszer eldobja) — nevet NE találj ki.
 
 Csak akkor jelöld isVerdict=true-val, ha:
 - Egyértelmű, hogy bírósági döntés, előzetes letartóztatás, szabadon

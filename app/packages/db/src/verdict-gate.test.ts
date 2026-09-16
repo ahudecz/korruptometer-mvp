@@ -1,10 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  coercePretrialClaim,
+  CUSTODY_MAX_HOURS,
+  isCustodyExpired,
+  selectExpiredCustodyRows,
   gateComplaintInsert,
   gateVerdictInsert,
+  hasDetentionSignal,
   hasInitialsTokens,
+  isCustodyOnly,
   isMultiPersonName,
+  type CustodyRow,
 } from './verdict-gate';
 
 // A 2026-09-15-i incidens két VALÓDI sora — ezek mentek ki élesre, miközben
@@ -136,5 +143,130 @@ describe('gateComplaintInsert (CriminalComplaint)', () => {
     const r = await gateComplaintInsert(db, { personName: 'NKA-botrány', sourceUrl: 'https://uj.hu/c' });
     expect(r.verdict).toBe('ok');
     expect(calls).toBe(1); // csak a forrás-URL lekérdezés futott
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 2026-09-16, user report: "Pilz Tamás nincs előzetesben, ha valakit
+// kihallgatnak, attól még nem kerül előzetesbe."
+// ---------------------------------------------------------------------------
+
+/** A 7c275b15 sor VALÓDI mezői, ahogy élesre mentek. */
+const PILZ = {
+  sentenceLabel: 'kihallgatás',
+  summary:
+    'Pilz Tamást, Tuzson Bence volt államtitkári munkatársát személyes adattal való visszaéléssel gyanúsítják, mivel állítólag jóváhagyta olyan közalkalmazottak kirúgását, akik letöltötték a Tisza Világ applikációt.',
+  headline: 'RTL: Kihallgatták Tuzson Bence volt államtitkárát a Tisza-szimpatizánsok kirúgása miatt',
+};
+
+/** A 2026-09-15-i Volánbusz-sorok: őrizet igen, letartóztatás még nem. */
+const SZIVEK = {
+  sentenceLabel: 'őrizetbe véve',
+  summary:
+    'Szivek Norbertet, a Magyar Nemzeti Vagyonkezelő egykori vezérigazgatóját 2026. szeptember 10-én gyanúsítottként hallgatták ki a Volán-buszok túlárazása ügyében. Szeptember 15-én a Központi Nyomozó Főügyészség a négy gyanúsított közül hármat őrizetbe vett; a letartóztatásról bíróság dönt.',
+  headline: 'Három embert őrizetbe vett az ügyészség a túlárazott Volán-buszok ügyében',
+};
+
+describe('hasDetentionSignal', () => {
+  it('a puszta kihallgatás/gyanúsítás NEM fogvatartás', () => {
+    expect(hasDetentionSignal(PILZ.sentenceLabel, PILZ.summary, PILZ.headline)).toBe(false);
+  });
+  it('az őrizetbe vétel fogvatartás (2026-09-16 user döntés)', () => {
+    expect(hasDetentionSignal(SZIVEK.sentenceLabel, SZIVEK.summary, SZIVEK.headline)).toBe(true);
+  });
+  it('a letartóztatás fogvatartás, ragozott alakban is', () => {
+    expect(hasDetentionSignal(null, 'A Fővárosi Törvényszék letartóztatta a polgármestert.')).toBe(true);
+    expect(hasDetentionSignal('előzetes letartóztatás meghosszabbítva')).toBe(true);
+    expect(hasDetentionSignal(null, '2026. június 4-én vette előzetes letartóztatásba a bíróság.')).toBe(true);
+  });
+  it('üres bemenetre nem állít fogvatartást', () => {
+    expect(hasDetentionSignal(null, undefined, '')).toBe(false);
+  });
+});
+
+describe('coercePretrialClaim', () => {
+  // EZ a rögzítő teszt: ha valaha visszacsúszik, pont a Pilz-sor bukjon el.
+  it("a kihallgatás-only sort 'egyéb'-re minősíti vissza", () => {
+    expect(coercePretrialClaim('előzetesben', PILZ)).toBe('egyéb');
+  });
+  it('a valódi fogvatartást békén hagyja', () => {
+    expect(coercePretrialClaim('előzetesben', SZIVEK)).toBe('előzetesben');
+    expect(coercePretrialClaim('előzetesben', { sentenceLabel: 'előzetes letartóztatás' })).toBe('előzetesben');
+  });
+  it('minden más típust változatlanul enged át (a kapu sosem emel)', () => {
+    for (const t of ['jogerős', 'elsőfokú', 'vádemelés', 'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve', 'egyéb']) {
+      expect(coercePretrialClaim(t, PILZ)).toBe(t);
+    }
+  });
+});
+
+describe('isCustodyOnly', () => {
+  it('a Volánbusz-sorokat őrizet-onlynak látja (a "letartóztatásról bíróság dönt" ellenére)', () => {
+    expect(isCustodyOnly(SZIVEK.sentenceLabel, SZIVEK.summary, SZIVEK.headline)).toBe(true);
+  });
+  it('a kezdeményezett letartóztatás még őrizet', () => {
+    expect(isCustodyOnly('őrizetbe vétel, letartóztatást kezdeményeztek')).toBe(true);
+  });
+  it('az elrendelt letartóztatás NEM őrizet-only', () => {
+    expect(isCustodyOnly('őrizetbe vétel', 'A bíróság egy hónapra letartóztatta.')).toBe(false);
+  });
+  it('őrizet-említés nélkül nem jelez', () => {
+    expect(isCustodyOnly('előzetes letartóztatás', 'Meghosszabbították a letartóztatását.')).toBe(false);
+    expect(isCustodyOnly(PILZ.sentenceLabel, PILZ.summary)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 2026-09-16, user kérés: "figyelje a híreket, ha kiengednek olyat aki csak
+// őrizetben van, akkor frissüljön az adat." A 72 órás őrizet lejárta naptár
+// kérdése, nem híré — l. check-custody-expiry.ts.
+// ---------------------------------------------------------------------------
+
+const NOW = new Date('2026-09-20T12:00:00Z');
+const hoursAgo = (h: number) => new Date(NOW.getTime() - h * 3_600_000);
+
+const custodyRow = (verdictDate: Date): CustodyRow => ({
+  id: 'row-1',
+  personName: 'Szivek Norbert',
+  sentenceLabel: SZIVEK.sentenceLabel,
+  summary: SZIVEK.summary,
+  verdictDate,
+  sourceUrls: ['https://hvg.hu/itthon/20260915_orizetbe-vetel-ugyeszseg-volanbusz-korrupcio'],
+});
+
+/** Elrendelt letartóztatás — hónapokig tart, sosem jár le magától. */
+const arrestRow: CustodyRow = {
+  id: 'row-2',
+  personName: 'Bús Balázs',
+  sentenceLabel: 'előzetes letartóztatás meghosszabbítva (3 hónap)',
+  summary: 'A Kecskeméti Járásbíróság három hónappal meghosszabbította a letartóztatását.',
+  verdictDate: hoursAgo(24 * 60),
+  sourceUrls: ['https://example.hu/a'],
+};
+
+describe('isCustodyExpired', () => {
+  it('a 72 órán belüli őrizet még friss', () => {
+    expect(isCustodyExpired(hoursAgo(CUSTODY_MAX_HOURS - 1), NOW)).toBe(false);
+  });
+  it('a 72 óra letelte után, de a ráhagyáson belül még nem riaszt', () => {
+    expect(isCustodyExpired(hoursAgo(CUSTODY_MAX_HOURS + 12), NOW)).toBe(false);
+  });
+  it('a ráhagyás után lejártnak számít', () => {
+    expect(isCustodyExpired(hoursAgo(CUSTODY_MAX_HOURS + 30), NOW)).toBe(true);
+  });
+  it('értelmezhetetlen dátumra nem riaszt', () => {
+    expect(isCustodyExpired('nem-dátum', NOW)).toBe(false);
+  });
+});
+
+describe('selectExpiredCustodyRows', () => {
+  it('kiválasztja a lejárt őrizetet', () => {
+    expect(selectExpiredCustodyRows([custodyRow(hoursAgo(120))], NOW).map((r) => r.id)).toEqual(['row-1']);
+  });
+  it('az elrendelt letartóztatást SOSEM választja ki, akármilyen régi', () => {
+    expect(selectExpiredCustodyRows([arrestRow], NOW)).toEqual([]);
+  });
+  it('a friss őrizetet még nem választja ki', () => {
+    expect(selectExpiredCustodyRows([custodyRow(hoursAgo(10))], NOW)).toEqual([]);
   });
 });

@@ -5,6 +5,7 @@ import { detectVerdictFromArticle, type VerdictExtraction } from '@korr/db/ai-ve
 import {
   articleDateIso,
   cleanPositionTitle,
+  coercePretrialClaim,
   decideStatus,
   findExistingVerdict,
   isPlaceholderName,
@@ -122,7 +123,18 @@ async function processVerdictArticle(
   // duplán escape-elt ékezetet tartalmaz, ami a DB CHECK constraint-et
   // sértené. Mindenhol EZT a javított értéket használjuk a nyers
   // result.verdictType helyett.
-  const verdictType = coerceVerdictType(result.verdictType);
+  // 2026-09-16, user report ("Pilz Tamás nincs előzetesben, ha valakit
+  // kihallgatnak, attól még nem kerül előzetesbe"): az 'előzetesben' típushoz
+  // TÉNYLEGES fogvatartás-jel kell a cikkben vagy a kinyert mezőkben,
+  // különben 'egyéb'-re esik vissza. L. verdict-gate.ts coercePretrialClaim().
+  // Közvetlenül a coerceVerdictType() után fut, tehát az INSERT és a
+  // lifecycle-UPDATE ágat EGYARÁNT védi.
+  const verdictType = coercePretrialClaim(coerceVerdictType(result.verdictType), {
+    sentenceLabel: result.sentenceLabel,
+    summary: result.summary,
+    headline: article.headline,
+    excerpt: article.excerpt,
+  });
 
   // 003-review: route by confidence + watchlist; discard below the floor.
   let reviewStatus = decideStatus(result.confidence, isWatchlistPerson(result.personName));

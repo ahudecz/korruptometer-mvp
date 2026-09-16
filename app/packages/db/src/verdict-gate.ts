@@ -211,3 +211,152 @@ export function gateComplaintInsert(
 ): Promise<VerdictGateResult> {
   return gateRowInsert(db, 'CriminalComplaint', input);
 }
+
+/**
+ * FOGVATARTÁS-JEL: kell-e valós fogvatartás egy 'előzetesben' minősítéshez.
+ *
+ * 2026-09-16, user report: "Pilz Tamás nincs előzetesben, ha valakit
+ * kihallgatnak, attól még nem kerül előzetesbe."
+ *
+ * Az élesre kiment sor (7c275b15) ezt írta ki magáról:
+ *   verdictType   = 'előzetesben'
+ *   sentenceLabel = 'kihallgatás'
+ * Az egyetlen forrás (24.hu, "RTL: Kihallgatták Tuzson Bence volt
+ * államtitkárát…") kizárólag gyanúsítotti kihallgatásról szólt. A sor a saját
+ * címkéjével CÁFOLTA a saját típusát — ezt egy determinisztikus ellenőrzés
+ * elkapja, LLM nélkül.
+ *
+ * Miért nem elég a prompt: a SYSTEM_PROMPT már eddig is tiltotta ("Ne jelöld,
+ * ha csak nyomozás folyik"), mégis átment. Egy prompt-mondat valószínűséget
+ * mozgat, nem garanciát ad; ez a függvény garancia.
+ *
+ * A szabály POZITÍV bizonyítékot követel: 'előzetesben' csak akkor maradhat,
+ * ha a szöveg valahol fogvatartásról ír. Kihallgatás, gyanúsítás, beidézés,
+ * házkutatás önmagában NEM fogvatartás → a típus 'egyéb'-re esik vissza, ami a
+ * VerdictList.tsx-ben (0 év büntetéssel) "ELJÁRÁS ALATT" badge-et ad. A sor
+ * tehát nem vész el, csak a szakasza lesz igaz.
+ *
+ * 2026-09-16 user döntés: az ŐRIZETBE VÉTEL fogvatartásnak számít, tehát
+ * megtartja az 'előzetesben' típust — bár jogilag az őrizet (max 72 óra) még
+ * nem előzetes letartóztatás, a fogvatartás ténye ugyanaz. A szűkítés csak a
+ * tényleges fogvatartás NÉLKÜLI eseteket célozza.
+ */
+const DETENTION_MARKERS = [
+  'letartóztat', 'letartoztat',
+  'előzetesbe', 'előzetesben', 'elozetesbe', 'elozetesben',
+  'őrizet', 'orizet',
+  'fogva tart', 'fogvatart', 'fogdá', 'fogda',
+  'bv-intézet', 'bv intézet', 'börtönbe', 'rács mög', 'bilincs',
+  'kényszerintézkedés',
+] as const;
+
+/** Van-e a szövegben bármi, ami tényleges fogvatartásra utal. */
+export function hasDetentionSignal(...parts: Array<string | null | undefined>): boolean {
+  const text = parts.filter(Boolean).join(' ').normalize('NFC').toLowerCase();
+  if (!text.trim()) return false;
+  return DETENTION_MARKERS.some((m) => text.includes(m));
+}
+
+/**
+ * Visszaminősíti az 'előzetesben' típust 'egyéb'-re, ha a cikkben és a
+ * kinyert mezőkben sehol nincs fogvatartás-jel. Minden más típust
+ * változatlanul enged át — a kapu sosem emel, csak csökkent.
+ *
+ * MINDEN CourtVerdict írás előtt le kell futnia (INSERT és lifecycle-UPDATE
+ * egyaránt), közvetlenül a coerceVerdictType() után, mindkét beszúró
+ * útvonalon — l. a fájl fejlécében a két-útvonalas tanulságot.
+ */
+export function coercePretrialClaim<T extends string>(
+  verdictType: T,
+  evidence: {
+    sentenceLabel?: string | null;
+    summary?: string | null;
+    headline?: string | null;
+    excerpt?: string | null;
+  },
+): T | 'egyéb' {
+  if (verdictType !== 'előzetesben') return verdictType;
+  const ok = hasDetentionSignal(
+    evidence.sentenceLabel,
+    evidence.summary,
+    evidence.headline,
+    evidence.excerpt,
+  );
+  return ok ? verdictType : 'egyéb';
+}
+
+/**
+ * ŐRIZET-JEL (letartóztatás nélkül).
+ *
+ * 2026-09-16, user kérés: "figyelje a híreket, ha kiengednek olyat aki csak
+ * őrizetben van, akkor frissüljön az adat."
+ *
+ * A két fogvatartási forma élettartama gyökeresen más:
+ *   - ŐRIZET: legfeljebb 72 óra. Utána vagy a bíróság rendel el
+ *     letartóztatást, vagy az illető KISZABADUL. Egy 'előzetesben' sor tehát
+ *     72 óra után szinte biztosan elavult — akkor is, ha egyetlen cikk sem
+ *     írt a kiengedésről (a szabadon bocsátás sokkal ritkábban hír, mint az
+ *     elfogás).
+ *   - LETARTÓZTATÁS: hónapokig tart, meghosszabbítható; itt a hallgatás
+ *     nem jelent semmit.
+ *
+ * Ez a függvény azt mondja meg, hogy egy sor kizárólag őrizetre hivatkozik-e.
+ * A check-custody-expiry.ts ezekre a sorokra figyel: ha 72 óra + ráhagyás
+ * eltelt és nem jött frissítés, emberi ellenőrzésre küldi. Szándékosan NEM
+ * írja át magától 'szabadlábra helyezve'-re: a kiengedés tény, nem
+ * következtetés — kitalálni ugyanaz a hiba lenne, mint amit a
+ * coercePretrialClaim() az ellenkező irányban javít.
+ */
+const ARREST_MARKERS = ['letartóztat', 'letartoztat'] as const;
+
+export function isCustodyOnly(...parts: Array<string | null | undefined>): boolean {
+  const text = parts.filter(Boolean).join(' ').normalize('NFC').toLowerCase();
+  if (!text.includes('őrizet') && !text.includes('orizet')) return false;
+  // "a letartóztatásról bíróság dönt" / "letartóztatást kezdeményeztek" —
+  // ezek még NEM elrendelt letartóztatások, de a szó szerepel a szövegben.
+  // A jövő idejű/indítványozó alakokat kivágjuk, mielőtt a jelenlétet nézzük;
+  // enélkül pont a 2026-09-15-i Volánbusz-sorok (amelyek a kérdéses esetek)
+  // esnének ki a figyelésből.
+  const withoutPending = text
+    .replace(/letartóztatás[a-záéíóöőúüű]*\s*(ról|ről)\s+(a\s+)?bíróság\s+dönt/g, '')
+    .replace(/letartóztatás[a-záéíóöőúüű]*\s+(kezdeményez|indítványoz)[a-záéíóöőúüű]*/g, '');
+  return !ARREST_MARKERS.some((m) => withoutPending.includes(m));
+}
+
+/**
+ * Az őrizet törvényi maximuma 72 óra. A ráhagyás azért kell, mert a
+ * CourtVerdict.verdictDate gyakran a CIKK napja, nem az őrizetbe vétel órája,
+ * és a letartóztatásról szóló bírósági döntés híre is csúszhat egy napot —
+ * enélkül a figyelő a 72. órában, még a döntés híre előtt riasztana.
+ */
+export const CUSTODY_MAX_HOURS = 72;
+export const CUSTODY_GRACE_HOURS = 24;
+
+export type CustodyRow = {
+  id: string;
+  personName: string;
+  sentenceLabel: string | null;
+  summary: string;
+  verdictDate: Date | string;
+  sourceUrls: string[];
+};
+
+/** Eltelt-e a 72 óra + ráhagyás a sor dátuma óta. */
+export function isCustodyExpired(verdictDate: Date | string, now: Date = new Date()): boolean {
+  const d = verdictDate instanceof Date ? verdictDate : new Date(verdictDate);
+  if (Number.isNaN(d.getTime())) return false;
+  const hours = (now.getTime() - d.getTime()) / 3_600_000;
+  return hours >= CUSTODY_MAX_HOURS + CUSTODY_GRACE_HOURS;
+}
+
+/**
+ * Melyik 'előzetesben' sorokat kell emberi ellenőrzésre küldeni: kizárólag
+ * őrizetre hivatkoznak ÉS letelt a 72 óra + ráhagyás. Az elrendelt
+ * letartóztatás sosem kerül ide, akármilyen régi — az hónapokig tart.
+ * L. check-custody-expiry.ts.
+ */
+export function selectExpiredCustodyRows<T extends CustodyRow>(rows: T[], now: Date = new Date()): T[] {
+  return rows.filter(
+    (r) => isCustodyOnly(r.sentenceLabel, r.summary) && isCustodyExpired(r.verdictDate, now),
+  );
+}
