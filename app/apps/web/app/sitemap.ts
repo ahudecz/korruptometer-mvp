@@ -43,6 +43,7 @@ const STATIC_PAGES: { path: string; priority: number; changeFrequency: Entry['ch
   { path: '/adatbazis', priority: 0.9, changeFrequency: 'daily' },
   { path: '/hirek', priority: 0.8, changeFrequency: 'hourly' },
   { path: '/galeria', priority: 0.8, changeFrequency: 'weekly' },
+  { path: '/rendszervaltas', priority: 0.8, changeFrequency: 'weekly' },
   { path: '/lemondasok', priority: 0.8, changeFrequency: 'daily' },
   { path: '/megszunt', priority: 0.7, changeFrequency: 'weekly' },
   { path: '/birosagi-iteletek', priority: 0.7, changeFrequency: 'weekly' },

@@ -1,0 +1,228 @@
+/* „Rendszerváltás barátai — Dicsőségfal" profildoboz-rács.
+   Szándékosan CSS-modul és nem globals.css: a globals.css 4000+ soros, több
+   munkamenet is nyúl hozzá párhuzamosan, és ennek a rácsnak semmi dolga a lap
+   többi részével. A formanyelv a /lemondasok watchlist-kártyáit követi
+   (négyzetes fotó, alsó bélyeg, hover-emelés), csak piros helyett arany
+   kiemeléssel — ez a Galéria tükörképe, nem a folytatása. */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 28px;
+}
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid var(--line, #e6e6e6);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.18s, transform 0.18s, border-color 0.18s;
+}
+/* Kattintható változat: csak azoknál, akiknek már van élő profiloldaluk. */
+a.card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+  border-color: #c8992a;
+}
+
+.photo {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: #1a1a2e;
+  overflow: hidden;
+  container-type: inline-size;
+}
+.photoImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+.placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(140deg, #23253a 0%, #2c2f47 100%);
+  color: #c8992a;
+  font-family: 'Archivo', sans-serif;
+  font-size: clamp(22px, 22cqw, 54px);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.badge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 5px 8px;
+  text-transform: uppercase;
+  background: rgba(200, 153, 42, 0.92);
+  color: #14141c;
+  /* Hosszú bélyegeknél (KÖZBESZERZÉS-VADÁSZ) 400px-en se csússzon ki. */
+  overflow-wrap: break-word;
+  line-height: 1.2;
+}
+
+.credit {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.72);
+  background: rgba(0, 0, 0, 0.45);
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+.info {
+  padding: 12px 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+/* Kártya-cím tördelés: kötelező hyphens + break-word, nem szó-szintű
+   hardkódolás (a hosszú neveknél 2 oszlopos mobilnézetben törik ki). */
+.name {
+  font-family: 'Archivo', sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.2;
+  hyphens: auto;
+  overflow-wrap: break-word;
+  -webkit-hyphens: auto;
+}
+.role {
+  font-size: 12px;
+  color: var(--muted, #5c5e62);
+  line-height: 1.35;
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+.tagline {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-2, #393c41);
+  margin-top: 2px;
+}
+.cta {
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #8a6a12;
+  letter-spacing: 0.02em;
+}
+/* Amíg nincs profiloldal, a kártya <div>, nem <a> — ilyenkor a CTA helyett
+   egy halvány „hamarosan" felirat áll, hogy ne látszódjon halott linknek. */
+.ctaSoon {
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted, #5c5e62);
+  opacity: 0.75;
+}
+
+/* A rács fölötti magyarázó sor. */
+/* A legutolsó kártyarács és ez a sor egybefolyt (user report, 2026-09-16).
+   A térköz WRAPPER div-en van, nem a <p>-n: a globals.css
+   `.ugy-description-body p { margin: 0 0 18px }` szabálya nagyobb
+   specificitással felülírja a bekezdés saját margin-top-ját. */
+.gridNoteWrap {
+  margin-top: 44px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line, #e6e6e6);
+}
+.gridNote {
+  font-size: 13px;
+  color: var(--muted, #5c5e62);
+  line-height: 1.5;
+}
+
+/* A hosszú cornerstone-szakaszok fejléce fölé kerülő, apró horgony-címke,
+   hogy a tartalomjegyzékből érkező olvasó lássa, hova esett be. */
+.sectionKicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8a6a12;
+  margin-bottom: 4px;
+}
+
+/* A .person-hero-inner globálisan `grid-template-columns: 200px 1fr`, mert az
+   ügy-aloldalak mindig fotóval indulnak. Ezen a hubon nincs hero-fotó (a fotók
+   a rácson vannak), ezért a szöveg a 200px-es oszlopba szorult volna. */
+.heroNoPhoto {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+.heroNoPhoto :global(.person-hero-desc) {
+  max-width: 68ch;
+}
+
+/* ── Csoport-blokkok (Személyek / Médiumok / Csatornák) ────────────────── */
+.groupBlock {
+  margin-top: 44px;
+}
+.groupHead {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  border-bottom: 2px solid #c8992a;
+  padding-bottom: 8px;
+}
+.groupTitle {
+  font-family: 'Archivo', sans-serif;
+  font-size: 22px;
+  font-weight: 900;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.groupCount {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a6a12;
+  white-space: nowrap;
+}
+.groupIntro {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted, #5c5e62);
+  margin: 12px 0 0;
+  max-width: 72ch;
+}
+/* A hosszú szövegrész blokk-elválasztója. Nagyobb, mint a szakaszcímek,
+   hogy a három tömb 31 szakasz között is elkülönüljön. */
+.sectionGroupHeading {
+  font-family: 'Archivo', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8a6a12;
+  margin: 56px 0 -8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line, #e6e6e6);
+}

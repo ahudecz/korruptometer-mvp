@@ -9,6 +9,7 @@ import { Mugshot } from '@korr/ui/mugshot';
 import { PollBanner } from './_home/poll-banner';
 import { ResignationsSection } from './_home/resignations-section';
 import { MediaClosuresSection } from './_home/media-closures-section';
+import { DicsosegfalTeaser } from './_home/dicsosegfal-teaser';
 import { MiniClosureCard } from './_home/closure-card';
 import { SubmissionCTA } from './_home/submission-cta';
 import { NewsletterCta } from './_home/newsletter-cta';
@@ -1503,6 +1504,9 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* ───── DICSŐSÉGFAL ───── */}
+      <DicsosegfalTeaser />
+
       {/* ───── MEDIA CLOSURES ───── */}
       <MediaClosuresSection />
 
@@ -1513,7 +1517,7 @@ export default async function HomePage() {
       <section className="submission" id="submission">
         <div className="submission-inner">
           <div className="submission-left">
-            <div className="section-num">10 / Bejelentés</div>
+            <div className="section-num">11 / Bejelentés</div>
             <h2>
               Hiányzik egy <em>név</em>?<br />
               Jelentsd be.
