@@ -11,6 +11,7 @@ import {
   decideStatus,
   findExistingVerdict,
   isPlaceholderName,
+  findMisinflectedName,
   gateVerdictInsert,
   type VerdictGateResult,
   isSuspiciouslyEarlyDate,
@@ -164,6 +165,15 @@ ${article.excerpt}`;
     reviewStatus = 'pending';
   }
   if (reviewStatus === 'approved' && isRelationalOnlyMention(result.personName, articleText)) {
+    reviewStatus = 'pending';
+  }
+
+  // 2026-09-17 — RAGOZÁS-VISSZAFEJTÉSI HIBA. A „Szivek Norberta" sor így ment
+  // ki: a cikk tárgyesetben írta a nevet, a modell rosszul fejtette vissza.
+  // A jelzés nem javít, csak a jóváhagyó elé teszi a javasolt alakot — l.
+  // findMisinflectedName().
+  const misinflectedName = findMisinflectedName(result.personName, articleText);
+  if (reviewStatus === 'approved' && misinflectedName) {
     reviewStatus = 'pending';
   }
 
@@ -357,6 +367,7 @@ ${article.excerpt}`;
       recordId,
       gateReason: verdictGateFlag?.reason,
       conflicts: verdictGateFlag?.conflicts,
+      misinflected: misinflectedName ?? undefined,
     });
   }
 

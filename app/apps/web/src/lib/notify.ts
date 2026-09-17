@@ -44,6 +44,11 @@ export type ReviewNeededEvent = {
    */
   gateReason?: 'multi_person_name' | 'source_url_reused' | 'fragment_name_match';
   conflicts?: Array<{ id: string; personName: string }>;
+  /**
+   * A modell rosszul fejtette vissza a magyar ragot a névről — l.
+   * findMisinflectedName(). 2026-09-17: a „Szivek Norberta" sor így ment ki.
+   */
+  misinflected?: { extracted: string; inArticle: string; suggested: string };
 };
 
 const GATE_REASON_LABELS_HU: Record<
@@ -89,6 +94,14 @@ export async function notifyReviewNeeded(event: ReviewNeededEvent): Promise<void
             `Már a táblában van${conflicts.length > 1 ? ` (${conflicts.length} sor)` : ''}:`,
             ...conflicts.slice(0, 5).map((c) => `• ${c.personName}`),
             `Ha csak ezeket ismételné meg, NE hagyd jóvá.`,
+          ]
+        : []),
+      ...(event.misinflected
+        ? [
+            ``,
+            `✏️ GYANÚS NÉVALAK: a cikkben „${event.misinflected.inArticle}" áll,`,
+            `a kinyert név „${event.misinflected.extracted}" — helyesen valószínűleg`,
+            `„${event.misinflected.suggested}". Jóváhagyás előtt javítsd.`,
           ]
         : []),
     ].join('\n');

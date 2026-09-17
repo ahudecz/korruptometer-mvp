@@ -183,6 +183,100 @@ const NON_PERSON_HINTS = [
   'vállalat', 'csoport', 'holding', 'központ', 'szövetség', 'kamara',
 ].map(norm);
 
+// ───────────────────────────────────────────────────────────────────────────
+// RAGOZÁS-VISSZAFEJTÉSI HIBA
+// ───────────────────────────────────────────────────────────────────────────
+
+/**
+ * A modell rosszul fejtette vissza a magyar ragot a névről.
+ *
+ * 2026-09-17, user report: „a norberta az mi a pöcs, ilyen hiba hogy mehet át?"
+ * Az élesre ment sor „Szivek Norberta" néven futott. A forráscikkben végig
+ * TÁRGYESETBEN szerepel a név — „kihallgatásra idézte Szivek Norbertet és
+ * Jellinek Dánielt" —, a modellnek tehát alanyesetre kellett visszafejtenie.
+ * „Dánielt" → „Dániel" sikerült, „Norbertet" → „Norberta" nem: a szóvégi
+ * ragot nem levágta, hanem lecserélte. Ugyanez a hibaosztály gyártotta
+ * ugyanabban a sorban az „Ismeretlen bírósága" mezőt is.
+ *
+ * Miért nem elég a prompt: a ragozás visszafejtése generálási lépés, nem
+ * szabálykövetés — egy „alanyesetben add meg" mondat itt is csak
+ * valószínűséget mozgat. Determinisztikusan viszont pontosan elkapható,
+ * mert a HELYES visszafejtés mindig PREFIXE a cikkbeli alaknak
+ * („Norbertet".startsWith("Norbert")), a hibás pedig nem, miközben a közös
+ * előtag hosszú marad.
+ *
+ * Szándékosan NEM dob el és nem javít magától: a javasolt alakot adja vissza,
+ * hogy a jóváhagyó üzenet meg tudja mutatni. Kitalálni a helyes nevet
+ * ugyanaz a hiba lenne, mint amit elkapni akarunk.
+ */
+export type MisinflectedName = {
+  /** Amit a modell adott: „Szivek Norberta". */
+  extracted: string;
+  /** Ami a cikkben áll: „Szivek Norbertet". */
+  inArticle: string;
+  /** A közös előtag — nagy eséllyel a helyes alak: „Szivek Norbert". */
+  suggested: string;
+};
+
+/** A leghosszabb közös előtag hossza két szó között. */
+function commonPrefixLength(a: string, b: string): number {
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i += 1;
+  return i;
+}
+
+/**
+ * Egyetlen név(rész) ellenőrzése a cikk szövegében.
+ *
+ * Csak akkor jelez, ha MINDKETTŐ igaz:
+ *   - a cikkben a vezetéknév után álló egyik szó sem kezdődik a kinyert
+ *     keresztnévvel (tehát nem sima ragozott alak), ÉS
+ *   - valamelyik ilyen szóval legalább 4 karakteres közös előtagja van.
+ *
+ * Ha a név egyáltalán nem szerepel a szövegben, NEM jelez: a kivonat gyakran
+ * rövidebb, mint a cikk, és egy „nincs benne" jelzés tömegesen, hamisan
+ * riasztana. Ez az őr szűk és nagy pontosságú, nem általános névellenőrző.
+ */
+export function findMisinflectedName(
+  name: string,
+  articleText: string,
+): MisinflectedName | null {
+  const text = norm(articleText);
+  if (!text) return null;
+
+  const words = name.trim().split(/\s+/);
+  if (words.length < 2) return null;
+  const surname = norm(words[words.length - 2] ?? '');
+  const given = norm(words[words.length - 1] ?? '');
+  if (surname.length < 3 || given.length < 4) return null;
+
+  // A cikkben a vezetéknév után közvetlenül álló szavak.
+  const following: string[] = [];
+  const re = new RegExp(`${surname.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+([\\p{L}]+)`, 'gu');
+  for (const m of text.matchAll(re)) following.push(m[1]!);
+  if (following.length === 0) return null;
+
+  // Helyes visszafejtés: valamelyik cikkbeli alak a kinyert névvel kezdődik.
+  if (following.some((w) => w.startsWith(given))) return null;
+
+  let best: { word: string; len: number } | null = null;
+  for (const w of following) {
+    const len = commonPrefixLength(w, given);
+    if (len >= 4 && (best === null || len > best.len)) best = { word: w, len };
+  }
+  if (!best) return null;
+
+  // A `norm()` kisbetűsít, a visszaadott alakok viszont emberi szemnek
+  // mennek (Telegram-üzenet), ezért a kezdőbetűt visszaállítjuk.
+  const cap = (w: string) => (w ? w[0]!.toUpperCase() + w.slice(1) : w);
+  const original = words.slice(0, -1).join(' ');
+  return {
+    extracted: name.trim(),
+    inArticle: `${original} ${cap(best.word)}`,
+    suggested: `${original} ${cap(given.slice(0, best.len))}`,
+  };
+}
+
 export function looksLikePersonName(value: string): boolean {
   const v = value.trim();
   if (!v) return false;

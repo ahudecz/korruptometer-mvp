@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   evidenceQuoteSupported,
+  findMisinflectedName,
   hasEvidenceQuote,
   isRelationalOnlyMention,
   looksLikePersonName,
@@ -134,5 +135,38 @@ describe('isPlaceholderName — másodlagos mezőkre is (leltár-tétel)', () =>
     ]) {
       expect(isPlaceholderName(v), `"${v}" NEM lehet placeholder`).toBe(false);
     }
+  });
+});
+
+describe('findMisinflectedName (2026-09-17, „Szivek Norberta")', () => {
+  // A valódi forráscikk mondatai. A név végig TÁRGYESETBEN szerepel, ezért
+  // kellett a modellnek visszafejtenie — és ezért tudott elrontani.
+  const CIKK =
+    'A Központi Nyomozó Főügyészség kihallgatásra idézte Szivek Norbertet és ' +
+    'Jellinek Dánielt az öt éve húzódó Volánbusz-ügyben. Az ügyészség ' +
+    'előállította Jellinek Dánielt, Tiborcz István üzlettársát, valamint Szivek Norbertet.';
+
+  it('elkapja a rosszul visszafejtett ragot, és megmondja a helyes alakot', () => {
+    expect(findMisinflectedName('Szivek Norberta', CIKK)).toEqual({
+      extracted: 'Szivek Norberta',
+      inArticle: 'Szivek Norbertet',
+      suggested: 'Szivek Norbert',
+    });
+  });
+
+  it('a HELYESEN visszafejtett nevet békén hagyja', () => {
+    expect(findMisinflectedName('Szivek Norbert', CIKK)).toBeNull();
+    expect(findMisinflectedName('Jellinek Dániel', CIKK)).toBeNull();
+  });
+
+  it('hallgat, ha a név egyáltalán nem szerepel a szövegben', () => {
+    // A kivonat rövidebb lehet a cikknél — egy „nincs benne" jelzés
+    // tömegesen, hamisan riasztana, ezért ez az őr szándékosan szűk.
+    expect(findMisinflectedName('Teljesen Más Ember', CIKK)).toBeNull();
+  });
+
+  it('nem jelez rövid keresztnévre vagy egyszavas névre', () => {
+    expect(findMisinflectedName('Szivek', CIKK)).toBeNull();
+    expect(findMisinflectedName('Nagy Ede', 'Nagy Edét idézték be')).toBeNull();
   });
 });
