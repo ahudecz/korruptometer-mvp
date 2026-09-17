@@ -1185,6 +1185,13 @@ export const FELTAROK: Feltaro[] = [
         'A sorozat értéke a formátumban van. A közbeszerzési adatok, cégkivonatok és támogatási listák önmagukban olvashatatlanok a legtöbb ember számára; a NER100 ezekből épített fel egy követhető elbeszélést, névről névre, összegekkel.',
         'Ez az a réteg, ahol a feltáró munka és a nyilvánosság találkozik: a dokumentum megvolt korábban is, de a széles közönséghez csak akkor jutott el, amikor valaki elvégezte a lefordítás munkáját.',
       ],
+      links: [
+        {
+          text: 'saját videós csatornát',
+          href: 'https://www.youtube.com/@juhaszpetervideo',
+          external: true,
+        },
+      ],
     },
     related: [
       { label: 'Videóriportok és podcastok', href: '/podcastok' },
@@ -1286,10 +1293,42 @@ export const FELTAROK: Feltaro[] = [
             when: '2025. október 2.',
             body:
               '2025 őszén Juhász Péter olyan felvételt tett közzé a csatornáján, amely a munkájának legsúlyosabb és egyben legvitatottabb darabja. Egy név nélkül megszólaló lelkész arról beszélt, hogy évekkel korábban két fiú fordult hozzá segítségért egy ózdi térségbeli gyermekotthonból, és egy magas rangú politikus rendszeres látogatásairól, valamint bántalmazásról számoltak be. A gyerekek a politikust egymás között Zsolti bácsiként emlegették.',
-            more: [
-              'Juhász a videóban maga mondta ki a korlátot: bizonyíték hiányában nem hozza nyilvánosságra a nevet, a forrását viszont megvédi. Ez a kettősség az, amiért az ügy a mai napig vitatott — a Kegyencjárat álláspontja ebben az, hogy a vád nem bizonyított, és a saját ügyoldalunk is így kezeli.',
-              'A hatósági reakció három napon belül megérkezett. 2025. október 2-án reggel a Központi Nyomozó Főügyészség nyomozói házkutatást tartottak Juhász Péter otthonában, és lefoglalták az adathordozóit — köztük azt a telefont is, amelyen éppen élőben nyilatkozott a sajtónak a házkutatás közben. Másnap tanúként hallgatták ki, több mint négy órán át.',
-              'Az ügyészség hivatalos indoklása szerint az eljárás a Szőlő utcai javítóintézet ügyében indult nyomozás keretében zajlott — miközben a közzétett felvétel nem arról az intézményről, hanem az ózdi térségről szólt. Juhász a kihallgatás után azt mondta, hogy rágalmazás szóba sem került, az ügyészséget az érdekelte, milyen gyerekbántalmazásos bejelentések futottak be a korábbi felhívására. Ő maga megfélemlítésnek nevezte az akciót; a hatóság tanúkénti eljárásként írta le. A kettő nem ugyanaz, és nem a mi dolgunk eldönteni, melyik olvasat áll közelebb a valósághoz — azt viszont rögzíteni kell, hogy egy közzétett videót néhány napon belül házkutatás követett.',
+            sections: [
+              {
+                heading: 'A hatósági reakció',
+                paragraphs: [
+                  'A hatósági reakció három napon belül megérkezett. 2025. október 2-án reggel a Központi Nyomozó Főügyészség nyomozói házkutatást tartottak Juhász Péter otthonában, és lefoglalták az adathordozóit — köztük azt a telefont is, amelyen éppen élőben nyilatkozott a sajtónak a házkutatás közben. Másnap tanúként hallgatták ki, több mint négy órán át.',
+                ],
+                sources: [
+                  {
+                    source: 'HVG',
+                    date: '2025. okt. 2.',
+                    headline:
+                      'Juhász Péter: Itt vannak az ügyészségtől, házkutatást tartanak, mindent lefoglalnak, mindjárt elveszik a telefonomat is',
+                    url: 'https://hvg.hu/itthon/20251002_Juhasz-Peter-ugyeszseg-hazkutatas-razzia-ebx',
+                    lead:
+                      'A házkutatás közben, élőben rögzített beszámoló. Ez a cikk az elsődleges forrása annak, hogy mi történt az otthonában október 2-án reggel.',
+                  },
+                ],
+              },
+              {
+                heading: 'Amit vállalt, és amit nem',
+                paragraphs: [
+                  'Juhász a videóban maga mondta ki a korlátot: bizonyíték hiányában nem hozza nyilvánosságra a nevet, a forrását viszont megvédi. Ez a kettősség az, amiért az ügy a mai napig vitatott.',
+                  'Az ügyészség hivatalos indoklása szerint az eljárás a Szőlő utcai javítóintézet ügyében indult nyomozás keretében zajlott — miközben a közzétett felvétel nem arról az intézményről, hanem az ózdi térségről szólt.',
+                  'Juhász a kihallgatás után azt mondta, hogy rágalmazás szóba sem került, az ügyészséget az érdekelte, milyen gyerekbántalmazásos bejelentések futottak be a korábbi felhívására. Ő maga megfélemlítésnek nevezte az akciót; a hatóság tanúkénti eljárásként írta le.',
+                ],
+                sources: [
+                  {
+                    source: '444',
+                    date: '2025. okt. 3.',
+                    headline: 'Juhász Péter: Semmiféle rágalmazás szóba sem került',
+                    url: 'https://444.hu/2025/10/03/juhasz-peter-semmifele-ragalmazas-szoba-sem-kerult',
+                    lead:
+                      'A több mint négy órás, tanúkénti kihallgatás utáni beszámoló — és az a részlet, hogy az ügyészséget a felhívására befutott gyerekbántalmazásos bejelentések érdekelték.',
+                  },
+                ],
+              },
             ],
             videos: [
               {
@@ -1297,59 +1336,35 @@ export const FELTAROK: Feltaro[] = [
                 label: 'Juhász Péter | Juhi',
                 title: 'A Szőlő utcai ügy',
                 summary:
-                  'Ugyanez a felvétel a Kegyencjárat ügyoldalán is szerepel, a többi szerkesztőség feldolgozása mellett.',
+                  'Ugyanez a felvétel az ügy saját oldalán is szerepel, a többi szerkesztőség feldolgozása mellett.',
               },
             ],
-            highlight: {
-              heading: 'A telefon, amin éppen nyilatkozott',
-              body:
-                'A házkutatás egyik legtöbbet idézett mozzanata az, hogy Juhász Péter élőben, telefonon nyilatkozott a sajtónak arról, hogy nyomozók vannak nála és mindent lefoglalnak — majd magát a készüléket is lefoglalták. Ez az a pillanat, ami a szárazon leírt eljárási cselekményt széles körben látható üggyé tette.',
-              sources: [
-                {
-                  source: 'HVG',
-                  date: '2025. okt. 2.',
-                  headline:
-                    'Juhász Péter: Itt vannak az ügyészségtől, házkutatást tartanak, mindent lefoglalnak, mindjárt elveszik a telefonomat is',
-                  url: 'https://hvg.hu/itthon/20251002_Juhasz-Peter-ugyeszseg-hazkutatas-razzia-ebx',
-                  lead:
-                    'A házkutatás közben, élőben rögzített beszámoló. Ez a cikk az elsődleges forrása annak, hogy mi történt az otthonában október 2-án reggel.',
-                },
-                {
-                  source: '444',
-                  date: '2025. okt. 2.',
-                  headline:
-                    'A Zsolt bácsis videó miatt hallgatják ki Juhász Pétert, aki rákérdezett az ügyészeknél, hogy mégis mi köze ennek a Szőlő utca ügyében folyó nyomozáshoz',
-                  url: 'https://444.hu/2025/10/02/a-zsolt-bacsis-video-miatt-hallgatjak-ki-juhasz-petert-aki-rakerdezett-az-ugyeszeknel-hogy-megis-mi-koze-ennek-a-szolo-utca-ugyeben-folyo-nyomozashoz',
-                  lead:
-                    'Itt jelenik meg a legélesebben az ellentmondás: a lefoglalás hivatalos jogcíme a Szőlő utcai nyomozás volt, a videó viszont egy másik település gyermekotthonáról szólt.',
-                },
-                {
-                  source: '444',
-                  date: '2025. okt. 3.',
-                  headline: 'Juhász Péter: Semmiféle rágalmazás szóba sem került',
-                  url: 'https://444.hu/2025/10/03/juhasz-peter-semmifele-ragalmazas-szoba-sem-kerult',
-                  lead:
-                    'A több mint négy órás, tanúkénti kihallgatás utáni beszámoló — és az a részlet, hogy az ügyészséget a felhívására befutott gyerekbántalmazásos bejelentések érdekelték.',
-                },
-                {
-                  source: 'ATV',
-                  date: '2025. okt. 5.',
-                  headline: 'Újabb tartalomgyártót érint rendőrségi eljárás Juhász Péter ügye nyomán',
-                  url: 'https://www.atv.hu/belfold/20251005/juhasz-peter-rendorseg-hazkutatas/',
-                },
-                {
-                  source: 'Népszava',
-                  headline: 'Elkezdődött a fideszes megtorlás, Juhász Péter üzent Kocsis Máténak',
-                  url: 'https://nepszava.hu/3296661_juhasz-peter-megtorlas-fidesz-budapesti-javitointezet-pedofilvad-kocsis-mate',
-                },
-              ],
-            },
+            sources: [
+              {
+                source: '444',
+                date: '2025. okt. 2.',
+                headline:
+                  'A Zsolt bácsis videó miatt hallgatják ki Juhász Pétert, aki rákérdezett az ügyészeknél, hogy mégis mi köze ennek a Szőlő utca ügyében folyó nyomozáshoz',
+                url: 'https://444.hu/2025/10/02/a-zsolt-bacsis-video-miatt-hallgatjak-ki-juhasz-petert-aki-rakerdezett-az-ugyeszeknel-hogy-megis-mi-koze-ennek-a-szolo-utca-ugyeben-folyo-nyomozashoz',
+              },
+              {
+                source: 'ATV',
+                date: '2025. okt. 5.',
+                headline: 'Újabb tartalomgyártót érint rendőrségi eljárás Juhász Péter ügye nyomán',
+                url: 'https://www.atv.hu/belfold/20251005/juhasz-peter-rendorseg-hazkutatas/',
+              },
+              {
+                source: 'Népszava',
+                headline: 'Elkezdődött a fideszes megtorlás, Juhász Péter üzent Kocsis Máténak',
+                url: 'https://nepszava.hu/3296661_juhasz-peter-megtorlas-fidesz-budapesti-javitointezet-pedofilvad-kocsis-mate',
+              },
+            ],
             promo: {
               href: '/ugyek/ki-az-a-zsolt-bacsi',
               eyebrow: 'Kiemelt ügy · Ki az a Zsolti bácsi?',
               title: 'Az ügy teljes feldolgozása, az összes eddigi fejleménnyel',
               lead:
-                'Mi hangzott el a felvételen, ki a koronatanú, mit állít és mit cáfol, hol tart az eljárás — és miért nem nevezünk meg senkit. A Kegyencjárat saját ügyoldala.',
+                'Mi hangzott el a felvételen, ki a koronatanú, mit állít és mit cáfol, és hol tart az eljárás. Az ügy saját oldala, a fejleményekkel.',
               cta: 'Az ügy megnyitása',
             },
           },
@@ -1367,7 +1382,7 @@ export const FELTAROK: Feltaro[] = [
           heading: 'Mit mondanak róla a támogatói és a kritikusai?',
           paragraphs: [
             'A támogatói szerint olyan civil harcos, akit tíz év alatt sem tudtak megtörni sajtóperekkel, lejárató kampányokkal vagy házkutatással, és akinek a csatornája nélkül a társadalom jelentős része egyáltalán nem értené a bonyolult gazdasági ügyeket. Az állami nyomás alatti forrásvédelmét külön is példaértékűnek tartják.',
-            'A kritikusai két irányból érkeznek. A korábbi kormányoldal évekig a magánéletére hivatkozva próbálta hitelteleníteni a szakmai állításait. Az ellenzéki térfélen viszont az a kifogás fogalmazódott meg, hogy a bizonyíték nélküli, névtelen forrásra épülő anyagok — mint a Zsolti bácsi-videó — bulvárosak, és épp a legsúlyosabb ügyeket teszik átpolitizálhatóvá. A Kegyencjárat ezért kezeli az utóbbit külön, bizonyítatlan vádként, és nem nevez meg senkit.',
+            'A kritikusai két irányból érkeznek. A korábbi kormányoldal évekig a magánéletére hivatkozva próbálta hitelteleníteni a szakmai állításait. Az ellenzéki térfélen viszont az a kifogás fogalmazódott meg, hogy a bizonyíték nélküli, névtelen forrásra épülő anyagok — mint a Zsolti bácsi-videó — bulvárosak, és épp a legsúlyosabb ügyeket teszik átpolitizálhatóvá.',
           ],
         },
       ],
@@ -1417,7 +1432,7 @@ export const FELTAROK: Feltaro[] = [
         },
         {
           q: 'Kiderült, ki az a Zsolti bácsi?',
-          a: 'Nem. Juhász Péter a videóban maga mondta ki, hogy bizonyíték hiányában nem hozza nyilvánosságra a nevet. A Kegyencjárat sem nevez meg senkit: az ügyet bizonyítatlan vádként kezeljük, a fejleményeket pedig a saját ügyoldalán követjük.',
+          a: 'Nem. Juhász Péter a videóban maga mondta ki, hogy bizonyíték hiányában nem hozza nyilvánosságra a nevet. Az ügy állása és a további fejlemények a saját ügyoldalán követhetők.',
         },
         {
           q: 'Ő tárta fel az Elios-ügyet?',
