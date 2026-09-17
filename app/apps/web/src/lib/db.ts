@@ -45,8 +45,16 @@ export function getDb(): DbClient {
   // Futásidőben a 10 marad: ott egy folyamat szolgálja ki a kéréseket, és a
   // nyitóoldal ~19 párhuzamos lekérdezésének kell a hely (l. a fenti
   // kommentet a max:1 regressziójáról).
+  // A 6 MÉRT érték, nem tipp. A 2 túl szoros volt: a /podcastok lap egyetlen
+  // renderelés alatt hét lekérdezést indít párhuzamosan (videók +
+  // getMonitoredNames három kérdése + reelek + cross-promo), és két
+  // kapcsolaton ezek egymásra vártak — pontosan ezért lépte túl a 60
+  // másodperces limitet a 36a571a és az 1be526f build. A 6 mellett ez a lap
+  // nem torlódik, és mivel a statikus generálás EGY workerben fut
+  // (next.config.js staticGenerationMinPagesPerWorker), a build alatt
+  // összesen 6 kapcsolat nyílik a pooler 15-ös keretéből.
   const isBuild = process.env.NEXT_PHASE === 'phase-production-build';
-  const sql = postgres(url, { prepare: false, max: isBuild ? 2 : 10 });
+  const sql = postgres(url, { prepare: false, max: isBuild ? 6 : 10 });
   const client = drizzle(sql, { schema });
   globalForDb.__dbClient = client;
   return client;

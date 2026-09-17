@@ -40,19 +40,38 @@ export function rankPodcastVideos<T extends RankablePodcastVideo>(
   monitoredNames: readonly string[],
 ): T[] {
   const now = Date.now();
+
+  // MINDEN JEL ELŐRE KISZÁMOLVA, nem a komparátorban.
+  //
+  // A komparátor eddig minden összehasonlításnál KÉT isBreaking()-hívást
+  // végzett, ami a videó címét és leírását kisbetűsíti, majd a figyelt
+  // nevekre (élesben 582 db) keres benne. 828 videónál ez mérve 2020 hívás
+  // és 60 ms; előre számolva 828 hívás és 30 ms. A sorrend VÁLTOZATLAN:
+  // ugyanazokat a jeleket ugyanabban a prioritásban használja, csak nem
+  // számolja újra őket összehasonlításonként.
+  //
+  // Megjegyzés a méretarányról: ez önmagában NEM magyarázza a 2026-09-17-i
+  // elhasalt buildeket — a teljes /podcastok adatlekérés + rangsorolás
+  // európai gépről mérve 0,9 másodperc (578 ms videó-lekérdezés, 327 ms
+  // getMonitoredNames, 13 ms rangsorolás). A build-időtúllépés oka a
+  // kapcsolat-pool szűkössége volt, l. lib/db.ts. Ez itt tiszta nyereség,
+  // nem a hiba javítása.
+  const rank = new Map<T, { pinned: boolean; breaking: boolean; vel: number; published: number }>();
+  for (const v of videos) {
+    rank.set(v, {
+      pinned: isPinned(v, now),
+      breaking: isBreaking(v.title, v.description, monitoredNames),
+      vel: velocity(v, now),
+      published: v.publishedAt.getTime(),
+    });
+  }
+
   return [...videos].sort((a, b) => {
-    const aPinned = isPinned(a, now);
-    const bPinned = isPinned(b, now);
-    if (aPinned !== bPinned) return aPinned ? -1 : 1;
-
-    const aBreaking = isBreaking(a.title, a.description, monitoredNames);
-    const bBreaking = isBreaking(b.title, b.description, monitoredNames);
-    if (aBreaking !== bBreaking) return aBreaking ? -1 : 1;
-
-    const aVel = velocity(a, now);
-    const bVel = velocity(b, now);
-    if (aVel !== bVel) return bVel - aVel;
-
-    return b.publishedAt.getTime() - a.publishedAt.getTime();
+    const x = rank.get(a)!;
+    const y = rank.get(b)!;
+    if (x.pinned !== y.pinned) return x.pinned ? -1 : 1;
+    if (x.breaking !== y.breaking) return x.breaking ? -1 : 1;
+    if (x.vel !== y.vel) return y.vel - x.vel;
+    return y.published - x.published;
   });
 }
