@@ -793,53 +793,8 @@ export const FELTAROK: Feltaro[] = [
       cases: {
         heading: 'Amit kipereltek — és amit lefotóztak',
         intro:
-          'Egy adatper évekig tart és pénzbe kerül. Cserébe viszont a végén kiadott dokumentum megtámadhatatlan: nem „állítás szemben állítással", hanem irat. Van azonban olyan összefüggés, amiről egyáltalán nem keletkezik irat — ott a kamera veszi át a bizonyítás munkáját. Az alábbi ügyek mindkét módszerre példák.',
+          'Egy adatper évekig tart és pénzbe kerül. Cserébe viszont a végén kiadott dokumentum megtámadhatatlan: nem „állítás szemben állítással", hanem irat. Van azonban olyan összefüggés, amiről egyáltalán nem keletkezik irat — ott a kamera veszi át a bizonyítás munkáját. Az alábbi ügyek mindkét módszerre példák, időrendben, a 2018-as jachtos anyagtól a legfrissebbekig.',
         items: [
-          {
-            title: 'A gödi Samsung-gyár bírságai',
-            when: '2026. május',
-            body:
-              'Jogerősen megnyerték a pert a gödi akkumulátorgyárra kiszabott hatósági bírságok adatainak kiadásáért. Egy ilyen ügyben az összeg és a jogcím önmagában is válasz arra a kérdésre, amit a hivatalos kommunikáció évekig kerülgetett.',
-            sources: [
-              { source: 'Hírextra', date: '2026. máj. 27.', headline: 'Jogerősen pert nyert az Átlátszó a gödi Samsung-gyár bírságai ügyében - Hírextra', url: 'https://www.hirextra.hu/2026/05/27/jogerosen-pert-nyert-az-atlatszo-a-godi-samsung-gyar-birsagai-ugyeben/', lead: 'Másodfokon is az Átlátszónak adott igazat a bíróság a Pest Vármegyei Kormányhivatallal szemben indított perben. A döntés értelmében a hivatalnak ki kell adnia a gödi Samsung-gyárra kiszabott munkavédelmi, tűzvédelmi és egyéb bírságokról szóló határozatokat.' },
-            ],
-          },
-          {
-            title: 'Szuverenitásvédelmi Hivatal — az a per, amit a hivatal nem fogadott el',
-            when: '2026',
-            body:
-              'Az Átlátszó pert nyert a Szuverenitásvédelmi Hivatallal szemben, mire a hivatal fellebbezett — az érvelésük szerint a bíróságnak nincs hatásköre felettük. Másodfokon végül az eljárás megismétlését rendelték el. Ez a fajta elhúzódás önmagában is része a módszertannak: sokszor nem a per elvesztése a cél, hanem az idő.',
-            sources: [
-              { source: 'Átlátszó', date: '2026. márc. 19.', headline: 'Láncziék fellebbeztek az elmarasztaló ítélet ellen, szerintük a bíróságnak nincs hatalma felettük', url: 'https://atlatszo.hu/kozugy/2026/03/19/lancziek-fellebbeztek-az-elmarasztalo-itelet-ellen-szerintuk-a-birosagnak-nincs-hatalma-felettuk/' },
-              { source: 'HVG', date: '2026. máj. 28.', headline: 'Csatát nyert a Szuverenitásvédelmi Hivatal, meg kell ismételni az eljárást az Átlátszó-perben', url: 'https://hvg.hu/itthon/20260528_szuverenitasvedelmi-hivatal-atlatszo-birosag-masodfoku-dontes-b' },
-            ],
-          },
-          {
-            title: 'Amikor a jogerős ítélet sem elég',
-            when: '2026. január',
-            body:
-              'Egy honvédelmi tárcához köthető cég jogerős bírósági ítélet ellenére sem adta ki, ki engedélyezte egy szolgálati villa felújítását. Ez a másik oldal, amiről ritkán esik szó: az adatper megnyerése nem azonos az adat megszerzésével.',
-            sources: [
-              { source: 'Átlátszó', date: '2026. jan. 8.', headline: 'Jogerős ítélet ellenére sem adja ki a HM cége, ki adott engedélyt a Ruszin-Szendi Romulusz által használt villa felújítására', url: 'https://atlatszo.hu/kozadat/2026/01/08/jogeros-itelet-ellenere-sem-adja-ki-a-hm-cege-ki-adott-engedelyt-a-ruszin-szendi-romulusz-altal-hasznalt-villa-felujitasara/' },
-            ],
-          },
-          {
-            title: 'Hatvanpuszta a levegőből és az időben',
-            body:
-              'A portál drónfelvételekkel és archív műholdképekkel dokumentálta, hogyan alakult át a hatvanpusztai birtok az évek során, és megírta azt is, hogy a majorság generálkivitelezője Mészárosék családi cége volt. A módszer itt az összehasonlítás: nem egyetlen kép, hanem ugyanaz a helyszín öt és tíz évvel korábban.',
-            sources: [
-              { source: 'Átlátszó', date: '2025. szept. 12.', headline: 'Mészárosék közpénzbajnok családi cége a hatvanpusztai majorság generálkivitelezője', url: 'https://atlatszo.hu/kozpenz/2025/09/12/meszarosek-kozpenzbajnok-csaladi-cege-a-hatvanpusztai-majorsag-generalkivitelezoje/' },
-              { source: 'Átlátszó', date: '2025. aug. 12.', headline: 'Miből lesz a cserebogár? Így festett a hatvanpusztai birtok öt és tíz évvel ezelőtt', url: 'https://atlatszo.hu/impakt/2025/08/12/mibol-lesz-a-cserebogar-igy-festett-a-hatvanpusztai-birtok-ot-es-tiz-evvel-ezelott/' },
-            ],
-            promo: {
-              href: '/ugyek/hatvanpuszta',
-              eyebrow: 'Kiemelt ügy · Hatvanpuszta',
-              title: 'Mennyit ér valójában a hatvanpusztai birtok?',
-              lead:
-                'Becsült ingatlanérték, ismeretlen vagyonforrás, vagyonnyilatkozat — az ügy teljes feldolgozása a saját oldalán.',
-              cta: 'Az ügy megnyitása',
-            },
-          },
           {
             title: 'Felcsút Travel Club — a magánrepülő és a luxusjachtok',
             when: '2018. szeptember 24.',
@@ -970,8 +925,53 @@ export const FELTAROK: Feltaro[] = [
             },
           },
           {
+            title: 'Hatvanpuszta a levegőből és az időben',
+            when: '2025. augusztus – szeptember',
+            body:
+              'A portál drónfelvételekkel és archív műholdképekkel dokumentálta, hogyan alakult át a hatvanpusztai birtok az évek során, és megírta azt is, hogy a majorság generálkivitelezője Mészárosék családi cége volt. A módszer itt az összehasonlítás: nem egyetlen kép, hanem ugyanaz a helyszín öt és tíz évvel korábban.',
+            sources: [
+              { source: 'Átlátszó', date: '2025. szept. 12.', headline: 'Mészárosék közpénzbajnok családi cége a hatvanpusztai majorság generálkivitelezője', url: 'https://atlatszo.hu/kozpenz/2025/09/12/meszarosek-kozpenzbajnok-csaladi-cege-a-hatvanpusztai-majorsag-generalkivitelezoje/' },
+              { source: 'Átlátszó', date: '2025. aug. 12.', headline: 'Miből lesz a cserebogár? Így festett a hatvanpusztai birtok öt és tíz évvel ezelőtt', url: 'https://atlatszo.hu/impakt/2025/08/12/mibol-lesz-a-cserebogar-igy-festett-a-hatvanpusztai-birtok-ot-es-tiz-evvel-ezelott/' },
+            ],
+            promo: {
+              href: '/ugyek/hatvanpuszta',
+              eyebrow: 'Kiemelt ügy · Hatvanpuszta',
+              title: 'Mennyit ér valójában a hatvanpusztai birtok?',
+              lead:
+                'Becsült ingatlanérték, ismeretlen vagyonforrás, vagyonnyilatkozat — az ügy teljes feldolgozása a saját oldalán.',
+              cta: 'Az ügy megnyitása',
+            },
+          },
+          {
+            title: 'Átlátszó Országszerte — az 500 milliós körforgalom a mező közepén',
+            when: '2025. október 18.',
+            body:
+              'A műhely vidéki hálózata azt csinálja, amit országos szerkesztőség ritkán tud: helyben megy utána egy-egy beruházásnak. A zalaegerszegi példa ennek a legkönnyebben érthető darabja — egy körforgalom a mező közepén, amely nem köt össze semmit semmivel, mellette a projekttáblával, hogy bő 500 millió forint uniós támogatásból épült.',
+            more: [
+              'Az ilyen ügyek azért fontosak, mert nem kell hozzájuk offshore cégláncot kibogozni. Egy hatperces videó és egy projekttábla elvégzi a munkát — és pontosan ez az a réteg, ahol a közpénzről szóló beszéd kilép a szakértői körből.',
+            ],
+            videos: [
+              {
+                id: 'hSB3hp51rDw',
+                label: 'Átlátszó · 2025. október 18.',
+                title: 'Sehonnan sehová vezető körforgalom a mezőn 500 millió forintnyi EU-s pénzből',
+                summary:
+                  'A Zalaegerszeg és Zalaszentiván közötti beruházás története, négy évre visszamenőleg.',
+              },
+            ],
+          },
+          {
+            title: 'Amikor a jogerős ítélet sem elég',
+            when: '2026. január',
+            body:
+              'Egy honvédelmi tárcához köthető cég jogerős bírósági ítélet ellenére sem adta ki, ki engedélyezte egy szolgálati villa felújítását. Ez a másik oldal, amiről ritkán esik szó: az adatper megnyerése nem azonos az adat megszerzésével.',
+            sources: [
+              { source: 'Átlátszó', date: '2026. jan. 8.', headline: 'Jogerős ítélet ellenére sem adja ki a HM cége, ki adott engedélyt a Ruszin-Szendi Romulusz által használt villa felújítására', url: 'https://atlatszo.hu/kozadat/2026/01/08/jogeros-itelet-ellenere-sem-adja-ki-a-hm-cege-ki-adott-engedelyt-a-ruszin-szendi-romulusz-altal-hasznalt-villa-felujitasara/' },
+            ],
+          },
+          {
             title: 'Tizenöt év Mészáros Lőrincről — a drónfelvételektől a Strómanig',
-            when: '2012–2026',
+            when: '2026. március (a dokumentálás 2012 óta)',
             body:
               'Az Átlátszó archívumában 2012 és 2026 között 455 olyan cikk van, amelynek a CÍMÉBEN szerepel Mészáros Lőrinc neve. Ez a szám önmagában elmond valamit a műhely működéséről: nem egyetlen leleplezés, hanem tizennégy éven át tartó, folyamatos dokumentálás.',
             more: [
@@ -996,21 +996,22 @@ export const FELTAROK: Feltaro[] = [
             ],
           },
           {
-            title: 'Átlátszó Országszerte — az 500 milliós körforgalom a mező közepén',
-            when: '2025. október 18.',
+            title: 'Szuverenitásvédelmi Hivatal — az a per, amit a hivatal nem fogadott el',
+            when: '2026. március – május',
             body:
-              'A műhely vidéki hálózata azt csinálja, amit országos szerkesztőség ritkán tud: helyben megy utána egy-egy beruházásnak. A zalaegerszegi példa ennek a legkönnyebben érthető darabja — egy körforgalom a mező közepén, amely nem köt össze semmit semmivel, mellette a projekttáblával, hogy bő 500 millió forint uniós támogatásból épült.',
-            more: [
-              'Az ilyen ügyek azért fontosak, mert nem kell hozzájuk offshore cégláncot kibogozni. Egy hatperces videó és egy projekttábla elvégzi a munkát — és pontosan ez az a réteg, ahol a közpénzről szóló beszéd kilép a szakértői körből.',
+              'Az Átlátszó pert nyert a Szuverenitásvédelmi Hivatallal szemben, mire a hivatal fellebbezett — az érvelésük szerint a bíróságnak nincs hatásköre felettük. Másodfokon végül az eljárás megismétlését rendelték el. Ez a fajta elhúzódás önmagában is része a módszertannak: sokszor nem a per elvesztése a cél, hanem az idő.',
+            sources: [
+              { source: 'Átlátszó', date: '2026. márc. 19.', headline: 'Láncziék fellebbeztek az elmarasztaló ítélet ellen, szerintük a bíróságnak nincs hatalma felettük', url: 'https://atlatszo.hu/kozugy/2026/03/19/lancziek-fellebbeztek-az-elmarasztalo-itelet-ellen-szerintuk-a-birosagnak-nincs-hatalma-felettuk/' },
+              { source: 'HVG', date: '2026. máj. 28.', headline: 'Csatát nyert a Szuverenitásvédelmi Hivatal, meg kell ismételni az eljárást az Átlátszó-perben', url: 'https://hvg.hu/itthon/20260528_szuverenitasvedelmi-hivatal-atlatszo-birosag-masodfoku-dontes-b' },
             ],
-            videos: [
-              {
-                id: 'hSB3hp51rDw',
-                label: 'Átlátszó · 2025. október 18.',
-                title: 'Sehonnan sehová vezető körforgalom a mezőn 500 millió forintnyi EU-s pénzből',
-                summary:
-                  'A Zalaegerszeg és Zalaszentiván közötti beruházás története, négy évre visszamenőleg.',
-              },
+          },
+          {
+            title: 'A gödi Samsung-gyár bírságai',
+            when: '2026. május',
+            body:
+              'Jogerősen megnyerték a pert a gödi akkumulátorgyárra kiszabott hatósági bírságok adatainak kiadásáért. Egy ilyen ügyben az összeg és a jogcím önmagában is válasz arra a kérdésre, amit a hivatalos kommunikáció évekig kerülgetett.',
+            sources: [
+              { source: 'Hírextra', date: '2026. máj. 27.', headline: 'Jogerősen pert nyert az Átlátszó a gödi Samsung-gyár bírságai ügyében - Hírextra', url: 'https://www.hirextra.hu/2026/05/27/jogerosen-pert-nyert-az-atlatszo-a-godi-samsung-gyar-birsagai-ugyeben/', lead: 'Másodfokon is az Átlátszónak adott igazat a bíróság a Pest Vármegyei Kormányhivatallal szemben indított perben. A döntés értelmében a hivatalnak ki kell adnia a gödi Samsung-gyárra kiszabott munkavédelmi, tűzvédelmi és egyéb bírságokról szóló határozatokat.' },
             ],
           },
         ],
