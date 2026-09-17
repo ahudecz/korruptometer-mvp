@@ -365,6 +365,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                 label={f.section.video.label}
                 summary={f.section.video.summary}
                 playlistId={f.section.video.list}
+                note={f.section.video.note}
                 variant="wide"
               />
             )}
@@ -406,6 +407,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                               label={v.label}
                               summary={v.summary}
                               playlistId={v.list}
+                              note={v.note}
                               variant="wide"
                             />
                           ))}
@@ -436,6 +438,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                           label={v.label}
                           summary={v.summary}
                           playlistId={v.list}
+                          note={v.note}
                           variant="wide"
                         />
                       ))}
@@ -457,6 +460,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                               label={c.highlight.video.label}
                               summary={c.highlight.video.summary}
                               playlistId={c.highlight.video.list}
+                              note={c.highlight.video.note}
                               variant="wide"
                             />
                           )}
@@ -504,6 +508,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                       label={v.label}
                       summary={v.summary}
                       playlistId={v.list}
+                      note={v.note}
                       variant={d.videoBlock!.items.length > 1 ? undefined : 'wide'}
                     />
                   ))}
@@ -678,6 +683,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                 label={d.video.label}
                 summary={d.video.summary}
                 playlistId={d.video.list}
+                note={d.video.note}
                 variant="wide"
               />
             )}

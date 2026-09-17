@@ -20,11 +20,14 @@ export function FeltaroVideo({
   summary,
   variant,
   playlistId,
+  note,
 }: {
   videoId: string;
   title: string;
   label?: string;
   summary?: string;
+  /** Lábjegyzet egy külső hivatkozással — l. FeltaroVideoRef.note. */
+  note?: { text: string; linkText: string; href: string };
   /** 'wide': a szövegoszlop teljes szélességében, egyedülálló videóhoz. */
   variant?: 'wide';
   /** Egy egész sorozat egyetlen kereten belül (user kérés, 2026-09-17: a
@@ -46,6 +49,14 @@ export function FeltaroVideo({
       )}
       <h3 className="podcast-title feltaro-video-title">{title}</h3>
       {summary && <p className="feltaro-video-summary">{summary}</p>}
+      {note && (
+        <p className="feltaro-video-note">
+          {note.text}{' '}
+          <a href={note.href} target="_blank" rel="noopener noreferrer">
+            {note.linkText}
+          </a>
+        </p>
+      )}
     </div>
   );
 }

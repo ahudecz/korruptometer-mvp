@@ -98,6 +98,16 @@ export type FeltaroVideoRef = {
   title: string;
   summary?: string;
   list?: string;
+  /**
+   * Apró lábjegyzet a videó alá, benne EGY külső hivatkozással.
+   *
+   * Azért van rá szükség, mert nem minden esetben a saját műhely felvétele a
+   * beágyazható: ha az eredeti anyag olyan platformon van, amit az oldal
+   * tartalombiztonsági szabálya (CSP, l. next.config.js frame-src) nem
+   * engedélyez, akkor egy másik csatorna felvétele kerül be — és ilyenkor ki
+   * kell írni, kié a felvétel, és el kell vezetni az eredetihez.
+   */
+  note?: { text: string; linkText: string; href: string };
 };
 
 export type Feltaro = {
@@ -944,6 +954,20 @@ export const FELTAROK: Feltaro[] = [
             sources: [
               { source: 'Átlátszó', date: '2025. szept. 12.', headline: 'Mészárosék közpénzbajnok családi cége a hatvanpusztai majorság generálkivitelezője', url: 'https://atlatszo.hu/kozpenz/2025/09/12/meszarosek-kozpenzbajnok-csaladi-cege-a-hatvanpusztai-majorsag-generalkivitelezoje/' },
               { source: 'Átlátszó', date: '2025. aug. 12.', headline: 'Miből lesz a cserebogár? Így festett a hatvanpusztai birtok öt és tíz évvel ezelőtt', url: 'https://atlatszo.hu/impakt/2025/08/12/mibol-lesz-a-cserebogar-igy-festett-a-hatvanpusztai-birtok-ot-es-tiz-evvel-ezelott/' },
+            ],
+            videos: [
+              {
+                id: '0-bgf65aqGc',
+                label: 'Kontroll · 2026. április 17.',
+                title: 'Drónfelvételek Orbán és Mészáros birtokairól',
+                summary:
+                  'A hatvanpusztai és a környező birtokok a levegőből. Ugyanaz a módszer, amiről a bekezdés szól: nem egyetlen kép, hanem a helyszín időbeli összehasonlítása.',
+                note: {
+                  text: 'Ez a felvétel a Kontroll csatornájáról van. Az Átlátszó saját drónvideója a hatvanpusztai terjeszkedésről itt nézhető meg:',
+                  linkText: 'Mészárosék terjeszkednek a hatvanpusztai birtok körül (Vimeo)',
+                  href: 'https://vimeo.com/159180000',
+                },
+              },
             ],
             promo: {
               href: '/ugyek/hatvanpuszta',

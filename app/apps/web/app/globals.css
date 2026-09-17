@@ -16026,3 +16026,18 @@ code {
   background: #fff;
   padding: 8%;
 }
+
+/* Lábjegyzet a Dicsőségfal-videók alatt: kié a felvétel, és hol van az
+   eredeti. Szándékosan kisebb és halványabb, mint a videó összefoglalója —
+   ez nem tartalom, hanem forrásjelzés. */
+.feltaro-video-note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted, #8a8a8a);
+}
+
+.feltaro-video-note a {
+  color: inherit;
+  text-decoration: underline;
+}
