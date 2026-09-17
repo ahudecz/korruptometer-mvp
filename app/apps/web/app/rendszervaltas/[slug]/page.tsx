@@ -316,7 +316,13 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
         <div className="person-hero-inner">
           <div className="person-hero-photo">
             {f.photo ? (
-              <img src={f.photo} alt={`${f.name} — ${f.role}`} className="person-photo-img" />
+              <img
+                src={f.photo}
+                alt={`${f.name} — ${f.role}`}
+                className={
+                  f.photoFit === 'contain' ? 'person-photo-img person-photo-img--contain' : 'person-photo-img'
+                }
+              />
             ) : (
               <div className={styles.heroPlaceholder} aria-hidden="true">{initials(f.name)}</div>
             )}

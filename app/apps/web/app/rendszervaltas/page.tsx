@@ -153,7 +153,7 @@ function FeltaroCard({ f }: { f: Feltaro }) {
           <img
             src={f.photo}
             alt={`${f.name} — ${f.role}`}
-            className={styles.photoImg}
+            className={f.photoFit === 'contain' ? `${styles.photoImg} ${styles.photoImgContain}` : styles.photoImg}
             loading="lazy"
             decoding="async"
           />

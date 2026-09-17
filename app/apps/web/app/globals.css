@@ -16017,3 +16017,12 @@ code {
 .dicsosegfal-page .seo-callout p:last-child {
   margin-bottom: 0;
 }
+
+/* Dicsőségfal-végoldal: logó a hero fotóhelyén — l. dicsosegfal.module.css
+   .photoImgContain, ugyanaz az ok. */
+.person-photo-img--contain {
+  object-fit: contain;
+  object-position: center;
+  background: #fff;
+  padding: 8%;
+}

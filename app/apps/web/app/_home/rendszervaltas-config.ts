@@ -117,6 +117,16 @@ export type Feltaro = {
    *  Amíg nincs, a kártya monogramos helyőrzőt mutat (ugyanaz a viselkedés,
    *  mint a /lemondasok watchlist-kártyáinál). */
   photo?: string;
+  /**
+   * Hogyan illeszkedjen a kép a négyzetes helyre.
+   *
+   * Alapból `cover`: a profilképek és portrék négyzetesek, azokat kitölti.
+   * A LOGÓK viszont fekvők (az Átlátszóé 2.17-es arányú) vagy átlátszó
+   * hátterűek — azokat `cover` levágná, átlátszóként pedig a kártya sötét
+   * hátterén a fekete rajzolatú logók (Partizán, Szikra) eltűnnének. Ezeknél
+   * `contain` + fehér alap: a logó egészben látszik.
+   */
+  photoFit?: 'contain';
   photoCredit?: string;
   /** A rács alatti cornerstone-szöveg saját H2-szakasza. A `video` a
    *  bekezdések UTÁN jelenik meg, beágyazott YouTube-lejátszóként. */
@@ -377,6 +387,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'person',
     role: 'független országgyűlési képviselő',
     badge: 'KÖZBESZERZÉS-VADÁSZ',
+    photo: '/images/rendszervaltas/hadhazy-akos.webp',
     tagline:
       'Évekig egyesével fésülte át a közbeszerzési kiírásokat, és több száz feljelentést tett — a nyilvánosságra hozott iratok nélkül a NER-ügyek fele ma sem lenne dokumentálva.',
     targetKeyword: { phrase: 'hadházy ákos', volume: 40500, kd: 39 },
@@ -584,6 +595,8 @@ export const FELTAROK: Feltaro[] = [
     group: 'media',
     role: 'közösségi finanszírozású videós műhely',
     badge: 'FÜGGETLEN CSATORNA',
+    photo: '/images/rendszervaltas/partizan.webp',
+    photoFit: 'contain',
     tagline:
       'Nézői támogatásból épült fel akkorára, hogy egy választási éjszakán nagyobb közönséget ért el, mint több országos televízió.',
     targetKeyword: { phrase: 'partizán', volume: 33100, kd: 45 },
@@ -768,6 +781,8 @@ export const FELTAROK: Feltaro[] = [
     group: 'media',
     role: 'oknyomozó portál és adatigénylő műhely',
     badge: 'OKNYOMOZÓ',
+    photo: '/images/rendszervaltas/atlatszo.webp',
+    photoFit: 'contain',
     tagline:
       'Közérdekű adatigénylések százait nyújtotta be, és ha elutasították, bíróságra vitte — több ügyben ez volt az egyetlen út, ahogy az iratok kikerültek.',
     targetKeyword: { phrase: 'átlátszó.hu', volume: 4400, kd: 50 },
@@ -1144,6 +1159,8 @@ export const FELTAROK: Feltaro[] = [
     group: 'media',
     role: 'antikorrupciós civil szervezet, közpénz-adatbázis',
     badge: 'ADATBÁZIS',
+    photo: '/images/rendszervaltas/k-monitor.webp',
+    photoFit: 'contain',
     tagline:
       'Egyetlen kereshető adatbázisba gyűjtötte a magyar sajtóban valaha megjelent korrupciós cikkeket — ez ma a terület legfontosabb kutatási alapja.',
     targetKeyword: { phrase: 'k-monitor', volume: 1000, kd: 21 },
@@ -1210,6 +1227,8 @@ export const FELTAROK: Feltaro[] = [
     group: 'media',
     role: 'oknyomozó újságíró központ',
     badge: 'OKNYOMOZÓ',
+    photo: '/images/rendszervaltas/direkt36.webp',
+    photoFit: 'contain',
     tagline:
       'Hónapokig, néha évekig dolgozott egyetlen sztorin — és nemzetközi partnerekkel olyan ügyeket hozott ki, amelyekhez egyedül egyetlen magyar szerkesztőség sem fért volna hozzá.',
     section: {
@@ -1428,6 +1447,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'person',
     role: 'országgyűlési képviselő, a Mérce alapító-szerkesztője',
     badge: 'ÚJSÁGÍRÓ-KÉPVISELŐ',
+    photo: '/images/rendszervaltas/jambor-andras.webp',
     tagline:
       'Újságíróból lett képviselő úgy, hogy közben nem hagyta abba a terepmunkát — a szociális ügyeket ő emelte vissza a közbeszédbe.',
     targetKeyword: { phrase: 'jámbor andrás', volume: 6600, kd: 41 },
@@ -1447,6 +1467,8 @@ export const FELTAROK: Feltaro[] = [
     group: 'media',
     role: 'közösségi finanszírozású közéleti portál',
     badge: 'FÜGGETLEN SZERKESZTŐSÉG',
+    photo: '/images/rendszervaltas/merce.webp',
+    photoFit: 'contain',
     tagline:
       'Azokról a következményekről írt, amelyek a botrányok után jönnek — lakhatásról, munkáról, szegénységről, helyszíni riportokban.',
     section: {
@@ -1465,6 +1487,8 @@ export const FELTAROK: Feltaro[] = [
     group: 'media',
     role: 'baloldali közösségszervező mozgalom',
     badge: 'KÖZÖSSÉGSZERVEZÉS',
+    photo: '/images/rendszervaltas/szikra-mozgalom.webp',
+    photoFit: 'contain',
     tagline:
       'Nem cikkeket írt, hanem embereket szervezett — utcáról utcára, konkrét helyi ügyekben, választásokon kívül is.',
     section: {
@@ -1483,6 +1507,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'person',
     role: 'aktivista, videós műsorkészítő',
     badge: 'NER100',
+    photo: '/images/rendszervaltas/juhasz-peter.webp',
     tagline:
       'Nézhető, epizódokra bontott formába öntötte azt, amit addig csak száraz közbeszerzési iratokból lehetett kibogozni — a NER100 sorozatban.',
     targetKeyword: { phrase: 'juhász péter', volume: 22200, kd: 42 },
@@ -1787,6 +1812,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'person',
     role: 'Hódmezővásárhely polgármestere',
     badge: 'VIDÉKI ÁTTÖRÉS',
+    photo: '/images/rendszervaltas/marki-zay-peter.webp',
     tagline:
       'Egy biztosnak hitt vidéki városban nyert, és ezzel ő bizonyította be elsőként, hogy a rendszer helyben legyőzhető.',
     targetKeyword: { phrase: 'márki zay péter', volume: 8100, kd: 48 },
@@ -1806,6 +1832,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'person',
     role: 'kritikus, publicista',
     badge: 'KÖZBESZÉD',
+    photo: '/images/rendszervaltas/puzser-robert.webp',
     tagline:
       'Egyik oldalnak sem volt hajlandó megfelelni — és ezzel olyan hallgatóságot ért el, amelyet a klasszikus ellenzéki média sosem.',
     targetKeyword: { phrase: 'puzsér róbert', volume: 18100, kd: 49 },
@@ -1825,6 +1852,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'person',
     role: 'zenekar — Fekete Giorgio, Héra Barnabás',
     badge: 'SZÍNPADRÓL',
+    photo: '/images/rendszervaltas/carson-coma.webp',
     tagline:
       'Teltházas koncerteken mondták ki azt, amit a rádiós játszási listákért cserébe hallgatni illett volna — és vállalták a következményeit.',
     targetKeyword: { phrase: 'carson coma', volume: 9900, kd: 46 },
@@ -1845,6 +1873,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'person',
     role: 'független országgyűlési képviselő',
     badge: 'ADATIGÉNYLŐ',
+    photo: '/images/rendszervaltas/szel-bernadett.webp',
     tagline:
       'Írásbeli kérdések és közérdekűadat-igénylések százaival kényszerítette válaszadásra a minisztériumokat — és a megtagadott válaszokat is nyilvánosságra hozta.',
     section: {
@@ -1864,6 +1893,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'person',
     role: 'országgyűlési képviselő, a Párbeszéd társelnöke',
     badge: 'HELYSZÍNI ELLENŐRZÉS',
+    photo: '/images/rendszervaltas/szabo-timea.webp',
     tagline:
       'Nem érte be a hivatalos tájékoztatással: bement az intézményekbe, és azt dokumentálta, amit ott talált.',
     section: {
@@ -1882,6 +1912,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'person',
     role: 'oknyomozó újságíró',
     badge: 'MEGFIGYELÉSI ÜGY',
+    photo: '/images/rendszervaltas/panyi-szabolcs.webp',
     tagline:
       'Feltárta a magyar megfigyelési botrányt — és közben kiderült, hogy a saját telefonja is a célpontok között volt.',
     section: {
@@ -2038,6 +2069,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'person',
     role: 'orvos, egészségügyi szakértő',
     badge: 'EGÉSZSÉGÜGYI ADAT',
+    photo: '/images/rendszervaltas/kunetz-zsombor.webp',
     tagline:
       'Éveken át olvasta ki a hivatalos egészségügyi statisztikákból azt, amit a hivatalos kommunikáció nem mondott ki.',
     section: {
@@ -2056,6 +2088,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'person',
     role: 'biztonságpolitikai szakértő',
     badge: 'KÜLPOLITIKAI KONTEXTUS',
+    photo: '/images/rendszervaltas/racz-andras.webp',
     tagline:
       'Elmagyarázta, mi a különbség a diplomáciai gesztus és a befolyásszerzés között — és hogy mikor melyikről volt szó.',
     section: {
@@ -2076,6 +2109,8 @@ export const FELTAROK: Feltaro[] = [
     group: 'media',
     role: 'oknyomozó portál (kontroll.hu)',
     badge: 'OKNYOMOZÓ',
+    photo: '/images/rendszervaltas/kontroll.webp',
+    photoFit: 'contain',
     tagline:
       'Közpénz-kifizetéseket és állami szerződéseket tárt fel adatelemzéssel — és amikor tévedett, maga közölte a helyreigazítást.',
     section: {
@@ -2095,6 +2130,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'media',
     role: 'utcai és helyszíni videós műhely',
     badge: 'HELYSZÍNI RIPORT',
+    photo: '/images/rendszervaltas/gulyasagyu-media.webp',
     tagline:
       'Ott volt kamerával, ahol a politika ténylegesen találkozik az emberekkel — kampánygyűléseken, utcán, vidéken.',
     section: {
@@ -2369,6 +2405,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'media',
     role: 'közösségi kampányplatform',
     badge: 'KAMPÁNYPLATFORM',
+    photo: '/images/rendszervaltas/ahang.webp',
     tagline:
       'Infrastruktúrát adott ahhoz, hogy egy felháborodásból mérhető, több tízezer aláírásos nyomásgyakorlás legyen.',
     section: {
@@ -2387,6 +2424,8 @@ export const FELTAROK: Feltaro[] = [
     group: 'media',
     role: 'civil akcióközösség, választási megfigyelés',
     badge: 'VÁLASZTÁSI ŐRSZEMEK',
+    photo: '/images/rendszervaltas/de-akciokozosseg.webp',
+    photoFit: 'contain',
     tagline:
       'Nem cikket írt a szavazatvásárlásról, hanem kétezer önkéntest állított a szavazókörök elé azon a napon, amikor ez számított.',
     // A márkanév a biztos cél (egyértelmű keresési szándék). A nagyobb falat
@@ -2420,6 +2459,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'channel',
     role: 'videós műsorkészítő',
     badge: 'HETI ÖSSZEFOGLALÓ',
+    photo: '/images/rendszervaltas/pottyondy-edina.webp',
     tagline:
       'Heti rendszerességgel foglalta össze, mi történt — olyan formában, amit végignézés után tényleg meg lehetett jegyezni.',
     section: {
@@ -2438,6 +2478,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'channel',
     role: 'vállalkozó, a ZSHOWtime házigazdája',
     badge: 'INTERJÚK',
+    photo: '/images/rendszervaltas/osvath-zsolt.webp',
     tagline:
       'Nem politikai újságíróként ült le a politikusokkal — és pont ezért jutott el olyan nézőkhöz, akiket a közéleti média sosem ért el.',
     section: {
@@ -2455,6 +2496,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'channel',
     role: 'közéleti szatíra- és elemzőcsatorna',
     badge: 'SZATÍRA',
+    photo: '/images/rendszervaltas/fokuszcsoport.webp',
     tagline:
       'A humort használta arra, amire a tényszerű beszámoló sokszor képtelen: hogy megmaradjon az emberek fejében.',
     section: {
@@ -2473,6 +2515,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'channel',
     role: 'közéleti blog',
     badge: 'BLOG',
+    photo: '/images/rendszervaltas/vastagbor.webp',
     tagline:
       'Éveken át, blogformátumban tartotta napirenden azt, amit a nagy lapok néhány nap után elengedtek.',
     targetKeyword: { phrase: 'vastagbőr', volume: 590, kd: 19 },
@@ -2491,6 +2534,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'channel',
     role: 'közéleti blog és podcast',
     badge: 'BLOG + PODCAST',
+    photo: '/images/rendszervaltas/kardblog.webp',
     tagline:
       'Heti rendszerességgel rakta össze és magyarázta el, mi történt — blogban és podcastben egyszerre.',
     section: {
@@ -2508,6 +2552,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'channel',
     role: 'nagy elérésű közösségi oldal',
     badge: 'NAGY ELÉRÉS',
+    photo: '/images/rendszervaltas/dietas-magyar-muzsa.webp',
     tagline:
       'Százezres eléréssel vitte tovább a kész sztorikat — a közösségi média azon rétegében, ahová a szerkesztőségek nem jutnak el.',
     section: {
@@ -2525,6 +2570,8 @@ export const FELTAROK: Feltaro[] = [
     group: 'channel',
     role: 'nagy elérésű közösségi oldal',
     badge: 'NAGY ELÉRÉS',
+    photo: '/images/rendszervaltas/maydayhungary.webp',
+    photoFit: 'contain',
     tagline:
       'Folyamatosan gyűjtötte és tette egy helyre azt, ami máskülönben tucatnyi forrásban szóródott volna szét.',
     section: {
@@ -2542,6 +2589,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'channel',
     role: 'nagy elérésű közösségi oldal',
     badge: 'NAGY ELÉRÉS',
+    photo: '/images/rendszervaltas/jolvanezigy.webp',
     tagline:
       'A közéleti abszurdumokat tette pár másodperc alatt érthetővé — ott, ahol az emberek amúgy is görgetnek.',
     section: {
@@ -2559,6 +2607,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'channel',
     role: 'videós tartalomgyártó, humorista',
     badge: 'SZATÍRA',
+    photo: '/images/rendszervaltas/radics-peti.webp',
     tagline:
       'Szatíracsatornát vitt, nem politikait — aztán egy ponton kiállt a Kossuth térre, és a nézői vele mentek.',
     section: {
@@ -2578,6 +2627,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'person',
     role: 'színész, aktivista (noÁr)',
     badge: 'NKA-BOTRÁNY',
+    photo: '/images/rendszervaltas/molnar-aron.webp',
     tagline:
       'Ő robbantotta ki az NKA-botrányt — a rendszerváltás UTÁN, amikor már senki nem várta, hogy jöjjön még egy ekkora ügy.',
     section: {
@@ -2647,6 +2697,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'channel',
     role: 'Fülöp Botond ügyvéd Facebook-oldala',
     badge: 'KEGYELMI ÜGY',
+    photo: '/images/rendszervaltas/videki-prokator.webp',
     tagline:
       'Egy vidéki ügyvéd, aki reggelente átolvasta a bírósági határozatokat — és az egyikből kiesett a kegyelmi botrány.',
     section: {
