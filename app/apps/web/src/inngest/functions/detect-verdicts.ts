@@ -22,6 +22,7 @@ import {
   truncateDescriptionWords,
   type CandidateArticle,
 } from '@korr/db';
+import { isCharged } from '@app/birosagi-iteletek/verdict-stats';
 import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
 import { notifyAutoPublished } from '@/lib/notify-auto-publish';
@@ -280,6 +281,22 @@ ${article.excerpt}`;
     if (gate.verdict === 'flag' && reviewStatus === 'approved') {
       reviewStatus = 'pending';
     }
+  }
+
+
+  // VÁDEMELÉS / ÍTÉLET: MINDIG EMBERI JÓVÁHAGYÁS.
+  //
+  // 2026-09-17, user szabály: „a vádemelve/ítélve táblába mielőtt bármi
+  // bekerül, a Telegramon jóvá kell hagynom." Ez a legsúlyosabb állítást
+  // hordozó szakasz az oldalon — ott egy téves sor nem szépséghiba, hanem
+  // valakiről azt állítja, hogy vádat emeltek ellene vagy elítélték.
+  //
+  // Ugyanaz a szerződés, mint a CriminalComplaint minden új soránál
+  // (l. [[project-name-dedup-safety-net-2026-09-07]]): a bizonyosság és a
+  // `bypassConfidenceGate` sem írja felül, mert itt nem a kinyerés
+  // megbízhatósága a kérdés, hanem a közlés súlya.
+  if (isCharged(verdictType)) {
+    reviewStatus = 'pending';
   }
 
   // Büntetés-év csak ítélethez — l. verdict-gate.ts. A `verdictType` ezen a

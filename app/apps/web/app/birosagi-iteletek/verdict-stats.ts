@@ -36,6 +36,28 @@ export function isReleased(t: string): t is ReleasedType {
  * előzetes, a vádemelés és az ítélet NEM szinonimák. Ezért a számláló innen,
  * EGY helyről jön, és nem a hívó oldalon ismétlődik meg a feltétel.
  */
+/**
+ * VÁDEMELVE VAGY ELÍTÉLVE — engedélyező lista, nem „minden más".
+ *
+ * 2026-09-17, user report: „ott van benne Pilz Tamás, akit csak
+ * gyanúsítanak." Igaza volt, és ez nem egyedi eset, hanem a partíció
+ * szerkezetéből következett: a `charged` kupac KIZÁRÁS-alapú volt (ami nem
+ * kiengedett és nem előzetes, az ide esett), így az 'egyéb' — vagyis a
+ * puszta gyanúsítás — is a legsúlyosabb nevű szakaszba került.
+ *
+ * Az engedélyező lista ezt a hibaosztályt szünteti meg: ha egy kilencedik
+ * verdictType kerül a CHECK constraintbe, az NEM a vádemelés/ítélet
+ * szakaszba csúszik be némán, hanem a semleges „gyanúsítás, eljárás alatt"
+ * kupacba. Ugyanaz a tanulság, mint az [[project-verdict-label-conflation]]
+ * háromszor kiment hibájánál: a címke sose legyen súlyosabb a ténynél.
+ */
+export const CHARGED_TYPES = ['vádemelés', 'elsőfokú', 'jogerős'] as const;
+export type ChargedType = (typeof CHARGED_TYPES)[number];
+
+export function isCharged(t: string): t is ChargedType {
+  return (CHARGED_TYPES as readonly string[]).includes(t);
+}
+
 export const ACTUAL_VERDICT_TYPES = ['elsőfokú', 'jogerős'] as const;
 export type ActualVerdictType = (typeof ACTUAL_VERDICT_TYPES)[number];
 
@@ -52,8 +74,10 @@ export type VerdictStatRow = { verdictType: string; sentenceYears: number };
 
 export interface VerdictStats {
   pretrialCount: number;
-  /** "Vádemelve vagy elítélve" — minden aktív (nem kiengedett/lezárt) ÉS nem előzetesben lévő sor. */
+  /** "Vádemelve vagy elítélve" — CSAK vádemelés / elsőfokú / jogerős (l. CHARGED_TYPES). */
   nonPretrialCount: number;
+  /** "Gyanúsítás, eljárás alatt" — se nem kiengedett, se nem előzetes, se nem vádemelt. */
+  suspectedCount: number;
   jogerosCount: number;
   totalYears: number;
   releasedCount: number;
@@ -76,28 +100,35 @@ export interface VerdictStats {
 export function partitionVerdicts<T extends VerdictStatRow>(rows: T[]): {
   pretrial: T[];
   charged: T[];
+  suspected: T[];
   released: T[];
 } {
   const pretrial: T[] = [];
   const charged: T[] = [];
+  const suspected: T[] = [];
   const released: T[] = [];
   for (const r of rows) {
     if (isReleased(r.verdictType)) released.push(r);
     else if (r.verdictType === 'előzetesben') pretrial.push(r);
-    else charged.push(r);
+    else if (isCharged(r.verdictType)) charged.push(r);
+    // Minden maradék (ma: 'egyéb') a semleges kupacba — l. CHARGED_TYPES.
+    else suspected.push(r);
   }
-  return { pretrial, charged, released };
+  return { pretrial, charged, suspected, released };
 }
 
 export function computeVerdictStats(rows: VerdictStatRow[]): VerdictStats {
-  const active = rows.filter(r => !isReleased(r.verdictType));
-  const released = rows.filter(r => isReleased(r.verdictType));
-  const nonPretrial = active.filter(r => r.verdictType !== 'előzetesben');
+  // A számok UGYANEBBŐL a partícióból jönnek, mint a lista csoportjai —
+  // enélkül a doboz száma és a hozzá görgetett lista hossza elcsúszhatna.
+  const { pretrial, charged, suspected, released } = partitionVerdicts(rows);
   return {
-    pretrialCount: active.filter(r => r.verdictType === 'előzetesben').length,
-    nonPretrialCount: nonPretrial.length,
-    jogerosCount: nonPretrial.filter(r => r.verdictType === 'jogerős').length,
-    totalYears: nonPretrial.reduce((s, r) => s + r.sentenceYears, 0),
+    pretrialCount: pretrial.length,
+    nonPretrialCount: charged.length,
+    suspectedCount: suspected.length,
+    jogerosCount: charged.filter(r => r.verdictType === 'jogerős').length,
+    // Börtönév csak ítéletes soron lehet (l. verdict-gate.ts
+    // coerceSentenceToVerdictType), de a szűkítés itt is explicit.
+    totalYears: charged.reduce((s, r) => s + r.sentenceYears, 0),
     releasedCount: released.length,
   };
 }

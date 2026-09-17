@@ -394,11 +394,16 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
   // "eljárás alatt" blokk két külön szekcióra bomlik. A csoportosítás
   // ugyanabból a partitionVerdicts()-ből jön, amiből a dobozok számai —
   // l. verdict-stats.ts kommentje, hogy miért nem itt helyben szűrünk.
-  const { pretrial: pretrialFiltered, charged: chargedFiltered, released: releasedFiltered } = partitionVerdicts(filtered);
+  const {
+    pretrial: pretrialFiltered,
+    charged: chargedFiltered,
+    suspected: suspectedFiltered,
+    released: releasedFiltered,
+  } = partitionVerdicts(filtered);
   // verdict-stats.ts: tesztelt, egyetlen forrás — l. verdict-stats.test.ts,
   // ami minden CHECK-constraint-listás verdictType értékre garantálja, hogy
   // pontosan egy kártyába/számlálóba esik (2026-08-02, user report).
-  const { pretrialCount, nonPretrialCount, jogerosCount, totalYears } = computeVerdictStats(filtered);
+  const { pretrialCount, nonPretrialCount, suspectedCount, jogerosCount, totalYears } = computeVerdictStats(filtered);
 
   function clearAll() {
     setSearch(''); setVerdictTypeFilter('all'); setComplaintStatusFilter('all'); setCrimeFilter([]); setYearRange('all'); setCourtFilter('all'); setUgyFilter('all');
@@ -445,12 +450,12 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
             <div className="megszunt-stat-label">Előzetesben van</div>
           </div>
         )}
-        {/* A "Vádemelve vagy elítélve" szám nem CSAK a ténylegesen kihirdetett
-            ítéleteket (elsőfokú/jogerős) számolja, hanem minden előzetesen
-            túljutott, még nem lezárt/kiengedett szakaszt is (vádemelés,
-            fellebbezés alatt is beleesik — l. verdict-stats.ts komment). A régi
-            "Ítélet összesen" felirat ezt tévesen sugallta (user report,
-            2026-08-17: egy csak vádemelt ügy is "ítéletként" jelent meg). */}
+        {/* A "Vádemelve vagy elítélve" szám a vádemelést és a kihirdetett
+            (első- vagy jogerős fokú) ítéleteket számolja — 2026-09-17 óta
+            CSAK ezeket. Korábban kizárás-alapú volt a kupac, ezért a puszta
+            gyanúsítás ('egyéb') is ide esett (user report: „ott van benne
+            Pilz Tamás, akit csak gyanúsítanak"). A gyanúsítottak azóta a
+            következő dobozba/szakaszba kerülnek. */}
         {chargedFiltered.length > 0 ? (
           <button
             type="button"
@@ -465,6 +470,22 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
           <div className="megszunt-stat">
             <div className="megszunt-stat-value">{nonPretrialCount}</div>
             <div className="megszunt-stat-label">Vádemelve vagy elítélve</div>
+          </div>
+        )}
+        {suspectedFiltered.length > 0 ? (
+          <button
+            type="button"
+            className="megszunt-stat megszunt-stat--clickable"
+            onClick={() => scrollToSection('gyanusitas-lista')}
+            aria-label="Ugrás a gyanúsítottak listájához"
+          >
+            <div className="megszunt-stat-value">{suspectedCount}</div>
+            <div className="megszunt-stat-label">Gyanúsítás, eljárás alatt</div>
+          </button>
+        ) : (
+          <div className="megszunt-stat">
+            <div className="megszunt-stat-value">{suspectedCount}</div>
+            <div className="megszunt-stat-label">Gyanúsítás, eljárás alatt</div>
           </div>
         )}
         <div className="megszunt-stat">
@@ -859,9 +880,33 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
             </div>
           )}
 
+          {/* Gyanúsítás, eljárás alatt — se előzetes, se vádemelés, se ítélet.
+              2026-09-17, user kérés: ez eddig a „Vádemelve vagy elítélve"
+              szakaszban jelent meg, ami súlyosabbat állított a ténynél. */}
+          {suspectedFiltered.length > 0 && (
+            <div
+              id="gyanusitas-lista"
+              className="verdict-scroll-anchor"
+              style={{ marginTop: (pretrialFiltered.length > 0 || chargedFiltered.length > 0) ? 48 : 20 }}
+            >
+              <div style={{ marginBottom: 16 }}>
+                <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
+                  {hasFilter ? `Gyanúsítás, eljárás alatt — ${suspectedFiltered.length} db` : 'Gyanúsítás, eljárás alatt'}
+                </h3>
+                <p style={{ fontSize: 13, color: '#888', margin: 0 }}>
+                  Az alábbi személyeket gyanúsítottként hallgatták ki vagy eljárás folyik ellenük, de nincsenek
+                  előzetesben, és vádemelés vagy ítélet még nem történt.
+                </p>
+              </div>
+              <div className="vlist">
+                {suspectedFiltered.map(r => <VerdictRow key={r.id} r={r} />)}
+              </div>
+            </div>
+          )}
+
           {/* Lezárt / kiengedett szekció */}
           {releasedFiltered.length > 0 && (
-            <div style={{ marginTop: (pretrialFiltered.length > 0 || chargedFiltered.length > 0) ? 48 : 20 }}>
+            <div style={{ marginTop: (pretrialFiltered.length > 0 || chargedFiltered.length > 0 || suspectedFiltered.length > 0) ? 48 : 20 }}>
               <div style={{ borderTop: '2px solid #e0e0e0', paddingTop: 32, marginBottom: 16 }}>
                 <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
                   {hasFilter ? `Szabadlábra helyezve / Eljárás megszűnt — ${releasedFiltered.length} db` : 'Szabadlábra helyezve / Eljárás megszűnt'}

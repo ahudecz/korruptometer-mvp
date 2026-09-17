@@ -11,7 +11,9 @@ const ALL_TYPES = [
 ];
 
 describe('computeVerdictStats', () => {
-  it('every CHECK-constraint verdictType lands in exactly one of {pretrial, released, active-verdict}', () => {
+  // 2026-09-17: negyedik számláló (suspectedCount) — a puszta gyanúsítás
+  // kikerült a vádemelés/ítélet kupacból, l. CHARGED_TYPES.
+  it('every CHECK-constraint verdictType lands in exactly one of {pretrial, released, charged, suspected}', () => {
     for (const type of ALL_TYPES) {
       const rows: VerdictStatRow[] = [{ verdictType: type, sentenceYears: 0 }];
       const stats = computeVerdictStats(rows);
@@ -19,6 +21,7 @@ describe('computeVerdictStats', () => {
         stats.pretrialCount === 1,
         stats.releasedCount === 1,
         stats.nonPretrialCount === 1,
+        stats.suspectedCount === 1,
       ].filter(Boolean).length;
       expect(buckets, `verdictType "${type}" must land in exactly one bucket`).toBe(1);
     }
@@ -40,17 +43,18 @@ describe('computeVerdictStats', () => {
     for (const type of ALL_TYPES) {
       const rows: VerdictStatRow[] = [{ verdictType: type, sentenceYears: 0 }];
       const stats = computeVerdictStats(rows);
-      const { pretrial, charged, released } = partitionVerdicts(rows);
+      const { pretrial, charged, suspected, released } = partitionVerdicts(rows);
       expect(pretrial.length, `pretrial mismatch for "${type}"`).toBe(stats.pretrialCount);
       expect(charged.length, `charged mismatch for "${type}"`).toBe(stats.nonPretrialCount);
+      expect(suspected.length, `suspected mismatch for "${type}"`).toBe(stats.suspectedCount);
       expect(released.length, `released mismatch for "${type}"`).toBe(stats.releasedCount);
     }
   });
 
   it('partitionVerdicts puts every row in exactly one bucket and loses none', () => {
     const rows: VerdictStatRow[] = ALL_TYPES.map(t => ({ verdictType: t, sentenceYears: 1 }));
-    const { pretrial, charged, released } = partitionVerdicts(rows);
-    expect(pretrial.length + charged.length + released.length).toBe(rows.length);
+    const { pretrial, charged, suspected, released } = partitionVerdicts(rows);
+    expect(pretrial.length + charged.length + suspected.length + released.length).toBe(rows.length);
   });
 
   it('isReleased recognizes exactly the 3 closed-case types', () => {
@@ -93,5 +97,32 @@ describe('countActualVerdicts', () => {
 
   it('a kiengedett elítéltet is számolja (az ítélet attól még megszületett)', () => {
     expect(countActualVerdicts([{ verdictType: 'jogerős' }, { verdictType: 'elsőfokú' }])).toBe(2);
+  });
+});
+
+describe('a „Vádemelve vagy elítélve" kupac engedélyező lista (2026-09-17)', () => {
+  it('az „egyéb" (puszta gyanúsítás) NEM esik a vádemelés/ítélet kupacba', () => {
+    const rows: VerdictStatRow[] = [{ verdictType: 'egyéb', sentenceYears: 0 }];
+    const { charged, suspected } = partitionVerdicts(rows);
+    expect(charged).toHaveLength(0);
+    expect(suspected).toHaveLength(1);
+    expect(computeVerdictStats(rows).nonPretrialCount).toBe(0);
+    expect(computeVerdictStats(rows).suspectedCount).toBe(1);
+  });
+
+  it('a vádemelés és a két ítélet-fok IGEN', () => {
+    for (const t of ['vádemelés', 'elsőfokú', 'jogerős']) {
+      const rows: VerdictStatRow[] = [{ verdictType: t, sentenceYears: 0 }];
+      expect(partitionVerdicts(rows).charged, t).toHaveLength(1);
+      expect(partitionVerdicts(rows).suspected, t).toHaveLength(0);
+    }
+  });
+
+  it('egy JÖVŐBELI, ismeretlen típus a semleges kupacba esik, nem a vádemelésbe', () => {
+    // Ez a lényeg: kizárás-alapú partíciónál egy kilencedik verdictType
+    // némán a legsúlyosabb nevű szakaszba csúszott volna be.
+    const rows: VerdictStatRow[] = [{ verdictType: 'valami-uj-tipus', sentenceYears: 0 }];
+    expect(partitionVerdicts(rows).charged).toHaveLength(0);
+    expect(partitionVerdicts(rows).suspected).toHaveLength(1);
   });
 });
