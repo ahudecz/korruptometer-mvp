@@ -13,11 +13,12 @@ import {
 } from '../_home/rendszervaltas-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../_home/cross-promo';
 import { FeltaroVideo } from '../_home/feltaro-video';
+import { findPersonLink } from '../_home/person-links';
 import styles from './dicsosegfal.module.css';
 
 // Statikus tartalom, DB-hívás nélkül — nincs mit revalidálni óránként.
 // A napi újragenerálás bőven elég ahhoz, hogy egy config-módosítás
-// (új név a falon) kimenjen, és a Googlebot mindig kész HTML-t kapjon.
+// (új név a Dicsőségfalon) kimenjen, és a Googlebot mindig kész HTML-t kapjon.
 export const revalidate = 86400;
 
 const SITE = 'https://www.kegyencjarat.hu';
@@ -47,10 +48,13 @@ function initials(name: string): string {
 /** Ugyanaz a szó szerinti, regex nélküli linkelő, mint az ügy-aloldalaknál:
  *  ha a `links[].text` nem szerepel a bekezdésben, csak link nem lesz belőle,
  *  a szöveg attól még hibátlanul megjelenik. */
-function withLinks(content: string, links?: InlineLink[]): React.ReactNode {
-  if (!links || links.length === 0) return content;
+function withLinks(
+  content: string,
+  links?: InlineLink[],
+  linkedPersons?: Set<string>,
+): React.ReactNode {
   let parts: React.ReactNode[] = [content];
-  links.forEach((link, li) => {
+  (links ?? []).forEach((link, li) => {
     const next: React.ReactNode[] = [];
     for (const part of parts) {
       if (typeof part !== 'string' || !part.includes(link.text)) {
@@ -70,6 +74,39 @@ function withLinks(content: string, links?: InlineLink[]): React.ReactNode {
     }
     parts = next;
   });
+
+  // Automatikus névlinkelés a MARADÉK szövegdarabokon — l. person-links.ts.
+  // A kézi `links` így sosem sérül, és linkbe ágyazott link sem keletkezik.
+  if (linkedPersons) {
+    const next: React.ReactNode[] = [];
+    for (const part of parts) {
+      if (typeof part !== 'string') {
+        next.push(part);
+        continue;
+      }
+      let rest = part;
+      let guard = 0;
+      // A `guard` nem esztétika: ha egy minta valaha üres stringre
+      // illeszkedne, ez a ciklus végtelen lenne, és egy statikus oldal
+      // renderelése fagyna meg.
+      while (guard < 12) {
+        const hit = findPersonLink(rest, linkedPersons);
+        if (!hit) break;
+        linkedPersons.add(hit.name);
+        next.push(hit.before);
+        next.push(
+          <Link key={`p-${hit.href}-${guard}`} href={hit.href}>
+            {hit.matched}
+          </Link>,
+        );
+        rest = hit.after;
+        guard += 1;
+      }
+      next.push(rest);
+    }
+    parts = next;
+  }
+
   return parts.map((p, i) => <React.Fragment key={i}>{p}</React.Fragment>);
 }
 
@@ -153,6 +190,10 @@ function FeltaroCard({ f }: { f: Feltaro }) {
 
 export default function RendszervaltasPage() {
   const hub = RENDSZERVALTAS_HUB;
+
+  // Egy Set az EGÉSZ oldalra: minden személynév csak az első előfordulásánál
+  // lesz link, hogy tíz Mészáros-link helyett egy legyen — l. person-links.ts.
+  const linkedPersons = new Set<string>();
 
   // A tartalomjegyzék a HÁROM BLOKKRA mutat, nem mind a harminc-egynéhány
   // névre — egy ekkora lista már nem navigáció, hanem fal. A neveken belül a
@@ -327,7 +368,7 @@ export default function RendszervaltasPage() {
                     <div className={styles.sectionKicker}>{f.badge}</div>
                     <h3 className="ugy-block-heading">{f.section.heading}</h3>
                     {f.section.paragraphs.map((para, i) => (
-                      <p key={i}>{withLinks(para, f.section.links)}</p>
+                      <p key={i}>{withLinks(para, f.section.links, linkedPersons)}</p>
                     ))}
                     {f.section.video && (
                       <FeltaroVideo
@@ -394,7 +435,7 @@ export default function RendszervaltasPage() {
             <Link href="/podcastok" className="seo-internal-card">
               <span className="seo-internal-title">Videóriportok és podcastok</span>
               <span className="seo-internal-note">
-                A falon szereplő műhelyek friss anyagai egy helyen.
+                A Dicsőségfalon szereplő műhelyek friss anyagai egy helyen.
               </span>
               <span className="seo-internal-cta">Megnézem →</span>
             </Link>

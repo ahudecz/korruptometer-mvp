@@ -727,3 +727,30 @@ a.card:hover {
   font-size: 13px;
   color: var(--muted, #5c5e62);
 }
+
+/* Fotó egy ügy alszakaszában. A magasságnak SZÁNDÉKOSAN nincs korlátja
+   (user, 2026-09-16: „az mobilon is hiba, hogy a képek magasságának ne
+   legyen korlátja, mert orbán feje ott le van vágva") — a kép a saját
+   arányában jelenik meg, vágás nélkül. */
+.caseFigure {
+  margin: 28px 0;
+}
+
+.caseFigureImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.caseFigureCaption {
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted, #8a8a8a);
+}
+
+.caseFigureCredit {
+  white-space: nowrap;
+  opacity: 0.85;
+}

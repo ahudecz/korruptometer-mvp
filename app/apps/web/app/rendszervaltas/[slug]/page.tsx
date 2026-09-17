@@ -15,6 +15,7 @@ import {
 } from '../../_home/rendszervaltas-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../_home/cross-promo';
 import { FeltaroVideo } from '../../_home/feltaro-video';
+import { findPersonLink } from '../../_home/person-links';
 import { PodcastVideoBox } from '../../_home/podcast-video-box';
 import styles from '../dicsosegfal.module.css';
 
@@ -86,10 +87,13 @@ function initials(name: string): string {
 }
 
 /** Szó szerinti, regex nélküli linkelő — ugyanaz a minta, mint a hubon. */
-function withLinks(content: string, links?: InlineLink[]): React.ReactNode {
-  if (!links || links.length === 0) return content;
+function withLinks(
+  content: string,
+  links?: InlineLink[],
+  linkedPersons?: Set<string>,
+): React.ReactNode {
   let parts: React.ReactNode[] = [content];
-  links.forEach((link, li) => {
+  (links ?? []).forEach((link, li) => {
     const next: React.ReactNode[] = [];
     for (const part of parts) {
       if (typeof part !== 'string' || !part.includes(link.text)) {
@@ -109,6 +113,39 @@ function withLinks(content: string, links?: InlineLink[]): React.ReactNode {
     }
     parts = next;
   });
+
+  // Automatikus névlinkelés a MARADÉK szövegdarabokon — l. person-links.ts.
+  // A kézi `links` így sosem sérül, és linkbe ágyazott link sem keletkezik.
+  if (linkedPersons) {
+    const next: React.ReactNode[] = [];
+    for (const part of parts) {
+      if (typeof part !== 'string') {
+        next.push(part);
+        continue;
+      }
+      let rest = part;
+      let guard = 0;
+      // A `guard` nem esztétika: ha egy minta valaha üres stringre
+      // illeszkedne, ez a ciklus végtelen lenne, és egy statikus oldal
+      // renderelése fagyna meg.
+      while (guard < 12) {
+        const hit = findPersonLink(rest, linkedPersons);
+        if (!hit) break;
+        linkedPersons.add(hit.name);
+        next.push(hit.before);
+        next.push(
+          <Link key={`p-${hit.href}-${guard}`} href={hit.href}>
+            {hit.matched}
+          </Link>,
+        );
+        rest = hit.after;
+        guard += 1;
+      }
+      next.push(rest);
+    }
+    parts = next;
+  }
+
   return parts.map((p, i) => <React.Fragment key={i}>{p}</React.Fragment>);
 }
 
@@ -195,6 +232,10 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
   const d = f.detail;
   const group = GROUP_META[f.group];
   const url = urlFor(f.id);
+
+  // Egy Set az EGÉSZ oldalra: minden személynév csak az első előfordulásánál
+  // lesz link, hogy tíz Mészáros-link helyett egy legyen — l. person-links.ts.
+  const linkedPersons = new Set<string>();
 
   // Testvérek ugyanabból a blokkból — a hub & spoke másik iránya: az
   // aloldalak ne csak a hubra mutassanak vissza, hanem egymásra is.
@@ -286,7 +327,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
               {f.section.paragraphs
                 .flatMap((para) => splitParas(para))
                 .map((para, i) => (
-                  <p key={i}>{withLinks(para, f.section.links)}</p>
+                  <p key={i}>{withLinks(para, f.section.links, linkedPersons)}</p>
                 ))}
             </div>
 
@@ -317,10 +358,10 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                       </h3>
                       {c.when && <div className={styles.caseWhen}>{c.when}</div>}
                       {splitParas(c.body).map((para, i) => (
-                        <p className={styles.caseBody} key={`b${i}`}>{withLinks(para, c.links)}</p>
+                        <p className={styles.caseBody} key={`b${i}`}>{withLinks(para, c.links, linkedPersons)}</p>
                       ))}
                       {c.more?.flatMap((para) => splitParas(para)).map((para, i) => (
-                        <p className={styles.caseBody} key={`m${i}`}>{withLinks(para, c.links)}</p>
+                        <p className={styles.caseBody} key={`m${i}`}>{withLinks(para, c.links, linkedPersons)}</p>
                       ))}
                       {c.sections?.map((sec) => (
                         <div className={styles.caseSection} key={sec.heading}>
@@ -328,7 +369,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                           {sec.paragraphs
                             .flatMap((para) => splitParas(para))
                             .map((para, i) => (
-                              <p className={styles.caseBody} key={i}>{withLinks(para, sec.links)}</p>
+                              <p className={styles.caseBody} key={i}>{withLinks(para, sec.links, linkedPersons)}</p>
                             ))}
                           {sec.videos?.map((v) => (
                             <FeltaroVideo
@@ -341,6 +382,22 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                               variant="wide"
                             />
                           ))}
+                          {sec.image && (
+                            <figure className={styles.caseFigure}>
+                              {/* eslint-disable-next-line @next/next/no-img-element -- saját, /public alól szolgált fotó, nem kell Next Image-optimalizálás */}
+                              <img
+                                src={sec.image.src}
+                                alt={sec.image.alt}
+                                className={styles.caseFigureImg}
+                                loading="lazy"
+                                decoding="async"
+                              />
+                              <figcaption className={styles.caseFigureCaption}>
+                                {sec.image.caption ? `${sec.image.caption} ` : ''}
+                                <span className={styles.caseFigureCredit}>Fotó: {sec.image.credit}</span>
+                              </figcaption>
+                            </figure>
+                          )}
                           {sec.sources && sec.sources.length > 0 && <Sources sources={sec.sources} />}
                         </div>
                       ))}
@@ -360,7 +417,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                           <aside className={styles.caseHighlight}>
                             <h4 className={styles.caseHighlightHeading}>{c.highlight.heading}</h4>
                             {splitParas(c.highlight.body).map((para, i) => (
-                              <p key={i}>{para}</p>
+                              <p key={i}>{withLinks(para, undefined, linkedPersons)}</p>
                             ))}
                           </aside>
                           {/* A felvétel a kiemelt doboz UTÁN áll, nem benne
@@ -401,8 +458,9 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
               <div className="ugy-block-text" key={x.heading}>
                 <h2 className="ugy-block-heading">{x.heading}</h2>
                 {x.paragraphs.flatMap((para) => splitParas(para)).map((para, i) => (
-                  <p key={i}>{withLinks(para, x.links)}</p>
+                  <p key={i}>{withLinks(para, x.links, linkedPersons)}</p>
                 ))}
+                {x.sources && x.sources.length > 0 && <Sources sources={x.sources} />}
               </div>
             ))}
 
@@ -615,7 +673,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
               {d.faq.map((q, i) => (
                 <details key={i} className="seo-faq-item" open={i === 0}>
                   <summary className="seo-faq-q"><h3>{q.q}</h3></summary>
-                  <p className="seo-faq-a">{q.a}</p>
+                  <p className="seo-faq-a">{withLinks(q.a, undefined, linkedPersons)}</p>
                 </details>
               ))}
             </div>

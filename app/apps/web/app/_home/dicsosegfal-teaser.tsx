@@ -9,7 +9,7 @@ import styles from '../rendszervaltas/dicsosegfal.module.css';
 // garantált ütközés. Itt a nyitóoldali változat 8 kártyát mutat (2 teli sor
 // desktopon, 4 sor mobilon) — a teljes, 15 fős rács a saját oldalán van.
 // Nem az elso 8 nev, hanem mindharom blokkbol merites - kulonben a
-// nyitooldalon ugy nezne ki, mintha a fal csak kepviselokbol allna.
+// nyitooldalon ugy nezne ki, mintha a Dicsőségfal csak kepviselokbol allna.
 const TEASER_PICK: Record<string, number> = { person: 3, media: 3, channel: 2 };
 
 function initials(name: string): string {

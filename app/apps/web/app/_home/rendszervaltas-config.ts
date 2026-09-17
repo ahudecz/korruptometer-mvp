@@ -28,7 +28,7 @@
 // 2026-09-16: a Válasz Online és a Szabad Európa is lekerült (user döntés).
 // Mindkettő főállású, intézményi/előfizetői bevételből működő szerkesztőség
 // — ugyanaz a kategória, mint a 444 vagy a Telex —, ezért az elismerő
-// bekezdésbe kerültek át, linkkel. A falon maradó médiumok (Átlátszó,
+// bekezdésbe kerültek át, linkkel. A Dicsőségfalon maradó médiumok (Átlátszó,
 // Direkt36, K-Monitor, Partizán, Mérce, Kontroll) közadakozásból,
 // nonprofitként vagy civil szervezetként működnek. A Kontroll a user
 // döntése alapján marad.
@@ -56,7 +56,7 @@
 
 export type FeltaroKind = 'person' | 'org';
 
-/** A fal három blokkja (user kérés, 2026-09-16: a sorrend ne legyen random).
+/** A Dicsőségfal három blokkja (user kérés, 2026-09-16: a sorrend ne legyen random).
  *  A `kind` ettől független: az a schema.org típust dönti el (Person vs
  *  Organization), a `group` pedig azt, melyik rács alá kerül a kártya. */
 export type FeltaroGroup = 'person' | 'media' | 'channel';
@@ -156,6 +156,20 @@ export type FeltaroLink = {
   lead?: string;
 };
 
+/**
+ * Egy fotó az ügy szövegében. A `src` MINDIG helyi (/images/... a public
+ * alól): a forrásoldalak képeire sosem hotlinkelünk — átszerveznek, letiltják
+ * a hotlinket, vagy egyszerűen eltűnik a fájl, és akkor a mi oldalunkon
+ * marad a törött kép. A `credit` kötelező: idegen fotó forrásmegjelölés
+ * nélkül nem jelenhet meg.
+ */
+export type FeltaroImage = {
+  src: string;
+  alt: string;
+  credit: string;
+  caption?: string;
+};
+
 export type FeltaroCase = {
   title: string;
   /** Mikor történt, emberi formában („2025. augusztus 19."). Elhagyható. */
@@ -174,6 +188,8 @@ export type FeltaroCase = {
     links?: InlineLink[];
     sources?: FeltaroLink[];
     videos?: FeltaroVideoRef[];
+    /** Fotó a szakasz szövege UTÁN, a források előtt. */
+    image?: FeltaroImage;
   }[];
   sources?: FeltaroLink[];
   /** Az ÜGYHÖZ tartozó felvételek — a szöveg végén, még a kiemelés előtt.
@@ -204,7 +220,12 @@ export type FeltaroDetail = {
   /** „Mit tárt fel?" — a lap gerince. */
   cases?: { heading: string; intro?: string; items: FeltaroCase[] };
   /** További, szabad szöveges szakaszok a konkrét ügyek UTÁN. */
-  extra?: { heading: string; paragraphs: string[]; links?: InlineLink[] }[];
+  extra?: {
+    heading: string;
+    paragraphs: string[];
+    links?: InlineLink[];
+    sources?: FeltaroLink[];
+  }[];
   video?: FeltaroVideoRef;
   /** Több beágyazott videó egy blokkban, saját felvezetővel. Akkor kell,
    *  amikor nem egy adás a bizonyíték, hanem az, hogy több szerkesztőség
@@ -301,17 +322,17 @@ export const RENDSZERVALTAS_HUB = {
   /** A rács fölötti bevezető. Külön mező, mert ez a lap legolvasottabb
    *  bekezdése: ez dönti el, hogy az olvasó legörget-e a hosszú szövegig. */
   gridIntro: [
-    'Egy korrupciós ügy feltárása soha nem egyetlen ember érdeme. Mire egy név eljut odáig, hogy kimondják a híradóban, addigra valaki átrágta magát több ezer oldalnyi közbeszerzési iraton, valaki más három évig pereskedett egy elutasított adatigénylésért, egy harmadik pedig érthető mondatokká fordította az egészet. Ez a fal nekik szól.',
+    'Egy korrupciós ügy feltárása soha nem egyetlen ember érdeme. Mire egy név eljut odáig, hogy kimondják a híradóban, addigra valaki átrágta magát több ezer oldalnyi közbeszerzési iraton, valaki más három évig pereskedett egy elutasított adatigénylésért, egy harmadik pedig érthető mondatokká fordította az egészet. Ez a Dicsőségfal nekik szól.',
     'A lenti névsor nem rangsor, és nem is teljes — folyamatosan bővül. Három blokkra bontottuk, mert háromféle munkáról van szó. A **személyek** a saját nevüket adták egy-egy ügyhöz, és évekig kitartottak mellette. A **médiumok és műhelyek** azt az infrastruktúrát tartják fenn — ügyvédeket, adatbázisokat, hónapokig fizetett újságírói munkaidőt —, ami nélkül egy mélyfúrás elindulni sem tudna. A **Facebook- és YouTube-csatornák** pedig azt csinálják, amit a legkönnyebb lebecsülni és a legnehezebb pótolni: elviszik a kész sztorit több százezer emberhez, olyanokhoz is, akik hírportált soha nem nyitnak meg.',
     'A Kegyencjárat adatbázisa ennek a munkának a másodlagos feldolgozása. Egyetlen ügyet sem mi tártunk fel: mi összegyűjtjük, rendszerezzük, összekötjük és követhetővé tesszük azt, amit ők kiástak. Ezért van ez az oldal — és ezért van forrásmegjelölés minden egyes sor mellett.',
   ],
   /** A nagy független szerkesztőségek elismerése. Külön mező, mert a
    *  szerkesztőségneveknek kattintható külső linknek kell lenniük, a
    *  gridIntro pedig sima szöveg. Fontos, hogy a szöveg kimondja, MIÉRT
-   *  nincsenek a falon — különben úgy néz ki, mintha lefelejtettük volna
+   *  nincsenek a Dicsőségfalon — különben úgy néz ki, mintha lefelejtettük volna
    *  őket, miközben az adatbázisunk forráshivatkozásai tele vannak velük.
    *  A „nekik ez a dolguk is" megkülönböztetés a főállású, üzleti alapon
-   *  működő szerkesztőségre vonatkozik — a falon szereplő médiumok
+   *  működő szerkesztőségre vonatkozik — a Dicsőségfalon szereplő médiumok
    *  (Átlátszó, Direkt36, Partizán, Mérce) olvasói támogatásból vagy
    *  nonprofitként működnek, ezt a szöveg külön ki is mondja, hogy ne
    *  legyen ellentmondás. */
@@ -329,7 +350,7 @@ export const RENDSZERVALTAS_HUB = {
       { name: 'Szabad Európa', url: 'https://www.szabadeuropa.hu' },
     ],
     after:
-      '. Pedig az ezen az oldalon szereplő ügyek jelentős része az ő oknyomozásaikból és interjúikból származik, és a forráshivatkozásaink tele vannak a nevükkel — nélkülük ez az adatbázis a töredéke lenne annak, ami. A kihagyás tehát nem értékítélet, hanem szűkítés: ez a fal tudatosan azokra koncentrál, akik elhivatottságból csinálták. A saját pénzükből, a szabadidejükben, munka mellett, vagy olvasói támogatásból fenntartott nonprofit műhelyekben.',
+      '. Pedig az ezen az oldalon szereplő ügyek jelentős része az ő oknyomozásaikból és interjúikból származik, és a forráshivatkozásaink tele vannak a nevükkel — nélkülük ez az adatbázis a töredéke lenne annak, ami. A kihagyás tehát nem értékítélet, hanem szűkítés: ez a Dicsőségfal tudatosan azokra koncentrál, akik elhivatottságból csinálták. A saját pénzükből, a szabadidejükben, munka mellett, vagy olvasói támogatásból fenntartott nonprofit műhelyekben.',
     /** Külön bekezdés — a szerkesztőség-felsorolással együtt egy tömbben
      *  száz szó fölé menne, és pont ez a mondat a note lényege. */
     tail:
@@ -615,7 +636,7 @@ export const FELTAROK: Feltaro[] = [
               'Néhány héttel a választás előtt egy volt őrnagy, Szabó Bence adott csaknem másfél órás interjút a Partizánnak arról, hogyan gyakorolt rá nyomást az Alkotmányvédelmi Hivatal, hogy ellenzéki párthoz köthető informatikusokat vizsgáljanak. Az élő adást kilencvenezren nézték egyszerre, a folytatás pedig másfél nap alatt egymilliós megtekintésnél járt.',
             more: [
               'Ez az az eset, ahol a csatorna szerepe már nem a nyilvánosság megteremtése volt, hanem a védelemé: egy bejelentő számára az jelentette a biztonságot, hogy amit elmond, azt egyszerre több százezren hallják, és nem lehet utólag „félreértésnek" minősíteni.',
-              'A sztori nem itt kezdődött: Szabó Bence az első interjúját a Direkt36-nak adta, néhány nappal korábban. A Partizán szerepe az volt, hogy ezt a történetet élő adásban, nagy tömeg előtt is elmondhatóvá tette. Két különböző műhely, két különböző funkció — a Direkt36 profilja is megtalálható ezen a falon.',
+              'A sztori nem itt kezdődött: Szabó Bence az első interjúját a Direkt36-nak adta, néhány nappal korábban. A Partizán szerepe az volt, hogy ezt a történetet élő adásban, nagy tömeg előtt is elmondhatóvá tette. Két különböző műhely, két különböző funkció — a Direkt36 profilja is megtalálható ezen a Dicsőségfalon.',
             ],
             videos: [
               {
@@ -627,7 +648,7 @@ export const FELTAROK: Feltaro[] = [
             ],
             promo: {
               href: '/rendszervaltas/direkt36',
-              eyebrow: 'A falon · Direkt36',
+              eyebrow: 'A Dicsőségfalon · Direkt36',
               title: 'Itt adta az első interjúját Szabó Bence',
               lead:
                 'A Partizán-adás előtt néhány nappal a Direkt36-nak szólalt meg először a nyomozó. Az az interjú — és ami utána történt vele — a Direkt36 oldalán nézhető meg.',
@@ -716,7 +737,7 @@ export const FELTAROK: Feltaro[] = [
           heading: 'A Partizán és a Kegyencjárat',
           paragraphs: [
             'A Kegyencjárat podcast- és videórovata rendszeresen hivatkozik partizános anyagokra: számos olyan ügy van az adatbázisunkban, amelynek az első részletes, kontextusba helyezett feldolgozása itt jelent meg. A mi munkánk ebből a szempontból másodlagos — mi rendszerezzük és összekötjük azt, amit ők és a többi műhely kiásott.',
-            'Ez a fal azért létezik, hogy ez a viszony látható legyen. Egy adatbázis könnyen kelti azt a látszatot, mintha az adatok maguktól állnának össze. Nem így van: minden sor mögött ott van valaki, aki elment a helyszínre, leült egy kamera elé, vagy végigolvasott több ezer oldalt.',
+            'Ez a Dicsőségfal azért létezik, hogy ez a viszony látható legyen. Egy adatbázis könnyen kelti azt a látszatot, mintha az adatok maguktól állnának össze. Nem így van: minden sor mögött ott van valaki, aki elment a helyszínre, leült egy kamera elé, vagy végigolvasott több ezer oldalt.',
           ],
         },
       ],
@@ -825,27 +846,75 @@ export const FELTAROK: Feltaro[] = [
             body:
               'Az Átlátszó legnagyobb visszhangot kiváltó munkája nem adatperből, hanem egy módszerváltásból született: ahelyett, hogy iratot kértek volna, követni kezdték a járműveket. Repülési transzponder- és tengeri AIS-adatbázisokból dolgoztak, a helyszínen pedig fotós és drón rögzítette, ki száll le a gépről és ki tartózkodik a fedélzeten.',
             more: [
-              'A 2018-as összefoglalójuk két eszközre épült. Az OE-LEM lajstromjelű, osztrák bejegyzésű Bombardier Global 6000 — a becslésük szerint nagyjából 17 milliárd forint értékű gép — 2018. július 25-én Orbán Viktort hozta haza egy bulgáriai focimeccsről; ugyanez a gép később Mészáros Beatrixot és Végh Gábort, a ZTE tulajdonosát is szállította. A másik a Lady Mrd: 42 méteres, máltai lajstromú Benetti, hozzávetőleg 7 milliárd forint értékben. 2018 augusztusában Homolya Róbert MÁV-vezérigazgató, Szíjj László és Kovács Ernő kormánybiztos volt a fedélzetén.',
               'A repülési és hajózási nyilvántartások összevetése, valamint a rijekai, spliti és malagai helyszíni fotózás adta a bizonyítékot. A szöveget Erdélyi Katalin írta, a fotókat és a videót Németh Dániel készítette, az adatvizualizációt Bátorfy Attila.',
-              'A jelentősége nem a nyaralás. Az, hogy a közbeszerzési statisztika és a magánvagyon között addig csak feltételezett kapcsolat egyetlen fényképen láthatóvá vált: állami megbízásokból gazdagodó vállalkozók luxuseszközein utazik a döntéshozó, aki azokat a megbízásokat kiosztja.',
             ],
-            links: [{ text: 'Szíjj László', href: '/adatbazis/meszaros-szijj-autopalya-koncesszio' }],
-            sources: [
+            sections: [
               {
-                source: 'Átlátszó',
-                date: '2018. szept. 24.',
-                headline:
-                  'Orbán Viktor, a magánrepülőgép, a luxusjacht és a Mészáros-klán: tudjuk, hol nyaraltak idén nyáron',
-                url: 'https://atlatszo.hu/kozpenz/2018/09/24/orban-viktor-a-maganrepulogep-a-luxusjacht-es-a-meszaros-klan-tudjuk-hol-nyaraltak-iden-nyaron/',
-                lead:
-                  'Az alapvetés: lajstromszámok, hajónevek, dátumok és fotók egyetlen anyagban. Innentől nem állítás volt, hanem dokumentáció.',
+                heading: 'A bulgáriai focimeccs',
+                paragraphs: [
+                  'Az első eszköz egy repülőgép volt: az OE-LEM lajstromjelű, osztrák bejegyzésű Bombardier Global 6000, amelynek értékét az Átlátszó nagyjából 17 milliárd forintra tette. 2018. július 25-én a Videoton bulgáriai Bajnokok Ligája-selejtezőjére, a Ludogorec elleni meccsre vitte Orbán Viktort — a legközelebbi repülőtérre, Várnába —, és a 0:0-ra végződött találkozó után nem sokkal éjfél előtt tért vissza Ferihegyre a miniszterelnökkel a fedélzetén. Az Átlátszó a leszállásnál fotózta le, ahogy kiszáll a gépből.',
+                  'A kormányzati kommunikáció ezután hetekig egymásnak ellentmondó magyarázatokat adott arra, hogyan utazhatott a miniszterelnök egy ilyen gépen, a sajtóiroda pedig a kérdésekre nem válaszolt. Ugyanezt a gépet később Mészáros Beatrix és Végh Gábor, a ZTE tulajdonosa is használta. Az Átlátszó a következő években is követte a gép mozgását — a 2019-es montenegrói meccsre és a 2022-es párizsi BL-döntő napjára is.',
+                ],
+                sources: [
+                  {
+                    source: 'Átlátszó',
+                    date: '2019. szept. 6.',
+                    headline: 'Orbán Viktor a montenegrói meccsre is az osztrák magánrepülővel mehetett',
+                    url: 'https://atlatszo.hu/kozugy/2019/09/06/orban-viktor-a-montenegroi-meccsre-is-az-osztrak-maganrepulovel-mehetett/',
+                  },
+                  {
+                    source: 'Átlátszó',
+                    date: '2022. máj. 31.',
+                    headline: 'Orbán Viktor miniszterelnök és a NER luxusrepülője is Párizsban járt a BL-döntő napján',
+                    url: 'https://atlatszo.hu/kozugy/2022/05/31/orban-viktor-miniszterelnok-es-a-ner-luxusrepuloje-is-parizsban-jart-a-bl-donto-napjan/',
+                  },
+                ],
               },
-            ],
-            highlight: {
-              heading: 'A jacht, amelyik kikapcsolta a helyzetjelzőjét',
-              body:
-                '2020. augusztus 16-án, miközben Szijjártó Péter külügyminiszter a fehéroroszországi válságról szóló diplomáciai munkáról posztolt, az Átlátszó fotósa a horvátországi Biograd na Moru közelében, a Kornati-szigetek térségében fotózta le a családjával a Lady MRD fedélzetén. A hajót Szíjj László máltai offshore cége, az L&L Charter Ltd. üzemelteti. Amikor a fotós közeledni kezdett, a jacht AIS-helyzetjelzője kikapcsolt — és pontosan ez a mozzanat mutatja meg, miért kellett a helyszíni fotózás: a nyilvános adatbázis kikapcsolható, a fénykép nem.',
-              sources: [
+              {
+                heading: 'A Lady Mrd és a MÁV-vezérigazgató',
+                paragraphs: [
+                  'A másik eszköz egy hajó: a Lady Mrd, 42 méteres, máltai lajstromú Benetti, hozzávetőleg 7 milliárd forint értékben. 2018 augusztusában Homolya Róbert, Szíjj László és Kovács Ernő kormánybiztos volt a fedélzetén — a felvételeket drónnal és a partról készítették.',
+                  'Az időzítés az, ami ezt a fotót többé teszi egy nyaralási képnél: Homolya Róbert 2017-ben lett közlekedéspolitikáért felelős államtitkár, és néhány nappal az adriai jachtozás után, 2018 augusztusának elején nevezték ki a MÁV vezérigazgatójává. Az összeférhetetlenség kérdésével évekkel később a svájci sajtó is foglalkozott, a Stadler magyarországi vonatbeszerzései kapcsán.',
+                  'Az, hogy kié valójában a hajó, csak két évvel később derült ki: 2020 júliusában, egy uniós szabályváltozás nyomán vált nyilvánossá, hogy a Lady MRD-t és az Artemyt birtokló máltai offshore cég tényleges tulajdonosa Szíjj László — az a vállalkozó, aki a magyar útépítési közbeszerzések legnagyobb nyertese.',
+                ],
+                image: {
+                  src: '/images/rendszervaltas/szijj-lady-mrd.webp',
+                  alt: 'A Lady MRD luxusjacht az Adrián',
+                  credit: 'Németh Dániel / Átlátszó',
+                  caption: 'A Lady MRD — a hajó, amelynek tényleges tulajdonosáról csak 2020-ban derült ki, hogy Szíjj László.',
+                },
+                sources: [
+                  {
+                    source: 'Átlátszó',
+                    date: '2020. júl. 10.',
+                    headline:
+                      'Szíjj László a Lady MRD és az Artemy jachtokat birtokló máltai offshore cég valódi tulajdonosa',
+                    url: 'https://atlatszo.hu/kozpenz/2020/07/10/szijj-laszlo-a-lady-mrd-es-az-artemy-jachtokat-birtoklo-maltai-offshore-ceg-valodi-tulajdonosa/',
+                    lead:
+                      'Két évvel a fotók után jött meg a tulajdonosi lánc vége: egy uniós szabályváltozás miatt kellett nyilvánosságra hozni, ki a cég tényleges haszonhúzója.',
+                  },
+                  {
+                    source: 'HVG',
+                    date: '2023. ápr. 3.',
+                    headline:
+                      'Homolya Róbert útja Szíjj jachtjától a MÁV-on át a Stadlerig — egy svájci lap összeférhetetlenségről ír',
+                    url: 'https://hvg.hu/360/20230403_lapszemle_Tages_Anzeiger_osszeferhetetlenseg_Homolya_Robert_Szijj_Laszlo_Lady_MRD_Stadler_Trains_Magyarorszag',
+                  },
+                ],
+              },
+              {
+                heading: 'Szijjártó lebukása a Lady MRD-n',
+                paragraphs: [
+                  '2020. augusztus 16-án, miközben Szijjártó Péter külügyminiszter a fehéroroszországi válságról szóló diplomáciai munkájáról posztolt, az Átlátszó fotósa a horvátországi Biograd na Moru közelében, a Kornati-szigetek térségében fotózta le a családjával együtt a Lady MRD fedélzetén. A hajót ekkor már bizonyítottan Szíjj László máltai cége, az L&L Charter Ltd. üzemeltette.',
+                  'Amikor a fotós közeledni kezdett, a jacht AIS-helyzetjelzője kikapcsolt. Pontosan ez a mozzanat mutatja meg, miért kellett egyáltalán a helyszíni fotózás: a nyilvános adatbázis kikapcsolható, a fénykép nem.',
+                ],
+                image: {
+                  src: '/images/rendszervaltas/szijjarto-lady-mrd.webp',
+                  alt: 'Szijjártó Péter külügyminiszter a Lady MRD luxusjacht fedélzetén, 2020. augusztus 16-án',
+                  credit: 'Németh Dániel / Átlátszó',
+                  caption: 'Szijjártó Péter a Lady MRD fedélzetén, miközben a közösségi oldalán a fehérorosz válságról szóló diplomáciai munkáról posztolt.',
+                },
+                sources: [
                 {
                   source: 'Átlátszó',
                   date: '2020. aug. 18.',
@@ -864,8 +933,33 @@ export const FELTAROK: Feltaro[] = [
                   lead:
                     'Ahogy az ügy továbbfutott a napi sajtóban — ez a lépés az, amitől egy oknyomozásból országos téma lesz.',
                 },
-              ],
-            },
+                ],
+              },
+              {
+                heading: 'Miért több ez nyaralási pletykánál?',
+                paragraphs: [
+                  'A jelentősége nem a nyaralás. Az, hogy a közbeszerzési statisztika és a magánvagyon között addig csak feltételezett kapcsolat egyetlen fényképen láthatóvá vált: állami megbízásokból gazdagodó vállalkozók luxuseszközein utazik a döntéshozó, aki azokat a megbízásokat kiosztja.',
+                  'Erről a kapcsolatról nem keletkezik irat. Nincs az a közérdekűadat-igénylés, amivel ki lehetne kérni, ki kivel nyaral — ezért kellett hozzá transzponder, hajókövetés, drón és egy fotós a parton.',
+                ],
+                image: {
+                  src: '/images/rendszervaltas/felcsut-travel-club.webp',
+                  alt: 'Az Átlátszó 2018-as összeállításának címlapképe a magánrepülőről és a luxusjachtról',
+                  credit: 'Átlátszó',
+                  caption: 'Az Átlátszó 2018-as összeállítása: repülő, jacht, nevek és dátumok egyetlen anyagban.',
+                },
+              },
+            ],
+            sources: [
+              {
+                source: 'Átlátszó',
+                date: '2018. szept. 24.',
+                headline:
+                  'Orbán Viktor, a magánrepülőgép, a luxusjacht és a Mészáros-klán: tudjuk, hol nyaraltak idén nyáron',
+                url: 'https://atlatszo.hu/kozpenz/2018/09/24/orban-viktor-a-maganrepulogep-a-luxusjacht-es-a-meszaros-klan-tudjuk-hol-nyaraltak-iden-nyaron/',
+                lead:
+                  'Az alapvetés: lajstromszámok, hajónevek, dátumok és fotók egyetlen anyagban. Innentől nem állítás volt, hanem dokumentáció.',
+              },
+            ],
             promo: {
               href: '/adatbazis/szijjarto-adriai-jacht',
               eyebrow: 'Az adatbázisban',
@@ -934,20 +1028,38 @@ export const FELTAROK: Feltaro[] = [
           paragraphs: [
             'A támogatóik szerint az Átlátszó nélkül a NER gazdasági hátországának jelentős része üzleti titok mögött maradt volna: a megnyert adatperek olyan szerződéseket hoztak nyilvánosságra, amelyekre más szerkesztőségnek nem volt jogi kapacitása, a drón- és hajókövetéses anyagok pedig olyan összefüggéseket tettek láthatóvá, amelyeket dokumentumból nem lehetett volna kimutatni.',
             'A kritikusaik — elsősorban a korábbi kormányoldal médiuma és a Szuverenitásvédelmi Hivatal — külföldről finanszírozott szervezetként írták le őket, és azt állították, hogy az adatigénylések és a megfigyelések valójában gazdasági beruházások ellehetetlenítését szolgálják. Az Átlátszó a finanszírozását nyilvánosan közli, és a hivatallal szemben bíróságon is nyert — igaz, az ítéletet a hivatal megtámadta, és az eljárást meg kellett ismételni.',
+            'Maga a hivatal azóta nincs. Az Országgyűlés 2026. június 30-án, a Tisza Párt képviselőjének javaslatára 135 igen, 44 nem és 6 tartózkodás mellett megszavazta a Szuverenitásvédelmi Hivatal megszüntetését; az indoklás szerint a hivatal nem látott el tényleges közfeladatot. A megszűnését a megszűnt-e már oldalunkon is követjük.',
+          ],
+          links: [{ text: 'a megszűnt-e már oldalunkon', href: '/megszunt' }],
+          sources: [
+            {
+              source: 'Telex',
+              date: '2026. jún. 30.',
+              headline: 'Megszavazták a Szuverenitásvédelmi Hivatal megszüntetését',
+              url: 'https://telex.hu/belfold/2026/06/30/parlament-szavazas-szuverenitasvedelmi-hivatal-megszuntetes',
+              lead:
+                'A hivatal, amely az Átlátszót külföldről finanszírozott szervezetként írta le, 2026. június 30-án megszűnt. A szavazás eredménye és az indoklás.',
+            },
+            {
+              source: '444',
+              date: '2026. jún. 30.',
+              headline: 'Az Országgyűlés megszavazta a Szuverenitásvédelmi Hivatal megszüntetését',
+              url: 'https://444.hu/2026/06/30/az-orszaggyules-megszavazta-a-szuverenitasvedelmi-hivatal-megszunteteset',
+            },
           ],
         },
         {
           heading: 'Az infrastruktúra, amit másoknak is építettek',
           paragraphs: [
             'Az Átlátszó nemcsak cikkeket írt, hanem eszközöket is létrehozott: drónos felvételi kapacitást, adatvizualizációkat, és nyilvános adatbázisokat, amelyeket más szerkesztőségek is használhattak. Üzemeltetik azt a felületet is, amelyen keresztül bárki benyújthat és nyomon követhet közérdekűadat-igénylést.',
-            'Ez a fal legfontosabb tanulsága kicsiben: a feltárás nem sztorikból áll, hanem képességekből. Aki egy képességet felépít, az nemcsak a saját cikkeit teszi lehetővé, hanem mindenki másét is.',
+            'Ez a Dicsőségfal legfontosabb tanulsága kicsiben: a feltárás nem sztorikból áll, hanem képességekből. Aki egy képességet felépít, az nemcsak a saját cikkeit teszi lehetővé, hanem mindenki másét is.',
           ],
         },
       ],
       table: {
         heading: 'Hol a helye a rendszerváltó ökoszisztémában?',
         intro:
-          'A falon három, egymást nem helyettesítő munkatípus szerepel. Az alábbi összevetés azt mutatja, mivel foglalkozik az Átlátszó, és mivel nem.',
+          'A Dicsőségfalon három, egymást nem helyettesítő munkatípus szerepel. Az alábbi összevetés azt mutatja, mivel foglalkozik az Átlátszó, és mivel nem.',
         columns: ['Szereplő', 'Elsődleges terep', 'Módszertan', 'Mit ad a láncnak'],
         rows: [
           [
@@ -1251,7 +1363,7 @@ export const FELTAROK: Feltaro[] = [
             ],
             promo: {
               href: '/rendszervaltas/partizan',
-              eyebrow: 'A falon · Partizán',
+              eyebrow: 'A Dicsőségfalon · Partizán',
               title: 'A folytatás: a vágatlan, élő interjú',
               lead:
                 'Néhány nappal a Direkt36-anyag után Szabó Bence a Partizánnak is megszólalt, élő adásban. Az az adás másfél nap alatt egymilliós megtekintésnél járt.',
@@ -1720,7 +1832,7 @@ export const FELTAROK: Feltaro[] = [
       paragraphs: [
         'A magyar zenei életben évekig működött egy íratlan szabály: aki a nagy fesztiválokon és a közszolgálati rádióban is szeretne szerepelni, az a színpadról nem politizál. A Carson Coma ezt a szabályt szegte meg — a zenekar tagjai, köztük Fekete Giorgio, a koncertjeiken és a nyilvános szerepléseiken is beszéltek a sajtószabadság korlátozásáról.',
         'A kiállásnak ára volt: játszási listák, fellépési lehetőségek és nyilvános támadások formájában. A zenekar 2026 tavaszán a Rendszerbontó Nagykoncerten is fellépett, majd bejelentették, hogy egy időre szünetet tartanak a politizálásban.',
-        'Ez a tétel szerkesztői döntés alapján került a falra: SEO-szempontból a „Carson Coma" keresések gyakorlatilag teljes egészében zenei szándékúak (koncert, dalszövegek, tagok). Azért van itt, mert a közéleti kiállás egy olyan közönséghez jutott el, amelyet semmilyen oknyomozó cikk nem ért volna el.',
+        'Ez a tétel szerkesztői döntés alapján került a Dicsőségfalra: SEO-szempontból a „Carson Coma" keresések gyakorlatilag teljes egészében zenei szándékúak (koncert, dalszövegek, tagok). Azért van itt, mert a közéleti kiállás egy olyan közönséghez jutott el, amelyet semmilyen oknyomozó cikk nem ért volna el.',
       ],
     },
   },
@@ -1948,7 +2060,7 @@ export const FELTAROK: Feltaro[] = [
     section: {
       heading: 'Rácz András — a külpolitikai szál értelmezése',
       paragraphs: [
-        'Rácz András biztonságpolitikai kutatóként az orosz külpolitikával, a hibrid befolyásszerzés eszközeivel és a közép-európai biztonsági környezettel foglalkozik. A szerepe ezen a falon nem a dokumentumok kiásása, hanem az értelmezés — ami egy ilyen ügyben nem másodlagos munka.',
+        'Rácz András biztonságpolitikai kutatóként az orosz külpolitikával, a hibrid befolyásszerzés eszközeivel és a közép-európai biztonsági környezettel foglalkozik. A szerepe ezen a Dicsőségfalon nem a dokumentumok kiásása, hanem az értelmezés — ami egy ilyen ügyben nem másodlagos munka.',
         'Egy szerződés, egy hitel vagy egy diplomáciai látogatás önmagában sosem botrány. Csak akkor válik azzá, ha valaki elhelyezi abban a szélesebb mintázatban, amelybe illeszkedik. A szakértői elemzés különbsége pontosan itt van: megmondja, hogy amit látunk, az szokványos állami működés vagy sem.',
         'Az energetikai és külpolitikai hátterű ügyek megértéséhez ez a réteg nélkülözhetetlen — ezek azok a sztorik, amelyeket a legkönnyebb technikai részletként elintézni.',
       ],
@@ -2003,7 +2115,7 @@ export const FELTAROK: Feltaro[] = [
       cases: {
         heading: 'A zebra-gate és a többi ügyük',
         intro:
-          'Ez a fal legjobb példája arra, mire jó a puszta jelenlét egy helyszínen. Nem adatbázist fésültek át, nem pereskedtek: kimentek, és felvették, ami ott van. A következmények viszont évekig gyűrűztek.',
+          'Ez a Dicsőségfal legjobb példája arra, mire jó a puszta jelenlét egy helyszínen. Nem adatbázist fésültek át, nem pereskedtek: kimentek, és felvették, ami ott van. A következmények viszont évekig gyűrűztek.',
         items: [
           {
             title: 'Zebra-gate — megtalálták a zebrákat',
@@ -2140,7 +2252,7 @@ export const FELTAROK: Feltaro[] = [
             body:
               'A kegyelmi botrány kellős közepén hozták nyilvánosságra, hogy K. Endre — a bicskei gyermekotthon volt igazgatóhelyettese, akit kényszerítés miatt ítéltek el, majd elnöki kegyelmet kapott — 2016 és 2018 között a bicskei Csokonai Vitéz Mihály Általános Iskolában dolgozott. Az iskola igazgatója Bárányos József fideszes önkormányzati képviselő volt. A lap megszerzett egy rendőrségi dokumentumot is egy feljelentésről, amelyet az alkalmazás miatt tettek.',
             more: [
-              'Fontos pontosítás, és a Kegyencjárat nem is állít mást: magát a kegyelmi botrányt nem a Gulyáságyú robbantotta ki — azt a Vidéki Prókátor, akinek szintén van profilja ezen a falon. Ez viszont már valódi, saját információval kiegészített feltárás volt, amely a történet egy addig ismeretlen szálát nyitotta meg.',
+              'Fontos pontosítás, és a Kegyencjárat nem is állít mást: magát a kegyelmi botrányt nem a Gulyáságyú robbantotta ki — azt a Vidéki Prókátor, akinek szintén van profilja ezen a Dicsőségfalon. Ez viszont már valódi, saját információval kiegészített feltárás volt, amely a történet egy addig ismeretlen szálát nyitotta meg.',
               'Az ügynek következménye is lett: az igazgató pályázatát 2024 nyarán szakmai és etikai kifogásokra hivatkozva nem támogatták, így 27 év után távoznia kellett a posztjáról. A tankerület már 2018-ban kifogásolta, hogy K. Endrét — aki akkor büntetőeljárás alatt állt — testnevelő tanárként foglalkoztatták.',
             ],
             links: [{ text: 'a Vidéki Prókátor', href: '/rendszervaltas/videki-prokator' }],
@@ -2347,7 +2459,7 @@ export const FELTAROK: Feltaro[] = [
     section: {
       heading: 'Fókuszcsoport — a szatíra mint terjesztési forma',
       paragraphs: [
-        'A Fókuszcsoport közéleti szatíra- és elemzőtartalmat készít, nagy közösségi médiás eléréssel. A szatíra ezen a falon nem díszítés: az egyik legmegbízhatóbb módja annak, hogy egy bonyolult ügy egyáltalán eljusson valakihez, aki nem olvas hírportált.',
+        'A Fókuszcsoport közéleti szatíra- és elemzőtartalmat készít, nagy közösségi médiás eléréssel. A szatíra ezen a Dicsőségfalon nem díszítés: az egyik legmegbízhatóbb módja annak, hogy egy bonyolult ügy egyáltalán eljusson valakihez, aki nem olvas hírportált.',
         'A csatorna a Kegyencjárat videórovatában is szerepel.',
       ],
     },
@@ -2470,9 +2582,9 @@ export const FELTAROK: Feltaro[] = [
     section: {
       heading: 'Molnár Áron — a botrány, ami a fordulat után jött',
       paragraphs: [
-        'Molnár Áron színészként és aktivistaként évek óta jelen van a közéletben, de a legnagyobb hatású munkája időben kilóg mindenki máséból ezen a falon: ő az NKA-botrányt nem április 12. előtt robbantotta ki, hanem utána.',
+        'Molnár Áron színészként és aktivistaként évek óta jelen van a közéletben, de a legnagyobb hatású munkája időben kilóg mindenki máséból ezen a Dicsőségfalon: ő az NKA-botrányt nem április 12. előtt robbantotta ki, hanem utána.',
         'Elsőként ő beszélt arról a rejtett, nagyságrendileg 17 milliárdos keretről, amelyből a Nemzeti Kulturális Alap a kormányzati holdudvar gazdasági, közéleti és művészeti szereplőit támogatta — köztük egy addig ismeretlen, „Kiemelt Kulturális Programok Ideiglenes Kollégiuma" nevű testület döntései alapján. Az ügy azóta is gyűrűzik: 2026 nyarán újabb szervezeteket nevezett meg, ősszel pedig mentelmi jogok felfüggesztését követelte.',
-        'Ez a fal arról szól, kinek köszönhetjük a fordulatot — Molnár Áron viszont arra a kérdésre a válasz, hogy mi történik utána. Egy rendszerváltás nem ér véget azzal, hogy leváltanak egy kormányt: az elszámoltatás akkor kezdődik. Az is a képhez tartozik, hogy a feltárást követően őt magát is megvádolták NKA-pénzek elfogadásával, amit ő visszautasított.',
+        'Ez a Dicsőségfal arról szól, kinek köszönhetjük a fordulatot — Molnár Áron viszont arra a kérdésre a válasz, hogy mi történik utána. Egy rendszerváltás nem ér véget azzal, hogy leváltanak egy kormányt: az elszámoltatás akkor kezdődik. Az is a képhez tartozik, hogy a feltárást követően őt magát is megvádolták NKA-pénzek elfogadásával, amit ő visszautasított.',
       ],
     },
     related: [
@@ -2676,7 +2788,7 @@ export const FELTAROK: Feltaro[] = [
       table: {
         heading: 'Hol helyezkedik el a Dicsőségfalon?',
         intro:
-          'A Kegyencjárat láncmunka-elmélete alapján a Vidéki Prókátor a tökéletes kapocs a feltáró és a terjesztő szerepkörök között. Érdemes összevetni a fal más szereplőivel, hogy látsszon, ki mit tett hozzá.',
+          'A Kegyencjárat láncmunka-elmélete alapján a Vidéki Prókátor a tökéletes kapocs a feltáró és a terjesztő szerepkörök között. Érdemes összevetni a Dicsőségfal más szereplőivel, hogy látsszon, ki mit tett hozzá.',
         columns: ['Szereplő', 'Elsődleges funkció', 'Módszertan', 'Miért volt pótolhatatlan?'],
         rows: [
           [
