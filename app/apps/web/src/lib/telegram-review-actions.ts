@@ -19,6 +19,7 @@ import {
   findExistingVerdict,
   gateComplaintInsert,
   gateVerdictInsert,
+  type VerdictGateResult,
   hasIndividualResignationForInstitution,
   isCalledToResignPerson,
   isCollectiveEntityName,
@@ -350,8 +351,12 @@ export async function processCourtVerdict(article: ArticleForReprocess, todayIso
   // (packages/db/src/verdict-gate.ts). Ez az útvonal korábban teljesen
   // kimaradt a dedup-védőhálókból, pedig ugyanabba a táblába ír — és
   // `bypassConfidenceGate` mellett egészen 'approved'-ig jut.
+  // 2026-09-17 — l. detect-verdicts.ts ugyanezen a ponton: a kapu eredménye
+  // eljut a jóváhagyó üzenetig, különben az információ nélküli kérdés.
+  let verdictGateFlag: Extract<VerdictGateResult, { verdict: 'flag' }> | null = null;
   if (!existingVerdict) {
     const gate = await gateVerdictInsert(db, { personName: result.personName, sourceUrl: article.sourceUrl });
+    if (gate.verdict === 'flag') verdictGateFlag = gate;
     if (gate.verdict === 'discard') {
       await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'court_verdict', outcome: 'discarded', reason: gate.reason, extractedName: result.personName, confidence: result.confidence });
       return { status: 'discarded', reason: gate.reason };
@@ -422,7 +427,17 @@ ${article.excerpt}`;
   await upsertDetectionCheckOverride(getDb(), { articleId: article.id, detectorType: 'court_verdict', outcome: 'inserted', extractedName: result.personName, confidence: result.confidence });
 
   if (reviewStatus === 'pending') {
-    await notifyReviewNeeded({ type: 'pending', detectorType: 'court_verdict', name: result.personName, confidence: result.confidence, articleUrl: article.sourceUrl ?? '', articleId: article.id, recordId });
+    await notifyReviewNeeded({
+      type: 'pending',
+      detectorType: 'court_verdict',
+      name: result.personName,
+      confidence: result.confidence,
+      articleUrl: article.sourceUrl ?? '',
+      articleId: article.id,
+      recordId,
+      gateReason: verdictGateFlag?.reason,
+      conflicts: verdictGateFlag?.conflicts,
+    });
     return { status: 'pending_notified' };
   }
   await inngest.send({ name: 'breaking.recompute', data: { reason: 'court_verdict:telegram-approve' } });

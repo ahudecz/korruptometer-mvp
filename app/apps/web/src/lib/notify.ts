@@ -29,6 +29,30 @@ export type ReviewNeededEvent = {
    *  three reviewStatus-bearing tables). Lets the webhook flip
    *  reviewStatus directly instead of re-extracting. */
   recordId?: string;
+  /**
+   * Miért került emberi jóváhagyásra, és MIVEL ütközik.
+   *
+   * 2026-09-17, user report: egy „Jellinek Dániel, Szivek Norberta, és
+   * további gyanúsítottak" sor jóváhagyva ment ki, pedig mindkét ember
+   * külön, már jóváhagyott sorral szerepelt a táblában. A duplikátum-kapu
+   * ELVÉGEZTE a dolgát (ezért lett 'pending'), csak épp az eredménye sehol
+   * nem jelent meg: az üzenet egy nevet és egy százalékot mutatott. A
+   * jóváhagyó így nem tudhatta, hogy amit lát, az részben már bent van.
+   *
+   * Ezért a jelzés oka és az ütköző sorok NEVE is bekerül az üzenetbe. A
+   * gomb marad, a döntés marad emberi — csak most van mi alapján dönteni.
+   */
+  gateReason?: 'multi_person_name' | 'source_url_reused' | 'fragment_name_match';
+  conflicts?: Array<{ id: string; personName: string }>;
+};
+
+const GATE_REASON_LABELS_HU: Record<
+  NonNullable<ReviewNeededEvent['gateReason']>,
+  string
+> = {
+  multi_person_name: 'a név több embert fűz össze',
+  source_url_reused: 'ebből a cikkből MÁR született sor',
+  fragment_name_match: 'a név egyezik egy meglévő sorral',
 };
 
 // 012-reader-subscriptions FR-009 — exportálva a rögzítő teszt kedvéért. NE
@@ -55,9 +79,18 @@ const DETECTOR_CODES: Record<ReviewNeededEvent['detectorType'], string> = {
 export async function notifyReviewNeeded(event: ReviewNeededEvent): Promise<void> {
   try {
     const typeLabel = event.type === 'pending' ? 'ÁTNÉZENDŐ' : 'MAJDNEM KIMARADT';
+    const conflicts = event.conflicts ?? [];
     const message = [
       `🔔 ${typeLabel} — ${DETECTOR_LABELS_HU[event.detectorType]}`,
       `${event.name} (bizonyosság: ${(event.confidence * 100).toFixed(0)}%)`,
+      ...(event.gateReason ? [``, `⚠️ DUPLIKÁTUM-GYANÚ: ${GATE_REASON_LABELS_HU[event.gateReason]}`] : []),
+      ...(conflicts.length > 0
+        ? [
+            `Már a táblában van${conflicts.length > 1 ? ` (${conflicts.length} sor)` : ''}:`,
+            ...conflicts.slice(0, 5).map((c) => `• ${c.personName}`),
+            `Ha csak ezeket ismételné meg, NE hagyd jóvá.`,
+          ]
+        : []),
     ].join('\n');
     console.log(`[notify] ${event.type} (${event.detectorType}): ${event.name} — confidence ${event.confidence.toFixed(2)} — ${event.articleUrl}`);
 

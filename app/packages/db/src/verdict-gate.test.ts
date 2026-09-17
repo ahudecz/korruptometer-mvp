@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  splitPersonNames,
   coercePretrialClaim,
   CUSTODY_MAX_HOURS,
   isCustodyExpired,
@@ -77,6 +78,56 @@ describe('gateVerdictInsert', () => {
     const r = await gateVerdictInsert(emptyDb, { personName: COLLECTIVE, sourceUrl: 'https://x.hu/a' });
     expect(r.verdict).toBe('flag');
     expect(r.reason).toBe('multi_person_name');
+  });
+
+  /**
+   * 2026-09-17, user report — a valódi eset, ami kiment élesre.
+   *
+   * A „Jellinek Dániel, Szivek Norberta, és további gyanúsítottak" sor
+   * jóváhagyásra ment (eddig jó), DE a kapu a gyűjtőnév-ágon azonnal
+   * visszatért, így meg sem nézte, hogy mindkét ember külön, már jóváhagyott
+   * sorral szerepel a táblában. A jóváhagyó ezért egy információ nélküli
+   * kérdést kapott, és — a cikkben szereplő három új gyanúsított miatt,
+   * helyesen — igent mondott. A duplikátum így ment ki.
+   *
+   * A rögzített elvárás: a gyűjtőnév MELLETT is le kell futnia a
+   * duplikátum-keresésnek, és minden ütközést vissza kell adnia.
+   */
+  it('gyűjtőnévnél is megtalálja az ÖSSZES már meglévő sort', async () => {
+    const existing = [
+      { id: 'jellinek-row', personName: 'Jellinek Dániel' },
+      { id: 'szivek-row', personName: 'Szivek Norbert' },
+    ];
+    let call = 0;
+    const db = {
+      execute: async () => {
+        call += 1;
+        // 1. hívás: forrás-URL (új cikk, nincs találat).
+        // 2.: teljes gyűjtőnév — a LIKE mindkettőt eltalálja.
+        // 3–4.: a darabok külön-külön.
+        if (call === 1) return [];
+        return existing;
+      },
+    };
+    const r = await gateVerdictInsert(db, {
+      personName: 'Jellinek Dániel, Szivek Norberta, és további gyanúsítottak',
+      sourceUrl: 'https://444.hu/2026/09/17/ujabb-gyanusitottja-van-a-volanbusz-korrupcios-ugyenek',
+    });
+    expect(r.verdict).toBe('flag');
+    expect(r.reason).toBe('multi_person_name');
+    expect(r.conflicts?.map((c) => c.id).sort()).toEqual(['jellinek-row', 'szivek-row']);
+    // A régi, egyelemű mező is kitöltve marad a meglévő hívók kedvéért.
+    expect(r.conflictsWith).not.toBeNull();
+  });
+
+  it('az elgépelt nevű darabot is megtalálja, mert darabonként is keres', async () => {
+    // „Szivek Norberta" (elgépelve) — a teljes sztringre futó illesztés a
+    // meglévő „Szivek Norbert" sort így is eltalálja, de a darabonkénti
+    // keresés az, ami ezt garantálja, nem a véletlen.
+    expect(splitPersonNames('Jellinek Dániel, Szivek Norberta, és további gyanúsítottak')).toEqual([
+      'Jellinek Dániel',
+      'Szivek Norberta',
+    ]);
   });
 
   // Ez a jel önmagában megfogta volna a 2026-09-15-i esetet: a duplikátum

@@ -51,6 +51,8 @@ export type VerdictGateVerdict = 'ok' | 'flag' | 'discard';
  * `markChecked({ reason })` paraméterébe — ezt a hibát egy típusprobe kapta
  * el 2026-09-15-én, mielőtt élesbe ment volna.
  */
+export type GateConflict = { id: string; personName: string };
+
 export type VerdictGateResult =
   | { verdict: 'ok' }
   | { verdict: 'discard'; reason: 'initials_name' }
@@ -58,7 +60,20 @@ export type VerdictGateResult =
       verdict: 'flag';
       reason: 'multi_person_name' | 'source_url_reused' | 'fragment_name_match';
       /** Emberi olvasásra: mivel ütközik, hogy a Telegram-üzenet meg tudja mutatni. */
-      conflictsWith?: { id: string; personName: string } | null;
+      conflictsWith?: GateConflict | null;
+      /**
+       * MINDEN megtalált ütközés, nem csak az első.
+       *
+       * 2026-09-17, user report: a „Jellinek Dániel, Szivek Norberta, és
+       * további gyanúsítottak" sor jóváhagyásra ment (a kapu tehát jelzett),
+       * de a Telegram-üzenet egyetlen szóval sem árulta el, hogy MINDKÉT
+       * nevesített ember külön, már jóváhagyott sorral szerepel a táblában.
+       * A user a cikkben szereplő három új, ismeretlen gyanúsított miatt
+       * hagyta jóvá — helyesen, a látott információ alapján. A hiba nem a
+       * szűrésben volt, hanem abban, hogy a szűrés eredménye nem jutott el
+       * odáig, ahol dönteni kell róla.
+       */
+      conflicts?: GateConflict[];
     };
 
 /**
@@ -140,12 +155,13 @@ export async function findRowBySourceUrl(
  * kulcsra megtalálja a "Jellinek Dániel" sort (a `key LIKE '%' || existing
  * || '%'` ág illeszt).
  */
-export async function findVerdictByNameFragment(
+export async function findVerdictsByNameFragment(
   db: Executable,
   name: string,
-): Promise<{ id: string; personName: string } | null> {
+  limit = 5,
+): Promise<GateConflict[]> {
   const key = normalizeName(name);
-  if (!key || key.length < 4) return null;
+  if (!key || key.length < 4) return [];
   const rows = (await db.execute(sql`
     SELECT id, "personName" FROM "CourtVerdict"
     WHERE "personName" IS NOT NULL AND length(trim("personName")) > 0
@@ -153,9 +169,40 @@ export async function findVerdictByNameFragment(
         trim(regexp_replace(lower(unaccent(trim("personName"))), '[^a-z0-9]+', ' ', 'g')) LIKE '%' || ${key} || '%'
         OR ${key} LIKE '%' || trim(regexp_replace(lower(unaccent(trim("personName"))), '[^a-z0-9]+', ' ', 'g')) || '%'
       )
-    LIMIT 1
-  `)) as unknown as Array<{ id: string; personName: string }>;
+    LIMIT ${limit}
+  `)) as unknown as GateConflict[];
+  return rows;
+}
+
+/** Visszafelé kompatibilis alak: az első találat vagy null. */
+export async function findVerdictByNameFragment(
+  db: Executable,
+  name: string,
+): Promise<GateConflict | null> {
+  const rows = await findVerdictsByNameFragment(db, name, 1);
   return rows[0] ?? null;
+}
+
+/**
+ * Egy gyűjtőnév önálló, teljes névnek látszó darabjai.
+ *
+ * Miért kell külön: a töredék-egyezés a TELJES sztringgel dolgozik, ami
+ * szerencsés esetben illeszt ("…Jellinek Dániel…" LIKE), de nem garantáltan.
+ * Ha a gyűjtőnévben elgépelt alak van — a 2026-09-17-i sorban „Szivek
+ * Norberta" szerepelt a „Szivek Norbert" helyett —, a teljes sztringre futó
+ * illesztés a másik nevet még megtalálja, az elgépeltet viszont csak akkor,
+ * ha darabonként is keresünk. Ezért minden darabra külön lefuttatjuk.
+ */
+export function splitPersonNames(name: string): string[] {
+  return name
+    .trim()
+    .split(/\s*,\s*|\s+és\s+/i)
+    .map((p) => p.trim())
+    .filter((p) => {
+      const words = p.split(/\s+/);
+      if (words.length < 2 || words.length > 4) return false;
+      return words.every((w) => /^[A-ZÁÉÍÓÖŐÚÜŰ][\wáéíóöőúüűÁÉÍÓÖŐÚÜŰ.-]*$/.test(w));
+    });
 }
 
 /**
@@ -175,22 +222,50 @@ export async function gateRowInsert(
   if (hasInitialsTokens(input.personName)) {
     return { verdict: 'discard', reason: 'initials_name' };
   }
-  if (isMultiPersonName(input.personName)) {
-    return { verdict: 'flag', reason: 'multi_person_name' };
-  }
+
+  // 2026-09-17 — ELŐBB gyűjtünk, aztán döntünk. Korábban az első jel
+  // azonnal visszatért, és mivel a gyűjtőnév-vizsgálat áll elöl, a
+  // duplikátum-keresés a legfontosabb esetben (gyűjtőnév, amely már felvett
+  // embereket sorol fel) EL SEM INDULT. A jelzés így tartalom nélkül ment a
+  // jóváhagyóhoz: „átnézendő", de hogy mivel ütközik, arról egy szó sem.
+  const conflicts: GateConflict[] = [];
+  const seen = new Set<string>();
+  const add = (rows: GateConflict[]) => {
+    for (const r of rows) {
+      if (seen.has(r.id)) continue;
+      seen.add(r.id);
+      conflicts.push(r);
+    }
+  };
+
   if (input.sourceUrl) {
     const bySource = await findRowBySourceUrl(db, table, input.sourceUrl);
-    if (bySource) {
-      return { verdict: 'flag', reason: 'source_url_reused', conflictsWith: bySource };
-    }
+    if (bySource) add([bySource]);
   }
+  const sourceReused = conflicts.length > 0;
+
   if (GATE_TABLES[table].fragmentMatch) {
-    const byFragment = await findVerdictByNameFragment(db, input.personName);
-    if (byFragment) {
-      return { verdict: 'flag', reason: 'fragment_name_match', conflictsWith: byFragment };
+    add(await findVerdictsByNameFragment(db, input.personName));
+    // A gyűjtőnév darabjai külön is — l. splitPersonNames().
+    for (const part of splitPersonNames(input.personName)) {
+      add(await findVerdictsByNameFragment(db, part));
     }
   }
-  return { verdict: 'ok' };
+
+  const multiPerson = isMultiPersonName(input.personName);
+  const reason = multiPerson
+    ? ('multi_person_name' as const)
+    : sourceReused
+      ? ('source_url_reused' as const)
+      : ('fragment_name_match' as const);
+
+  if (!multiPerson && conflicts.length === 0) return { verdict: 'ok' };
+  return {
+    verdict: 'flag',
+    reason,
+    conflictsWith: conflicts[0] ?? null,
+    conflicts,
+  };
 }
 
 /** CourtVerdict-beszúrás kapuja. */

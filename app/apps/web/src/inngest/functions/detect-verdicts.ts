@@ -12,6 +12,7 @@ import {
   findExistingVerdict,
   isPlaceholderName,
   gateVerdictInsert,
+  type VerdictGateResult,
   isSuspiciouslyEarlyDate,
   isWatchlistPerson,
   markChecked,
@@ -247,8 +248,13 @@ ${article.excerpt}`;
   // Norbert" gyűjtőnév-sor a két már meglévő, nevesített sor mellé. Csak az
   // INSERT ágon fut: meglévő sor lifecycle-frissítésénél a név- és
   // URL-egyezés nem duplikátum-jel, hanem maga a keresett sor.
+  // 2026-09-17: a kapu eredményét MEGTARTJUK a jelzésig. Enélkül a
+  // Telegram-üzenet csak annyit mondott, hogy „átnézendő" — azt nem, hogy
+  // mivel ütközik, és a jóváhagyó vakon döntött.
+  let verdictGateFlag: Extract<VerdictGateResult, { verdict: 'flag' }> | null = null;
   if (!existingVerdict) {
     const gate = await gateVerdictInsert(db, { personName: result.personName, sourceUrl: article.sourceUrl });
+    if (gate.verdict === 'flag') verdictGateFlag = gate;
     if (gate.verdict === 'discard') {
       await markChecked(db, {
         articleId: article.id,
@@ -349,6 +355,8 @@ ${article.excerpt}`;
       articleUrl: article.sourceUrl ?? '',
       articleId: article.id,
       recordId,
+      gateReason: verdictGateFlag?.reason,
+      conflicts: verdictGateFlag?.conflicts,
     });
   }
 
