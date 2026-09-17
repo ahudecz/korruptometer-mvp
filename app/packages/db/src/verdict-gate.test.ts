@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  canTransitionToCharged,
+  CHARGE_TRANSITION_MIN_SOURCES,
   coerceSentenceToVerdictType,
+  countChargeConfirmingSources,
   splitPersonNames,
   coercePretrialClaim,
   CUSTODY_MAX_HOURS,
@@ -349,5 +352,70 @@ describe('coerceSentenceToVerdictType (2026-09-17, a „milyen 5 év" eset)', ()
       sentenceYears: 3,
       sentenceMonths: null,
     });
+  });
+});
+
+describe('canTransitionToCharged (2026-09-17, két forrás kell az átlépéshez)', () => {
+  const dbWith = (n: number) => ({ execute: async () => [{ n }] });
+
+  it('átengedi, ha két független forrás megerősíti', async () => {
+    const r = await canTransitionToCharged(dbWith(2), {
+      personName: 'Jellinek Dániel',
+      fromVerdictType: 'előzetesben',
+      toVerdictType: 'vádemelés',
+    });
+    expect(r).toEqual({ allowed: true });
+  });
+
+  it('NEM engedi, ha csak egy forrás van', async () => {
+    const r = await canTransitionToCharged(dbWith(1), {
+      personName: 'Jellinek Dániel',
+      fromVerdictType: 'előzetesben',
+      toVerdictType: 'jogerős',
+    });
+    expect(r).toEqual({ allowed: false, sources: 1 });
+  });
+
+  it('nem szól bele, ha nem a vádemelés/ítélet szakaszba lép', async () => {
+    let queried = false;
+    const db = { execute: async () => { queried = true; return [{ n: 0 }]; } };
+    const r = await canTransitionToCharged(db, {
+      personName: 'Jellinek Dániel',
+      fromVerdictType: 'előzetesben',
+      toVerdictType: 'szabadlábra helyezve',
+    });
+    expect(r).toEqual({ allowed: true });
+    expect(queried, 'nem kell DB-t kérdezni, ha nincs átlépés').toBe(false);
+  });
+
+  it('nem szól bele, ha MÁR abban a szakaszban volt', async () => {
+    const r = await canTransitionToCharged(dbWith(0), {
+      personName: 'Jellinek Dániel',
+      fromVerdictType: 'vádemelés',
+      toVerdictType: 'jogerős',
+    });
+    expect(r).toEqual({ allowed: true });
+  });
+
+  it('nevesítetlen szereplőnél nem keres, tehát nem is léphet át', async () => {
+    // „A Volánbusz-ügy harmadik gyanúsítottja" — az utolsó két szó nem név.
+    // A DB-hívás megtörténik, de a találat 0, tehát a kapu nem engedi át.
+    const r = await canTransitionToCharged(dbWith(0), {
+      personName: 'A Volánbusz-ügy harmadik gyanúsítottja',
+      fromVerdictType: 'szabadlábra helyezve',
+      toVerdictType: 'vádemelés',
+    });
+    expect(r).toEqual({ allowed: false, sources: 0 });
+  });
+
+  it('egyszavas névnél nem kérdezi a DB-t', async () => {
+    let queried = false;
+    const db = { execute: async () => { queried = true; return [{ n: 5 }]; } };
+    expect(await countChargeConfirmingSources(db, 'Névtelen')).toBe(0);
+    expect(queried).toBe(false);
+  });
+
+  it('a küszöb kettő', () => {
+    expect(CHARGE_TRANSITION_MIN_SOURCES).toBe(2);
   });
 });

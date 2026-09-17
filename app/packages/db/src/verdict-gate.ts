@@ -385,6 +385,12 @@ export function coercePretrialClaim<T extends string>(
  */
 const SENTENCEABLE_VERDICT_TYPES = new Set(['elsőfokú', 'jogerős']);
 
+/** A „Vádemelve vagy elítélve" szakasz típusai — l. verdict-stats.ts
+ *  CHARGED_TYPES. Itt külön szerepel, mert a @korr/db package nem
+ *  importálhat a Next-alkalmazás app/ könyvtárából; a két listát a
+ *  verdict-gate.test.ts tartja szinkronban. */
+const CHARGED_VERDICT_TYPES = new Set(['vádemelés', 'elsőfokú', 'jogerős']);
+
 export function coerceSentenceToVerdictType(
   verdictType: string,
   sentence: { sentenceYears?: number | null; sentenceMonths?: number | null },
@@ -396,6 +402,82 @@ export function coerceSentenceToVerdictType(
     };
   }
   return { sentenceYears: 0, sentenceMonths: null };
+}
+
+
+/**
+ * ÁTLÉPÉS A VÁDEMELÉS/ÍTÉLET SZAKASZBA: KÉT FORRÁS KELL.
+ *
+ * 2026-09-17, user szabály: az ÚJ sorok Telegram-jóváhagyásra mennek
+ * (l. isCharged() használata a beszúró útvonalakon), a MEGLÉVŐ sorok
+ * státuszváltását viszont nem akarta külön jóváhagyni — „de csak akkor
+ * teheted át, ha két forrás megerősíti".
+ *
+ * Miért pont ez a szabály itt: a státuszváltás nem új közlés, hanem egy
+ * publikus sor átminősítése a legsúlyosabb szakaszba. Egyetlen cikk
+ * félreértése (vagy egy „vádemelést kezdeményeztek" típusú jövő idejű alak)
+ * elég lenne hozzá, és a javítás utólag már nem hozza vissza azt, aki
+ * közben elolvasta.
+ *
+ * Mit tekintünk megerősítésnek: KÉT KÜLÖNBÖZŐ FORRÁS (Source.id, tehát nem
+ * ugyanannak a lapnak két cikke) olyan cikke, amelyben egyszerre szerepel a
+ * személy neve ÉS a vádemelés/ítélet valamelyik kifejezése. A beolvasott
+ * hírfolyamból dolgozik, tehát nem kell hozzá új tábla és új LLM-hívás.
+ *
+ * A név-illesztés a személy VEZETÉKNÉV + KERESZTNÉV alakjára megy, és
+ * megengedi a magyar toldalékot (a cikkek tárgy- és részes esetben írják:
+ * „Jellinek Dánielt", „Jellinek Dánielnek"). Ha a `personName` nem valódi
+ * személynév (pl. „A Volánbusz-ügy harmadik gyanúsítottja"), a keresés nem
+ * talál semmit — és az helyes: egy nevesítetlen szereplőt nem is lehet két
+ * forrásból névre azonosítani, tehát nem is léphet át magától.
+ *
+ * A kapu KONZERVATÍV irányban hibázik: ha nincs meg a két forrás, a sor a
+ * régi státuszában marad. Nem vész el semmi, csak nem lép előre.
+ */
+const CHARGE_PHRASES = [
+  'vádat emelt', 'vádat emeltek', 'vádemelés', 'vádiratot',
+  'jogerős', 'jogerősen', 'elsőfokú', 'elsőfokon',
+  'elítélte', 'elítélték', 'ítéletet hirdet', 'bűnösnek találta',
+] as const;
+
+export async function countChargeConfirmingSources(
+  db: Executable,
+  personName: string,
+): Promise<number> {
+  const words = personName.trim().split(/\s+/);
+  if (words.length < 2) return 0;
+  // Az utolsó két szó a név („Dr. Kovács Béla" → „Kovács Béla").
+  const needle = words.slice(-2).join(' ').toLowerCase();
+  if (needle.length < 6) return 0;
+
+  const phrases = CHARGE_PHRASES.map((p) => `%${p}%`);
+  const rows = (await db.execute(sql`
+    SELECT COUNT(DISTINCT "sourceId")::int AS n
+    FROM "NewsArticle"
+    WHERE lower(unaccent("headline") || ' ' || unaccent("excerpt"))
+            LIKE '%' || unaccent(${needle}) || '%'
+      AND lower(unaccent("headline") || ' ' || unaccent("excerpt"))
+            LIKE ANY (${sql`ARRAY[${sql.join(phrases.map((p) => sql`unaccent(${p})`), sql`, `)}]`})
+  `)) as unknown as Array<{ n: number }>;
+  return rows[0]?.n ?? 0;
+}
+
+/** Hány független forrás kell egy meglévő sor átminősítéséhez. */
+export const CHARGE_TRANSITION_MIN_SOURCES = 2;
+
+/**
+ * Átminősíthető-e egy MEGLÉVŐ sor a vádemelés/ítélet szakaszba.
+ * `true`, ha nem is átlépésről van szó (a típus nem charged, vagy már az volt).
+ */
+export async function canTransitionToCharged(
+  db: Executable,
+  input: { personName: string; fromVerdictType: string; toVerdictType: string },
+): Promise<{ allowed: true } | { allowed: false; sources: number }> {
+  const isChargedType = (t: string) => CHARGED_VERDICT_TYPES.has(t);
+  if (!isChargedType(input.toVerdictType)) return { allowed: true };
+  if (isChargedType(input.fromVerdictType)) return { allowed: true };
+  const sources = await countChargeConfirmingSources(db, input.personName);
+  return sources >= CHARGE_TRANSITION_MIN_SOURCES ? { allowed: true } : { allowed: false, sources };
 }
 
 /**

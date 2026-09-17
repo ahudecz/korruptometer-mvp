@@ -5,6 +5,8 @@ import { detectVerdictFromArticle, type VerdictExtraction } from '@korr/db/ai-ve
 import {
   articleDateIso,
   cleanPositionTitle,
+  canTransitionToCharged,
+  CHARGE_TRANSITION_MIN_SOURCES,
   coercePretrialClaim,
   coerceSentenceToVerdictType,
   evidenceQuoteSupported,
@@ -306,10 +308,38 @@ ${article.excerpt}`;
     sentenceMonths: typeof result.sentenceMonths === 'number' ? result.sentenceMonths : null,
   });
 
+
+  // MEGLÉVŐ SOR ÁTLÉPÉSE A VÁDEMELÉS/ÍTÉLET SZAKASZBA: KÉT FORRÁS KELL.
+  //
+  // 2026-09-17, user szabály: a státuszváltást nem kell Telegramon
+  // jóváhagyni, „de csak akkor teheted át, ha két forrás megerősíti".
+  // Ha nincs meg a két független forrás, a sor a RÉGI típusában marad — a
+  // cikk forrásai és a szöveg attól még frissülnek, csak a szakasz nem
+  // változik. L. verdict-gate.ts canTransitionToCharged().
+  let effectiveVerdictType: typeof verdictType = verdictType;
+  if (existingVerdict) {
+    const transition = await canTransitionToCharged(db, {
+      personName: result.personName,
+      fromVerdictType: existingVerdict.verdictType,
+      toVerdictType: verdictType,
+    });
+    if (!transition.allowed) {
+      // A cast biztonságos: a CourtVerdict.verdictType oszlopon DB-szintű
+      // CHECK constraint áll (migration 0050), tehát a meglévő sor értéke
+      // csak a nyolc érvényes típus egyike lehet.
+      effectiveVerdictType = existingVerdict.verdictType as typeof verdictType;
+      console.log(
+        `[court_verdict] átminősítés elhalasztva: ${result.personName} ` +
+          `${existingVerdict.verdictType} → ${verdictType}, ` +
+          `csak ${transition.sources} forrás erősíti meg (${CHARGE_TRANSITION_MIN_SOURCES} kell)`,
+      );
+    }
+  }
+
   let recordId: string;
   if (existingVerdict) {
     await db.update(schema.courtVerdicts).set({
-      verdictType,
+      verdictType: effectiveVerdictType,
       sentenceYears: sentence.sentenceYears,
       // 2026-07-24 — defenzív: a séma most már ['number','null']-t enged
       // (l. court-verdict-detect.ts), de a "??"-fallback nem fogja el, ha

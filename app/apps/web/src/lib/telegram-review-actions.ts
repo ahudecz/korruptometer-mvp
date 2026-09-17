@@ -11,6 +11,8 @@ import { checkRemoval, type RemovalCheck } from '@korr/db/ai-watchlist';
 import { WATCH_LIST, type WatchPerson } from '@app/_home/watchlist-config';
 import {
   articleDateIso,
+  canTransitionToCharged,
+  CHARGE_TRANSITION_MIN_SOURCES,
   coercePretrialClaim,
   coerceSentenceToVerdictType,
   decideComplaintTransition,
@@ -415,11 +417,39 @@ ${article.excerpt}`;
 
   const verdictDate = resolveDate(result.verdictDate, article.publishedAt);
   const todaySlice = todayIso;
+
+  // MEGLÉVŐ SOR ÁTLÉPÉSE A VÁDEMELÉS/ÍTÉLET SZAKASZBA: KÉT FORRÁS KELL.
+  //
+  // 2026-09-17, user szabály: a státuszváltást nem kell Telegramon
+  // jóváhagyni, „de csak akkor teheted át, ha két forrás megerősíti".
+  // Ha nincs meg a két független forrás, a sor a RÉGI típusában marad — a
+  // cikk forrásai és a szöveg attól még frissülnek, csak a szakasz nem
+  // változik. L. verdict-gate.ts canTransitionToCharged().
+  let effectiveVerdictType: typeof verdictType = verdictType;
+  if (existingVerdict) {
+    const transition = await canTransitionToCharged(db, {
+      personName: result.personName,
+      fromVerdictType: existingVerdict.verdictType,
+      toVerdictType: verdictType,
+    });
+    if (!transition.allowed) {
+      // A cast biztonságos: a CourtVerdict.verdictType oszlopon DB-szintű
+      // CHECK constraint áll (migration 0050), tehát a meglévő sor értéke
+      // csak a nyolc érvényes típus egyike lehet.
+      effectiveVerdictType = existingVerdict.verdictType as typeof verdictType;
+      console.log(
+        `[court_verdict] átminősítés elhalasztva: ${result.personName} ` +
+          `${existingVerdict.verdictType} → ${verdictType}, ` +
+          `csak ${transition.sources} forrás erősíti meg (${CHARGE_TRANSITION_MIN_SOURCES} kell)`,
+      );
+    }
+  }
+
   let recordId: string;
   let outcomeStatus: 'inserted' | 'updated';
   if (existingVerdict) {
     await getDb().update(schema.courtVerdicts).set({
-      verdictType,
+      verdictType: effectiveVerdictType,
       sentenceYears: sentence.sentenceYears,
       sentenceMonths: sentence.sentenceMonths,
       sentenceLabel: (result.sentenceLabel ?? '').slice(0, 200),
