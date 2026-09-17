@@ -750,6 +750,11 @@ export const FELTAROK: Feltaro[] = [
     tagline:
       'Közérdekű adatigénylések százait nyújtotta be, és ha elutasították, bíróságra vitte — több ügyben ez volt az egyetlen út, ahogy az iratok kikerültek.',
     targetKeyword: { phrase: 'átlátszó.hu', volume: 4400, kd: 50 },
+    live: true,
+    related: [
+      { label: 'Hatvanpuszta — a kiemelt ügy', href: '/ugyek/hatvanpuszta' },
+      { label: 'Szijjártó adriai jachtozása', href: '/adatbazis/szijjarto-adriai-jacht' },
+    ],
     section: {
       heading: 'Átlátszó — aki perre vitte az elhallgatott iratokat',
       paragraphs: [
@@ -765,9 +770,9 @@ export const FELTAROK: Feltaro[] = [
       lead:
         'Az Átlátszó 2011 óta működő, közadakozásból és pályázatokból fenntartott oknyomozó portál. A legfontosabb eszköze nem a bennfentes forrás, hanem a közérdekűadat-igénylés — és ha megtagadják, a per.',
       cases: {
-        heading: 'Perek, amiket megnyertek — és amiket nem elég megnyerni',
+        heading: 'Amit kipereltek — és amit lefotóztak',
         intro:
-          'Egy adatper évekig tart és pénzbe kerül. Cserébe viszont a végén kiadott dokumentum megtámadhatatlan: nem „állítás szemben állítással", hanem irat.',
+          'Egy adatper évekig tart és pénzbe kerül. Cserébe viszont a végén kiadott dokumentum megtámadhatatlan: nem „állítás szemben állítással", hanem irat. Van azonban olyan összefüggés, amiről egyáltalán nem keletkezik irat — ott a kamera veszi át a bizonyítás munkáját. Az alábbi ügyek mindkét módszerre példák.',
         items: [
           {
             title: 'A gödi Samsung-gyár bírságai',
@@ -805,10 +810,132 @@ export const FELTAROK: Feltaro[] = [
               { source: 'Átlátszó', date: '2025. szept. 12.', headline: 'Mészárosék közpénzbajnok családi cége a hatvanpusztai majorság generálkivitelezője', url: 'https://atlatszo.hu/kozpenz/2025/09/12/meszarosek-kozpenzbajnok-csaladi-cege-a-hatvanpusztai-majorsag-generalkivitelezoje/' },
               { source: 'Átlátszó', date: '2025. aug. 12.', headline: 'Miből lesz a cserebogár? Így festett a hatvanpusztai birtok öt és tíz évvel ezelőtt', url: 'https://atlatszo.hu/impakt/2025/08/12/mibol-lesz-a-cserebogar-igy-festett-a-hatvanpusztai-birtok-ot-es-tiz-evvel-ezelott/' },
             ],
+            promo: {
+              href: '/ugyek/hatvanpuszta',
+              eyebrow: 'Kiemelt ügy · Hatvanpuszta',
+              title: 'Mennyit ér valójában a hatvanpusztai birtok?',
+              lead:
+                'Becsült ingatlanérték, ismeretlen vagyonforrás, vagyonnyilatkozat — az ügy teljes feldolgozása a saját oldalán.',
+              cta: 'Az ügy megnyitása',
+            },
+          },
+          {
+            title: 'Felcsút Travel Club — a magánrepülő és a luxusjachtok',
+            when: '2018. szeptember 24.',
+            body:
+              'Az Átlátszó legnagyobb visszhangot kiváltó munkája nem adatperből, hanem egy módszerváltásból született: ahelyett, hogy iratot kértek volna, követni kezdték a járműveket. Repülési transzponder- és tengeri AIS-adatbázisokból dolgoztak, a helyszínen pedig fotós és drón rögzítette, ki száll le a gépről és ki tartózkodik a fedélzeten.',
+            more: [
+              'A 2018-as összefoglalójuk két eszközre épült. Az OE-LEM lajstromjelű, osztrák bejegyzésű Bombardier Global 6000 — a becslésük szerint nagyjából 17 milliárd forint értékű gép — 2018. július 25-én Orbán Viktort hozta haza egy bulgáriai focimeccsről; ugyanez a gép később Mészáros Beatrixot és Végh Gábort, a ZTE tulajdonosát is szállította. A másik a Lady Mrd: 42 méteres, máltai lajstromú Benetti, hozzávetőleg 7 milliárd forint értékben. 2018 augusztusában Homolya Róbert MÁV-vezérigazgató, Szíjj László és Kovács Ernő kormánybiztos volt a fedélzetén.',
+              'A repülési és hajózási nyilvántartások összevetése, valamint a rijekai, spliti és malagai helyszíni fotózás adta a bizonyítékot. A szöveget Erdélyi Katalin írta, a fotókat és a videót Németh Dániel készítette, az adatvizualizációt Bátorfy Attila.',
+              'A jelentősége nem a nyaralás. Az, hogy a közbeszerzési statisztika és a magánvagyon között addig csak feltételezett kapcsolat egyetlen fényképen láthatóvá vált: állami megbízásokból gazdagodó vállalkozók luxuseszközein utazik a döntéshozó, aki azokat a megbízásokat kiosztja.',
+            ],
+            links: [{ text: 'Szíjj László', href: '/adatbazis/meszaros-szijj-autopalya-koncesszio' }],
+            sources: [
+              {
+                source: 'Átlátszó',
+                date: '2018. szept. 24.',
+                headline:
+                  'Orbán Viktor, a magánrepülőgép, a luxusjacht és a Mészáros-klán: tudjuk, hol nyaraltak idén nyáron',
+                url: 'https://atlatszo.hu/kozpenz/2018/09/24/orban-viktor-a-maganrepulogep-a-luxusjacht-es-a-meszaros-klan-tudjuk-hol-nyaraltak-iden-nyaron/',
+                lead:
+                  'Az alapvetés: lajstromszámok, hajónevek, dátumok és fotók egyetlen anyagban. Innentől nem állítás volt, hanem dokumentáció.',
+              },
+            ],
+            highlight: {
+              heading: 'A jacht, amelyik kikapcsolta a helyzetjelzőjét',
+              body:
+                '2020. augusztus 16-án, miközben Szijjártó Péter külügyminiszter a fehéroroszországi válságról szóló diplomáciai munkáról posztolt, az Átlátszó fotósa a horvátországi Biograd na Moru közelében, a Kornati-szigetek térségében fotózta le a családjával a Lady MRD fedélzetén. A hajót Szíjj László máltai offshore cége, az L&L Charter Ltd. üzemelteti. Amikor a fotós közeledni kezdett, a jacht AIS-helyzetjelzője kikapcsolt — és pontosan ez a mozzanat mutatja meg, miért kellett a helyszíni fotózás: a nyilvános adatbázis kikapcsolható, a fénykép nem.',
+              sources: [
+                {
+                  source: 'Átlátszó',
+                  date: '2020. aug. 18.',
+                  headline:
+                    'Szijjártó Péter külügyminiszter Szíjj László adriai luxusjachtján bekkeli ki a fehérorosz válságot',
+                  url: 'https://atlatszo.hu/kozpenz/2020/08/18/szijjarto-peter-kulugyminiszter-szijj-laszlo-adriai-luxusjachtjan-bekkeli-ki-a-feherorosz-valsagot',
+                  lead:
+                    'Az eredeti feltárás Németh Dániel fotóival: hol, mikor, melyik hajón, és mit posztolt közben a miniszter.',
+                },
+                {
+                  source: '444',
+                  date: '2020. aug. 18.',
+                  headline:
+                    'Szijjártó lebukott: a Lady Mrd nevű NER-es luxusjachton nyaralt a családjával, közben olyan fotókat posztolt, mintha az irodájában dolgozna',
+                  url: 'https://444.hu/2020/08/18/szijjarto-lebukott-a-lady-mrd-nevu-ner-es-luxusjachton-nyaralt-a-csaladjaval-kozben-olyan-fotokat-posztolt-mintha-az-irodajaban-dolgozna',
+                  lead:
+                    'Ahogy az ügy továbbfutott a napi sajtóban — ez a lépés az, amitől egy oknyomozásból országos téma lesz.',
+                },
+              ],
+            },
+            promo: {
+              href: '/adatbazis/szijjarto-adriai-jacht',
+              eyebrow: 'Az adatbázisban',
+              title: 'Szijjártó adriai jachtozása',
+              lead:
+                'Az ügy strukturált adatlapja: szereplők, intézmények, kapcsolódó cikkek és az eljárás állása.',
+              cta: 'Az adatlap megnyitása',
+            },
+          },
+          {
+            title: 'Tizenöt év Mészáros Lőrincről — a drónfelvételektől a Strómanig',
+            when: '2012–2026',
+            body:
+              'Az Átlátszó archívumában 2012 és 2026 között 455 olyan cikk van, amelynek a CÍMÉBEN szerepel Mészáros Lőrinc neve. Ez a szám önmagában elmond valamit a műhely működéséről: nem egyetlen leleplezés, hanem tizennégy éven át tartó, folyamatos dokumentálás.',
+            more: [
+              'A sorozat leglátványosabb darabja a 2018-as drónriport volt, amelyben körbejárták az országot, és sorra vették a felcsúti vállalkozó portfólióját — szállodákat, földeket, ipari ingatlanokat. A videó azért működött, mert nem számokat mutatott, hanem méretet: egy hektárokban mérhető birtokot nem lehet „félreértett közbeszerzési eljárásnak" nevezni.',
+              'Ugyanennek a tizennégy évnyi anyagnak az összefoglalása lett a Stróman – A hatalom álarca című, egyórás film 2026 márciusában. Ez ma a csatornájuk legnézettebb anyaga, több mint 840 ezer megtekintéssel — az Átlátszó volt és jelenlegi újságírói, szakértők, valamint archív felvételeken maga Mészáros Lőrinc szólal meg benne.',
+            ],
+            videos: [
+              {
+                id: 'OYihmhNDjOA',
+                label: 'Átlátszó · 2026. március 13.',
+                title: 'Stróman – A hatalom álarca',
+                summary:
+                  'Egyórás film Mészáros Lőrinc 2012 óta tartó felemelkedéséről, az Átlátszó tizennégy évnyi saját anyagából összerakva. A csatornájuk legnézettebb videója.',
+              },
+              {
+                id: '8vvuI7GgxxY',
+                label: 'Átlátszó · 2018. július 23.',
+                title: 'Lenyűgöző drónfelvételek a Mészáros-birodalom legértékesebb szerzeményeiről',
+                summary:
+                  'A drónos módszer mintadarabja: körbejárták az országot, hogy a közpénzmilliárdokból összeszedett portfólió mérete ne adat legyen, hanem látvány.',
+              },
+            ],
+          },
+          {
+            title: 'Átlátszó Országszerte — az 500 milliós körforgalom a mező közepén',
+            when: '2025. október 18.',
+            body:
+              'A műhely vidéki hálózata azt csinálja, amit országos szerkesztőség ritkán tud: helyben megy utána egy-egy beruházásnak. A zalaegerszegi példa ennek a legkönnyebben érthető darabja — egy körforgalom a mező közepén, amely nem köt össze semmit semmivel, mellette a projekttáblával, hogy bő 500 millió forint uniós támogatásból épült.',
+            more: [
+              'Az ilyen ügyek azért fontosak, mert nem kell hozzájuk offshore cégláncot kibogozni. Egy hatperces videó és egy projekttábla elvégzi a munkát — és pontosan ez az a réteg, ahol a közpénzről szóló beszéd kilép a szakértői körből.',
+            ],
+            videos: [
+              {
+                id: 'hSB3hp51rDw',
+                label: 'Átlátszó · 2025. október 18.',
+                title: 'Sehonnan sehová vezető körforgalom a mezőn 500 millió forintnyi EU-s pénzből',
+                summary:
+                  'A Zalaegerszeg és Zalaszentiván közötti beruházás története, négy évre visszamenőleg.',
+              },
+            ],
           },
         ],
       },
       extra: [
+        {
+          heading: 'Kettős szerep: adatper és kamera',
+          paragraphs: [
+            'Az Átlátszó két, egymástól nagyon különböző képességet tart fenn egyszerre. Az egyik jogi: adatigénylés, elutasítás, per, évekig tartó eljárás, a végén egy dokumentum, amit nem lehet letagadni. A másik vizuális: drón, helyszíni fotózás, repülési és hajózási nyilvántartások figyelése — olyan bizonyíték, amihez nem kell bírósági ítéletet megvárni.',
+            'A kettő ugyanazt a hiányt tölti be, csak más oldalról. Az adatper akkor működik, ha van irat, amit el lehet zárni. A kamera akkor, amikor irat nincs is — egy nyaralásról nem készül közbeszerzési dokumentáció. A magyar oknyomozásban rajtuk kívül kevesen tartják fenn mindkettőt.',
+          ],
+        },
+        {
+          heading: 'Mit mondanak róluk a támogatóik és a kritikusaik?',
+          paragraphs: [
+            'A támogatóik szerint az Átlátszó nélkül a NER gazdasági hátországának jelentős része üzleti titok mögött maradt volna: a megnyert adatperek olyan szerződéseket hoztak nyilvánosságra, amelyekre más szerkesztőségnek nem volt jogi kapacitása, a drón- és hajókövetéses anyagok pedig olyan összefüggéseket tettek láthatóvá, amelyeket dokumentumból nem lehetett volna kimutatni.',
+            'A kritikusaik — elsősorban a korábbi kormányoldal médiuma és a Szuverenitásvédelmi Hivatal — külföldről finanszírozott szervezetként írták le őket, és azt állították, hogy az adatigénylések és a megfigyelések valójában gazdasági beruházások ellehetetlenítését szolgálják. Az Átlátszó a finanszírozását nyilvánosan közli, és a hivatallal szemben bíróságon is nyert — igaz, az ítéletet a hivatal megtámadta, és az eljárást meg kellett ismételni.',
+          ],
+        },
         {
           heading: 'Az infrastruktúra, amit másoknak is építettek',
           paragraphs: [
@@ -817,14 +944,82 @@ export const FELTAROK: Feltaro[] = [
           ],
         },
       ],
+      table: {
+        heading: 'Hol a helye a rendszerváltó ökoszisztémában?',
+        intro:
+          'A falon három, egymást nem helyettesítő munkatípus szerepel. Az alábbi összevetés azt mutatja, mivel foglalkozik az Átlátszó, és mivel nem.',
+        columns: ['Szereplő', 'Elsődleges terep', 'Módszertan', 'Mit ad a láncnak'],
+        rows: [
+          [
+            'Átlátszó',
+            'Hazai közpénz, önkormányzati szerződések, környezetvédelem',
+            'Közérdekűadat-igénylés és per, drón, repülési és hajózási nyilvántartások',
+            'Az alapdokumentumot és a vizuális bizonyítékot',
+          ],
+          [
+            'Direkt36',
+            'Nemzetbiztonság, külpolitika, titkosszolgálatok',
+            'Hónapokig tartó forrásépítés, nemzetközi együttműködés',
+            'Azt, amiről nem keletkezik kikérhető irat',
+          ],
+          [
+            'Juhász Péter, Partizán',
+            'Nagy elérésű nyilvánosság',
+            'Videós feldolgozás, hosszú interjú',
+            'Azt, hogy a kiásott ügy eljusson százezrekhez',
+          ],
+        ],
+        note: 'A sorrend nem rangsor: feltárás és terjesztés egymás nélkül egyaránt hatástalan.',
+      },
       faq: [
         {
           q: 'Mivel foglalkozik az Átlátszó?',
           a: 'Oknyomozó újságírással, adatújságírással és közérdekűadat-igénylésekkel. 2011 óta működik, közadakozásból és pályázatokból, nonprofit formában.',
         },
         {
+          q: 'Mi az a Stróman, és miért az a legnézettebb videójuk?',
+          a: 'Egy egyórás film 2026 márciusából, amely Mészáros Lőrinc 2012 óta tartó felemelkedését foglalja össze az Átlátszó tizennégy évnyi saját anyagából. Több mint 840 ezer megtekintésnél tart. Az archívumukban 2012 és 2026 között 455 olyan cikk van, amelynek a címében szerepel Mészáros Lőrinc neve — a film ezt sűríti egy órába.',
+        },
+        {
+          q: 'Ki fotózta le Szijjártó Pétert a luxusjachton?',
+          a: 'Németh Dániel, az Átlátszó fotósa, 2020. augusztus 16-án, a horvátországi Biograd na Moru közelében. A hajó a Lady MRD volt, amelyet Szíjj László máltai offshore cége üzemeltet. A jacht AIS-helyzetjelzője kikapcsolt, amikor a fotós közeledni kezdett.',
+        },
+        {
+          q: 'Mi az az OE-LEM?',
+          a: 'Egy osztrák lajstromjelű Bombardier Global 6000 magánrepülőgép lajstromszáma, amelynek mozgását az Átlátszó éveken át követte nyilvános repülési adatbázisokból. A 2018-as anyaguk szerint ezzel a géppel érkezett haza Orbán Viktor 2018. július 25-én egy bulgáriai focimeccsről.',
+        },
+        {
           q: 'Mi az a közérdekűadat-igénylés?',
           a: 'Olyan kérelem, amellyel bárki kikérheti egy állami vagy önkormányzati szerv kezelésében lévő, közérdekű adatot. Ha a szerv megtagadja, az igénylő bírósághoz fordulhat — az Átlátszó módszertanának ez a második fele.',
+        },
+      ],
+      sources: [
+        {
+          source: 'Átlátszó',
+          date: '2018. szept. 24.',
+          headline:
+            'Orbán Viktor, a magánrepülőgép, a luxusjacht és a Mészáros-klán: tudjuk, hol nyaraltak idén nyáron',
+          url: 'https://atlatszo.hu/kozpenz/2018/09/24/orban-viktor-a-maganrepulogep-a-luxusjacht-es-a-meszaros-klan-tudjuk-hol-nyaraltak-iden-nyaron/',
+        },
+        {
+          source: 'Átlátszó',
+          date: '2020. aug. 18.',
+          headline:
+            'Szijjártó Péter külügyminiszter Szíjj László adriai luxusjachtján bekkeli ki a fehérorosz válságot',
+          url: 'https://atlatszo.hu/kozpenz/2020/08/18/szijjarto-peter-kulugyminiszter-szijj-laszlo-adriai-luxusjachtjan-bekkeli-ki-a-feherorosz-valsagot',
+        },
+        {
+          source: '444',
+          date: '2020. aug. 18.',
+          headline:
+            'Szijjártó lebukott: a Lady Mrd nevű NER-es luxusjachton nyaralt a családjával',
+          url: 'https://444.hu/2020/08/18/szijjarto-lebukott-a-lady-mrd-nevu-ner-es-luxusjachton-nyaralt-a-csaladjaval-kozben-olyan-fotokat-posztolt-mintha-az-irodajaban-dolgozna',
+        },
+        {
+          source: 'Átlátszó',
+          date: '2025. okt. 18.',
+          headline: 'Sehonnan sehová vezető körforgalom a mezőn 500 millió forintnyi EU-s pénzből',
+          url: 'https://atlatszo.hu/orszagszerte/2025/10/18/sehonnan-sehova-vezeto-korforgalom-a-mezon-500-millio-forintnyi-eu-s-penzbol',
         },
       ],
     },
