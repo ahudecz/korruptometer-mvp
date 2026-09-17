@@ -426,13 +426,22 @@ export const FELTAROK: Feltaro[] = [
               'A drónfelvételek és a távoli fotók egy idő után elveszítik az újdonság erejét — ezt felismerve két radikálisabb, a fizikai jelenlétre épülő eszközhöz nyúlt. 2025 augusztusában kihasználta, hogy az építkezés során a birtok egyik hátsó kapuját nyitva hagyták, és engedély nélkül besétált a szigorúan őrzött területre. Mobiltelefonnal, folyamatos felvételt készítve járta be a belső udvarokat, rögzítve a mélygarázsokat és a luxus szintű belső burkolatokat, mielőtt a kertész és a biztonsági személyzet távozásra szólította fel. Az érvelése frappáns volt: magánlaksértésről vagy birtokháborításról elvileg nem lehet szó egy olyan ingatlannál, amelyet a kormányzati kommunikáció befejezetlen mezőgazdasági üzemként definiál.',
               'A másik eszköze az volt, hogy a nyilvánosságot vitte oda: rendszeres buszos túrákat szervezett a birtokhoz, zuglói indulással, alkalmanként több busznyi érdeklődővel. A lényeg az volt, hogy a választópolgárok ne a képernyőn keresztül, hanem a saját szemükkel döntsék el, gazdasági épületet vagy luxuskastélyt látnak-e. A meghívókban tüntetéssel egybekötött „szafari túrának" hívták; az utolsó nagy körutat 2026 márciusában, közvetlenül a választás előtt tartotta.',
             ],
+            videos: [
+              {
+                id: 'AnJ-SfY8tjA',
+                label: 'ATV Magyarország · 2025. augusztus 27.',
+                title: 'Hatvanpuszta, ahogy ő mutatta meg',
+                summary:
+                  'A nyitva hagyott hátsó kapu, néhány perc a birtokon, majd a kertész. A felvétel maga a válasz arra a kérdésre, hogy befejezetlen gazdasági épületről van-e szó.',
+              },
+            ],
             highlight: {
               heading: 'Amikor felborult a biztonsági őr autója — 2025. augusztus 19.',
               body:
-                'Hadházy éppen a birtok környéki nyilvános utakon autózott, amikor a hatvanpusztai birtok védelmét ellátó biztonsági szolgálat egyik terepjárós őre agresszívan üldözőbe vette a kocsiját, majd az üldözés során oldalról nekiütközött. Az ütközés erejétől a vagyonőr saját járműve elvesztette a stabilitását és felborult. Az esetet az anyósülésen utazó Gulyás Balázs, a Gulyáságyú Média újságírója az első másodperctől videóra vette — enélkül az ügy megmaradt volna a klasszikus „állítás állítással szemben" szintjén. A Bicskei Rendőrkapitányság közúti veszélyeztetés bűntettének alapos gyanúja miatt indított eljárást a sofőr ellen, akiről kiderült, hogy Mészáros Lőrinc biztonságtechnikai cégének alkalmazásában állt. A nyomozást 2025 novemberében megszüntették, arra hivatkozva, hogy az őr nem veszélyeztette a képviselő testi épségét; az ügyet átminősítették, és az őr végül szabálysértési eljárásban 80 ezer forint pénzbírságot és három hónap járművezetéstől eltiltást kapott.',
+                'Úgy kezdődött, hogy Hadházy feltartóztatás nélkül besétált a hatvanpusztai birtokra — meg akart győződni róla, valóban műemlék áll-e ott —, de hamar kizavarták. Ezután vették üldözőbe. Éppen a birtok környéki nyilvános utakon autózott, amikor a birtok védelmét ellátó biztonsági szolgálat egyik terepjárós őre agresszívan üldözőbe vette a kocsiját, majd az üldözés során oldalról nekiütközött. Az ütközés erejétől a vagyonőr saját járműve elvesztette a stabilitását és felborult. Az esetet az anyósülésen utazó Gulyás Balázs, a Gulyáságyú Média újságírója az első másodperctől videóra vette — enélkül az ügy megmaradt volna a klasszikus „állítás állítással szemben" szintjén. A Bicskei Rendőrkapitányság közúti veszélyeztetés bűntettének alapos gyanúja miatt indított eljárást a sofőr ellen, akiről kiderült, hogy Mészáros Lőrinc biztonságtechnikai cégének alkalmazásában állt. A nyomozást 2025 novemberében megszüntették, arra hivatkozva, hogy az őr nem veszélyeztette a képviselő testi épségét; az ügyet átminősítették, és az őr végül szabálysértési eljárásban 80 ezer forint pénzbírságot és három hónap járművezetéstől eltiltást kapott.',
               video: {
                 id: 'ahlzM1ub9IA',
-                label: 'Gulyáságyú Média',
+                label: 'Kontroll • Gulyáságyú · 2025. augusztus 25.',
                 title: 'Így ÜLDÖZTÉK HADHÁZY autóját Hatvanpusztán',
                 summary: 'A teljes felvétel az anyósülésről — az üldözéstől az ütközésen át a borulásig.',
               },
@@ -505,18 +514,6 @@ export const FELTAROK: Feltaro[] = [
           ['Hatvanpuszta', 'Orbán- és Mészáros-család uradalma', '6000 m²-es luxusrezidencia', 'Helyszíni szafarik, besétálás, légi felvételek'],
           ['Pécsi Volvo-gate', 'Buszbeszerzés, Bánki Erik szála', '700 millió forint bizonyított kár', 'Cégiratok, 2026-os új feljelentés'],
           ['Lélegeztetőgépek', 'Járványügyi veszélyhelyzeti beszerzések', 'Sok ezer raktárban ragadt gép', 'Vámadatok és számlák végigvezetése'],
-        ],
-      },
-      videoBlock: {
-        heading: 'Hatvanpuszta, ahogy ő mutatta meg',
-        items: [
-          {
-            id: 'AnJ-SfY8tjA',
-            label: 'ATV',
-            title: 'Hadházy Ákos gond nélkül besétált a hatvanpusztai birtokra, amit tudott, levideózott',
-            summary:
-              'A nyitva hagyott hátsó kapu, néhány perc a birtokon, majd a kertész. A felvétel maga a válasz arra a kérdésre, hogy befejezetlen gazdasági épületről van-e szó.',
-          },
         ],
       },
       extra: [
@@ -2254,7 +2251,7 @@ export const FELTAROK: Feltaro[] = [
             videos: [
               {
                 id: 'ahlzM1ub9IA',
-                label: 'Gulyáságyú Média',
+                label: 'Kontroll • Gulyáságyú · 2025. augusztus 25.',
                 title: 'Így ÜLDÖZTÉK HADHÁZY autóját Hatvanpusztán',
                 summary: 'A teljes felvétel az anyósülésről — az üldözéstől az ütközésen át a borulásig.',
               },
