@@ -23,18 +23,24 @@ export function PodcastVideoBoxControlled({
   wrapClassName,
   playing,
   onPlay,
+  playlistId,
 }: {
   videoId: string;
   title: string;
   wrapClassName: string;
   playing: boolean;
   onPlay: () => void;
+  /** Ha meg van adva, a lejátszó a TELJES lejátszási listát kapja meg, a
+   *  `videoId`-val kezdve — a nézőnek így a kereten belül ott a sorozat
+   *  összes része, nem kell átmennie a YouTube-ra. A borítókép továbbra is
+   *  az első videóé. */
+  playlistId?: string;
 }) {
   return (
     <div className={wrapClassName}>
       {playing ? (
         <iframe
-          src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1${playlistId ? `&list=${playlistId}` : ''}`}
           title={title}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
@@ -59,10 +65,12 @@ export function PodcastVideoBox({
   videoId,
   title,
   wrapClassName,
+  playlistId,
 }: {
   videoId: string;
   title: string;
   wrapClassName: string;
+  playlistId?: string;
 }) {
   const { playing, play } = usePodcastPlayback();
   return (
@@ -72,6 +80,7 @@ export function PodcastVideoBox({
       wrapClassName={wrapClassName}
       playing={playing}
       onPlay={play}
+      playlistId={playlistId}
     />
   );
 }

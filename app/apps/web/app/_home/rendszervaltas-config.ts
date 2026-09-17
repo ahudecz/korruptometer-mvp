@@ -88,6 +88,18 @@ export const GROUP_META: Record<FeltaroGroup, { title: string; anchor: string; i
  *  ügy-aloldalaknál. */
 export type InlineLink = { text: string; href: string; external?: boolean };
 
+/** Egy beágyazott YouTube-felvétel. A `list` egy teljes lejátszási listát tesz
+ *  a lejátszóba (user kérés, 2026-09-17: a NER100 65 részes sorozat, egyben
+ *  kell beágyazni) — a borítókép ilyenkor is az `id` videóé, és a néző a
+ *  kereten belül lépked a részek között, nem megy át a YouTube-ra. */
+export type FeltaroVideoRef = {
+  id: string;
+  label?: string;
+  title: string;
+  summary?: string;
+  list?: string;
+};
+
 export type Feltaro = {
   /** URL-szegmens a majdani profiloldalhoz: /rendszervaltas/<id> */
   id: string;
@@ -112,7 +124,7 @@ export type Feltaro = {
     heading: string;
     paragraphs: string[];
     links?: InlineLink[];
-    video?: { id: string; label?: string; title: string; summary?: string };
+    video?: FeltaroVideoRef;
   };
   /** Mire célozzon majd a SAJÁT profiloldala (Semrush, HU, 2026-09). */
   targetKeyword?: { phrase: string; volume: number; kd: number };
@@ -161,12 +173,12 @@ export type FeltaroCase = {
     paragraphs: string[];
     links?: InlineLink[];
     sources?: FeltaroLink[];
-    videos?: { id: string; label?: string; title: string; summary?: string }[];
+    videos?: FeltaroVideoRef[];
   }[];
   sources?: FeltaroLink[];
   /** Az ÜGYHÖZ tartozó felvételek — a szöveg végén, még a kiemelés előtt.
    *  Ott a helyük, ahol az ügyről szó van, nem a lap alján (user, 2026-09-16). */
-  videos?: { id: string; label?: string; title: string; summary?: string }[];
+  videos?: FeltaroVideoRef[];
   /** Keretes kiemelés AZ ÜGYÖN BELÜL: az az egy mozzanat, ami önmagában is
    *  megállítja az olvasót (pl. amikor nekimentek a kocsijának). */
   highlight?: {
@@ -175,7 +187,7 @@ export type FeltaroCase = {
     sources?: FeltaroLink[];
     /** A kiemelésben szereplő esemény felvétele — ott jelenik meg, ahol az
      *  eset le van írva, nem a lap alján (user, 2026-09-16). */
-    video?: { id: string; label?: string; title: string; summary?: string };
+    video?: FeltaroVideoRef;
   };
   /** Keretes ajánló a saját kiemelt ügyoldalunkra. Kötelező minden olyan
    *  ügynél, amelyhez van /ugyek/<id> oldalunk — user szabály, 2026-09-16:
@@ -193,14 +205,14 @@ export type FeltaroDetail = {
   cases?: { heading: string; intro?: string; items: FeltaroCase[] };
   /** További, szabad szöveges szakaszok a konkrét ügyek UTÁN. */
   extra?: { heading: string; paragraphs: string[]; links?: InlineLink[] }[];
-  video?: { id: string; label?: string; title: string; summary?: string };
+  video?: FeltaroVideoRef;
   /** Több beágyazott videó egy blokkban, saját felvezetővel. Akkor kell,
    *  amikor nem egy adás a bizonyíték, hanem az, hogy több szerkesztőség
    *  egymástól függetlenül ugyanazt játszotta le. */
   videoBlock?: {
     heading: string;
     intro?: string;
-    items: { id: string; label?: string; title: string; summary?: string }[];
+    items: FeltaroVideoRef[];
   };
   /** Videórács (3x3). Szándékosan NEM iframe-enként töltjük be: kilenc
    *  beágyazott lejátszó megölné az oldal betöltési idejét, ezért itt csak
@@ -1174,7 +1186,276 @@ export const FELTAROK: Feltaro[] = [
         'Ez az a réteg, ahol a feltáró munka és a nyilvánosság találkozik: a dokumentum megvolt korábban is, de a széles közönséghez csak akkor jutott el, amikor valaki elvégezte a lefordítás munkáját.',
       ],
     },
-    related: [{ label: 'Videóriportok és podcastok', href: '/podcastok' }],
+    related: [
+      { label: 'Videóriportok és podcastok', href: '/podcastok' },
+      { label: 'Ki az a Zsolti bácsi?', href: '/ugyek/ki-az-a-zsolt-bacsi' },
+    ],
+    live: true,
+    detail: {
+      seoTitle: 'Juhász Péter (Juhi): NER100, belvárosi ingatlanok, Zsolti bácsi',
+      seoDescription:
+        'A jogvédőtől a 302 ezer feliratkozós YouTube-csatornáig. Mit tárt fel az V. kerületben, mi a NER100, és miért tartottak nála házkutatást 2025 októberében?',
+      lead:
+        'Juhász Péter (a csatornáján Juhi) a Dicsőségfal egyik legösszetettebb szereplője: egy személyben helyi antikorrupciós harcos, aki önkormányzati iratokból épített feljelentéseket, és videós műsorkészítő, aki a kész ügyeket lefordítja arra a nyelvre, amelyen a nagyközönség is érti őket. A kettő nem ugyanaz a munka — és a Kegyencjárat szempontjából mindkettőre szükség van.',
+      cases: {
+        heading: 'Amit feltárt — és amit lefordított',
+        intro:
+          'Az alábbi három ügy három különböző szerepet mutat. Az elsőben ő az eredeti feltáró: a dokumentumokhoz képviselőként fért hozzá, és ő tette a feljelentéseket. A másodikban feldolgozó: mások kiásott adataiból csinált nézhető sorozatot. A harmadikban forrásvédő: olyan vádat hozott nyilvánosságra, amelyet bizonyítani nem tudott, a forrását viszont a házkutatás után sem adta ki.',
+        items: [
+          {
+            title: 'Az V. kerületi ingatlanértékesítések — amikor a képviselői iratbetekintés lett a szerszám',
+            when: '2014–2018',
+            body:
+              'Juhász Péter 2014-ben lett belvárosi önkormányzati képviselő, és ezzel olyasmihez jutott hozzá, amihez kívülről nem lehet: a kerületi ingatlangazdálkodás belső irataihoz. Az ebből épített ügy a pályafutásának az a része, ahol nem közvetítő, hanem elsődleges feltáró.',
+            more: [
+              'A kifogásolt konstrukció lényege egy törvényes kedvezmény kihasználása volt. Az önkormányzati helyiséget a bérlője kedvezményesen vásárolhatta meg — így ha egy cég röviddel az értékesítés előtt lett bérlő, a kedvezmény már neki járt. A sajtófeldolgozások szerint 2008 és 2013 között összesen 155 ingatlan kelt el jelentős engedménnyel, nagyjából négymilliárd forinttal a becsült érték alatt.',
+              'A legtöbbet emlegetett tétel a Szerb utcai műemléki lakás ügye volt, amelyet közpénzből újítottak fel, majd kedvezményes áron, hosszú részletfizetéssel adtak el az akkori alpolgármesternek, a későbbi polgármesternek. A politikai botrány akkora lett, hogy az érintett végül bejelentette: visszaadja a lakást az önkormányzatnak. Juhász ezzel párhuzamosan a kerület akkori polgármesterének a lakásvásárlásait és vagyonnyilatkozatait is folyamatosan támadta.',
+              'A hatósági végkifejlet viszont nem az lett, amit a beadványok mennyisége sugallt volna. A feljelentések nyomán indult vizsgálatokat a nyomozó hatóság 2016-ban bűncselekmény hiányában lezárta. Az ügy tehát jogi értelemben nem ért célba — a dokumentáció viszont megmaradt, és Juhász a tízéves elévülési határidő közeledtével, 2024-ben nyilvánosan adta át a teljes anyagot, hogy valaki más vigye tovább. Ez a Dicsőségfal egyik visszatérő mintája: a feltárás és az elszámoltatás két külön folyamat, és a második évekkel később indul el.',
+            ],
+            links: [
+              { text: 'a kerület akkori polgármesterének', href: '/adatbazis/rogan-v-kerulet-cegvasarlas' },
+            ],
+            sources: [
+              {
+                source: 'Magyar Narancs',
+                date: '2015. jan. 22.',
+                headline: 'Mielőtt végleg elfogy — Juhász Péter az V. kerület ingatlangazdálkodásáról',
+                url: 'https://magyarnarancs.hu/belpol/mielott-vegleg-elfogy-93334',
+                lead:
+                  'A leghosszabb korabeli interjú arról, hogyan jutott hozzá az iratokhoz, mit talált bennük, és miért gondolta, hogy a kedvezményes értékesítés rendszerszintű. Ez a szöveg a saját olvasatát adja — a hatósági végkifejletet l. a bekezdés végén.',
+              },
+              {
+                source: '444',
+                date: '2019. febr. 28.',
+                headline:
+                  'A Belvárosban megtalálták a módját, hogy ne csak a bérlők vihessék áron alul a kerület ingatlanjait',
+                url: 'https://444.hu/2019/02/28/a-belvarosban-megtalaltak-a-modjat-hogy-ne-csak-a-berlok-vihessek-aron-alul-a-kerulet-ingatlanjait-hanem-gyakorlatilag-barki',
+              },
+              {
+                source: 'K-Monitor',
+                headline: 'V. kerületi ingatlanügyek — cikkgyűjtemény',
+                url: 'https://adatbazis.k-monitor.hu/adatbazis/cimkek/v-keruleti-ingatlanugyek',
+              },
+            ],
+          },
+          {
+            title: 'A NER100 — hatvanöt rész arról, hogyan működik a rendszer',
+            when: '2021. szeptember – 2022. március',
+            body:
+              'A NER100 nem oknyomozás, hanem fordítás. Juhász Péter olyan ügyeket vett sorra, amelyeket előtte már mások — az Átlátszó, a Direkt36, a K-Monitor, a nagy szerkesztőségek — feltártak, és mindegyikből csinált egy rövid, nézhető epizódot. A sorozat 2021. szeptember 27-én indult a Budapest–Belgrád vasútvonalról szóló résszel, és 2022 márciusában, a hatvanötödik epizóddal ért véget.',
+            more: [
+              'Az értéke abban van, ami nélkül egy feltárás elveszik: az egyben tartásban. Egy közbeszerzési botrány két napig hír, aztán lekerül a címlapról, és fél év múlva már senki nem tudja felidézni, mi is volt pontosan. A NER100 ebből katalógust csinált — a Budapest–Belgrád vasúttól a Puskás Arénán és a lélegeztetőgép-beszerzéseken át Hatvanpusztáig —, amelyben minden tétel a helyén marad, és bármikor újranézhető. A 2026 utáni elszámoltatás szempontjából ez a fajta rendezett archívum legalább annyit ér, mint egy friss leleplezés.',
+              'Fontos viszont a méretarányt is kimondani, mert enélkül félrevezető a kép. A NER100 nem tömegsiker volt: a hatvanöt epizód együtt nagyjából 550 ezer megtekintésnél tart, a legnézettebb rész is huszonhétezer körül. A csatorna nagy számai — 302 ezer feliratkozó, 133 millió megtekintés — nem ebből a sorozatból jönnek, hanem a napi videókból. A NER100 nem az elérése miatt fontos, hanem azért, mert ilyen tematikus, végigvitt katalógust rajta kívül senki nem készített.',
+            ],
+            links: [
+              { text: 'lélegeztetőgép-beszerzéseken', href: '/ugyek/lelegeztetogep' },
+              { text: 'Hatvanpusztáig', href: '/ugyek/hatvanpuszta' },
+              { text: 'a Direkt36', href: '/rendszervaltas/direkt36' },
+            ],
+            videos: [
+              {
+                id: 'syOv3qrI0TY',
+                list: 'PLypfb10EcIXQP9R9ThTggu69ufvFQNFMz',
+                label: 'Juhász Péter | Juhi · NER100',
+                title: 'NER 100 — a teljes sorozat',
+                summary:
+                  'A teljes, hatvanöt részes lejátszási lista, az első epizóddal indítva. A lejátszón belül lehet lépkedni a részek között — nem kell átmenni a YouTube-ra.',
+              },
+            ],
+            sections: [
+              {
+                heading: 'Az Elios-epizód: mi történik, ha valaki lefordítja az uniós vizsgálati jelentést',
+                paragraphs: [
+                  'A sorozat ötödik része a Tiborcz Istvánhoz köthető Elios-ügyet dolgozta fel. Az alapanyag egy uniós csalás elleni vizsgálat jelentése volt: olyan műfaj, amelyet sokan idéznek, de kevesen olvasnak végig. Az epizód ebből építette fel lépésről lépésre, hogy miként nyert sorozatban közvilágítási pályázatokat egy cég, és hol keletkezett a kár.',
+                  'Ez a Juhász-módszer tiszta esete: az adat megvolt korábban is, a különbség az, hogy tíz perc alatt, képekkel és összegekkel végig lehetett követni. Az ügy önálló feldolgozása a Kegyencjárat adatbázisában is megvan.',
+                ],
+                links: [{ text: 'a Kegyencjárat adatbázisában', href: '/adatbazis/tiborcz-elios-zrt' }],
+              },
+            ],
+            promo: {
+              href: '/ugyek/lelegeztetogep',
+              eyebrow: 'Kiemelt ügy · Lélegeztetőgépek',
+              title: 'Az EU legdrágább lélegeztetőgépei — a NER100 egyik epizódjának témája',
+              lead:
+                'A sorozat huszonkettedik része ezt az ügyet dolgozta fel. A teljes feldolgozás — beszerzési árak, közvetítők, felelősök és az eljárások állása — a saját oldalán.',
+              cta: 'Az ügy megnyitása',
+            },
+          },
+          {
+            title: 'A Zsolti bácsi-videó és a 2025-ös házkutatás',
+            when: '2025. október 2.',
+            body:
+              '2025 őszén Juhász Péter olyan felvételt tett közzé a csatornáján, amely a munkájának legsúlyosabb és egyben legvitatottabb darabja. Egy név nélkül megszólaló lelkész arról beszélt, hogy évekkel korábban két fiú fordult hozzá segítségért egy ózdi térségbeli gyermekotthonból, és egy magas rangú politikus rendszeres látogatásairól, valamint bántalmazásról számoltak be. A gyerekek a politikust egymás között Zsolti bácsiként emlegették.',
+            more: [
+              'Juhász a videóban maga mondta ki a korlátot: bizonyíték hiányában nem hozza nyilvánosságra a nevet, a forrását viszont megvédi. Ez a kettősség az, amiért az ügy a mai napig vitatott — a Kegyencjárat álláspontja ebben az, hogy a vád nem bizonyított, és a saját ügyoldalunk is így kezeli.',
+              'A hatósági reakció három napon belül megérkezett. 2025. október 2-án reggel a Központi Nyomozó Főügyészség nyomozói házkutatást tartottak Juhász Péter otthonában, és lefoglalták az adathordozóit — köztük azt a telefont is, amelyen éppen élőben nyilatkozott a sajtónak a házkutatás közben. Másnap tanúként hallgatták ki, több mint négy órán át.',
+              'Az ügyészség hivatalos indoklása szerint az eljárás a Szőlő utcai javítóintézet ügyében indult nyomozás keretében zajlott — miközben a közzétett felvétel nem arról az intézményről, hanem az ózdi térségről szólt. Juhász a kihallgatás után azt mondta, hogy rágalmazás szóba sem került, az ügyészséget az érdekelte, milyen gyerekbántalmazásos bejelentések futottak be a korábbi felhívására. Ő maga megfélemlítésnek nevezte az akciót; a hatóság tanúkénti eljárásként írta le. A kettő nem ugyanaz, és nem a mi dolgunk eldönteni, melyik olvasat áll közelebb a valósághoz — azt viszont rögzíteni kell, hogy egy közzétett videót néhány napon belül házkutatás követett.',
+            ],
+            videos: [
+              {
+                id: 'QXW84vh1hV8',
+                label: 'Juhász Péter | Juhi',
+                title: 'A Szőlő utcai ügy',
+                summary:
+                  'Ugyanez a felvétel a Kegyencjárat ügyoldalán is szerepel, a többi szerkesztőség feldolgozása mellett.',
+              },
+            ],
+            highlight: {
+              heading: 'A telefon, amin éppen nyilatkozott',
+              body:
+                'A házkutatás egyik legtöbbet idézett mozzanata az, hogy Juhász Péter élőben, telefonon nyilatkozott a sajtónak arról, hogy nyomozók vannak nála és mindent lefoglalnak — majd magát a készüléket is lefoglalták. Ez az a pillanat, ami a szárazon leírt eljárási cselekményt széles körben látható üggyé tette.',
+              sources: [
+                {
+                  source: 'HVG',
+                  date: '2025. okt. 2.',
+                  headline:
+                    'Juhász Péter: Itt vannak az ügyészségtől, házkutatást tartanak, mindent lefoglalnak, mindjárt elveszik a telefonomat is',
+                  url: 'https://hvg.hu/itthon/20251002_Juhasz-Peter-ugyeszseg-hazkutatas-razzia-ebx',
+                  lead:
+                    'A házkutatás közben, élőben rögzített beszámoló. Ez a cikk az elsődleges forrása annak, hogy mi történt az otthonában október 2-án reggel.',
+                },
+                {
+                  source: '444',
+                  date: '2025. okt. 2.',
+                  headline:
+                    'A Zsolt bácsis videó miatt hallgatják ki Juhász Pétert, aki rákérdezett az ügyészeknél, hogy mégis mi köze ennek a Szőlő utca ügyében folyó nyomozáshoz',
+                  url: 'https://444.hu/2025/10/02/a-zsolt-bacsis-video-miatt-hallgatjak-ki-juhasz-petert-aki-rakerdezett-az-ugyeszeknel-hogy-megis-mi-koze-ennek-a-szolo-utca-ugyeben-folyo-nyomozashoz',
+                  lead:
+                    'Itt jelenik meg a legélesebben az ellentmondás: a lefoglalás hivatalos jogcíme a Szőlő utcai nyomozás volt, a videó viszont egy másik település gyermekotthonáról szólt.',
+                },
+                {
+                  source: '444',
+                  date: '2025. okt. 3.',
+                  headline: 'Juhász Péter: Semmiféle rágalmazás szóba sem került',
+                  url: 'https://444.hu/2025/10/03/juhasz-peter-semmifele-ragalmazas-szoba-sem-kerult',
+                  lead:
+                    'A több mint négy órás, tanúkénti kihallgatás utáni beszámoló — és az a részlet, hogy az ügyészséget a felhívására befutott gyerekbántalmazásos bejelentések érdekelték.',
+                },
+                {
+                  source: 'ATV',
+                  date: '2025. okt. 5.',
+                  headline: 'Újabb tartalomgyártót érint rendőrségi eljárás Juhász Péter ügye nyomán',
+                  url: 'https://www.atv.hu/belfold/20251005/juhasz-peter-rendorseg-hazkutatas/',
+                },
+                {
+                  source: 'Népszava',
+                  headline: 'Elkezdődött a fideszes megtorlás, Juhász Péter üzent Kocsis Máténak',
+                  url: 'https://nepszava.hu/3296661_juhasz-peter-megtorlas-fidesz-budapesti-javitointezet-pedofilvad-kocsis-mate',
+                },
+              ],
+            },
+            promo: {
+              href: '/ugyek/ki-az-a-zsolt-bacsi',
+              eyebrow: 'Kiemelt ügy · Ki az a Zsolti bácsi?',
+              title: 'Az ügy teljes feldolgozása, az összes eddigi fejleménnyel',
+              lead:
+                'Mi hangzott el a felvételen, ki a koronatanú, mit állít és mit cáfol, hol tart az eljárás — és miért nem nevezünk meg senkit. A Kegyencjárat saját ügyoldala.',
+              cta: 'Az ügy megnyitása',
+            },
+          },
+        ],
+      },
+      extra: [
+        {
+          heading: 'A csatorna számokban — és mit jelentenek ezek a számok',
+          paragraphs: [
+            'A csatornát 2020 decemberében hozta létre, és azóta több mint 1600 videót tett közzé. Az összesített elérése 302 ezer feliratkozó és több mint 133 millió megtekintés — ezzel a magyar politikai-aktivista csatornák szűk élmezőnyében van.',
+            'Ez a szám nem ugyanaz, mint a feltáró teljesítmény, és nem is helyettesíti azt. Egy oknyomozó műhely három hónap munkájából csinál egy sztorit; egy napi videós csatorna három hónap alatt kilencven videót tesz közzé, amelyek túlnyomó többsége kommentár, nem feltárás. A Dicsőségfalon Juhász Péter helye pontosan ezen a metszésponton van: az V. kerületi iratoknál eredeti feltáró, a NER100-nál és a napi videóknál pedig az a szereplő, aki eljuttatja mások munkáját azokhoz, akik hírportált soha nem nyitnak meg.',
+          ],
+        },
+        {
+          heading: 'Mit mondanak róla a támogatói és a kritikusai?',
+          paragraphs: [
+            'A támogatói szerint olyan civil harcos, akit tíz év alatt sem tudtak megtörni sajtóperekkel, lejárató kampányokkal vagy házkutatással, és akinek a csatornája nélkül a társadalom jelentős része egyáltalán nem értené a bonyolult gazdasági ügyeket. Az állami nyomás alatti forrásvédelmét külön is példaértékűnek tartják.',
+            'A kritikusai két irányból érkeznek. A korábbi kormányoldal évekig a magánéletére hivatkozva próbálta hitelteleníteni a szakmai állításait. Az ellenzéki térfélen viszont az a kifogás fogalmazódott meg, hogy a bizonyíték nélküli, névtelen forrásra épülő anyagok — mint a Zsolti bácsi-videó — bulvárosak, és épp a legsúlyosabb ügyeket teszik átpolitizálhatóvá. A Kegyencjárat ezért kezeli az utóbbit külön, bizonyítatlan vádként, és nem nevez meg senkit.',
+          ],
+        },
+      ],
+      table: {
+        heading: 'Hol a helye a rendszerváltó ökoszisztémában?',
+        intro:
+          'A Dicsőségfal három típusú munkát gyűjt egybe. Az alábbi összevetés azt mutatja meg, miben más Juhász Péter szerepe, mint a két legismertebb, tisztán feltáró szereplőé.',
+        columns: ['Szereplő', 'Elsődleges funkció', 'Módszertan', 'Eredeti feltárás vagy feldolgozás'],
+        rows: [
+          [
+            'Juhász Péter',
+            'Digitális emlékezet és helyi leleplezés',
+            'Képviselői iratbetekintés, feljelentések, videós feldolgozás (NER100)',
+            'Vegyes: az V. kerületi ingatlanügyekben eredeti feltáró, a NER100-ban mások adatait dolgozza fel',
+          ],
+          [
+            'Hadházy Ákos',
+            'Országos közbeszerzés-vadászat',
+            'Adattárak napi átfésülése, helyszínelés, teljes dokumentumok közzététele',
+            'Tisztán eredeti feltáró',
+          ],
+          [
+            'Direkt36',
+            'Mély, nemzetközi háttér-oknyomozás',
+            'Hónapokig tartó forrásépítés, nemzetközi együttműködés, technikai vizsgálatok',
+            'Tisztán eredeti feltáró',
+          ],
+        ],
+        note: 'A három szerep nem rangsor: a feltárás és a terjesztés egymás nélkül egyaránt hatástalan.',
+      },
+      faq: [
+        {
+          q: 'Ki az a Juhász Péter?',
+          a: 'Aktivista és videós műsorkészítő, a csatornáján Juhi néven. A kétezres években civil jogvédőként, 2011 után a Milla-tüntetések szervezőjeként, majd az Együtt politikusaként és V. kerületi önkormányzati képviselőként volt ismert. 2020 decembere óta saját YouTube-csatornát visz, amelynek ma 302 ezer feliratkozója van.',
+        },
+        {
+          q: 'Ő ugyanaz a Juhász Péter, aki a Szőlő utcai javítóintézet ügyében érintett?',
+          a: 'Nem. A javítóintézet volt vezetője Juhász Péter Pál, egy másik személy. Juhász Péter (Juhi) ebben az ügyben nem gyanúsított: 2025 októberében tanúként hallgatták ki, miután házkutatást tartottak nála egy általa közzétett videó kapcsán.',
+        },
+        {
+          q: 'Mi az a NER100?',
+          a: 'Hatvanöt részes videósorozat, amely 2021 szeptembere és 2022 márciusa között jelent meg. Minden epizód egy-egy, korábban már feltárt ügyet vesz végig rövid, közérthető formában — a Budapest–Belgrád vasúttól az Elios-ügyön és a lélegeztetőgép-beszerzéseken át Hatvanpusztáig. A teljes lejátszási lista ezen az oldalon beágyazva is megnézhető.',
+        },
+        {
+          q: 'Miért tartottak nála házkutatást 2025 októberében?',
+          a: 'A Központi Nyomozó Főügyészség közlése szerint a Szőlő utcai javítóintézet ügyében indult nyomozás keretében jártak el, és ezzel összefüggésben foglalták le az adathordozóit. Juhász szerint a felvétel, ami miatt az eljárás indult, nem erről az intézményről szólt, és az akciót megfélemlítésnek nevezte. Másnap tanúként hallgatták ki.',
+        },
+        {
+          q: 'Kiderült, ki az a Zsolti bácsi?',
+          a: 'Nem. Juhász Péter a videóban maga mondta ki, hogy bizonyíték hiányában nem hozza nyilvánosságra a nevet. A Kegyencjárat sem nevez meg senkit: az ügyet bizonyítatlan vádként kezeljük, a fejleményeket pedig a saját ügyoldalán követjük.',
+        },
+        {
+          q: 'Ő tárta fel az Elios-ügyet?',
+          a: 'Nem. Az Elios-ügy uniós vizsgálatból és újságírói oknyomozásból ismert; a NER100 ötödik epizódja ezt dolgozta fel közérthető formában. Juhász Péter saját, eredeti feltárása az V. kerületi ingatlanértékesítések ügye.',
+        },
+      ],
+      sources: [
+        {
+          source: 'Magyar Narancs',
+          date: '2015. jan. 22.',
+          headline: 'Mielőtt végleg elfogy — Juhász Péter az V. kerület ingatlangazdálkodásáról',
+          url: 'https://magyarnarancs.hu/belpol/mielott-vegleg-elfogy-93334',
+        },
+        {
+          source: 'HVG',
+          date: '2025. okt. 2.',
+          headline: 'Juhász Péter: Itt vannak az ügyészségtől, házkutatást tartanak, mindent lefoglalnak',
+          url: 'https://hvg.hu/itthon/20251002_Juhasz-Peter-ugyeszseg-hazkutatas-razzia-ebx',
+        },
+        {
+          source: '444',
+          date: '2025. okt. 3.',
+          headline: 'Juhász Péter: Semmiféle rágalmazás szóba sem került',
+          url: 'https://444.hu/2025/10/03/juhasz-peter-semmifele-ragalmazas-szoba-sem-kerult',
+        },
+        {
+          source: 'ATV',
+          date: '2025. okt. 5.',
+          headline: 'Újabb tartalomgyártót érint rendőrségi eljárás Juhász Péter ügye nyomán',
+          url: 'https://www.atv.hu/belfold/20251005/juhasz-peter-rendorseg-hazkutatas/',
+        },
+        {
+          source: 'K-Monitor',
+          headline: 'V. kerületi ingatlanügyek — cikkgyűjtemény',
+          url: 'https://adatbazis.k-monitor.hu/adatbazis/cimkek/v-keruleti-ingatlanugyek',
+        },
+      ],
+    },
   },
   {
     id: 'marki-zay-peter',

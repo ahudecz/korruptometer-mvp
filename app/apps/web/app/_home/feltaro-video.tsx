@@ -19,6 +19,7 @@ export function FeltaroVideo({
   label,
   summary,
   variant,
+  playlistId,
 }: {
   videoId: string;
   title: string;
@@ -26,10 +27,18 @@ export function FeltaroVideo({
   summary?: string;
   /** 'wide': a szövegoszlop teljes szélességében, egyedülálló videóhoz. */
   variant?: 'wide';
+  /** Egy egész sorozat egyetlen kereten belül (user kérés, 2026-09-17: a
+   *  NER100 egy 65 részes lejátszási lista, ne kelljen érte átmenni). */
+  playlistId?: string;
 }) {
   return (
     <div className={`podcast-card feltaro-video${variant === 'wide' ? ' feltaro-video--wide' : ''}`}>
-      <PodcastVideoBox videoId={videoId} title={title} wrapClassName="podcast-video-wrap" />
+      <PodcastVideoBox
+        videoId={videoId}
+        title={title}
+        wrapClassName="podcast-video-wrap"
+        playlistId={playlistId}
+      />
       {label && (
         <div className="podcast-meta">
           <span className="podcast-channel">{label}</span>

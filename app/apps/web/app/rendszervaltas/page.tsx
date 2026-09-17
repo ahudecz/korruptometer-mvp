@@ -335,6 +335,7 @@ export default function RendszervaltasPage() {
                         title={f.section.video.title}
                         label={f.section.video.label}
                         summary={f.section.video.summary}
+                        playlistId={f.section.video.list}
                         variant="wide"
                       />
                     )}
