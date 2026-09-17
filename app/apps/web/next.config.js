@@ -29,7 +29,15 @@ const ContentSecurityPolicy = [
   // facebook-reel.ts. A lejátszó CSAK kattintásra töltődik be
   // (fb-reel-embed.tsx), addig a saját Storage-unkban lévő poszterkép
   // látszik, tehát a Facebook egy sütit sem kap a látogató szándéka nélkül.
-  "frame-src https://challenges.cloudflare.com https://www.youtube.com https://www.youtube-nocookie.com https://www.facebook.com",
+  // player.vimeo.com: az Átlátszó saját drónvideói Vimeón vannak (user
+  // kérés, 2026-09-17). Ugyanaz a kategória, mint a már engedélyezett
+  // YouTube- és Facebook-beágyazás: egy videohoszt kerete. A lejátszó CSAK
+  // kattintásra töltődik be (podcast-video-box.tsx), addig a saját
+  // szerverünkről kiszolgált poszterkép látszik, tehát a Vimeo egy sütit sem
+  // kap a látogató szándéka nélkül. A keret BELSEJÉRE a mi CSP-nk nem
+  // vonatkozik (külön origó), ezért itt elég a frame-src — connect-src és
+  // img-src bővítés nem kell.
+  "frame-src https://challenges.cloudflare.com https://www.youtube.com https://www.youtube-nocookie.com https://www.facebook.com https://player.vimeo.com",
   // google-analytics.com/analytics.google.com: GA4's actual measurement
   // beacon (gtag.js posts here) — googletagmanager.com is also needed here
   // since gtag.js itself does a config fetch back to it.

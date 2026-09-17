@@ -63,11 +63,12 @@ a.card:hover {
   letter-spacing: 0.04em;
 }
 
+/* A bélyeg a kép ALATT áll, nem rajta.
+   User, 2026-09-17: „a profilképekre rálógó magyarázatok így szarok, pl
+   Rácznál mobilon kétsoros és kitakarja az állát." Abszolút pozícióban a
+   csík annyit takart, amennyi sorba tört — és pont a portrék alsó
+   harmadát. Saját sávban ez nem fordulhat elő, akármilyen hosszú a szöveg. */
 .badge {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
   text-align: center;
   font-size: 11px;
   font-weight: 700;

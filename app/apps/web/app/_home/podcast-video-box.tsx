@@ -24,12 +24,27 @@ export function PodcastVideoBoxControlled({
   playing,
   onPlay,
   playlistId,
+  vimeoId,
+  poster,
 }: {
   videoId: string;
   title: string;
   wrapClassName: string;
   playing: boolean;
   onPlay: () => void;
+  /**
+   * Vimeo-videó azonosítója a YouTube-os `videoId` HELYETT.
+   *
+   * Miért kell külön: a YouTube borítóképe kiszámítható URL
+   * (i.ytimg.com/vi/<id>/hqdefault.jpg), a Vimeónak viszont nincs ilyen —
+   * ott az oEmbed API adja meg, és a link idővel változhat. Ezért a
+   * poszterképet letöltjük a /public alá, és azt szolgáljuk ki: így a
+   * borítókép sosem tűnhet el alólunk, és a Vimeo semmit nem lát a
+   * látogatóról, amíg az nem kattint.
+   */
+  vimeoId?: string;
+  /** A letöltött poszterkép útvonala (kötelező `vimeoId` mellett). */
+  poster?: string;
   /** Ha meg van adva, a lejátszó a TELJES lejátszási listát kapja meg, a
    *  `videoId`-val kezdve — a nézőnek így a kereten belül ott a sorozat
    *  összes része, nem kell átmennie a YouTube-ra. A borítókép továbbra is
@@ -40,7 +55,11 @@ export function PodcastVideoBoxControlled({
     <div className={wrapClassName}>
       {playing ? (
         <iframe
-          src={`https://www.youtube.com/embed/${videoId}?autoplay=1${playlistId ? `&list=${playlistId}` : ''}`}
+          src={
+            vimeoId
+              ? `https://player.vimeo.com/video/${vimeoId}?autoplay=1`
+              : `https://www.youtube.com/embed/${videoId}?autoplay=1${playlistId ? `&list=${playlistId}` : ''}`
+          }
           title={title}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
@@ -52,8 +71,13 @@ export function PodcastVideoBoxControlled({
           onClick={onPlay}
           aria-label={`Lejátszás: ${title}`}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element -- deterministic YouTube thumbnail CDN URL, nem kell Next Image-optimalizálás */}
-          <img src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`} alt="" className="podcast-thumb" loading="lazy" />
+          {/* eslint-disable-next-line @next/next/no-img-element -- deterministic YouTube thumbnail CDN URL / saját /public poszter, nem kell Next Image-optimalizálás */}
+          <img
+            src={vimeoId && poster ? poster : `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
+            alt=""
+            className="podcast-thumb"
+            loading="lazy"
+          />
           <span className="podcast-play-icon">▶</span>
         </button>
       )}
@@ -66,11 +90,15 @@ export function PodcastVideoBox({
   title,
   wrapClassName,
   playlistId,
+  vimeoId,
+  poster,
 }: {
   videoId: string;
   title: string;
   wrapClassName: string;
   playlistId?: string;
+  vimeoId?: string;
+  poster?: string;
 }) {
   const { playing, play } = usePodcastPlayback();
   return (
@@ -81,6 +109,8 @@ export function PodcastVideoBox({
       playing={playing}
       onPlay={play}
       playlistId={playlistId}
+      vimeoId={vimeoId}
+      poster={poster}
     />
   );
 }

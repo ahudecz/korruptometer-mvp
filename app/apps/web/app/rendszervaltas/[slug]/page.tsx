@@ -366,6 +366,8 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                 summary={f.section.video.summary}
                 playlistId={f.section.video.list}
                 note={f.section.video.note}
+                vimeoId={f.section.video.vimeoId}
+                poster={f.section.video.poster}
                 variant="wide"
               />
             )}
@@ -408,6 +410,8 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                               summary={v.summary}
                               playlistId={v.list}
                               note={v.note}
+                              vimeoId={v.vimeoId}
+                              poster={v.poster}
                               variant="wide"
                             />
                           ))}
@@ -439,6 +443,8 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                           summary={v.summary}
                           playlistId={v.list}
                           note={v.note}
+                          vimeoId={v.vimeoId}
+                          poster={v.poster}
                           variant="wide"
                         />
                       ))}
@@ -461,6 +467,8 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                               summary={c.highlight.video.summary}
                               playlistId={c.highlight.video.list}
                               note={c.highlight.video.note}
+                              vimeoId={c.highlight.video.vimeoId}
+                              poster={c.highlight.video.poster}
                               variant="wide"
                             />
                           )}
@@ -509,6 +517,8 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                       summary={v.summary}
                       playlistId={v.list}
                       note={v.note}
+                      vimeoId={v.vimeoId}
+                      poster={v.poster}
                       variant={d.videoBlock!.items.length > 1 ? undefined : 'wide'}
                     />
                   ))}
@@ -684,6 +694,8 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                 summary={d.video.summary}
                 playlistId={d.video.list}
                 note={d.video.note}
+                vimeoId={d.video.vimeoId}
+                poster={d.video.poster}
                 variant="wide"
               />
             )}

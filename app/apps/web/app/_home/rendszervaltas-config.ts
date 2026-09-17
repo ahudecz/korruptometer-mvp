@@ -108,6 +108,15 @@ export type FeltaroVideoRef = {
    * kell írni, kié a felvétel, és el kell vezetni az eredetihez.
    */
   note?: { text: string; linkText: string; href: string };
+  /**
+   * Vimeo-videó a YouTube helyett. Az `id` ilyenkor is kötelező (a React-kulcs
+   * miatt), de a lejátszó a `vimeoId`-t használja, a borítókép pedig a
+   * `poster` — egy letöltött, saját kiszolgálású kép. L. a
+   * PodcastVideoBoxControlled megjegyzését arról, miért nem lehet a Vimeo
+   * borítóképét URL-ből kiszámolni.
+   */
+  vimeoId?: string;
+  poster?: string;
 };
 
 export type Feltaro = {
@@ -957,16 +966,13 @@ export const FELTAROK: Feltaro[] = [
             ],
             videos: [
               {
-                id: '0-bgf65aqGc',
-                label: 'Kontroll · 2026. április 17.',
-                title: 'Drónfelvételek Orbán és Mészáros birtokairól',
+                id: 'vimeo-159180000',
+                vimeoId: '159180000',
+                poster: '/images/rendszervaltas/vimeo-159180000.webp',
+                label: 'Átlátszó · 2016. március 16.',
+                title: 'Mészárosék terjeszkednek a hatvanpusztai birtok körül',
                 summary:
-                  'A hatvanpusztai és a környező birtokok a levegőből. Ugyanaz a módszer, amiről a bekezdés szól: nem egyetlen kép, hanem a helyszín időbeli összehasonlítása.',
-                note: {
-                  text: 'Ez a felvétel a Kontroll csatornájáról van. Az Átlátszó saját drónvideója a hatvanpusztai terjeszkedésről itt nézhető meg:',
-                  linkText: 'Mészárosék terjeszkednek a hatvanpusztai birtok körül (Vimeo)',
-                  href: 'https://vimeo.com/159180000',
-                },
+                  'Az Átlátszó saját drónfelvétele: plusz félezer hektár a birtok körül. Ugyanaz a módszer, amiről a bekezdés szól — nem egyetlen kép, hanem a helyszín összehasonlítása.',
               },
             ],
             promo: {

@@ -162,9 +162,9 @@ function FeltaroCard({ f }: { f: Feltaro }) {
             {initials(f.name)}
           </div>
         )}
-        <div className={styles.badge}>{f.badge}</div>
         {f.photoCredit && <div className={styles.credit}>{f.photoCredit}</div>}
       </div>
+      <div className={styles.badge}>{f.badge}</div>
       <div className={styles.info}>
         <div className={styles.name}>{f.name}</div>
         <div className={styles.role}>{f.role}</div>
@@ -378,6 +378,8 @@ export default function RendszervaltasPage() {
                         summary={f.section.video.summary}
                         playlistId={f.section.video.list}
                         note={f.section.video.note}
+                        vimeoId={f.section.video.vimeoId}
+                        poster={f.section.video.poster}
                         variant="wide"
                       />
                     )}

@@ -21,6 +21,8 @@ export function FeltaroVideo({
   variant,
   playlistId,
   note,
+  vimeoId,
+  poster,
 }: {
   videoId: string;
   title: string;
@@ -28,6 +30,9 @@ export function FeltaroVideo({
   summary?: string;
   /** Lábjegyzet egy külső hivatkozással — l. FeltaroVideoRef.note. */
   note?: { text: string; linkText: string; href: string };
+  /** Vimeo-videó a YouTube helyett — l. PodcastVideoBoxControlled. */
+  vimeoId?: string;
+  poster?: string;
   /** 'wide': a szövegoszlop teljes szélességében, egyedülálló videóhoz. */
   variant?: 'wide';
   /** Egy egész sorozat egyetlen kereten belül (user kérés, 2026-09-17: a
@@ -41,6 +46,8 @@ export function FeltaroVideo({
         title={title}
         wrapClassName="podcast-video-wrap"
         playlistId={playlistId}
+        vimeoId={vimeoId}
+        poster={poster}
       />
       {label && (
         <div className="podcast-meta">
