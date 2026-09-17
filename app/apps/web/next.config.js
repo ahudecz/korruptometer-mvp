@@ -87,6 +87,34 @@ const nextConfig = {
     ];
   },
   transpilePackages: ['@korr/db', '@korr/shared', '@korr/ui', '@korr/scrapers'],
+
+  // A STATIKUS GENERÁLÁS PÁRHUZAMOSSÁGA — 2026-09-17, négy elhasalt deploy.
+  //
+  // Mért tények a Vercel buildlogból:
+  //   Running build in Cleveland, USA (East) – cle1
+  //   Build machine configuration: 4 cores, 8 GB
+  //   Failed to build /rendszervaltas/[slug]/page … because it took more
+  //   than 60 seconds. (majd /podcastok, /ugyek/[id]/[topic], /rendszervaltas)
+  //
+  // A build Clevelandben fut, az adatbázis Európában van, tehát minden
+  // lekérdezés ~150 ms oda-vissza. A lapok alján több adatbázisos cross-promo
+  // blokk kérdez. A Next alapból 4 workerben, workerenként több oldalt
+  // generál párhuzamosan — ezek egymásra várnak a poolon (l. lib/db.ts) és a
+  // négy magon, és belefutnak a Next 60 másodperces PER-OLDAL limitjébe.
+  // A limit nem állítható, a párhuzamosság igen.
+  //
+  // Egy worker, két egyszerre futó oldal: így minden lap a maga 60
+  // másodpercét kapja, és a build alatti kapcsolatszám is kettő marad.
+  // A build ettől hosszabb lesz — ez a helyes csere: a lassabb build nem
+  // gond, az elhasalt deploy az.
+  //
+  // Ugyanez a build európai gépen, az éles adatbázissal, korlátozás nélkül
+  // is átmegy — a beállítás a földrajzi távolságot kompenzálja, nem egy
+  // kódhibát kerül meg.
+  experimental: {
+    staticGenerationMinPagesPerWorker: 1000,
+    staticGenerationMaxConcurrency: 2,
+  },
 };
 
 module.exports = nextConfig;
