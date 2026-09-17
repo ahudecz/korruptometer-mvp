@@ -30,7 +30,23 @@ export function getDb(): DbClient {
   if (!url) {
     throw new Error('DATABASE_URL is not set');
   }
-  const sql = postgres(url, { prepare: false, max: 10 });
+  // A BUILD alatt kisebb pool kell, mint futásidőben.
+  //
+  // 2026-09-17, mért hiba: a Next a statikus generálást több worker-
+  // FOLYAMATBAN végzi, és mindegyikben újra lefut ez a modul — tehát nem egy
+  // pool jön létre, hanem annyi, ahány worker. 4 worker × max 10 = 40
+  // kapcsolat, miközben a Supabase pooler kerete 15. Ebből lett a
+  // `EMAXCONNSESSION — max clients reached in session mode, pool_size: 15`,
+  // illetve Vercelen ennek a tünete: az oldalak kapcsolatra vártak, és a
+  // statikus generálás 60 másodperces limitjébe futottak
+  // („Failed to build … because it took more than 60 seconds"), három
+  // újrapróbálkozás után elhasalt a deploy.
+  //
+  // Futásidőben a 10 marad: ott egy folyamat szolgálja ki a kéréseket, és a
+  // nyitóoldal ~19 párhuzamos lekérdezésének kell a hely (l. a fenti
+  // kommentet a max:1 regressziójáról).
+  const isBuild = process.env.NEXT_PHASE === 'phase-production-build';
+  const sql = postgres(url, { prepare: false, max: isBuild ? 2 : 10 });
   const client = drizzle(sql, { schema });
   globalForDb.__dbClient = client;
   return client;

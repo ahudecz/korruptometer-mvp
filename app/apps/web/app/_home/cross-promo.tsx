@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { unstable_cache } from 'next/cache';
 import { desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { resolveWatchListPersons } from '@/lib/watchlist-status';
@@ -7,6 +8,37 @@ import { GALERIA, type GaleriaDetention, type GaleriaHair } from './galeria-conf
 import { getFeaturedPeople, getTotalDamage } from './featured-persons';
 import { FtValue } from './ft-value';
 import { Mugshot } from '@korr/ui/mugshot';
+
+/**
+ * A cross-promo blokkok lekérdezései MINDEN oldal alján lefutnak, és ez a
+ * build szűk keresztmetszete lett.
+ *
+ * 2026-09-17, mért tény: a `/rendszervaltas/[slug]` oldalak statikus
+ * generálása 60 másodperc fölé ment, és a build elhasalt
+ * („Failed to build … because it took more than 60 seconds", három
+ * újrapróbálkozás után „Export encountered an error"). Ugyanez helyben
+ * `EMAXCONNSESSION — max clients reached in session mode, pool_size: 15`
+ * hibával jött elő: a Next több worker-folyamatban párhuzamosan generálja az
+ * oldalakat, mindegyik worker külön kapcsolat-poolt nyit (l. lib/db.ts,
+ * max: 10), és a Supabase pooler 15 kapcsolatos kerete elfogy. A pároldalas
+ * időtúllépés tehát nem a renderelés lassúsága volt, hanem kapcsolatra
+ * várakozás.
+ *
+ * A korábbi buildekben ugyanezek az időtúllépések már megjelentek, csak még
+ * belül maradtak a három újrapróbálkozáson — ez tehát nem új hiba, hanem egy
+ * régóta meglévő törékenység, ami most átfordult.
+ *
+ * A megoldás: ezek az adatok nem oldalspecifikusak — ugyanaz a tíz lemondás
+ * és ugyanaz a tíz megszűnés kerül minden oldal aljára. Ezért a Next
+ * inkrementális cache-én keresztül mennek: a build első oldala lekérdezi, a
+ * többi nyolcvan a cache-ből veszi, és a futásidejű kérések is.
+ *
+ * A TTL szándékosan rövid. A blokkok maguk is ISR-rel kiszolgált oldalakon
+ * jelennek meg (revalidate 300–86400), tehát öt percnél frissebb adatot
+ * eddig sem látott a látogató — ez a réteg nem tesz hozzá érzékelhető
+ * késleltetést.
+ */
+const CROSS_PROMO_TTL = 300;
 
 const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
 function fmtDate(d: Date) {
@@ -38,15 +70,22 @@ function featuredRank(name: string): number {
   return i === -1 ? FEATURED_CLOSURES.length : i;
 }
 
-export async function CrossMegszunt() {
-  const db = getDb();
-  const rows = (
-    await db
+const loadClosures = unstable_cache(
+  async () =>
+    getDb()
       .select()
       .from(schema.mediaClosures)
       .orderBy(desc(schema.mediaClosures.eventDate))
-      .limit(30)
-  )
+      .limit(30),
+  ['cross-promo', 'media-closures'],
+  { revalidate: CROSS_PROMO_TTL },
+);
+
+export async function CrossMegszunt() {
+  // A cache JSON-t ad vissza, tehát a Date-ek stringként jönnek — ezért kell
+  // a visszaalakítás, különben a fmtDate() `Invalid Date`-et ír ki.
+  const rows = (await loadClosures())
+    .map((r) => ({ ...r, eventDate: new Date(r.eventDate) }))
     .sort((a, b) => featuredRank(a.name) - featuredRank(b.name) || +b.eventDate - +a.eventDate)
     .slice(0, 10);
 
@@ -94,13 +133,22 @@ function resignTypeColor(t: string) {
   return '#888';
 }
 
+const loadResignations = unstable_cache(
+  async () =>
+    getDb()
+      .select()
+      .from(schema.politicalResignations)
+      .orderBy(desc(schema.politicalResignations.resignationDate))
+      .limit(10),
+  ['cross-promo', 'resignations'],
+  { revalidate: CROSS_PROMO_TTL },
+);
+
 export async function CrossLemondosok() {
-  const db = getDb();
-  const rows = await db
-    .select()
-    .from(schema.politicalResignations)
-    .orderBy(desc(schema.politicalResignations.resignationDate))
-    .limit(10);
+  const rows = (await loadResignations()).map((r) => ({
+    ...r,
+    resignationDate: new Date(r.resignationDate),
+  }));
 
   if (rows.length === 0) return null;
 
@@ -166,8 +214,14 @@ const GONE_LABEL: Record<string, string> = {
   resigned: 'LEMONDOTT',
 };
 
+const loadWatchListPersons = unstable_cache(
+  async () => resolveWatchListPersons(getDb()),
+  ['cross-promo', 'watchlist-persons'],
+  { revalidate: CROSS_PROMO_TTL },
+);
+
 export async function CrossFelszolitottak() {
-  const persons = await resolveWatchListPersons(getDb());
+  const persons = await loadWatchListPersons();
   return (
     <div className="cross-promo">
       <h2 className="cross-promo-title">Lemondásra felszólított személyek</h2>
@@ -215,16 +269,25 @@ export async function CrossFelszolitottak() {
 // RELEASED_TYPES-ját (az a fájl kliens-komponens, innen nem importálható).
 const RELEASED_VERDICT_TYPES = ['szabadlábra helyezve', 'eljárás megszűnt', 'felmentve'];
 
+const loadVerdicts = unstable_cache(
+  async () =>
+    getDb()
+      .select({
+        personUgyId: schema.courtVerdicts.personUgyId,
+        verdictType: schema.courtVerdicts.verdictType,
+        verdictDate: schema.courtVerdicts.verdictDate,
+      })
+      .from(schema.courtVerdicts)
+      .where(eq(schema.courtVerdicts.reviewStatus, 'approved')),
+  ['cross-promo', 'verdicts'],
+  { revalidate: CROSS_PROMO_TTL },
+);
+
 export async function CrossBirosag() {
-  const db = getDb();
-  const rows = await db
-    .select({
-      personUgyId: schema.courtVerdicts.personUgyId,
-      verdictType: schema.courtVerdicts.verdictType,
-      verdictDate: schema.courtVerdicts.verdictDate,
-    })
-    .from(schema.courtVerdicts)
-    .where(eq(schema.courtVerdicts.reviewStatus, 'approved'));
+  const rows = (await loadVerdicts()).map((r) => ({
+    ...r,
+    verdictDate: new Date(r.verdictDate),
+  }));
 
   if (rows.length === 0) return null;
 
