@@ -1776,6 +1776,37 @@ export const FELTAROK: Feltaro[] = [
       ],
     },
   },
+  {
+    id: 'de-akciokozosseg',
+    name: 'DE! Akcióközösség',
+    kind: 'org',
+    group: 'media',
+    role: 'civil akcióközösség, választási megfigyelés',
+    badge: 'VÁLASZTÁSI ŐRSZEMEK',
+    tagline:
+      'Nem cikket írt a szavazatvásárlásról, hanem kétezer önkéntest állított a szavazókörök elé azon a napon, amikor ez számított.',
+    // A márkanév a biztos cél (egyértelmű keresési szándék). A nagyobb falat
+    // a filmé: „a szavazat ára" 3600/hó, „szavazat ára film" 1900/hó (HU,
+    // 2026-09) — ez a saját profiloldal fő kulcsszava, ha megépül.
+    targetKeyword: { phrase: 'de akcióközösség', volume: 320, kd: 27 },
+    section: {
+      heading: 'DE! Akcióközösség — akik a szavazatvásárlást a helyszínen állították meg',
+      paragraphs: [
+        'A DE! Akcióközösség 2025-ben alakult, és nem szerkesztőség, nem is párt: önkéntesekből álló civil egyesület, amely a magyar választások legrégebbi és legnehezebben bizonyítható visszaélésével foglalkozik — a legszegényebb települések lakóinak kiszolgáltatottságával.',
+        'Az első nagy munkájuk egy dokumentumfilm volt. „A szavazat ára" 2026. március 26-án jelent meg, és több mint hatvan interjúra épül: korábbi szavazatgyűjtőkkel, szegregátumokban élő választókkal, polgármesterekkel és rendőrökkel. A film nem a pénzről szól, hanem a függésről — arról, hogy a legtöbb helyen a fenyegetés, a munka és a segély elvesztésének kilátása működik, nem a borítékban átadott összeg.',
+        'A második lépés az volt, ami a magyar civil szférában addig nem sikerült: a feltárt módszereket a helyszínen próbálták megakadályozni. 2026. április 12-én több mint 2100 önkéntes őrszemet, mintegy 200 motorost és nagyjából 500 helyi segítőt mozgattak meg, elsősorban keleti és északkeleti kistelepüléseken. A napot 255 visszaélésgyanús esettel, 192 dokumentált szavazatszállítással és közel 30, önkéntesek ellen elkövetett támadással zárták.',
+        'Az egyesület saját összesítése szerint egyes szavazókörökben harminc százalékkal kevesebb szavazatot sikerült megvásárolni, mint az előző választáson. Ez a szám vitatható és nehezen ellenőrizhető — a jelenlét visszatartó ereje viszont pontosan az a hatás, amit egy utólag megírt cikk sosem tud elérni. A választás után a közösség nem oszlott fel: 2026 szeptemberében megrendezték a DE!HOGYNEM! nevű közéleti fesztivált Balatonalmádiban.',
+      ],
+      video: {
+        id: 'ZCwQR5HRWR8',
+        label: 'DE! Akcióközösség · 2026. március 26.',
+        title: 'A szavazat ára',
+        summary:
+          'A teljes dokumentumfilm. Több mint hatvan interjú arról, hogyan lesz a kiszolgáltatottságból szavazat — korábbi szavazatgyűjtők, szegregátumokban élők, polgármesterek és rendőrök megszólalásával.',
+      },
+    },
+    related: [{ label: 'Kapcsolódó ügyek az adatbázisban', href: '/adatbazis' }],
+  },
 
   // ── FACEBOOK- ÉS YOUTUBE-CSATORNÁK ──────────────────────────────────────
   {

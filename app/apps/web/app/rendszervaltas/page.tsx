@@ -154,8 +154,8 @@ function FeltaroCard({ f }: { f: Feltaro }) {
 export default function RendszervaltasPage() {
   const hub = RENDSZERVALTAS_HUB;
 
-  // A tartalomjegyzék a HÁROM BLOKKRA mutat, nem mind a 31 névre — egy
-  // 31 elemű lista már nem navigáció, hanem fal. A neveken belül a
+  // A tartalomjegyzék a HÁROM BLOKKRA mutat, nem mind a harminc-egynéhány
+  // névre — egy ekkora lista már nem navigáció, hanem fal. A neveken belül a
   // blokk-fejlécekből lehet tovább görgetni.
   const toc = [
     { id: 'dicsosegfal', label: 'A Dicsőségfal' },
