@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  coerceSentenceToVerdictType,
   splitPersonNames,
   coercePretrialClaim,
   CUSTODY_MAX_HOURS,
@@ -319,5 +320,34 @@ describe('selectExpiredCustodyRows', () => {
   });
   it('a friss őrizetet még nem választja ki', () => {
     expect(selectExpiredCustodyRows([custodyRow(hoursAgo(10))], NOW)).toEqual([]);
+  });
+});
+
+describe('coerceSentenceToVerdictType (2026-09-17, a „milyen 5 év" eset)', () => {
+  it('nullázza a büntetést, ha a sor nem ítélet', () => {
+    // A valódi sor: 'egyéb' típus (gyanúsítotti kihallgatás), mégis 5 év.
+    for (const t of ['egyéb', 'előzetesben', 'vádemelés', 'szabadlábra helyezve', 'eljárás megszűnt', 'felmentve']) {
+      expect(coerceSentenceToVerdictType(t, { sentenceYears: 5, sentenceMonths: 6 })).toEqual({
+        sentenceYears: 0,
+        sentenceMonths: null,
+      });
+    }
+  });
+
+  it('ítéletnél érintetlenül hagyja', () => {
+    for (const t of ['elsőfokú', 'jogerős']) {
+      expect(coerceSentenceToVerdictType(t, { sentenceYears: 5, sentenceMonths: 6 })).toEqual({
+        sentenceYears: 5,
+        sentenceMonths: 6,
+      });
+    }
+  });
+
+  it('ítéletnél a hiányzó értékeket 0-ra és null-ra hozza', () => {
+    expect(coerceSentenceToVerdictType('jogerős', {})).toEqual({ sentenceYears: 0, sentenceMonths: null });
+    expect(coerceSentenceToVerdictType('jogerős', { sentenceYears: 3, sentenceMonths: null })).toEqual({
+      sentenceYears: 3,
+      sentenceMonths: null,
+    });
   });
 });

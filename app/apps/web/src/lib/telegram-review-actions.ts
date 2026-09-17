@@ -12,6 +12,7 @@ import { WATCH_LIST, type WatchPerson } from '@app/_home/watchlist-config';
 import {
   articleDateIso,
   coercePretrialClaim,
+  coerceSentenceToVerdictType,
   decideComplaintTransition,
   evidenceQuoteSupported,
   decideStatus,
@@ -389,6 +390,12 @@ ${article.excerpt}`;
     reviewStatus = 'pending';
   }
 
+  // Büntetés-év csak ítélethez — l. verdict-gate.ts.
+  const sentence = coerceSentenceToVerdictType(verdictType, {
+    sentenceYears: result.sentenceYears,
+    sentenceMonths: result.sentenceMonths,
+  });
+
   const verdictDate = resolveDate(result.verdictDate, article.publishedAt);
   const todaySlice = todayIso;
   let recordId: string;
@@ -396,8 +403,8 @@ ${article.excerpt}`;
   if (existingVerdict) {
     await getDb().update(schema.courtVerdicts).set({
       verdictType,
-      sentenceYears: result.sentenceYears ?? 0,
-      sentenceMonths: result.sentenceMonths ?? null,
+      sentenceYears: sentence.sentenceYears,
+      sentenceMonths: sentence.sentenceMonths,
       sentenceLabel: (result.sentenceLabel ?? '').slice(0, 200),
       verdictDate,
       summary: result.summary.slice(0, 1000),
@@ -415,8 +422,8 @@ ${article.excerpt}`;
       personName: result.personName.slice(0, 200),
       position: result.position.slice(0, 200),
       crimes: result.crimes.map((c) => c.slice(0, 200)),
-      sentenceYears: result.sentenceYears ?? 0,
-      sentenceMonths: result.sentenceMonths ?? null,
+      sentenceYears: sentence.sentenceYears,
+      sentenceMonths: sentence.sentenceMonths,
       sentenceLabel: (result.sentenceLabel ?? '').slice(0, 200),
       verdictType,
       verdictDate,

@@ -6,6 +6,7 @@ import {
   articleDateIso,
   cleanPositionTitle,
   coercePretrialClaim,
+  coerceSentenceToVerdictType,
   evidenceQuoteSupported,
   isRelationalOnlyMention,
   decideStatus,
@@ -281,17 +282,24 @@ ${article.excerpt}`;
     }
   }
 
+  // Büntetés-év csak ítélethez — l. verdict-gate.ts. A `verdictType` ezen a
+  // ponton már átment a coercePretrialClaim()-en, tehát a végleges értéke.
+  const sentence = coerceSentenceToVerdictType(verdictType, {
+    sentenceYears: result.sentenceYears,
+    sentenceMonths: typeof result.sentenceMonths === 'number' ? result.sentenceMonths : null,
+  });
+
   let recordId: string;
   if (existingVerdict) {
     await db.update(schema.courtVerdicts).set({
       verdictType,
-      sentenceYears: result.sentenceYears ?? 0,
+      sentenceYears: sentence.sentenceYears,
       // 2026-07-24 — defenzív: a séma most már ['number','null']-t enged
       // (l. court-verdict-detect.ts), de a "??"-fallback nem fogja el, ha
       // valamiért mégis egy nem-szám string jönne át (pl. egy régi
       // cache-elt hívásból) — a Postgres integer oszlop egyébként
       // ugyanazzal a hibával halna el.
-      sentenceMonths: typeof result.sentenceMonths === 'number' ? result.sentenceMonths : null,
+      sentenceMonths: sentence.sentenceMonths,
       sentenceLabel: (result.sentenceLabel ?? '').slice(0, 200),
       verdictDate,
       summary: result.summary.slice(0, 1000),
@@ -316,8 +324,8 @@ ${article.excerpt}`;
       personName: result.personName.slice(0, 200),
       position: cleanPositionTitle(result.position).slice(0, 200),
       crimes: result.crimes.map((c) => c.slice(0, 200)),
-      sentenceYears: result.sentenceYears ?? 0,
-      sentenceMonths: typeof result.sentenceMonths === 'number' ? result.sentenceMonths : null,
+      sentenceYears: sentence.sentenceYears,
+      sentenceMonths: sentence.sentenceMonths,
       sentenceLabel: (result.sentenceLabel ?? '').slice(0, 200),
       verdictType,
       verdictDate,

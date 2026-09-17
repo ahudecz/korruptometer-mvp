@@ -360,6 +360,44 @@ export function coercePretrialClaim<T extends string>(
   return ok ? verdictType : 'egyéb';
 }
 
+
+/**
+ * BÜNTETÉS CSAK ÍTÉLETHEZ.
+ *
+ * 2026-09-17, user report: „volánbusz másik 5 gyanúsítottja — milyen 5 év?"
+ * Az élesre ment sor ezt írta magáról:
+ *   verdictType   = 'egyéb'          (gyanúsítotti kihallgatás, nincs ítélet)
+ *   sentenceYears = 5                (a listán „5 ÉV"-ként jelent meg)
+ *
+ * A forráscikkben két „öt" is van: „öt embert hallgatott ki gyanúsítottként"
+ * és az ügy „öt éve húzódó" jellege. Hogy a modell melyikből vette, nem
+ * rekonstruálható — de nem is kell: büntetés-évet KIZÁRÓLAG ítélet hordozhat.
+ * A nyolc típus közül csak az 'elsőfokú' és a 'jogerős' ilyen; a
+ * gyanúsítás, a vádemelés, az előzetes, a szabadlábra helyezés, a
+ * megszüntetés és a felmentés definíció szerint nem.
+ *
+ * Ez tehát determinisztikusan eldönthető, LLM nélkül — ugyanaz a logika, mint
+ * a coercePretrialClaim()-nél: a kapu sosem emel, csak nullázza azt, aminek
+ * ott nem lehet értéke. A sor nem vész el, csak nem állít büntetést.
+ *
+ * MINDEN CourtVerdict-írás előtt le kell futnia (INSERT és lifecycle-UPDATE
+ * egyaránt), mindkét beszúró útvonalon.
+ */
+const SENTENCEABLE_VERDICT_TYPES = new Set(['elsőfokú', 'jogerős']);
+
+export function coerceSentenceToVerdictType(
+  verdictType: string,
+  sentence: { sentenceYears?: number | null; sentenceMonths?: number | null },
+): { sentenceYears: number; sentenceMonths: number | null } {
+  if (SENTENCEABLE_VERDICT_TYPES.has(verdictType)) {
+    return {
+      sentenceYears: sentence.sentenceYears ?? 0,
+      sentenceMonths: typeof sentence.sentenceMonths === 'number' ? sentence.sentenceMonths : null,
+    };
+  }
+  return { sentenceYears: 0, sentenceMonths: null };
+}
+
 /**
  * ŐRIZET-JEL (letartóztatás nélkül).
  *
