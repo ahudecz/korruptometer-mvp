@@ -5,6 +5,7 @@ import * as schema from './schema';
 
 export * from './schema';
 export * from './review';
+export * from './money-lookup';
 export * from './verdict-gate';
 export * from './extraction-guards';
 export * from './watchlist';
