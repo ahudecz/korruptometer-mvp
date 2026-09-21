@@ -584,32 +584,14 @@ export const FELTAROK: Feltaro[] = [
     },
   },
   {
-    id: 'gulyas-marton',
-    name: 'Gulyás Márton',
-    kind: 'person',
-    group: 'person',
-    role: 'a Partizán alapítója, műsorvezető',
-    badge: 'NYILVÁNOS VITA',
-    tagline:
-      'Kikényszerítette, hogy a hatalom képviselői élő adásban, vágatlanul válaszoljanak — és közösségi finanszírozásból épített rá egy egész csatornát.',
-    targetKeyword: { phrase: 'gulyás márton', volume: 6600, kd: 24 },
-    section: {
-      heading: 'Gulyás Márton — aki visszahozta a vágatlan interjút',
-      paragraphs: [
-        'Gulyás Márton a Krétakör színházi műhelyéből indult, majd a Közös Ország Mozgalom egyik arca lett. A legnagyobb hatású munkája viszont a Partizán: egy közösségi finanszírozásból fenntartott videós műhely, amely hosszú, vágatlan, élőben közvetített beszélgetésekre épül.',
-        'A formátum önmagában is politikai tett volt egy olyan médiakörnyezetben, ahol a közszereplők többsége már csak előre egyeztetett kérdésekre válaszolt. A Partizán adásaiban a kérdezett nem tudta lekapcsoltatni a mikrofont, és a néző maga döntötte el, mit lát: a teljes beszélgetés elérhető maradt.',
-        'A csatorna emellett rendszeresen közölt saját oknyomozó anyagokat és élőben közvetített tüntetéseket, parlamenti eseményeket, választási éjszakákat — gyakran akkor, amikor más szerkesztőség nem volt jelen.',
-      ],
-      links: [{ text: 'a Partizán', href: '/rendszervaltas/partizan' }],
-    },
-    related: [{ label: 'Videóriportok és podcastok', href: '/podcastok' }],
-  },
-  {
     id: 'partizan',
     name: 'Partizán',
     kind: 'org',
     group: 'media',
-    role: 'közösségi finanszírozású videós műhely',
+    // 2026-09-21, user kérés: Gulyás Márton önálló profilja lekerült a
+    // Dicsőségfalról, a neve viszont itt, az alapított csatorna mellett
+    // maradjon látható.
+    role: 'közösségi finanszírozású videós műhely (Gulyás Márton)',
     badge: 'FÜGGETLEN CSATORNA',
     photo: '/images/rendszervaltas/partizan.webp',
     photoFit: 'contain',
@@ -617,7 +599,7 @@ export const FELTAROK: Feltaro[] = [
       'Nézői támogatásból épült fel akkorára, hogy egy választási éjszakán nagyobb közönséget ért el, mint több országos televízió.',
     targetKeyword: { phrase: 'partizán', volume: 33100, kd: 45 },
     section: {
-      heading: 'Partizán — a nézőkből felépített szerkesztőség',
+      heading: 'Partizán (Gulyás Márton) — a nézőkből felépített szerkesztőség',
       paragraphs: [
         'A Partizán azt bizonyította be, hogy hirdetői és állami pénz nélkül, kizárólag a nézők havi támogatásából is fenn lehet tartani egy teljes szerkesztőséget. Ez a finanszírozási forma nem mellékes részlet: pontosan azt a nyomásgyakorlási felületet szüntette meg, amellyel a hirdetéspiacon keresztül a legtöbb más médiumot kezelni lehetett.',
         'A csatorna műsorai között politikai interjúk, közéleti vitaműsorok, tényfeltáró riportok és élő közvetítések egyaránt szerepelnek. A YouTube-alapú terjesztés miatt egy-egy adás elérése független volt attól, hogy a nagy hírportálok átvették-e.',

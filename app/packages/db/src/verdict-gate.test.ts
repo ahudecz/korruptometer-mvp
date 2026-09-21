@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   canTransitionToCharged,
+  preserveSpecificStatus,
   CHARGE_TRANSITION_MIN_SOURCES,
   coerceSentenceToVerdictType,
   countChargeConfirmingSources,
@@ -417,5 +418,30 @@ describe('canTransitionToCharged (2026-09-17, két forrás kell az átlépéshez
 
   it('a küszöb kettő', () => {
     expect(CHARGE_TRANSITION_MIN_SOURCES).toBe(2);
+  });
+});
+
+describe('preserveSpecificStatus (2026-09-21, a Jellinek-eset)', () => {
+  it('az „egyéb" nem írhat felül konkrét állapotot', () => {
+    // A valódi eset: a sor 'előzetesben' volt, egy újabb cikk feldolgozása
+    // után 'egyéb' lett — Jellinek átcsúszott a gyanúsítás-szakaszba,
+    // miközben ugyanaz a bírósági végzés Sziveket a helyén hagyta.
+    expect(preserveSpecificStatus('előzetesben', 'egyéb')).toBe('előzetesben');
+    expect(preserveSpecificStatus('vádemelés', 'egyéb')).toBe('vádemelés');
+    expect(preserveSpecificStatus('szabadlábra helyezve', 'egyéb')).toBe('szabadlábra helyezve');
+  });
+
+  it('a VALÓDI továbblépést átengedi', () => {
+    expect(preserveSpecificStatus('előzetesben', 'szabadlábra helyezve')).toBe('szabadlábra helyezve');
+    expect(preserveSpecificStatus('előzetesben', 'vádemelés')).toBe('vádemelés');
+    expect(preserveSpecificStatus('vádemelés', 'jogerős')).toBe('jogerős');
+  });
+
+  it('ha eddig is „egyéb" volt, marad', () => {
+    expect(preserveSpecificStatus('egyéb', 'egyéb')).toBe('egyéb');
+  });
+
+  it('új sornál (nincs korábbi típus) nem szól bele', () => {
+    expect(preserveSpecificStatus('', 'egyéb')).toBe('egyéb');
   });
 });

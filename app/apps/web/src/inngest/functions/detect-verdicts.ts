@@ -9,6 +9,7 @@ import {
   CHARGE_TRANSITION_MIN_SOURCES,
   coercePretrialClaim,
   coerceSentenceToVerdictType,
+  preserveSpecificStatus,
   evidenceQuoteSupported,
   isRelationalOnlyMention,
   decideStatus,
@@ -323,6 +324,11 @@ ${article.excerpt}`;
       fromVerdictType: existingVerdict.verdictType,
       toVerdictType: verdictType,
     });
+    // Az 'egyéb' nem írhat felül egy konkrét állapotot — l. verdict-gate.ts.
+    effectiveVerdictType = preserveSpecificStatus(
+      existingVerdict.verdictType,
+      effectiveVerdictType,
+    ) as typeof verdictType;
     if (!transition.allowed) {
       // A cast biztonságos: a CourtVerdict.verdictType oszlopon DB-szintű
       // CHECK constraint áll (migration 0050), tehát a meglévő sor értéke

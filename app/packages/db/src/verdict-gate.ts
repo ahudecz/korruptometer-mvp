@@ -480,6 +480,33 @@ export async function canTransitionToCharged(
   return sources >= CHARGE_TRANSITION_MIN_SOURCES ? { allowed: true } : { allowed: false, sources };
 }
 
+
+/**
+ * AZ „EGYÉB" SOSE ÍRHAT FELÜL EGY ISMERT ÁLLAPOTOT.
+ *
+ * 2026-09-21, user report: „Jellinek már nincs előzetesben?" — nem: a soron
+ * 2026-09-20-án végigfutott a cron-detektor egy újabb cikkel, és a
+ * `verdictType` 'előzetesben'-ről 'egyéb'-re változott. Ugyanaz a két ember,
+ * ugyanaz a bírósági végzés: Szivek Norbert a helyén maradt, Jellinek Dániel
+ * átcsúszott a „gyanúsítás" szakaszba. A sor forrásai között ott volt a
+ * „Letartóztatták Jellinek Dánielt és Szivek Norbertet" cikk — tehát nem
+ * hiányzott a bizonyíték, csak a frissítés felülírta a korábbi, helyes
+ * besorolást.
+ *
+ * Az 'egyéb' a nyolc típus közül a LEGKEVESEBBET állító: azt jelenti, hogy
+ * tudunk valamiről, de nem tudjuk, melyik szakasz. Ez sosem lehet érvényes
+ * frissítés egy konkrét állapothoz képest — egy előzetes letartóztatás nem
+ * „szűnik meg" attól, hogy egy későbbi cikk nem ismétli meg a szót.
+ *
+ * A szabály iránya szándékosan egyoldalú: a KONKRÉT állapotot megtartjuk, a
+ * valódi továbblépést (szabadlábra helyezés, vádemelés, ítélet) továbbra is
+ * átengedi — azokat a saját kapuik ellenőrzik.
+ */
+export function preserveSpecificStatus<T extends string>(fromType: string, toType: T): T | string {
+  if (toType === 'egyéb' && fromType && fromType !== 'egyéb') return fromType;
+  return toType;
+}
+
 /**
  * ŐRIZET-JEL (letartóztatás nélkül).
  *

@@ -480,12 +480,12 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
             aria-label="Ugrás a gyanúsítottak listájához"
           >
             <div className="megszunt-stat-value">{suspectedCount}</div>
-            <div className="megszunt-stat-label">Gyanúsítás, eljárás alatt</div>
+            <div className="megszunt-stat-label">Csak gyanúsítás</div>
           </button>
         ) : (
           <div className="megszunt-stat">
             <div className="megszunt-stat-value">{suspectedCount}</div>
-            <div className="megszunt-stat-label">Gyanúsítás, eljárás alatt</div>
+            <div className="megszunt-stat-label">Csak gyanúsítás</div>
           </div>
         )}
         <div className="megszunt-stat">
@@ -891,11 +891,14 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
             >
               <div style={{ marginBottom: 16 }}>
                 <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
-                  {hasFilter ? `Gyanúsítás, eljárás alatt — ${suspectedFiltered.length} db` : 'Gyanúsítás, eljárás alatt'}
+                  {hasFilter
+                    ? `Csak gyanúsítás — ${suspectedFiltered.length} db`
+                    : 'Csak gyanúsítás — nincs előzetes, nincs vádemelés'}
                 </h3>
                 <p style={{ fontSize: 13, color: '#888', margin: 0 }}>
-                  Az alábbi személyeket gyanúsítottként hallgatták ki vagy eljárás folyik ellenük, de nincsenek
-                  előzetesben, és vádemelés vagy ítélet még nem történt.
+                  Az alábbi személyeket gyanúsítottként hallgatták ki, de nincsenek előzetes letartóztatásban, és
+                  vádemelés vagy ítélet még nem történt. (Eljárás mindegyik fenti szakaszban folyik — ez a szakasz
+                  azt jelenti, hogy ennél többet nem tudunk.)
                 </p>
               </div>
               <div className="vlist">
