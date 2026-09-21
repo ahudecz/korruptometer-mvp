@@ -45,6 +45,7 @@
  */
 
 import { WATCH_LIST } from '@app/_home/watchlist-config';
+import { pickBySeed } from './social-copy-variety';
 
 export function milestoneCaption(amountLabel: string): string {
   return [
@@ -107,6 +108,30 @@ export function emojiForKicker(kicker: string): string {
 
 export function ctaForKicker(kicker: string): string {
   return CTA_BY_KICKER[kicker] ?? FALLBACK_CTA;
+}
+
+/**
+ * A HOOK ZÁRÁSA — felkiáltójel + szenzációt kifejező emoji.
+ *
+ * User, 2026-09-21: „a headline-okhoz kéne felkiáltó jel vagy valami emoji a
+ * végére, ami szenzációt fejez ki." (Brief 3.1.)
+ *
+ * Miért nem csak egy fix „!”: három egymás utáni poszt így betűre ugyanúgy
+ * zárulna. A záró emoji a headline-ból vett magból (seed) választódik, tehát
+ * ugyanaz a poszt mindig ugyanazt kapja — de a különbözők különbözőt.
+ *
+ * A kérdő hookot NEM írjuk át: a brief szerint a kérdés önmagában is
+ * megállítja a görgetést, egy „?!” pedig olcsó hatásvadászat.
+ */
+const PUNCH_EMOJI = ['💥', '🚨', '⚡'] as const;
+
+export function punchHeadline(headline: string, seed?: string): string {
+  const base = headline.trim().replace(/\s+/g, ' ');
+  if (!base) return base;
+  if (base.endsWith('?')) return base;
+  // A záró pontot felkiáltójelre cseréljük, hiány esetén kiírjuk.
+  const withBang = /[!]$/.test(base) ? base : `${base.replace(/[.…]+$/, '')}!`;
+  return `${withBang} ${pickBySeed(seed ?? base, PUNCH_EMOJI)}`;
 }
 
 // 2026-09-08 user brief (docs/facebook-content-brief.md 3. és 5. pont) — a
@@ -222,12 +247,20 @@ export function breakingCaption(
   linkPath?: string,
   cta?: string,
   whyItMatters?: string,
+  /**
+   * A SZÁMOK blokk (brief 3.3): egyenként egysoros, 👉-vel kezdődő bontás.
+   * Üres tömb vagy hiány esetén a blokk kimarad — nem töltelék.
+   */
+  bullets?: readonly string[],
 ): string {
   const emoji = emojiForKicker(kicker);
-  const blocks: string[] = [`${emoji} ${headline}`];
+  const blocks: string[] = [`${emoji} ${punchHeadline(headline)}`];
 
   const what = (whatHappened ?? '').trim();
   if (what) blocks.push(what);
+
+  const points = (bullets ?? []).map((b) => b.trim()).filter(Boolean);
+  if (points.length > 0) blocks.push(points.map((b) => `👉 ${b}`).join('\n'));
 
   const why = (whyItMatters ?? '').trim();
   if (why) blocks.push(why);

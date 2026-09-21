@@ -4,6 +4,7 @@ import { and, desc, eq, gt, sql } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { renderMilestoneImage, renderBreakingImage, renderSummaryImage } from '@/lib/social-image';
 import { milestoneCaption, breakingCaption, summaryCaption, resignationLinkPath } from '@/lib/social-caption';
+import { numberBullets } from '@/lib/social-copy-variety';
 import { sendTelegramPhoto, type InlineKeyboardMarkup } from '@/lib/telegram';
 import { computeComplaintTotal } from '@app/birosagi-iteletek/complaint-stats';
 import { countActualVerdicts } from '@app/birosagi-iteletek/verdict-stats';
@@ -409,10 +410,13 @@ async function buildAssetRecoveryTriggers(db: ReturnType<typeof getDb>, counts: 
   for (const a of recent) {
     if (alreadyPostedIds.has(a.id)) continue;
     const kicker = 'VAGYONVISSZASZERZÉS';
-    const headline = `${a.caseLabel}: ${formatFtLabel(a.amountFt)}`;
+    // A SZÁM ELÖL: a hook első szava maga az összeg (brief 3.1). Eddig a
+    // hosszú ügycímke után, a sor végén állt — a görgető szem odáig nem ért el.
+    const headline = `${formatFtLabel(a.amountFt)} került vissza: ${a.caseLabel}`;
     // a.description a DB-ben max 1000 karakter lehet, és eddig EGYÁLTALÁN
     // nem volt rövidítve, mielőtt a képre került — brief 8. pont.
-    const detail = a.description;
+    // A számot tartalmazó mondatok külön felsorolásba kerülnek (brief 3.3).
+    const { lead: detail, bullets } = numberBullets(a.description);
     const imageDetail = imageSubline(fitCompleteSentences(a.description, IMAGE_DETAIL_MAX_CHARS));
     const whyItMatters = whyItMattersFor('asset_recovery', counts, kicker);
     const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
@@ -421,7 +425,7 @@ async function buildAssetRecoveryTriggers(db: ReturnType<typeof getDb>, counts: 
       triggerRefId: a.id,
       milestoneValueFt: null,
       headline,
-      caption: breakingCaption(kicker, headline, detail, '/visszaszerzett-vagyon', undefined, whyItMatters),
+      caption: breakingCaption(kicker, headline, detail, '/visszaszerzett-vagyon', undefined, whyItMatters, bullets),
       imagePng: image,
       imageText: imageDetail,
       kicker,

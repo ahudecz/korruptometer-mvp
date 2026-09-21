@@ -145,6 +145,55 @@ export function complaintHeadline(filerName: string, targetEntity: string | null
 // (caption) való, nem a képre. Ezért két külön korlát van: a képen
 // megjelenő sor (IMAGE_DETAIL_MAX_CHARS) sokkal rövidebb, mint a caption-be
 // kerülő, hosszabb kontextus-mondat (CAPTION_DETAIL_MAX_CHARS).
+
+/**
+ * A SZÁMOK BLOKK ELŐÁLLÍTÁSA (brief 3.3).
+ *
+ * User, 2026-09-21: „semmi lendület, semmi kattintékony szöveg, elalszom mire
+ * elolvasom." A korábbi poszt egyetlen tömbben hozta a leírást, benne a
+ * számokkal elrejtve. A jó poszt ugyanezeket a számokat EGYENKÉNT, külön
+ * sorban mutatja.
+ *
+ * Nem kell hozzá se LLM, se új adatmező: a leírás mondatai közül azokat
+ * emeljük ki, amelyekben SZÁM van. Ami marad, az lesz a „MI TÖRTÉNT" blokk.
+ * Így a szöveg minősége a leíráson múlik — azon, ami eddig is megvolt.
+ *
+ * Miért mondat-szinten: egy féloldalas tőmondat-darab („400 millió dollár")
+ * önmagában nem mond semmit; a teljes mondat viszont igen, és a brief 6.
+ * pontja amúgy is tiltja a forrás csonkolását.
+ */
+const NUMBER_UNIT = /\d[\d\s .,]*\s*(milliárd|millió|ezer|forint|Ft|dollár|euró|%|százalék|év|hónap|nap)/i;
+
+export function splitSentences(text: string): string[] {
+  return (text ?? '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(/(?<=[.!?])\s+(?=[A-ZÁÉÍÓÖŐÚÜŰ(„])/u)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+export function numberBullets(
+  text: string | null | undefined,
+  maxBullets = 3,
+): { lead: string; bullets: string[] } {
+  const sentences = splitSentences(text ?? '');
+  if (sentences.length === 0) return { lead: '', bullets: [] };
+
+  // Az ELSŐ mondat mindig a felvezetés marad, akkor is, ha van benne szám —
+  // enélkül a poszt felsorolással kezdődne, kontextus nélkül.
+  const [first, ...rest] = sentences;
+  const bullets: string[] = [];
+  const leadRest: string[] = [];
+  for (const s of rest) {
+    if (bullets.length < maxBullets && NUMBER_UNIT.test(s)) bullets.push(s);
+    else leadRest.push(s);
+  }
+  // Egyetlen felsorolás-pont nem felsorolás: maradjon a szövegben.
+  if (bullets.length < 2) return { lead: sentences.join(' '), bullets: [] };
+  return { lead: [first, ...leadRest].join(' ').trim(), bullets };
+}
+
 export const IMAGE_DETAIL_MAX_CHARS = 90;
 
 // 2026-09-09 — a brief 6. pontjának szigorú olvasata: a POSZT SZÖVEGÉT

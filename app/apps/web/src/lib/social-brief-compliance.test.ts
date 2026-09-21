@@ -56,7 +56,13 @@ describe('brief 3. — négyblokkos szerkezet', () => {
 
   it('HOOK: az első sor a headline, egyetlen emojival', () => {
     const first = caption.split('\n')[0]!;
-    expect(first).toBe('📄 Schmidt Mária: felmentették!');
+    expect(first.startsWith('📄 Schmidt Mária: felmentették!')).toBe(true);
+  });
+
+  // 2026-09-21, user: „a headline-okhoz kéne felkiáltó jel vagy valami emoji a
+  // végére, ami szenzációt fejez ki.” (Brief 3.1.)
+  it('HOOK: felkiáltójelre és szenzáció-emojira végződik', () => {
+    expect(caption.split('\n')[0]!).toMatch(/!\s[💥🚨⚡]$/u);
   });
 
   it('MI TÖRTÉNT: teljes mondat, nem mezőtöredék', () => {
@@ -81,6 +87,7 @@ describe('brief 3. — négyblokkos szerkezet', () => {
   });
 
   it('mind a négy blokk megvan, üres sorral tagolva (brief 4.)', () => {
+    // A SZÁMOK blokk (brief 3.3) opcionális — itt nincs bontandó összeg.
     expect(blocksOf(caption)).toHaveLength(4);
     expect(caption).not.toMatch(/\n{3,}/); // nincs dupla üres sor
   });
@@ -212,5 +219,44 @@ describe('summary_stats poszt', () => {
     const linkIdx = lines.findIndex((l) => l.includes('kegyencjarat.hu'));
     expect(ctaIdx).toBeGreaterThan(-1);
     expect(ctaIdx).toBeLessThan(linkIdx);
+  });
+});
+
+describe('brief 3.3 — A SZÁMOK blokk', () => {
+  const BULLETS = [
+    '400 millió dollár tőke — a 2025 novemberi kötvényfinanszírozás névértéke.',
+    'Több mint 10 milliárd forint kamat 2025 novembere óta.',
+  ];
+
+  it('👉-vel kezdődő, külön blokkban jelenik meg, a MI TÖRTÉNT után', () => {
+    const caption = breakingCaption(
+      'VAGYONVISSZASZERZÉS',
+      'Visszafizette az állami finanszírozást a Duna Aszfalt',
+      'A cég teljes egészében visszafizette az Eximbank és az MFB finanszírozását.',
+      '/visszaszerzett-vagyon',
+      undefined,
+      undefined,
+      BULLETS,
+    );
+    expect(blocksOf(caption)[2]).toBe(BULLETS.map((b) => `👉 ${b}`).join('\n'));
+  });
+
+  it('üres vagy hiányzó bontásnál KIMARAD — nem töltelék', () => {
+    const withNone = breakingCaption('VAGYONVISSZASZERZÉS', 'Valami történt', 'Egy mondat.', '/x', undefined, undefined, []);
+    const withUndef = breakingCaption('VAGYONVISSZASZERZÉS', 'Valami történt', 'Egy mondat.', '/x');
+    expect(withNone).not.toContain('👉 400');
+    expect(blocksOf(withNone)).toHaveLength(blocksOf(withUndef).length);
+  });
+
+  it('a hook nem duplázza a felkiáltójelet, ha már volt benne', () => {
+    const c = breakingCaption('VAGYONVISSZASZERZÉS', 'Kész van!', 'Egy mondat.', '/x');
+    expect(c).not.toContain('!!');
+    expect(c.split('\n')[0]!).toMatch(/Kész van!\s[💥🚨⚡]$/u);
+  });
+
+  it('a kérdő hookot békén hagyja', () => {
+    const c = breakingCaption('KVÍZ', 'Tudtad volna?', 'Egy mondat.', '/x');
+    expect(c.split('\n')[0]!).toContain('Tudtad volna?');
+    expect(c.split('\n')[0]!).not.toContain('!');
   });
 });

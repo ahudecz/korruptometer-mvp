@@ -96,15 +96,41 @@ Lehet:
 
 A hook legyen rövid.
 
+**KÖTELEZŐ (user, 2026-09-21): a hook FELKIÁLTÓJELRE vagy szenzációt kifejező
+emojira végződjön.** Kérdő hook esetén a kérdőjel marad. Indoklás: a korábbi,
+pont nélküli/ponttal záruló hook-ok laposak voltak — „ezt érted mennyire
+kurva unalmas poszt ez? … semmi lendület, semmi kattintékony szöveg".
+
 ### 2. MI TÖRTÉNT?
 
 1–3 rövid bekezdésben mondd el a lényeget.
 
-### 3. MIÉRT ÉRDEKES?
+### 3. A SZÁMOK (ha van mit bontani)
+
+**Ha a poszt pénzről, kárról, összegről szól, a számot BONTSD LE**
+👉-vel kezdődő, egyenként egysoros felsorolásban. Egy nagy szám önmagában
+nem mond semmit; a tőke, a kamat, az érintett időszak és a megszűnt
+kockázat külön-külön már igen.
+
+Példa (valódi poszt, 2026-09-21):
+
+```
+👉 400 millió dollár tőke — ennyi volt a 2025 novemberében kapott
+   kötvényfinanszírozás névértéke, az augusztusi bejelentéskor nagyjából
+   126 milliárd forint.
+👉 Több mint 10 milliárd forint kamat 2025 novembere óta.
+👉 Megszűnt a nagyjából 101 milliárd forintos állami kezesség is —
+   ennyi volt az adófizetők kockázata ebben az ügyletben.
+```
+
+Ha nincs mit bontani (nincs összeg, vagy egyetlen szám az egész), ez a blokk
+KIMARAD — nem töltelék.
+
+### 4. MIÉRT ÉRDEKES?
 
 Mutasd meg, miért érdemes tovább kattintani.
 
-### 4. CTA
+### 5. CTA
 
 Egyértelmű cselekvés:
 
