@@ -22,8 +22,10 @@
 export type FeedPost = {
   authorName?: string | null;
   authorHandle?: string | null;
-  postedAt?: string | null;
-  createdAt?: string | null;
+  // A közvetlen Postgres-lekérdezés Date-et ad vissza, a korábbi REST-hívás
+  // stringet adott — feedTime() mindkettőt String()-en át olvassa.
+  postedAt?: string | Date | null;
+  createdAt?: string | Date | null;
   [key: string]: unknown;
 };
 

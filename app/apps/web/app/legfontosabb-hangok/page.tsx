@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { createClient } from '@supabase/supabase-js';
+import { desc, eq } from 'drizzle-orm';
 
+import { getDb, schema } from '@/lib/db';
 import { SocialFeedClient } from '../_home/social-feed-client';
 import { orderFeed } from '../_home/social-feed-select';
 
@@ -18,21 +19,21 @@ export const metadata = {
 };
 
 export default async function LegfontosabbHangokPage() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
+  // 2026-09-21: a Supabase REST API helyett közvetlen Postgres-kapcsolat —
+  // a REST 402-t ad ("exceed_egress_quota"), l. social-feed.tsx.
   let posts: Record<string, any>[] = [];
-  if (supabaseUrl && supabaseKey) {
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const { data, error } = await supabase
-      .from('SocialPost')
-      .select('*')
-      .eq('hidden', false)
+  try {
+    const db = getDb();
+    const rows = await db
+      .select()
+      .from(schema.socialPosts)
+      .where(eq(schema.socialPosts.hidden, false))
       // A megjelenés ideje szerint, nem a beolvasásé szerint — l. social-feed-select.ts
-      .order('postedAt', { ascending: false, nullsFirst: false })
-      .range(0, FETCH_POOL - 1);
-    if (error) console.error('[LegfontosabbHangok] Supabase hiba:', error);
-    if (data) posts = orderFeed(data, PER_AUTHOR);
+      .orderBy(desc(schema.socialPosts.postedAt))
+      .limit(FETCH_POOL);
+    posts = orderFeed(rows, PER_AUTHOR);
+  } catch (e) {
+    console.error('[LegfontosabbHangok] DB hiba:', e);
   }
 
   return (

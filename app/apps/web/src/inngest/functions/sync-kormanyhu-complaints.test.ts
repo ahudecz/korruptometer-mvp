@@ -50,7 +50,7 @@ vi.mock('@/lib/db', () => ({
 
 import { runKormanyHuSyncCore } from './sync-kormanyhu-complaints';
 
-const step = { run: async (_n: string, fn: () => unknown) => fn(), sendEvent: async () => null };
+const step = { run: (async (_n: string, fn: () => unknown) => fn()) as never, sendEvent: (async () => null) as never };
 
 describe('sync-kormanyhu: a hivatalos szöveg felülírja a sajtóból kinyertet', () => {
   it('a matchelt kormányzati sorra átmásolja a címet, a leírást és a dátumot', async () => {
@@ -60,9 +60,9 @@ describe('sync-kormanyhu: a hivatalos szöveg felülírja a sajtóból kinyertet
     expect(result.updated).toBe(1);
     expect(updates).toHaveLength(1);
 
-    const patch = updates[0];
+    const patch = updates[0]!;
     expect(patch.targetName).toBe('M6 koncesszió');
-    expect(patch.description).toBe(officialItems[0].description);
+    expect(patch.description).toBe(officialItems[0]!.description);
     expect((patch.eventDate as Date).toISOString().slice(0, 10)).toBe('2026-08-14');
     expect((patch.filedAt as Date).toISOString().slice(0, 10)).toBe('2026-08-14');
 

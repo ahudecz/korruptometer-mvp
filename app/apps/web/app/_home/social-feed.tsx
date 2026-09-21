@@ -1,5 +1,7 @@
 import Link from 'next/link';
-import { createClient } from '@supabase/supabase-js';
+import { desc, eq } from 'drizzle-orm';
+
+import { getDb, schema } from '@/lib/db';
 import { SocialPostCard, type SocialPost } from './social-post-card';
 import { pickDiverse } from './social-feed-select';
 
@@ -8,24 +10,23 @@ const FETCH_POOL = 400; // elég nagy merítés, hogy minden aktív oldalhoz jus
 
 export async function SocialFeed() {
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!supabaseUrl || !supabaseKey) return null;
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const { data: pool, error } = await supabase
-      .from('SocialPost')
-      .select('*')
-      .eq('hidden', false)
+    // 2026-09-21: ez a lekérdezés a Supabase REST API-n (supabase-js) ment, és
+    // a projekt egyik napról a másikra 402-t kezdett adni rá
+    // ("exceed_egress_quota"). A hiba a catch-ágon némán null-t adott vissza,
+    // ezért tűnt el az EGÉSZ szekció a nyitóoldalról, és lett üres a
+    // /legfontosabb-hangok — miközben az adatbázisban minden poszt megvolt.
+    // Ugyanaz a Postgres, csak a közvetlen kapcsolaton át (mint az összes
+    // többi oldalunk), amit az egress-korlát nem érint.
+    const db = getDb();
+    const pool = await db
+      .select()
+      .from(schema.socialPosts)
+      .where(eq(schema.socialPosts.hidden, false))
       // A megjelenés ideje szerint, nem a beolvasásé szerint — l. social-feed-select.ts
-      .order('postedAt', { ascending: false, nullsFirst: false })
-      .range(0, FETCH_POOL - 1);
+      .orderBy(desc(schema.socialPosts.postedAt))
+      .limit(FETCH_POOL);
 
-    if (error) {
-      console.error('[SocialFeed] Supabase hiba:', error);
-      return null;
-    }
-    if (!pool || pool.length === 0) return null;
+    if (pool.length === 0) return null;
 
     // Oldalanként csak 1 (a legfrissebb) poszt, hogy a teaser változatos legyen,
     // és a sorrend időrendi maradjon — a legfrissebb elöl.
