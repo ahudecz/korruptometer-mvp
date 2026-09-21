@@ -95,10 +95,53 @@ export async function runKormanyHuSyncCore({
       const mappedStatus = mapOfficialStatus(item.status);
       if (match.status !== mappedStatus) changes.push(`státusz: "${match.status}" → "${mappedStatus}"`);
 
+      // 2026-09-21: eddig CSAK az összeg és a státusz szinkronizálódott, a
+      // szöveg és a dátum nem — ezért maradt bent hónapokig a sajtócikkből
+      // kinyert saját megfogalmazás és a cikk megjelenésének dátuma a
+      // hivatalos helyett (pl. "Lázár János autópálya-koncesszió szerződés",
+      // 09. 21. a hivatalos "M6 koncesszió", "legkésőbb 2026. 08. 14."
+      // helyett). A user szabálya: a kormányzati bejelentőjű sorok szóról
+      // szóra a kormany.hu-t követik (l. project-kormanyhu-official-source).
+      //
+      // Csak kormányzati bejelentőjű soron írjuk felül a szöveget: a matcher
+      // elvileg harmadik fél (Hadházy, TI, ÁSZ) sorát is eltalálhatja, azt
+      // pedig nem szabad a minisztérium megfogalmazására cserélni.
+      const textSync = looksGovernmentFiled(match.filerName);
+      const officialDate = item.filedDateIso ? new Date(item.filedDateIso) : null;
+      const dateDiffers =
+        officialDate !== null && match.eventDate?.toISOString().slice(0, 10) !== item.filedDateIso;
+
+      if (textSync) {
+        if (match.targetName !== item.name) changes.push(`cím: "${match.targetName}" → "${item.name}"`);
+        if (item.description.length > 0 && match.description !== item.description) changes.push('leírás a hivatalos szövegre cserélve');
+        if (dateDiffers) changes.push(`dátum: "${match.eventDate?.toISOString().slice(0, 10) ?? '–'}" → "${item.filedDateIso}"`);
+      }
+
       if (changes.length > 0) {
+        const patch: Partial<typeof schema.criminalComplaints.$inferInsert> = {
+          amountLabel: item.amountLabel,
+          status: mappedStatus,
+          updatedAt: new Date(),
+        };
+        if (textSync) {
+          patch.targetName = item.name.slice(0, 200);
+          if (item.description.length > 0) patch.description = item.description.slice(0, 1000);
+          if (officialDate) {
+            patch.eventDate = officialDate;
+            patch.filedAt = officialDate;
+          }
+          // A hivatalos oldal forrásként is kerüljön a sorra, ha még nincs rajta —
+          // a sajtóforrás marad mellette, nem cseréljük le.
+          if (!match.sourceUrls.includes(item.sourceUrl)) {
+            patch.sourceUrls = [...match.sourceUrls, item.sourceUrl];
+            patch.sourceNames = [...match.sourceNames, 'kormany.hu (hivatalos)'];
+            patch.sourceHeadlines = [...match.sourceHeadlines, item.name];
+            patch.sourceDates = [...match.sourceDates, item.filedDateIso ?? todayIso()];
+          }
+        }
         await step.run(`update-${match.id}`, () =>
           db.update(schema.criminalComplaints)
-            .set({ amountLabel: item.amountLabel, status: mappedStatus, updatedAt: new Date() })
+            .set(patch)
             .where(eq(schema.criminalComplaints.id, match.id)),
         );
         updatedLines.push(`• ${item.name} — ${changes.join(', ')}`);
