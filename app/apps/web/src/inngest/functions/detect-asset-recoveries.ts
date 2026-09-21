@@ -13,8 +13,7 @@ import {
   type CandidateArticle,
   type CheckReason,
 } from '@korr/db';
-import { lookupAmount, type SourceText } from '@korr/db';
-import { fetchArticleBodyTransient } from '@korr/scrapers';
+import { lookupMissingAmountFt, notifyMissingAmount } from '@/lib/asset-amount-gate';
 import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
 import { notifyAutoPublished } from '@/lib/notify-auto-publish';
@@ -22,56 +21,6 @@ import { sendTelegramMessage } from '@/lib/telegram';
 import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
 import { createBypassGuardedFunction, runArticleDetectionBatch, type ArticleProcessResult } from '../lib/detector-runner';
 
-
-/**
- * ÖSSZEG NÉLKÜL NINCS PÉNZÜGYI SOR — user szabály, 2026-09-21.
- *
- * „Olyan posztot ne gyárts, amiben nincs szám, hogy majd én keresgéljem: nem
- * fogom. … Esetleg guglizz egy másik hírt."
- *
- * A keresés sorrendje:
- *   1. a forráscikk TELJES szövege (a kivonatban gyakran nincs benne),
- *   2. az ugyanarról az ügyről szóló többi cikk teljes szövege — ezek URL-je
- *      már megvan a NewsArticle táblában, tehát ez a „másik hír" ingyen és
- *      azonnal, külső kereső nélkül,
- *   3. a jelöltek közül a kár/visszafizetés kulcsszavakhoz közeli, legnagyobb
- *      FORINT-összeg (a devizás alakok kiesnek) — l. money-lookup.ts.
- *
- * A valódi eseten mérve (Duna Aszfalt, 2026-09-18) ez a lánc megtalálja a
- * 126 milliárd forintot a 444 cikkének törzsében, amit a forrás HVG-cikk nem
- * közöl. Enélkül született a „0 Ft"-os poszt.
- */
-const AMOUNT_LOOKUP_MAX_ARTICLES = 4;
-
-async function lookupMissingAmountFt(
-  db: ReturnType<typeof getDb>,
-  caseLabel: string,
-  primaryUrl: string | null,
-): Promise<{ ft: number; raw: string; url: string } | null> {
-  // A cikkeket a CÍMBEN/kivonatban szereplő ügycímke-szavak alapján keressük —
-  // ugyanaz a cikkhalmaz, ami az ügyoldal „Kapcsolódó hírek" blokkjában is áll.
-  const key = caseLabel.split(/\s+/).filter((w) => w.length > 5).slice(0, 2).join(' ');
-  const related = key
-    ? ((await db.execute(sql`
-        SELECT "sourceUrl" FROM "NewsArticle"
-        WHERE lower(unaccent(headline || ' ' || excerpt)) LIKE '%' || unaccent(${key.toLowerCase()}) || '%'
-        ORDER BY "publishedAt" DESC
-        LIMIT ${AMOUNT_LOOKUP_MAX_ARTICLES}
-      `)) as unknown as Array<{ sourceUrl: string }>)
-    : [];
-
-  const urls = [primaryUrl, ...related.map((r) => r.sourceUrl)]
-    .filter((u): u is string => Boolean(u))
-    .filter((u, i, all) => all.indexOf(u) === i)
-    .slice(0, AMOUNT_LOOKUP_MAX_ARTICLES + 1);
-
-  const sources: SourceText[] = [];
-  for (const url of urls) {
-    sources.push({ url, text: await fetchArticleBodyTransient(url) });
-  }
-  const found = lookupAmount(sources);
-  return found.found ? { ft: found.ft, raw: found.raw, url: found.url } : null;
-}
 
 const DETECTOR_TYPE = 'asset_recovery' as const;
 const CONFIDENCE_FLOOR = 0.7;
@@ -159,7 +108,7 @@ async function processAssetRecoveryArticle(
     // ÖSSZEG-KAPU: pénzügyi sor szám nélkül nem születhet — l. fentebb.
     let amountFt = item.amountFt;
     if (!(amountFt > 0)) {
-      const found = await lookupMissingAmountFt(db, item.caseLabel, article.sourceUrl ?? null);
+      const found = await lookupMissingAmountFt(item.caseLabel, article.sourceUrl ?? null);
       if (found) {
         amountFt = found.ft;
         console.log(
@@ -167,19 +116,11 @@ async function processAssetRecoveryArticle(
         );
       } else {
         lastDiscardReason = 'missing_fields';
-        await sendTelegramMessage(
-          [
-            '⚠️ VAGYONVISSZASZERZÉS — NINCS ÖSSZEG, a sor NEM jött létre',
-            `${item.caseLabel}`,
-            'Végignéztem a forráscikk és a kapcsolódó cikkek teljes szövegét, egyikben sem találtam forintösszeget a visszafizetéshez.',
-            'Mit tegyek? Válaszolj erre az üzenetre:',
-            '• az összeggel (pl. „126 milliárd") — beírom és kimegy a poszt,',
-            '• „szám nélkül" — poszt összeg nélkül,',
-            '• „csak hír" — csak a hírfolyamba kerüljön,',
-            '• „elvetés" — ne foglalkozzunk vele.',
-            article.sourceUrl ?? '',
-          ].filter(Boolean).join('\n\n'),
-        );
+        await notifyMissingAmount({
+          caseLabel: item.caseLabel,
+          articleId: article.id,
+          articleUrl: article.sourceUrl ?? null,
+        });
         continue;
       }
     }

@@ -42,6 +42,7 @@ import {
 } from '@korr/db';
 import { getDb, schema } from './db';
 import { isCharged } from '@app/birosagi-iteletek/verdict-stats';
+import { lookupMissingAmountFt, notifyMissingAmount } from './asset-amount-gate';
 import { notifyReviewNeeded } from './notify';
 import { notifyAutoPublished } from './notify-auto-publish';
 import { sendTelegramMessage } from './telegram';
@@ -516,7 +517,19 @@ ${article.excerpt}`;
  * mint processResignation fent: minden elem végigmegy a teljes ellenőrzési
  * láncon, DE csak egy összegző upsertDetectionCheckOverride hívás a végén.
  */
-export async function processAssetRecovery(article: ArticleForReprocess, todayIso: string, bypassConfidenceGate: boolean): Promise<ProcessOutcome> {
+export type AssetAmountChoice = {
+  /** A szerkesztő által megadott összeg (Telegram „✍️ Beírom az összeget"). */
+  amountOverrideFt?: number;
+  /** „📤 Mehet szám nélkül" — a sor 0 Ft-tal jön létre, a poszt szám nélkül. */
+  allowMissingAmount?: boolean;
+};
+
+export async function processAssetRecovery(
+  article: ArticleForReprocess,
+  todayIso: string,
+  bypassConfidenceGate: boolean,
+  choice: AssetAmountChoice = {},
+): Promise<ProcessOutcome> {
   const db = getDb();
   const llmResult = await detectAssetRecoveryFromArticle(article.headline, article.excerpt, articleDateIso(article.publishedAt));
   if (isTransientLlmFailure(llmResult)) return { status: 'error', message: 'Az AI-hívás átmenetileg hibázott, próbáld újra.' };
@@ -567,6 +580,27 @@ export async function processAssetRecovery(article: ArticleForReprocess, todayIs
       continue;
     }
 
+    // ÖSSZEG-KAPU — ugyanaz, mint a cron-detektorban (l.
+    // lib/asset-amount-gate.ts). Itt is kell: két beszúró útvonal van, és a
+    // csak az egyikbe bekötött szabály előbb-utóbb kilyukad a másikon.
+    // A szerkesztő gombnyomása (`choice`) felülírja a keresést — ő már
+    // döntött, nem kell újra kérdezni tőle.
+    let amountFt = choice.amountOverrideFt ?? item.amountFt;
+    if (!(amountFt > 0) && !choice.allowMissingAmount) {
+      const found = await lookupMissingAmountFt(item.caseLabel, article.sourceUrl ?? null);
+      if (found) {
+        amountFt = found.ft;
+      } else {
+        lastDiscardReason = 'missing_fields';
+        await notifyMissingAmount({
+          caseLabel: item.caseLabel,
+          articleId: article.id,
+          articleUrl: article.sourceUrl ?? null,
+        });
+        continue;
+      }
+    }
+
     if (await isDuplicate(db, { table: 'AssetRecovery', nameColumn: 'caseLabel' }, item.caseLabel, 14)) {
       lastDiscardReason = 'duplicate';
       continue;
@@ -581,7 +615,7 @@ export async function processAssetRecovery(article: ArticleForReprocess, todayIs
       caseId,
       caseLabel: item.caseLabel.slice(0, 200),
       description: item.description.slice(0, 1000),
-      amountFt: BigInt(Math.round(item.amountFt)),
+      amountFt: BigInt(Math.round(amountFt)),
       recoveredAt: resolveDate(item.recoveredAt, article.publishedAt),
       sourceUrl: article.sourceUrl,
       sourceName: article.sourceName,

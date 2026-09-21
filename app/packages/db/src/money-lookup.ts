@@ -27,7 +27,9 @@
 
 /** Ezres/tizedes elválasztók eltávolítása: „1 234,5" → 1234.5 */
 function toNumber(raw: string): number {
-  const cleaned = raw.replace(/[\s .]/g, '').replace(',', '.');
+  // A `\s` a JS-ben a nem törhető szóközt (U+00A0) is lefedi — a cikkekben
+  // pedig pont az áll az ezres helyiértékek között („126 000 000").
+  const cleaned = raw.replace(/[\s.]/g, '').replace(',', '.');
   const n = Number(cleaned);
   return Number.isFinite(n) ? n : NaN;
 }
@@ -60,7 +62,7 @@ export function parseHufAmounts(text: string): MoneyHit[] {
   const out: MoneyHit[] = [];
   if (!text) return out;
   const re =
-    /(\d[\d\s .,]*)\s*(ezer|milli[óo]|milli[áa]rd|billi[óo])?\s*(forint[a-záéíóöőúüű]*|Ft)\b/giu;
+    /(\d[\d\s.,]*)\s*(ezer|milli[óo]|milli[áa]rd|billi[óo])?\s*(forint[a-záéíóöőúüű]*|Ft)\b/giu;
   for (const m of text.matchAll(re)) {
     const value = toNumber(m[1] ?? '');
     if (!Number.isFinite(value) || value <= 0) continue;

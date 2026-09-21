@@ -13,9 +13,11 @@ import {
   checkWatchlistRemovalForArticle,
   DETECTOR_PROCESSORS,
   findWatchlistCandidates,
+  processAssetRecovery,
   type ArticleForReprocess,
 } from '@/lib/telegram-review-actions';
-import type { DetectorType } from '@korr/db';
+import { markChecked, type DetectorType } from '@korr/db';
+import { parseAmountReply } from '@/lib/asset-amount-gate';
 import { ALERT_ON_EDITOR_CONFIRM } from '@/lib/notify-auto-publish';
 import { recordAlertsForRecordIds, recordSubscriberAlert, revokeSubscriberAlert } from '@/lib/notify-subscribers';
 import {
@@ -257,7 +259,9 @@ type TelegramUpdate = {
     // párosít. A `callback_query.message` tagon már van `message_id`; a sima
     // üzenet tagján eddig nem volt, ezért a válasz-ág nem is létezhetett.
     message_id: number;
-    reply_to_message?: { message_id: number };
+    // A `text` 2026-09-21 óta kell: az összeg-válasz ágnak a VÁLASZOLT
+    // üzenetből kell kiolvasnia a cikk URL-jét (l. lentebb).
+    reply_to_message?: { message_id: number; text?: string };
     text?: string;
   };
 };
@@ -708,6 +712,44 @@ export async function POST(req: Request) {
     //
     // Ez az ág PONTOSAN párosít, a `reply_to_message.message_id`-n. Ami nem
     // párosít, az érintetlenül esik tovább a meglévő kezelésre (FR-070).
+    // ── ÖSSZEG VÁLASZBAN (2026-09-21) ───────────────────────────────────
+    //
+    // A „✍️ Beírom az összeget" gomb után a szerkesztő VÁLASZOL egy
+    // üzenetre, amelyben ott a cikk URL-je. Innen azonosítjuk vissza a
+    // cikket — nem kell hozzá se új tábla, se függő állapot.
+    //
+    // Az ág a digest- és a pendingEdit-ág ELŐTT van: azok a
+    // reply_to_message-re, illetve a legfrissebb szerkesztendő posztra
+    // illesztenek, és egy összeg-válasz csendben Facebook-képaláírásként
+    // mentődne.
+    const replyText = msg.reply_to_message?.text ?? '';
+    if (msg.text && /Írd be az összeget|NINCS ÖSSZEG/u.test(replyText)) {
+      const url = replyText.match(/https?:\/\/\S+/u)?.[0];
+      const amount = parseAmountReply(msg.text);
+      if (!url) {
+        await sendTelegramMessage('Nem találom az üzenetben a cikk linkjét, így nem tudom, melyik ügyről van szó.');
+        return NextResponse.json({ ok: true });
+      }
+      if (!amount) {
+        await sendTelegramMessage('Ezt nem tudtam összegként értelmezni. Írd például így: „126 milliárd".');
+        return NextResponse.json({ ok: true });
+      }
+      const article = await loadArticleByUrl(url);
+      if (!article) {
+        await sendTelegramMessage('A cikket nem találom az adatbázisban.');
+        return NextResponse.json({ ok: true });
+      }
+      const outcome = await processAssetRecovery(article, new Date().toISOString().slice(0, 10), true, {
+        amountOverrideFt: amount,
+      });
+      await sendTelegramMessage(
+        outcome.status === 'inserted'
+          ? `✅ Rögzítve: ${amount.toLocaleString('hu-HU')} Ft.`
+          : `⚠️ Nem sikerült rögzíteni (${outcome.status}).`,
+      );
+      return NextResponse.json({ ok: true });
+    }
+
     const replyToId = msg.reply_to_message?.message_id;
     if (msg.text && replyToId) {
       const [digest] = await getDb()
@@ -985,6 +1027,77 @@ export async function POST(req: Request) {
   // miközben a Telegram vár — és egy félbeszakadt küldés már kiadott
   // keretfoglalásokkal pontosan az a szivárgás, amit az egészség-ellenőrzés
   // keres.
+
+  // ── ÖSSZEG-KAPU GOMBJAI (2026-09-21) ────────────────────────────────────
+  //
+  // User: „szerinted szöveges válaszokat fejben tartok? építsd meg a
+  // gombokat." A vagyonvisszaszerzés-sor akkor NEM jön létre, ha sem a
+  // forráscikk, sem a kapcsolódó cikkek teljes szövegében nincs
+  // forintösszeg (l. lib/asset-amount-gate.ts). Ilyenkor ez a négy gomb
+  // megy ki; az `id` MINDIG a cikk azonosítója, mert sor még nincs.
+  //
+  // A „📰 Csak hírbe" gomb SZÁNDÉKOSAN a már meglévő, bevált `n:x:` ágra
+  // megy, nem ide — egy új, párhuzamos megvalósítás csak elcsúszna tőle.
+  if (action === 'am') {
+    if (!id || !code) {
+      await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
+      return NextResponse.json({ ok: true });
+    }
+    const article = await loadArticle(id);
+    if (!article) {
+      await answerCallbackQuery(cq.id, 'A cikk már nincs meg.');
+      return NextResponse.json({ ok: true });
+    }
+
+    if (code === 'w') {
+      // A tárolás nélküli megoldás: a szerkesztő VÁLASZOL erre az üzenetre,
+      // és a válaszkezelő az üzenet szövegében lévő cikk-URL-ből találja
+      // vissza a cikket. Így nem kell se új tábla, se új oszlop.
+      await answerCallbackQuery(cq.id, 'Válaszolj erre az üzenetre az összeggel.');
+      await sendTelegramMessage(
+        `✍️ Írd be az összeget VÁLASZKÉNT erre az üzenetre — pl. „126 milliárd" vagy „126000000000".\n\n${article.sourceUrl ?? ''}`,
+      );
+      return NextResponse.json({ ok: true });
+    }
+
+    if (code === 'x') {
+      await markChecked(getDb(), {
+        articleId: article.id,
+        detectorType: 'asset_recovery',
+        outcome: 'discarded',
+        reason: 'missing_fields',
+      });
+      await answerCallbackQuery(cq.id, '🗑️ Elvetve.');
+      await editMessageReplyMarkup(
+        cq.message.chat.id,
+        cq.message.message_id,
+        [cq.message.text ?? '', '🗑️ Elvetve — nem készült sor és nem lesz poszt.'].filter(Boolean).join('\n\n'),
+      );
+      return NextResponse.json({ ok: true });
+    }
+
+    if (code === 'n') {
+      await answerCallbackQuery(cq.id, 'Rögzítem összeg nélkül…');
+      const outcome = await processAssetRecovery(article, new Date().toISOString().slice(0, 10), true, {
+        allowMissingAmount: true,
+      });
+      await editMessageReplyMarkup(
+        cq.message.chat.id,
+        cq.message.message_id,
+        [
+          cq.message.text ?? '',
+          outcome.status === 'inserted'
+            ? '📤 Rögzítve összeg nélkül — a poszt szám nélkül megy ki.'
+            : `⚠️ Nem sikerült rögzíteni (${outcome.status}).`,
+        ].filter(Boolean).join('\n\n'),
+      );
+      return NextResponse.json({ ok: true });
+    }
+
+    await answerCallbackQuery(cq.id, 'Ismeretlen gomb.');
+    return NextResponse.json({ ok: true });
+  }
+
   if (action === 'dg') {
     if (!id || !code) {
       await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
