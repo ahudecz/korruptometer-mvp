@@ -3,6 +3,7 @@
 import { isFacebookVideoUrl } from '@korr/shared/facebook-reel';
 
 import { FbReelEmbed } from './fb-reel-embed';
+import { SocialPostImage } from './social-post-image';
 
 const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
 
@@ -80,19 +81,7 @@ export function SocialPostCard({ post }: { post: SocialPost }) {
           <FbReelEmbed url={reelHref} posterUrl={imageHref} authorName={post.authorName} />
         </div>
       )}
-      {!reelHref && imageHref && (
-        <div className="social-post-media">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={imageHref} alt="" />
-          {videoHref && (
-            <span className="social-post-play" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
-                <path d="M8 5.5v13l11-6.5-11-6.5z" fill="currentColor" />
-              </svg>
-            </span>
-          )}
-        </div>
-      )}
+      {!reelHref && imageHref && <SocialPostImage src={imageHref} showPlay={Boolean(videoHref)} />}
       {videoHref && !imageHref && !reelHref && (
         <div className="social-post-video-chip">
           <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false">
