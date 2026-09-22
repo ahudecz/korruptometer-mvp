@@ -90,12 +90,11 @@ function buildBlocks(ranked: RankedVideo[]): Block[] {
   return blocks;
 }
 
-export default async function PodcastokPage() {
-  const db = getDb();
-
-  const [videos, monitoredNames] = await Promise.all([
-    db
-      .select({
+/** A jóváhagyott, küszöböt elért videók. Külön függvényben, hogy a sor
+ *  típusa (`PodcastRow`) levezethető legyen belőle. */
+function loadPodcastVideos() {
+  return getDb()
+    .select({
         id: schema.podcastVideos.id,
         videoId: schema.podcastVideos.videoId,
         title: schema.podcastVideos.title,
@@ -103,51 +102,76 @@ export default async function PodcastokPage() {
         channelName: schema.podcastVideos.channelName,
         publishedAt: schema.podcastVideos.publishedAt,
         viewCount: schema.podcastVideos.viewCount,
-        pinnedUntil: schema.podcastVideos.pinnedUntil,
-      })
-      .from(schema.podcastVideos)
-      .where(and(eq(schema.podcastVideos.reviewStatus, 'approved'), eq(schema.podcastVideos.viewThresholdMet, true))),
-      // Szándékosan nincs LIMIT itt: a rangsorolás (pin > breaking > sebesség
-      // > friss dátum) csak akkor helyes, ha a TELJES jóváhagyott poolt látja
-      // — egy rendezés nélküli DB-oldali LIMIT tetszőleges 150 sort adna
-      // vissza, és könnyen kihagyhatná pont a kitűzött videókat, mielőtt a
-      // rangsoroló egyáltalán látná őket (2026-07-26, user report: emiatt
-      // nem jelent meg a kitűzött hero). A lapméret-korlátot a rangsorolás
-      // UTÁN, JS-ben alkalmazzuk lentebb.
-    getMonitoredNames(),
-  ]);
+      pinnedUntil: schema.podcastVideos.pinnedUntil,
+    })
+    .from(schema.podcastVideos)
+    .where(and(eq(schema.podcastVideos.reviewStatus, 'approved'), eq(schema.podcastVideos.viewThresholdMet, true)));
+  // Szándékosan nincs LIMIT itt: a rangsorolás (pin > breaking > sebesség
+  // > friss dátum) csak akkor helyes, ha a TELJES jóváhagyott poolt látja
+  // — egy rendezés nélküli DB-oldali LIMIT tetszőleges 150 sort adna
+  // vissza, és könnyen kihagyhatná pont a kitűzött videókat, mielőtt a
+  // rangsoroló egyáltalán látná őket (2026-07-26, user report: emiatt
+  // nem jelent meg a kitűzött hero). A lapméret-korlátot a rangsorolás
+  // UTÁN, JS-ben alkalmazzuk lentebb.
+}
+
+/** Kurált Facebook-reelek (user kérés, 2026-09-15). Ugyanabból a SocialPost
+ *  táblából jön, amit a Facebook-szinkron már tölt — nincs se új scrape, se
+ *  extra költség. A szerzők listája: _home/reels-config.ts. A
+ *  `postUrl LIKE '%/reel/%'` csak előszűrés, a tényleges „lejátszható-e”
+ *  döntést a pickReels() -> isFacebookVideoUrl() hozza meg. */
+function loadReelRows() {
+  return getDb()
+    .select({
+      id: schema.socialPosts.id,
+      authorName: schema.socialPosts.authorName,
+      postUrl: schema.socialPosts.postUrl,
+      imageUrl: schema.socialPosts.imageUrl,
+      content: schema.socialPosts.content,
+      postedAt: schema.socialPosts.postedAt,
+    })
+    .from(schema.socialPosts)
+    .where(
+      and(
+        eq(schema.socialPosts.hidden, false),
+        inArray(schema.socialPosts.authorName, REEL_AUTHORS),
+        like(schema.socialPosts.postUrl, '%/reel/%'),
+      ),
+    )
+    .orderBy(desc(schema.socialPosts.postedAt))
+    .limit(40);
+}
+
+type PodcastRow = Awaited<ReturnType<typeof loadPodcastVideos>>[number];
+type ReelRow = Awaited<ReturnType<typeof loadReelRows>>[number];
+type MonitoredNames = Awaited<ReturnType<typeof getMonitoredNames>>;
+
+export default async function PodcastokPage() {
+  // Ez a lap ISR-rel készül (l. `revalidate` fent), tehát a lekérdezés már a
+  // BUILD alatt lefut. Egy elérhetetlen vagy elmaradt migrációjú adatbázis
+  // emiatt nemcsak ezt a lapot vitte el, hanem az egész buildet is
+  // (2026-09-22: `relation "PodcastVideo" does not exist`). A hiba naplózva
+  // van — ez nem néma catch —, és a lap külön üzenetet mutat, hogy egy
+  // adatbázis-hiba ne látsszon üres kínálatnak.
+  let videos: PodcastRow[] = [];
+  let monitoredNames: MonitoredNames = [];
+  let reelRows: ReelRow[] = [];
+  let loadFailed = false;
+  try {
+    [videos, monitoredNames, reelRows] = await Promise.all([
+      loadPodcastVideos(),
+      getMonitoredNames(),
+      REEL_AUTHORS.length ? loadReelRows() : Promise.resolve([] as ReelRow[]),
+    ]);
+  } catch (e) {
+    loadFailed = true;
+    console.error('[Podcastok] DB hiba:', e);
+  }
 
   const PAGE_SIZE = 150;
   const ranked = rankPodcastVideos(videos, monitoredNames).slice(0, PAGE_SIZE);
   const [lead, ...rest] = ranked;
   const blocks = buildBlocks(rest);
-
-  // Kurált Facebook-reelek (user kérés, 2026-09-15). Ugyanabból a
-  // SocialPost táblából jön, amit a Facebook-szinkron már tölt — nincs se új
-  // scrape, se extra költség. A szerzők listája: _home/reels-config.ts.
-  // A `postUrl LIKE '%/reel/%'` csak előszűrés, a tényleges "lejátszható-e"
-  // döntést a pickReels() -> isFacebookVideoUrl() hozza meg.
-  const reelRows = REEL_AUTHORS.length
-    ? await db
-        .select({
-          id: schema.socialPosts.id,
-          authorName: schema.socialPosts.authorName,
-          postUrl: schema.socialPosts.postUrl,
-          imageUrl: schema.socialPosts.imageUrl,
-          content: schema.socialPosts.content,
-          postedAt: schema.socialPosts.postedAt,
-        })
-        .from(schema.socialPosts)
-        .where(
-          and(
-            eq(schema.socialPosts.hidden, false),
-            inArray(schema.socialPosts.authorName, REEL_AUTHORS),
-            like(schema.socialPosts.postUrl, '%/reel/%'),
-          ),
-        )
-        .orderBy(desc(schema.socialPosts.postedAt))
-        .limit(40)
-    : [];
   const reels = pickReels(reelRows);
 
   return (
@@ -158,7 +182,11 @@ export default async function PodcastokPage() {
           <h2 className="section-title">Amiről beszélni kell.</h2>
         </div>
 
-        {!lead ? (
+        {loadFailed ? (
+          <div className="empty-state">
+            A videók most nem elérhetők — technikai hiba történt. Kérjük, próbáld újra később.
+          </div>
+        ) : !lead ? (
           <div className="empty-state">Még nem érkezett kiemelt videó.</div>
         ) : (
           <>

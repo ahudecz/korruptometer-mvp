@@ -14,7 +14,7 @@ import {
 } from '../../_home/rendszervaltas-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../_home/cross-promo';
 import { FeltaroVideo } from '../../_home/feltaro-video';
-import { findPersonLink } from '../../_home/person-links';
+import { withAutoLinks } from '../../_home/auto-link-text';
 import { PodcastVideoBox } from '../../_home/podcast-video-box';
 import styles from '../dicsosegfal.module.css';
 
@@ -85,68 +85,6 @@ function initials(name: string): string {
   return name.split(/[\s-]+/).filter(Boolean).map((w) => w[0]!).join('').slice(0, 2).toUpperCase();
 }
 
-/** Szó szerinti, regex nélküli linkelő — ugyanaz a minta, mint a hubon. */
-function withLinks(
-  content: string,
-  links?: InlineLink[],
-  linkedPersons?: Set<string>,
-): React.ReactNode {
-  let parts: React.ReactNode[] = [content];
-  (links ?? []).forEach((link, li) => {
-    const next: React.ReactNode[] = [];
-    for (const part of parts) {
-      if (typeof part !== 'string' || !part.includes(link.text)) {
-        next.push(part);
-        continue;
-      }
-      const [before, ...rest] = part.split(link.text);
-      next.push(before);
-      next.push(
-        link.external ? (
-          <a key={`l-${li}`} href={link.href} target="_blank" rel="noopener noreferrer">{link.text}</a>
-        ) : (
-          <Link key={`l-${li}`} href={link.href}>{link.text}</Link>
-        ),
-      );
-      next.push(rest.join(link.text));
-    }
-    parts = next;
-  });
-
-  // Automatikus névlinkelés a MARADÉK szövegdarabokon — l. person-links.ts.
-  // A kézi `links` így sosem sérül, és linkbe ágyazott link sem keletkezik.
-  if (linkedPersons) {
-    const next: React.ReactNode[] = [];
-    for (const part of parts) {
-      if (typeof part !== 'string') {
-        next.push(part);
-        continue;
-      }
-      let rest = part;
-      let guard = 0;
-      // A `guard` nem esztétika: ha egy minta valaha üres stringre
-      // illeszkedne, ez a ciklus végtelen lenne, és egy statikus oldal
-      // renderelése fagyna meg.
-      while (guard < 12) {
-        const hit = findPersonLink(rest, linkedPersons);
-        if (!hit) break;
-        linkedPersons.add(hit.name);
-        next.push(hit.before);
-        next.push(
-          <Link key={`p-${hit.href}-${guard}`} href={hit.href}>
-            {hit.matched}
-          </Link>,
-        );
-        rest = hit.after;
-        guard += 1;
-      }
-      next.push(rest);
-    }
-    parts = next;
-  }
-
-  return parts.map((p, i) => <React.Fragment key={i}>{p}</React.Fragment>);
-}
 
 /**
  * SZÁNDÉKOSAN ÜRES — ezek az oldalak nem a buildben készülnek el, hanem az
@@ -258,6 +196,10 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
   // lesz link, hogy tíz Mészáros-link helyett egy legyen — l. person-links.ts.
   const linkedPersons = new Set<string>();
 
+  // Önmagára egyetlen profil sem linkel: a Hadházy-oldalon a „Hadházy Ákos”
+  // név nem lehet link erre az oldalra.
+  const selfHref = `/rendszervaltas/${f.id}`;
+
   // Testvérek ugyanabból a blokkból — a hub & spoke másik iránya: az
   // aloldalak ne csak a hubra mutassanak vissza, hanem egymásra is.
   const siblings = FELTAROK.filter((x) => x.group === f.group && x.id !== f.id && x.live).slice(0, 6);
@@ -354,7 +296,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
               {f.section.paragraphs
                 .flatMap((para) => splitParas(para))
                 .map((para, i) => (
-                  <p key={i}>{withLinks(para, f.section.links, linkedPersons)}</p>
+                  <p key={i}>{withAutoLinks(para, f.section.links, linkedPersons, selfHref)}</p>
                 ))}
             </div>
 
@@ -375,7 +317,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
             {d?.cases && d.cases.items.length > 0 && (
               <div className="ugy-block-text" id="ugyek">
                 <h2 className="ugy-block-heading">{d.cases.heading}</h2>
-                {d.cases.intro && <p>{d.cases.intro}</p>}
+                {d.cases.intro && <p>{withAutoLinks(d.cases.intro, undefined, linkedPersons, selfHref)}</p>}
                 <ol className={styles.caseList}>
                   {d.cases.items.map((c, ci) => {
                     const [short, rest] = splitTitle(c.title);
@@ -388,10 +330,10 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                       </h3>
                       {c.when && <div className={styles.caseWhen}>{c.when}</div>}
                       {splitParas(c.body).map((para, i) => (
-                        <p className={styles.caseBody} key={`b${i}`}>{withLinks(para, c.links, linkedPersons)}</p>
+                        <p className={styles.caseBody} key={`b${i}`}>{withAutoLinks(para, c.links, linkedPersons, selfHref)}</p>
                       ))}
                       {c.more?.flatMap((para) => splitParas(para)).map((para, i) => (
-                        <p className={styles.caseBody} key={`m${i}`}>{withLinks(para, c.links, linkedPersons)}</p>
+                        <p className={styles.caseBody} key={`m${i}`}>{withAutoLinks(para, c.links, linkedPersons, selfHref)}</p>
                       ))}
                       {c.sections?.map((sec) => (
                         <div className={styles.caseSection} key={sec.heading}>
@@ -399,7 +341,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                           {sec.paragraphs
                             .flatMap((para) => splitParas(para))
                             .map((para, i) => (
-                              <p className={styles.caseBody} key={i}>{withLinks(para, sec.links, linkedPersons)}</p>
+                              <p className={styles.caseBody} key={i}>{withAutoLinks(para, sec.links, linkedPersons, selfHref)}</p>
                             ))}
                           {sec.videos?.map((v) => (
                             <FeltaroVideo
@@ -453,7 +395,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                           <aside className={styles.caseHighlight}>
                             <h4 className={styles.caseHighlightHeading}>{c.highlight.heading}</h4>
                             {splitParas(c.highlight.body).map((para, i) => (
-                              <p key={i}>{withLinks(para, undefined, linkedPersons)}</p>
+                              <p key={i}>{withAutoLinks(para, undefined, linkedPersons, selfHref)}</p>
                             ))}
                           </aside>
                           {/* A felvétel a kiemelt doboz UTÁN áll, nem benne
@@ -497,7 +439,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
               <div className="ugy-block-text" key={x.heading}>
                 <h2 className="ugy-block-heading">{x.heading}</h2>
                 {x.paragraphs.flatMap((para) => splitParas(para)).map((para, i) => (
-                  <p key={i}>{withLinks(para, x.links, linkedPersons)}</p>
+                  <p key={i}>{withAutoLinks(para, x.links, linkedPersons, selfHref)}</p>
                 ))}
                 {x.sources && x.sources.length > 0 && <Sources sources={x.sources} />}
               </div>
@@ -506,7 +448,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
             {d?.videoBlock && d.videoBlock.items.length > 0 && (
               <div className="ugy-block-text" id="felvetelek">
                 <h2 className="ugy-block-heading">{d.videoBlock.heading}</h2>
-                {d.videoBlock.intro && <p>{d.videoBlock.intro}</p>}
+                {d.videoBlock.intro && <p>{withAutoLinks(d.videoBlock.intro, undefined, linkedPersons, selfHref)}</p>}
                 <div className={d.videoBlock.items.length > 1 ? 'feltaro-video-pair' : undefined}>
                   {d.videoBlock.items.map((v) => (
                     <FeltaroVideo
@@ -529,7 +471,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
             {d?.table && d.table.rows.length > 0 && (
               <div className="ugy-block-text" id="osszehasonlitas">
                 <h2 className="ugy-block-heading">{d.table.heading}</h2>
-                {d.table.intro && <p>{d.table.intro}</p>}
+                {d.table.intro && <p>{withAutoLinks(d.table.intro, undefined, linkedPersons, selfHref)}</p>}
                 <div className={styles.tableWrap}>
                   <table className={styles.table}>
                     <thead>
@@ -555,7 +497,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
             {d?.socialHighlights && d.socialHighlights.items.length > 0 && (
               <div className="ugy-block-text" id="posztok">
                 <h2 className="ugy-block-heading">{d.socialHighlights.heading}</h2>
-                {d.socialHighlights.intro && <p>{d.socialHighlights.intro}</p>}
+                {d.socialHighlights.intro && <p>{withAutoLinks(d.socialHighlights.intro, undefined, linkedPersons, selfHref)}</p>}
                 {d.socialHighlights.items.map((post) => (
                   <React.Fragment key={post.title}>
                     {/* A TELJES poszt-blokk kattintható (user, 2026-09-16), nem
@@ -591,7 +533,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                     <div className={styles.postNote}>
                       <h3 className={styles.postNoteTitle}>{post.title}</h3>
                       {splitParas(post.body).map((para, i) => (
-                        <p key={i}>{para}</p>
+                        <p key={i}>{withAutoLinks(para, undefined, linkedPersons, selfHref)}</p>
                       ))}
                       {post.sources && post.sources.length > 0 && (
                         <Sources sources={post.sources} label="A posztról" />
@@ -613,7 +555,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
             {d?.socialFeed && d.socialFeed.items.length > 0 && (
               <div className="ugy-block-text" id="feed">
                 <h2 className="ugy-block-heading">{d.socialFeed.heading}</h2>
-                {d.socialFeed.intro && <p>{d.socialFeed.intro}</p>}
+                {d.socialFeed.intro && <p>{withAutoLinks(d.socialFeed.intro, undefined, linkedPersons, selfHref)}</p>}
                 <div className={styles.feed}>
                   {d.socialFeed.items.map((item) => (
                     <a
@@ -654,7 +596,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
             {d?.videoGrid && d.videoGrid.items.length > 0 && (
               <div className="ugy-block-text" id="adasok">
                 <h2 className="ugy-block-heading">{d.videoGrid.heading}</h2>
-                {d.videoGrid.intro && <p>{d.videoGrid.intro}</p>}
+                {d.videoGrid.intro && <p>{withAutoLinks(d.videoGrid.intro, undefined, linkedPersons, selfHref)}</p>}
                 <div className={styles.videoGrid}>
                   {d.videoGrid.items.map((v) => (
                     <div className={styles.videoCard} key={v.id}>
@@ -718,7 +660,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
               {d.faq.map((q, i) => (
                 <details key={i} className="seo-faq-item" open={i === 0}>
                   <summary className="seo-faq-q"><h3>{q.q}</h3></summary>
-                  <p className="seo-faq-a">{withLinks(q.a, undefined, linkedPersons)}</p>
+                  <p className="seo-faq-a">{withAutoLinks(q.a, undefined, linkedPersons, selfHref)}</p>
                 </details>
               ))}
             </div>

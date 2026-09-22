@@ -11,6 +11,8 @@ import { WATCH_LIST } from '../../_home/watchlist-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../_home/cross-promo';
 import { getRelatedComplaintsForUgy } from '@/lib/related-complaints';
 import { RelatedComplaintCard } from '../../_home/related-complaint-card';
+import { withAutoLinks } from '../../_home/auto-link-text';
+import { namesInTexts } from '../../_home/person-links';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,7 +76,21 @@ function splitParen(value: string): { main: string; detail: string | null } {
 // blokk-tömb ELSŐ (legfrissebb) 'breaking-group'-ja marad piros BREAKING,
 // minden korábbi automatikusan sima szürke article-card-listává
 // degradálódik, amint egy újabb bekerül. Nem NKA-specifikus.
-function DescBlock({ block, isLatestBreaking = true }: { block: DescriptionBlock; isLatestBreaking?: boolean }) {
+function DescBlock({
+  block,
+  isLatestBreaking = true,
+  linkedPersons,
+  labelLinked,
+}: {
+  block: DescriptionBlock;
+  isLatestBreaking?: boolean;
+  /** Oldalankénti névlinkelés — l. auto-link-text.tsx. Csak a szabad szövegű
+   *  blokkra fut: a cikk-kártyák tartalma egy <a>-n BELÜL van, oda egymásba
+   *  ágyazott linket tenni érvénytelen HTML. */
+  linkedPersons?: Set<string>;
+  /** A videó forrás-címkéinek külön halmaza — l. a hívónál. */
+  labelLinked?: Set<string>;
+}) {
   if (block.type === 'breaking-group' && !isLatestBreaking) {
     return (
       <>
@@ -97,14 +113,22 @@ function DescBlock({ block, isLatestBreaking = true }: { block: DescriptionBlock
       return (
         <div className="ugy-block-text">
           {block.heading && <h2 className="ugy-block-heading">{block.heading}</h2>}
-          <p>{block.content}</p>
+          <p>{withAutoLinks(block.content, undefined, linkedPersons)}</p>
         </div>
       );
     case 'video':
       return (
         <div className="ugy-block-video">
           <div className="ugy-block-video-meta">
-            {block.label && <span className="ugy-block-video-label">{block.label}</span>}
+            {/* A videó forrás-címkéje is „név szerinti említés”: ha egy adást a
+                Dicsőségfalon szereplő feltáró készítette, innen is vezessen link a
+                profiljára (user, 2026-09-22). A címke NINCS <a>-n belül, tehát
+                nem keletkezik egymásba ágyazott link. */}
+            {block.label && (
+              <span className="ugy-block-video-label">
+                {withAutoLinks(block.label, undefined, labelLinked)}
+              </span>
+            )}
             {block.title && <span className="ugy-block-video-title">{block.title}</span>}
           </div>
           {block.summary && <p className="ugy-block-video-summary">{block.summary}</p>}
@@ -227,13 +251,21 @@ function DescBlock({ block, isLatestBreaking = true }: { block: DescriptionBlock
   }
 }
 
-function ExtraVideoTile({ video, variant }: { video: BigCaseVideo; variant?: 'hero' | 'companion' }) {
+function ExtraVideoTile({
+  video,
+  variant,
+  labelLinked,
+}: {
+  video: BigCaseVideo;
+  variant?: 'hero' | 'companion';
+  labelLinked?: Set<string>;
+}) {
   const variantClass = variant === 'hero' ? ' ugy-extra-video--hero' : variant === 'companion' ? ' ugy-extra-video--companion' : '';
   return (
     <div className={`ugy-extra-video${variantClass}${video.featured ? ' ugy-extra-video--featured' : ''}`}>
       <div className="ugy-extra-video-meta">
         {video.featured && <span className="ugy-extra-video-badge">⭐ Kiemelt</span>}
-        <span className="ugy-extra-video-label">{video.label}</span>
+        <span className="ugy-extra-video-label">{withAutoLinks(video.label, undefined, labelLinked)}</span>
         <span className="ugy-extra-video-title">{video.title}</span>
         {video.summary && <p className="ugy-extra-video-summary">{video.summary}</p>}
       </div>
@@ -322,6 +354,21 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
   const suspiciousItems = entry.suspiciousItems ?? [];
 
   const descParagraphs = entry.descriptionBlocks ? [] : entry.description.split('\n\n').filter(Boolean);
+
+  // Egy Set az EGÉSZ oldalra: minden feltáró- és NER-név csak az első
+  // előfordulásánál lesz link (user, 2026-09-22 — crosslinkelés SEO-ból).
+  const linkedPersons = new Set<string>();
+
+  // A videó forrás-címkéi KÜLÖN Set-et kapnak, amely előre fel van töltve a
+  // prózában szereplő nevekkel — l. namesInTexts(). Így egy név, amelyet a
+  // szöveg is említ, a szövegben lesz link (az ér többet), a címkén pedig
+  // marad sima felirat. A két halmaz emiatt diszjunkt: ugyanaz a név sosem
+  // lesz kétszer link ugyanazon az oldalon.
+  const labelLinked = namesInTexts([
+    ...descParagraphs,
+    ...(entry.descriptionBlocks ?? []).map((b) => (b.type === 'text' ? b.content : null)),
+  ]);
+
   // Konvenció: új breaking-group blokkot mindig a tömb ELEJÉRE kell felvenni
   // (l. ugyek-config.ts), így az első előfordulás mindig a legfrissebb —
   // csak az kapja meg a piros BREAKING keretet, l. DescBlock isLatestBreaking.
@@ -573,16 +620,16 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
             <h2 className="person-section-title">Kapcsolódó videók</h2>
             {heroVideo && (
               <div className="ugy-extra-videos-featured-grid">
-                <ExtraVideoTile video={heroVideo} variant="hero" />
+                <ExtraVideoTile video={heroVideo} variant="hero" labelLinked={labelLinked} />
                 {companionVideos.map(v => (
-                  <ExtraVideoTile key={v.id} video={v} variant="companion" />
+                  <ExtraVideoTile key={v.id} video={v} variant="companion" labelLinked={labelLinked} />
                 ))}
               </div>
             )}
             {restVideos.length > 0 && (
               <div className="ugy-extra-videos-grid">
                 {restVideos.map(v => (
-                  <ExtraVideoTile key={v.id} video={v} />
+                  <ExtraVideoTile key={v.id} video={v} labelLinked={labelLinked} />
                 ))}
               </div>
             )}
@@ -604,9 +651,11 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
                     key={i}
                     block={block}
                     isLatestBreaking={i === firstBreakingGroupIndex}
+                    linkedPersons={linkedPersons}
+                    labelLinked={labelLinked}
                   />
                 ))
-              : descParagraphs.map((para, i) => <p key={i}>{para}</p>)
+              : descParagraphs.map((para, i) => <p key={i}>{withAutoLinks(para, undefined, linkedPersons)}</p>)
             }
           </div>
 

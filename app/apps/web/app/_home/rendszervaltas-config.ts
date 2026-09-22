@@ -1454,18 +1454,397 @@ export const FELTAROK: Feltaro[] = [
     name: 'Jámbor András',
     kind: 'person',
     group: 'person',
-    role: 'országgyűlési képviselő, a Mérce alapító-szerkesztője',
-    badge: 'ÚJSÁGÍRÓ-KÉPVISELŐ',
+    role: 'országgyűlési képviselő, a Mérce alapító-főszerkesztője',
+    badge: 'LAKHATÁSI ÉS SZOCIÁLIS JOGVÉDŐ',
     photo: '/images/rendszervaltas/jambor-andras.webp',
     tagline:
-      'Újságíróból lett képviselő úgy, hogy közben nem hagyta abba a terepmunkát — a szociális ügyeket ő emelte vissza a közbeszédbe.',
+      'Újságíróból lett képviselő úgy, hogy közben nem hagyta abba a terepmunkát — a lakhatást és a végrehajtásokat ő emelte vissza a közbeszédbe.',
     targetKeyword: { phrase: 'jámbor andrás', volume: 6600, kd: 41 },
     section: {
       heading: 'Jámbor András — a lakhatás és a szegénység napirenden tartása',
       paragraphs: [
-        'Jámbor András a Mérce alapító-szerkesztőjeként kezdte, majd 2022-ben egyéni választókerületben szerzett parlamenti mandátumot. Az útja azért érdekes, mert nem szakított a korábbi munkájával: képviselőként is ugyanazokkal a témákkal foglalkozott, amelyekről addig írt.',
+        'Jámbor András a Mérce alapítójaként és 2019-ig főszerkesztőjeként kezdte, majd 2021-ben megnyerte az ellenzéki előválasztást Budapest 6. számú választókerületében, és 2022-ben független képviselőként bejutott az Országgyűlésbe. Az útja azért érdekes, mert nem szakított a korábbi munkájával: képviselőként is ugyanazokkal a témákkal foglalkozott, amelyekről addig írt.',
         'A közpénzügyekhez egy sajátos irányból közelít: nem a nagy beruházások összegeit nézi, hanem azt, hogy közben mi maradt ki a költségvetésből — lakhatás, szociális ellátás, rezsi, munkaügyi jogok. Ez tette láthatóvá azt az összefüggést, ami a puszta botránylistákból nem derül ki: a kiosztott közpénznek mindig van másik oldala.',
-        'A Szikra Mozgalom vezetőjeként emellett kampányokat szervezett konkrét, helyi ügyekben, a lakhatási válságtól az önkormányzati döntésekig.',
+        'A Szikra Mozgalom egyik meghatározó arcaként emellett kampányokat szervezett konkrét, helyi ügyekben, a Fudan-beruházás elleni tömegtüntetéstől a józsefvárosi kilakoltatások megakadályozásáig.',
+      ],
+    },
+    related: [
+      { label: 'Kiemelt ügyek', href: '/ugyek' },
+      { label: 'Kapcsolódó ügyek az adatbázisban', href: '/adatbazis' },
+    ],
+    live: true,
+    detail: {
+      seoTitle: 'Jámbor András: a Mércétől a végrehajtási törvényig',
+      seoDescription:
+        'Mit csinált Jámbor András? A Mérce megalapítása, a Fudan elleni tüntetés, a végrehajtások és kilakoltatások elleni fellépés, a Diószegi utcai lakók ügye — forrásokkal.',
+      lead:
+        'Jámbor András helye a Dicsőségfalon nem azért védhető, mert kormánykritikus politikus, és nem is azért, mert minden állításával vagy szervezeti döntésével egyet kellene érteni. A helye azért indokolható, mert több mint másfél évtizeden át ugyanazon a három területen dolgozott következetesen: a független nyilvánosság építésén, a lakhatási és szociális jogvédelem megszervezésén, és azon, hogy ezek az ügyek az utcáról bekerüljenek az intézményes politikába.',
+      cases: {
+        heading: 'A legfontosabb állomások és ügyek',
+        intro:
+          'Ez más típusú teljesítmény, mint Panyi Szabolcs oknyomozó újságírása vagy Hadházy Ákos közpénzellenőrző munkája. Jámbor fő fegyvere nem a dokumentumokból kibontott korrupciós hálózat, hanem a közösségszervezés: embereket kapcsolt össze, ügyeket tett láthatóvá, és a politikai képviseletet megpróbálta visszakötni azokhoz, akikről a hatalom rendszeresen beszél, de akiket ritkán kérdez meg.',
+        items: [
+          {
+            title: 'A Mérce — független nyilvánosság a pártokon kívül',
+            when: '2008–2019',
+            body:
+              'Jámbor első maradandó közéleti teljesítménye nem egy parlamenti felszólalás, hanem egy intézmény létrehozása. A 2008-ban indult Kettős Mérce blogból nőtt ki a Mérce, amely 2017. október 22-én indult el önálló hírportálként, több mint háromezer ember közösségi finanszírozásából. Jámbor volt a fő kezdeményezője, és 2019-ig a főszerkesztője.',
+            more: [
+              'A lap nem a politikai elit napi konfliktusait tekintette a közélet egyetlen tárgyának, hanem azt mutatta meg, hogyan hatnak a döntések a bérből élőkre, a bérlőkre, a végrehajtás alatt álló családokra, a hajléktalan emberekre és a közszolgáltatások dolgozóira. Olyan témákat emelt be az országos vitába, amelyek korábban civil csoportok, helyi aktivisták vagy szűk szakmai közösségek ügyei voltak.',
+              'Ez a Dicsőségfal szempontjából azért fontos, mert a NER nem kizárólag a korrupciós ügyek eltitkolásával működik. A rendszer része az is, hogy milyen témák jutnak el a nyilvánosságba, milyen nyelven beszélünk a szegénységről, és kiket tekintünk egyáltalán politikai szereplőnek. A Mércével Jámbor ahhoz járult hozzá, hogy a lakhatási válság, a kilakoltatás vagy a munkajog ne csak civil ügyként, hanem hatalmi kérdésként jelenjen meg.',
+            ],
+            sources: [
+              {
+                source: 'Mérce',
+                date: '2021. márc. 13.',
+                headline: 'Jámbor András, a Mérce alapítója is elindul az előválasztáson',
+                url: 'https://merce.hu/2021/03/13/jambor-andras-a-merce-alapitoja-is-elindul-az-elovalasztason/',
+                lead:
+                  'A szerkesztőség saját közleménye arról, hogy az alapítójuk politikai pályára lép — és arról, mióta nem vesz részt a lap munkájában.',
+              },
+              {
+                source: '444',
+                date: '2021. márc. 13.',
+                headline: 'Jámbor András, a Mérce volt főszerkesztője is elindul az előválasztáson',
+                url: 'https://444.hu/2021/03/13/jambor-andras-a-merce-volt-foszerkesztoje-is-elindul-az-elovalasztason',
+                lead:
+                  'A pályaváltás külső összefoglalója: mit csinált addig, és milyen témákkal indul neki az előválasztásnak.',
+              },
+            ],
+          },
+          {
+            title: 'Fudan és Diákváros — amikor egy beruházás politikai szimbólummá válik',
+            when: '2021–2024',
+            body:
+              'A Szikra Mozgalommal közösen szervezett tüntetéssorozat a kínai Fudan Egyetem budapesti campusának terve ellen irányult. A 2021. június 5-i demonstráció a járványszabályok miatt formálisan tizenhat külön bejelentett tüntetésre bontva zajlott — így kerülte meg a szervező csapat az ötszáz fős létszámkorlátot —, és a Kossuth teret megtöltő tömeget vonzott.',
+            more: [
+              'A tüntetés nem egyszerűen egy kínai egyetemről szólt. A szervezők a beruházást az állami eladósodás, a közpénzfelhasználás és a budapesti fiatalok lakhatási lehetőségeinek kérdésével kötötték össze: ugyanazon a ferencvárosi területen, ahol a kormány korábban kollégiumi férőhelyeket ígért, egy drága, részben hitelből finanszírozott külföldi egyetemi beruházás kapott volna elsőbbséget. Az állítás ezért nem puszta tiltakozás volt, hanem alternatíva: Fudan helyett Diákváros, presztízsberuházás helyett megfizethető lakhatás.',
+              '2024 novemberében a kormány a Kormányinfón jelentette be, hogy a Fudan-campus helyett mégis a Diákváros épülhet meg, decemberben pedig ezt írásban is rögzítette. Nem lenne korrekt azt állítani, hogy ezt egyetlen politikus vagy egyetlen tüntetés kényszerítette ki: szerepe volt a fővárosi és a kerületi önkormányzat kiállásának, a politikai környezetnek és a lakhatási válság súlyosbodásának is. Jámbor szerepe azonban dokumentálható — a témát évekig napirenden tartotta, tömegtüntetést szervezett, és a beruházásról szóló vitát összekötötte a lakhatás mindennapi kérdésével.',
+              'A Dicsőségfalon ez nem egy projekt megnyeréseként jelenik meg, hanem példaként arra, hogyan lehet egy kormányzati beruházást társadalmi üggyé alakítani. A politikai nyomásgyakorlásnak ugyanis gyakran nem az azonnali győzelem a mércéje, hanem az, hogy a hatalom kénytelen legyen megváltoztatni a saját eredeti nyelvét és célját.',
+            ],
+            sources: [
+              {
+                source: 'Telex',
+                date: '2021. máj. 23.',
+                headline: 'A Fudan Egyetem ellen tüntetnek június 5-én a Hősök terén',
+                url: 'https://telex.hu/belfold/2021/05/23/junius-5-tuntetes-hosok-tere-jambor-andras-fudan-egyetem',
+                lead:
+                  'A tüntetés meghirdetése: ki szervezi, mi a követelés, és miért a Diákváros a tét a szervezők szerint.',
+              },
+              {
+                source: 'Átlátszó',
+                date: '2021. jún. 5.',
+                headline: 'Trükkös tüntetés a Diákvárosért és a Fudan Egyetem ellen',
+                url: 'https://atlatszo.hu/oktatas/2021/06/05/trukkos-tuntetes-a-diakvarosert-es-a-fudan-egyetem-ellen/',
+                lead:
+                  'Helyszíni beszámoló arról, hogyan bontották tizenhat külön bejelentett tüntetésre a demonstrációt, hogy a járványkorlátozás ne lehetetlenítse el.',
+              },
+              {
+                source: 'Eduline',
+                date: '2024. nov. 14.',
+                headline: 'Kormányinfó: a Fudan Egyetem helyén tervezik felépíteni a budapesti diákvárost',
+                url: 'https://eduline.hu/felsooktatas/20241114_diakvaros-Fudan-Egyetem-kormanyinfo-felsooktatas-kollegium',
+                lead:
+                  'A kormányzati irányváltás bejelentése: a Fudan-projekt évek óta áll, a területen kollégiumi és bérlakás-fejlesztés jöhet helyette.',
+              },
+              {
+                source: 'HVG',
+                date: '2024. dec. 11.',
+                headline: 'Most írásba adta a kormány, hogy nem lesz Fudan-campus, de megépül a korábban elkaszált Diákváros',
+                url: 'https://hvg.hu/itthon/20241211_Fudan-campus-beszamolo-visszater-a-maga-altal-erobol-elkaszalt-eredeti-tervhez-a-Diakvaroshoz-ebx',
+                lead:
+                  'A szóbeli bejelentés után a dokumentum is megszületett — a kormány visszatért ahhoz a tervhez, amelyet korábban maga söpört le.',
+              },
+            ],
+          },
+          {
+            title: 'Végrehajtások és kilakoltatások — a lakhatási jogvédelem',
+            when: '2018–2025',
+            body:
+              'Jámbor egyik legfontosabb megkülönböztető jegye, hogy a lakhatási ügyeket nem kizárólag parlamenti felszólalásokban kezelte. Civil szervezetekkel és a Szikra aktivistáival éveken át részt vett kilakoltatások megakadályozásában és lakhatási válsággal küzdő háztartások támogatásában. Ez a munka ritkán látványos: egy végrehajtási ügyben nem egyetlen nagy politikai döntés a tét, hanem az, hogy egy család elveszíti-e az otthonát, és marad-e pénze élelmiszerre.',
+            sections: [
+              {
+                heading: '670 ezer végrehajtás — egy adatigénylésből',
+                paragraphs: [
+                  'A végrehajtási rendszer működése több százezer embert érint, miközben a közbeszédben az érintettek jellemzően adósként, mulasztóként vagy problémás családként jelennek meg. Jámbor ezt a keretet fordította meg: olyan állami rendszerként beszélt a végrehajtásról, amelyben az adósság rendezése mellett a megélhetés védelmét is biztosítani kell.',
+                  'A számokat nem becslésből vette. Közérdekű adatigényléssel kérte ki a folyamatban lévő eljárások számát, és 2024 októberében ebből derült ki, hogy egy év alatt 490 ezerről 670 ezerre — több mint a harmadával — nőtt a végrehajtás alatt álló emberek száma.',
+                ],
+                sources: [
+                  {
+                    source: 'Telex',
+                    date: '2024. okt. 6.',
+                    headline: 'Egy év alatt több mint a harmadával nőtt a végrehajtások száma',
+                    url: 'https://telex.hu/belfold/2024/10/06/vegrehajtasok-novekedes-adatigenyles-jambor-andras',
+                    lead:
+                      'Az adatigénylés eredménye és a mögötte lévő módszer: honnan származik a 670 ezres szám, és mihez képest ugrott meg.',
+                  },
+                  {
+                    source: '444',
+                    date: '2024. okt. 6.',
+                    headline: 'Már 670 ezer végrehajtás folyik az országban, egy év alatt harmadával nőtt a számuk',
+                    url: 'https://444.hu/2024/10/06/mar-670-ezer-vegrehajtas-folyik-az-orszagban-egy-ev-alatt-harmadaval-nott-a-szamuk',
+                    lead:
+                      'Ugyanaz az adatsor, kontextussal: mekkora az érintett kör, és mit jelent ez egy háztartás mindennapjaiban.',
+                  },
+                  {
+                    source: 'Magyar Hang',
+                    headline: 'Jámbor András: Összesen 670 ezer ember ellen folyik ma végrehajtás Magyarországon',
+                    url: 'https://hang.hu/belfold/jambor-andras-osszesen-670-ezer-ember-ellen-folyik-ma-vegrehajtas-magyarorszagon-168266',
+                    lead:
+                      'A képviselő saját értelmezése a számokról — és arról, hogy szerinte kinek az érdeke a mai végrehajtási rendszer.',
+                  },
+                ],
+              },
+              {
+                heading: 'A védett jövedelem — tizenháromszor benyújtva',
+                paragraphs: [
+                  'A konkrét jogalkotási követelése az volt, hogy emeljék meg a végrehajtás alól mentes jövedelem összegét, és azt a háztartásban élők számához igazítsák. A saját beszámolója szerint a javaslatot tizenháromszor nyújtotta be, és a kormánypárti többség sok alkalommal már azt sem támogatta, hogy a módosítás a teljes Országgyűlés elé kerüljön.',
+                  'A szabályozás végül változott, de nem az ő javaslata szerint: 2025. július 1-jétől a végrehajtás alól mentes összeg a minimálbér 60 százaléka, azaz nagyjából 106 ezer forint. Ez az alacsony jövedelmű adósoknak valódi könnyebbség, ugyanakkor a jogsegélyt nyújtó szervezetek szerint önmagában kevés a legszegényebbek helyzetének rendezéséhez. A történet így egyszerre mutatja a parlamenti ellenzék korlátait és azt, hogyan lehet a parlamenti eszközöket civil nyomással összekapcsolni.',
+                ],
+                sources: [
+                  {
+                    source: 'Mérce',
+                    date: '2024. dec. 6.',
+                    headline: 'Mi változik a végrehajtások terén: most akkor igazságos lesz a rendszer?',
+                    url: 'https://merce.hu/2024/12/06/mi-valtozik-a-vegrehajtasok-teren-most-akkor-igazsagos-lesz-a-rendszer/',
+                    lead:
+                      'Tételes végigvezetés arról, mi változik a védett jövedelem szabályaiban, és mi az, ami változatlan marad.',
+                  },
+                  {
+                    source: 'HVG',
+                    date: '2024. dec. 2.',
+                    headline: 'Utcajogász: Nem elég a legszegényebbek megsegítésére a végrehajtási szabályok módosítása',
+                    url: 'https://hvg.hu/itthon/20241202_Utcajogasz-vegrehajtasi-szabalyok-javaslatok',
+                    lead:
+                      'A jogsegélyszolgálat kritikája: miért nem old meg mindent a mentes összeg emelése, és mit kellene mellé tenni.',
+                  },
+                ],
+              },
+              {
+                heading: 'Devizahitelesek — közös javaslat Hadházy Ákossal',
+                paragraphs: [
+                  'Az Európai Unió Bíróságának 2025 tavaszi döntése után, amely tisztességtelennek mondta ki a teljes árfolyamkockázatot a fogyasztóra hárító szerződéses kikötést, Jámbor András és Hadházy Ákos közös törvényjavaslatot nyújtott be. Két lépést kértek: függesszék fel az összes folyamatban lévő devizahiteles eljárást a jogértelmezés tisztázásáig, és szülessen olyan törvény, amely az uniós döntést átülteti a magyar jogba.',
+                  'Ez nem lezárt elszámoltatási ügy, és nem jelenti automatikusan minden adós problémájának megoldását. A jelentősége abban áll, hogy egy uniós bírósági döntésből következő jogi helyzetet a két képviselő azonnal parlamenti napirenddé próbált tenni ahelyett, hogy megvárta volna a kormány lépését.',
+                ],
+                links: [{ text: 'Hadházy Ákos', href: '/rendszervaltas/hadhazy-akos' }],
+                sources: [
+                  {
+                    source: 'Index',
+                    date: '2025. máj. 6.',
+                    headline: 'Jámbor András és Hadházy Ákos közös törvényjavaslatot nyújtott be a devizahitelesekért',
+                    url: 'https://index.hu/belfold/2025/05/06/jambor-andras-jozsefvaros-devizahitelesek/',
+                    lead:
+                      'A javaslat tartalma pontokba szedve: mit kérnek a folyamatban lévő eljárásoktól, és mit a jogalkotótól.',
+                  },
+                  {
+                    source: '444',
+                    date: '2025. máj. 6.',
+                    headline: 'Az összes devizahiteles eljárás felfüggesztését kezdeményezi Jámbor András és Hadházy Ákos',
+                    url: 'https://444.hu/2025/05/06/az-osszes-devizahiteles-eljaras-felfuggeszteset-kezdemenyezi-jambor-andras-es-hadhazy-akos',
+                    lead:
+                      'Az uniós ítélet és a magyar következménye: miért lehetne érintett több tízezer, még futó végrehajtási ügy.',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            title: 'Diószegi utca — állami beruházás, kisajátítás, lakók',
+            when: '2024–2025',
+            body:
+              'A Diószegi Sámuel utcai családok ügye mutatja meg leginkább, mit jelent Jámbor számára a helyi képviselet. A Nemzeti Közszolgálati Egyetem bővítéséhez kapcsolódó állami kisajátítások miatt több száz józsefvárosi család került bizonytalan helyzetbe. A leromlott állapotú épületek bontása és a lakók elhelyezése nem pusztán városfejlesztési kérdés: arról szól, milyen feltételekkel mozdít ki az állam embereket az otthonukból egy beruházás érdekében.',
+            more: [
+              'Jámbor 2024 áprilisától a lakók demonstrációin is megjelent, 2025 júniusában pedig a Miénk az utca címmel meghirdetett tüntetésen azt követelte, hogy az érintettek ne politikai alkuk és egymásra mutogatás közben maradjanak ellátatlanul. Az álláspontja szerint a családoknak élhető, összkomfortos cserelakás vagy olyan kártalanítás jár, amelyből ténylegesen új otthont tudnak teremteni — konkrét határidővel, nem ígérettel.',
+              'Ebben az ügyben különösen fontos, hogy nem általános kormánykritikus jelszóról volt szó. A kérdés végig konkrét maradt: ki biztosítja a lakásokat, mikorra történik meg az elhelyezés, mennyi pénz áll rendelkezésre, és ki vállalja a felelősséget, ha a határidők újra kitolódnak.',
+              'A Dicsőségfalon ez azért érdemel külön pontot, mert a NER működésének egyik tipikus mintáját teszi láthatóvá: egy állami presztízsberuházásnál a döntéshozók könnyen számként vagy akadályként kezelik az érintett embereket. A képviselet akkor válik valódivá, amikor valaki nem engedi, hogy a lakók eltűnjenek a beruházási tervek és a salátatörvények mögött.',
+            ],
+            sources: [
+              {
+                source: 'Telex',
+                date: '2024. ápr. 18.',
+                headline: 'Gyerekkorom óta itt élek, erre tájsebnek nevezik az otthonom, hát kösz! — józsefvárosi lakások állami kisajátítása ellen tüntettek',
+                url: 'https://telex.hu/gazdasag/2024/04/18/nke-onkormanyzat-jozsefvaros-piko-andras-jambor-andras',
+                lead:
+                  'Az első nagy tiltakozás az egyetem előtt: mit mondanak az érintett lakók, és mire hivatkozik az állam a kisajátításnál.',
+              },
+              {
+                source: 'Mérce',
+                date: '2024. ápr. 17.',
+                headline: 'Nekem semmilyen más lehetőségem nincs a lakhatásra, mint ez a bérlemény — a józsefvárosi lakáskisajátítások ellen tüntettek',
+                url: 'https://merce.hu/2024/04/17/nekem-semmilyen-mas-lehetosegem-nincs-a-lakhatasra-mint-ez-a-berlemeny-a-jozsefvarosi-lakaskisajatitasok-ellen-tuntettek-az-nke-elott/',
+                lead:
+                  'Helyszíni riport a bérlők oldaláról: kinek hova kellene mennie, és miért nincs hova.',
+              },
+              {
+                source: 'Népszava',
+                date: '2025. jún. 15.',
+                headline: 'Családjuk lakhatásáért, egy fokkal jobb életért tüntettek Józsefvárosban a Diószegi utcai lakók',
+                url: 'https://nepszava.hu/3283663_nemzeti-kozszolgalati-egyetem-jozsefvaros-bovites-hazbontas-kisajatitas-allam-onkormanyzat-lakok-jambor-andras-piko-andras-ferencz-orsolya',
+                lead:
+                  'A tüntetés, amelyen Jámbor azt követelte, hogy minden lakó kapjon cserelakást az államtól — és amelyen egyetlen döntéshozó sem jelent meg.',
+              },
+            ],
+          },
+          {
+            title: 'Parlamentből indított helyi nyomásgyakorlás',
+            when: '2022–2026',
+            body:
+              'Jámbor parlamenti munkájának egyik erőssége, hogy nem kizárólag országos témákban szólalt fel. Írásbeli kérdésekkel, bizottsági munkával és nyilvános nyomásgyakorlással helyi ügyeket is megpróbált előrevinni — abból a megfontolásból, hogy a mandátum csak egy eszköz a sok közül, és az utcai jelenlét, a jogsegély meg a helyi szervezés nélkül egy ellenzéki képviselő könnyen ugyanabba a zárt politikai világba kerül, amelytől eredetileg változást remélt.',
+            more: [
+              'Két példát maga említett. A rezsicsökkentés átalakításakor a feltöltőkártyás áramfogyasztók szabályozása elromlott; írásbeli kérdések sorozatával mintegy húszezer ember helyzetét próbálta rendezni. Egy másik ügyben a ferencvárosi tanuszodák elmaradt felújítása miatt kérdezte a kormányt és a tankerületet, a nyomásgyakorlás után pedig egyeztetés indult az érintett szereplőkkel.',
+              'Ezek nem klasszikus korrupciós leleplezések, és önmagukban nem bizonyítanak rendszerszintű elszámoltatást. Azt sem lehet állítani, hogy minden esetben kizárólag a képviselő fellépése hozta meg a változást. Mégis fontosak, mert a parlamenti képviselet egy másik funkcióját mutatják meg: a helyi problémák országos nyilvánosságba emelését és a döntéshozók válaszadásra kényszerítését.',
+            ],
+            sources: [
+              {
+                source: 'Telex',
+                date: '2024. nov. 22.',
+                headline: 'Ha Magyar Péter mindenkit kizár, nem lesz elegendő szavazata a rendszerváltáshoz',
+                url: 'https://telex.hu/belfold/2024/11/22/jambor-andras-szikra-mozgalom-jozsefvaros-ferencvaros-orszaggyulesi-kepviselo-interju',
+                lead:
+                  'Hosszú interjú a képviselői munka eszközeiről: mire jó a parlament kétharmados többség mellett, és mit lehet elérni írásbeli kérdésekkel.',
+              },
+            ],
+          },
+          {
+            title: 'A lejáratókampány — és a sajtóper, amit megnyert',
+            when: '2023–2024',
+            body:
+              'A Szikra Mozgalmat és Jámbor Andrást 2023-ban súlyos kormányzati és kormányközeli médiatámadások érték. A kampány egy antifasiszta esemény körüli büntetőeljárás, illetve egy a mozgalomhoz kötöttként bemutatott aktivista köré épült, majd oda jutott, hogy a képviselőt személyesen hozták összefüggésbe pedofil bűncselekményekkel.',
+            more: [
+              'Az ügyben külön kell választani a tényeket és a politikai minősítéseket. Nem lehet azt állítani, hogy a mozgalommal kapcsolatban felmerült minden vita puszta kitaláció volt, és azt sem, hogy egy politikai közösség minden tagjának minden tettéért a képviselő felel. A nyilvánosságban megjelent legsúlyosabb összekapcsolásokat azonban sem a hatósági közlések, sem a bírósági fejlemények nem támasztották alá úgy, ahogyan azt a kormányközeli sajtó sugallta.',
+              'Jámbor nem hátrált ki a nyilvánosságból: a parlamentbe vitte be azt az aktivistát, akit a sajtóban előzetesen megbélyegeztek, és bocsánatkérést követelt a kormánypárti képviselőktől. 2024 októberében a Fővárosi Ítélőtábla jogerősen helyt adott a sajtó-helyreigazítási keresetének azzal a kormányközeli lappal szemben, amely valótlanul állította róla, hogy bűnrészes pedofil bűncselekményekben.',
+              'A Dicsőségfal szempontjából ez nem azért jelentős, mert Jámbornak minden politikai vitában igaza lenne. Hanem azért, mert a NER egyik alapvető működési módja a politikai ellenfelek büntetőjogi és erkölcsi megbélyegzése. Aki egy ilyen kampánnyal szemben jogi, parlamenti és nyilvánosságbeli eszközökkel védi a saját közösségét, az a demokratikus politikai tér védelmében is dolgozik.',
+            ],
+            highlight: {
+              heading: 'A jogerős ítélet önmagában nem volt elég',
+              body:
+                'A per megnyerése után a lap nem tette közzé a helyreigazítást. Jámbornak végrehajtást kellett kezdeményeznie a saját ítélete érvényesítéséhez — és a szöveg csak ezután, 2024 novemberében jelent meg. Az a képviselő kényszerült végrehajtásra, aki a parlamentben éppen a végrehajtási rendszer igazságtalanságairól nyújtott be újra és újra javaslatot.',
+              sources: [
+                {
+                  source: 'Telex',
+                  date: '2024. nov. 10.',
+                  headline: 'Végrehajtást kezdeményezett Jámbor András a helyreigazítás kikényszerítéséért',
+                  url: 'https://telex.hu/belfold/2024/11/10/jambor-andras-szikra-mozgalom-sajtoper-origo-vegrehajtas',
+                },
+                {
+                  source: '444',
+                  date: '2024. nov. 11.',
+                  headline: 'Végül megjelent a helyreigazítás a cikkről, amiben minden alap nélkül azt állították, hogy Jámbor András bűnrészes pedofil bűncselekményben',
+                  url: 'https://444.hu/2024/11/11/az-origo-vegul-helyreigazitotta-a-cikket-amiben-minden-alap-nelkul-azt-allitottak-hogy-jambor-andras-bunreszes-pedofil-buncselekmenyben',
+                },
+              ],
+            },
+            sources: [
+              {
+                source: 'Telex',
+                date: '2024. okt. 13.',
+                headline: 'Jámbor András pert nyert az őt pedofilozó kormányközeli lappal szemben',
+                url: 'https://telex.hu/belfold/2024/10/13/jambor-andras-sajtohelyreigazitas-per-origo',
+                lead:
+                  'Az elsőfokú elutasítás után fél évvel az ítélőtábla jogerősen helyt adott a keresetnek — mit kellett a lapnak helyreigazítania.',
+              },
+              {
+                source: 'Media1',
+                date: '2024. okt. 13.',
+                headline: 'Jogerősen pert nyert Jámbor András',
+                url: 'https://media1.hu/2024/10/13/origo-jambor-andras-fovarosi-itelotabla-birosag-pedofilia-helyreigazitas/',
+                lead:
+                  'A sajtójogi összefoglaló: mi volt a kereset tárgya, mit mondott ki a bíróság, és mibe került a lapnak.',
+              },
+            ],
+          },
+          {
+            title: 'A visszalépés — amikor a mandátum kevesebbet ért, mint a cél',
+            when: '2025. június',
+            body:
+              '2025. június 19-én Jámbor bejelentette, hogy nem indul a 2026-os választáson abban a két kerületben, ahol 2022-ben megválasztották. Az indoklása szerint ha elindul, nagyobb eséllyel szerez egy mandátumot a Fidesznek, mint amekkora az esélye annak, hogy ő szerezzen egyet a kormányváltásért.',
+            more: [
+              'Ez a Dicsőségfalon azért kap külön pontot, mert a NER egyik legmegbízhatóbb szövetségese éppen az ellenzéki oldal széttagoltsága volt. Egy egyéni képviselői mandátum a magyar politikában nem apróság: státusz, nyilvánosság, apparátus és megélhetés. Aki ezt a saját számítása szerint a kormányváltás esélyéért adja fel, az pontosan azt teszi, amit a rendszer a legkevésbé tud kezelni.',
+              'Nem ő volt az első visszalépő: Hajnal Miklós 2025 márciusában adta át a hegyvidéki körzetet Magyar Péternek, májusban Tóth Endre jelentette be, hogy nem indul újra, a Momentum küldöttgyűlése pedig június 7-én döntött úgy, hogy a párt egyáltalán nem indul. Az ő lépése abban különbözik ezektől, hogy nem pártdöntés hajtotta végre rajta: függetlenként, saját magának kellett kimondania, hogy a körzet, amelyet 2022-ben a Fidesztől vett el, nélküle ad jobb esélyt a kormányváltásra. A saját beszámolója szerint a rendszerváltás érdekében lépett vissza a Tisza javára.',
+              'A döntés nem tette utólag helyessé az összes korábbi politikai állítását, és nem zárta le a vitákat a mozgalom szervezeti működéséről sem. De egy olyan évben, amikor sok szereplő a saját pozíciója megtartásával volt elfoglalva, ez a lépés mérhető és visszakereshető — nem szándéknyilatkozat, hanem visszalépés.',
+            ],
+            sources: [
+              {
+                source: 'Népszava',
+                date: '2025. jún. 19.',
+                headline: 'Jámbor András bejelentette, hogy nem indul a 2026-os választáson',
+                url: 'https://nepszava.hu/3284158_jambor-andras-valasztas-2026-nem-indul',
+                lead:
+                  'A bejelentés és a hozzá tartozó számítás: miért gondolta úgy, hogy az indulása a Fidesznek kedvezne Józsefvárosban és Ferencvárosban.',
+              },
+              {
+                source: '444',
+                date: '2025. márc. 26.',
+                headline: 'Hajnal Miklós visszalép Magyar Péter javára a hegyvidéki választókörzetben',
+                url: 'https://444.hu/2025/03/26/hajnal-miklos-visszalep-magyar-peter-javara-a-hegyvideki-valasztokorzetben',
+                lead:
+                  'Az első ilyen lépés 2025-ben, három hónappal Jámboré előtt: egy 2022-ben egyéni mandátumot szerzett képviselő adja át a körzetét.',
+              },
+              {
+                source: 'Telex',
+                date: '2025. jún. 7.',
+                headline: 'Nem indul a Momentum a 2026-os országgyűlési választáson',
+                url: 'https://telex.hu/belfold/2025/06/07/momentum-kuldottgyules-valasztas-2026',
+                lead:
+                  'A pártszintű döntés, amely megelőzte Jámbor bejelentését — a visszalépések 2025-ben végigfutó sorozata.',
+              },
+            ],
+          },
+        ],
+      },
+      extra: [
+        {
+          heading: 'A módszer: szervezés, nyilvánosság, jogsegély, képviselet',
+          paragraphs: [
+            'A munkáját négy, egymásra épülő elem jellemzi. Nyilvánosság: a Mérce révén szociális és lakhatási ügyekből politikai témát csinált. Közösségszervezés: civil csoportokkal, aktivistákkal és helyi közösségekkel mozgósított. Jogvédelem: kilakoltatások, végrehajtások és kiszolgáltatott családok ügyében gyakorlati segítséget keresett. Intézményi képviselet: képviselőként parlamenti kérdésekkel, törvényjavaslatokkal és bizottsági munkával próbált nyomást gyakorolni.',
+            'Ez a módszer nem látványos minden nap. Nincs mindig egyetlen dokumentum, egyetlen feljelentés vagy egyetlen nagy leleplezés, amelyhez az egész teljesítményt hozzá lehetne kötni. A hatása inkább abban mérhető, hogy egy ügyből lesz-e nyilvános vita, a lakók kapnak-e politikai képviseletet, és egy civil követelés eljut-e a jogszabályokig.',
+          ],
+        },
+        {
+          heading: 'Milyen kritikák érték a munkáját?',
+          paragraphs: [
+            'Jámbor megítélése a kormánykritikus oldalon sem egységes. Kritikusai szerint a Szikra Mozgalom politikai és szervezeti működése nem mindig volt átlátható, a mozgalom belső konfliktusai pedig időnként a nyilvánosság előtt is megjelentek. Mások azt róják fel, hogy a radikális baloldali nyelv és az antifasiszta közeghez való kapcsolódás szűkíti a megszólítható választók körét.',
+            'Jámbor politikai szereplő, nem pártatlan bíró: az állításai ugyanúgy forráshoz kötöttek, mint bárki másé, és nem lesznek igazzá attól, hogy ő mondta őket. A Dicsőségfal dokumentált közéleti teljesítményeket gyűjt, nem életműveket minősít.',
+            'A kérdés ezért nem az, hogy minden döntése helyes volt-e. A kérdés az, hogy létrehozott-e olyan nyilvánosságot, közösséget és politikai képviseletet, amely a NER-rel szemben több esélyt adott a kiszolgáltatott embereknek.',
+          ],
+        },
+        {
+          heading: 'Miért van helye a Dicsőségfalon?',
+          paragraphs: [
+            'A helye nem egyetlen nagy leleplezésen múlik. Az eddigi munkája több, egymást erősítő darabból áll: egy független szerkesztőség felépítéséből, lakhatási és végrehajtási ügyek felkarolásából, tömeges tiltakozások megszervezéséből, helyi lakók parlamenti képviseletéből, a politikai lejáratókampányokkal szembeni jogi fellépésből, és végül egy mandátum feladásából.',
+            'A NER elleni küzdelemben nemcsak az számít, ki találja meg a közpénz útját vagy ki dokumentálja egy hatalmi hálózat működését. Az is számít, ki hozza létre azt a nyilvánosságot és közösséget, amelyben az érintettek megszólalhatnak, megszerveződhetnek és követeléseket fogalmazhatnak meg.',
+          ],
+        },
+      ],
+      faq: [
+        {
+          q: 'Jámbor András korrupciós ügyeket tárt fel?',
+          a: 'Nem ez a fő profilja. A Dicsőségfalon nem korrupciófeltáróként, hanem független nyilvánosságépítőként, lakhatási jogvédőként és közösségszervezőként szerepel.',
+        },
+        {
+          q: 'Mi volt a szerepe a Fudan–Diákváros ügyben?',
+          a: '2021-ben a Szikra Mozgalommal tömegtüntetést szervezett a Fudan Egyetem budapesti campusának terve ellen, és a Diákváros ügyét a lakhatási válsággal kötötte össze. Nem állítható, hogy egyedül ő érte el a 2024 novemberében bejelentett kormányzati irányváltást, de a téma napirenden tartásában fontos szerepe volt.',
+        },
+        {
+          q: 'Mit tett a végrehajtási rendszer megváltoztatásáért?',
+          a: 'Közérdekű adatigényléssel tette nyilvánossá, hogy 670 ezer ember ellen folyik végrehajtás, és a saját beszámolója szerint tizenháromszor nyújtott be javaslatot a végrehajtás alól mentes jövedelem emelésére. A szabály végül 2025. július 1-jétől változott: a mentes összeg a minimálbér 60 százaléka lett.',
+        },
+        {
+          q: 'Miért fontos a Diószegi utcai ügy?',
+          a: 'Mert megmutatja, hogyan kerülhetnek családok bizonytalan helyzetbe egy állami beruházás miatt. A Nemzeti Közszolgálati Egyetem bővítése miatti kisajátítások több száz józsefvárosi háztartást érintettek; Jámbor határidőhöz kötött elhelyezést és megfelelő kártalanítást követelt.',
+        },
+        {
+          q: 'Jámbor András újságíró vagy politikus?',
+          a: 'Mindkettő volt, de a szerepek időben elkülönülnek. A Mérce alapítója és 2019-ig főszerkesztője volt, 2022 és 2026 között pedig Józsefváros és Ferencváros független országgyűlési képviselőjeként dolgozott.',
+        },
+        {
+          q: 'Miért nem indult a 2026-os választáson?',
+          a: '2025 júniusában jelentette be a visszalépését: a számítása szerint az indulása nagyobb eséllyel juttatott volna mandátumot a Fidesznek, mint saját magának, ezért a kormányváltás érdekében nem indult a két kerületében.',
+        },
+      ],
+      sources: [
+        { source: 'jamborandras.hu', headline: 'Ki vagyok én?', url: 'https://www.jamborandras.hu/rolam' },
+        { source: 'jamborandras.hu', headline: 'A munkámról', url: 'https://www.jamborandras.hu/a-munkamrol/' },
       ],
     },
   },

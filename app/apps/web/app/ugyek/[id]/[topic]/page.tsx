@@ -6,6 +6,7 @@ import { UGYEK } from '../../../_home/ugyek-config';
 import { visibleSubpages, getSubpage, getSubpagesForUgy, type InlineLink, type SubpageBlock, type TableCell, type UgySubpage } from '../../../_home/ugyek-subpages';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../../_home/cross-promo';
 import { loadCaseDetentions, isStillDetained, type CaseDetentionRow } from '@/lib/case-detentions';
+import { withAutoLinks } from '../../../_home/auto-link-text';
 
 // SEO-szempontból a lényeg, hogy a Googlebot azonnal kiszolgált HTML-t
 // kapjon, ezért ISR-rel dolgozunk. 10 perc: a letartóztatás-táblázat élő
@@ -68,37 +69,6 @@ function tocItems(sub: UgySubpage): { id: string; label: string }[] {
   return items;
 }
 
-/**
- * A bekezdésben megadott szövegrészletekből linket csinál. Szándékosan
- * egyszerű: szó szerinti darabolás, nem regex/HTML — ha egy `links[].text`
- * nem szerepel a bekezdésben, az csak annyit jelent, hogy nem lesz belőle
- * link, a szöveg attól még hibátlanul megjelenik.
- */
-function withLinks(content: string, links?: InlineLink[]): React.ReactNode {
-  if (!links || links.length === 0) return content;
-  let parts: React.ReactNode[] = [content];
-  links.forEach((link, li) => {
-    const next: React.ReactNode[] = [];
-    for (const part of parts) {
-      if (typeof part !== 'string' || !part.includes(link.text)) {
-        next.push(part);
-        continue;
-      }
-      const [before, ...rest] = part.split(link.text);
-      next.push(before);
-      next.push(
-        link.external ? (
-          <a key={`l-${li}`} href={link.href} target="_blank" rel="noopener noreferrer">{link.text}</a>
-        ) : (
-          <Link key={`l-${li}`} href={link.href}>{link.text}</Link>
-        ),
-      );
-      next.push(rest.join(link.text));
-    }
-    parts = next;
-  });
-  return parts.map((p, i) => <React.Fragment key={i}>{p}</React.Fragment>);
-}
 
 /** Táblázatcella: sima szöveg, vagy kattintható forrás — a /lemondasok tábla
  *  mintáját követve „→" nyíllal zárva. */
@@ -193,13 +163,21 @@ function DetentionTable({
   );
 }
 
-function Block({ block, detentions }: { block: SubpageBlock; detentions: CaseDetentionRow[] }) {
+function Block({
+  block,
+  detentions,
+  linkedPersons,
+}: {
+  block: SubpageBlock;
+  detentions: CaseDetentionRow[];
+  linkedPersons?: Set<string>;
+}) {
   switch (block.type) {
     case 'text':
       return (
         <div className="ugy-block-text" id={block.id}>
           {block.heading && <h2 className="ugy-block-heading">{block.heading}</h2>}
-          <p>{withLinks(block.content, block.links)}</p>
+          <p>{withAutoLinks(block.content, block.links, linkedPersons)}</p>
         </div>
       );
     case 'callout':
@@ -356,6 +334,9 @@ export default async function UgySubPage({ params }: { params: Promise<{ id: str
   // aloldalak egymást is erősítik, nem csak a szülő oldalról érhetők el.
   const siblings = getSubpagesForUgy(sub.parentId).filter((s) => s.id !== sub.id);
 
+  // Egy Set az EGÉSZ oldalra — l. auto-link-text.tsx.
+  const linkedPersons = new Set<string>();
+
   // Hányadik blokk UTÁN jöjjön a promó. A megadott blokk után közvetlenül
   // következő videó/cikk-kártya blokkokat átugorjuk: ezek a megelőző
   // szakaszhoz tartoznak, és a user kifejezetten kérte, hogy a keretes ne
@@ -471,7 +452,7 @@ export default async function UgySubPage({ params }: { params: Promise<{ id: str
           <div className="ugy-description-body">
             {sub.blocks.map((b, i) => (
               <React.Fragment key={i}>
-                <Block block={b} detentions={detentions} />
+                <Block block={b} detentions={detentions} linkedPersons={linkedPersons} />
                 {i === crossPromoIndex && siblings.map((sp) => (
                   <Link
                     key={sp.id}

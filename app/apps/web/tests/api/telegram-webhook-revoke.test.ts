@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('server-only', () => ({}));
 
@@ -83,6 +83,16 @@ async function press(data: string): Promise<Response> {
     }),
   );
 }
+
+// A webhook-route a repo legnagyobb modulja (~1700 sor, nagy import-gráffal).
+// Ha a betöltés árát az ELSŐ `it()` fizeti, párhuzamos futásnál kifut az
+// alapértelmezett 5 másodperces teszt-időkeretből — pontosan ez okozta a
+// 2026-09-22-ig visszatérő, futásonként más fájlt érintő timeout-hibákat.
+// Itt melegítjük be, saját, bőséges időkerettel; minden további `it()` már a
+// modul-gyorsítótárból kapja meg, tehát a futásidő érdemben nem változik.
+beforeAll(async () => {
+  await import('../../app/api/telegram/webhook/route');
+}, 60_000);
 
 beforeEach(() => {
   deleted.length = 0;

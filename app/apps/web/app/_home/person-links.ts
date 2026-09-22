@@ -1,4 +1,5 @@
 import { PERSON_ROLLUPS } from './person-rollup-config';
+import { liveFeltarok } from './rendszervaltas-config';
 
 /**
  * AUTOMATIKUS BELSŐ NÉVLINKELÉS.
@@ -33,7 +34,20 @@ import { PERSON_ROLLUPS } from './person-rollup-config';
  *     linket sem gyárt.
  */
 
-export type PersonLink = { name: string; href: string; pattern: RegExp };
+export type PersonLink = {
+  name: string;
+  href: string;
+  pattern: RegExp;
+  /**
+   * Szövegrészek, amelyek után a találat NEM linkelhető. Egyetlen oka van, és
+   * az nem elméleti: a „Juhász Péter" (a Dicsőségfalon szereplő videós) teljes
+   * egészében benne van a „Juhász Péter Pál" névben (a Szőlő utcai ügy volt
+   * igazgatója). A toldalék-lookahead ezt nem fogja meg, mert a kettő közt
+   * szóköz áll — szóköz pedig nem szókarakter. Enélkül minden Szőlő utcai
+   * bekezdésben egy ártatlan újságíró nevére mutatna a link.
+   */
+  notFollowedBy?: string[];
+};
 
 /** Ékezetes betűk is szókaraktereknek számítanak a toldalék-illesztésnél. */
 const WORD_CHAR = 'A-Za-zÁÉÍÓÖŐÚÜŰáéíóöőúüű0-9';
@@ -42,19 +56,47 @@ function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function namePattern(name: string): RegExp {
+  return new RegExp(
+    `(?<![${WORD_CHAR}])(${escapeRegExp(name)}[${WORD_CHAR}]{0,6})(?![${WORD_CHAR}])`,
+    'g',
+  );
+}
+
+/** NER-szereplők → a saját „összes ügye" rollup oldaluk. */
+const ROLLUP_LINKS: PersonLink[] = PERSON_ROLLUPS.map((p) => ({
+  name: p.personName,
+  href: `/adatbazis/szemely/${p.slug}`,
+  pattern: namePattern(p.personName),
+}));
+
+/**
+ * FELTÁRÓK → a Dicsőségfal saját profiloldaluk (/rendszervaltas/<id>).
+ *
+ * User, 2026-09-22: „minden név szerinti konkrét egyezéses említésnél menjen a
+ * hivatkozás, hogy a SEO-t segítsük" — tehát ha egy ügyoldal szövegében az
+ * szerepel, hogy egy ügyet Hadházy Ákos vagy Juhász Péter tárt fel, arra
+ * mutasson link.
+ *
+ * Csak az ÉLŐ profilok kerülnek bele: egy `live: false` feltáró oldala
+ * `notFound()`-ot ad, tehát a link 404 lenne. Amint valakinek elkészül a
+ * végoldala, ez a lista magától bővül — nincs külön karbantartandó névsor.
+ */
+const FELTARO_LINKS: PersonLink[] = liveFeltarok().map((f) => ({
+  name: f.name,
+  href: `/rendszervaltas/${f.id}`,
+  pattern: namePattern(f.name),
+  notFollowedBy: f.id === 'juhasz-peter' ? [' Pál'] : undefined,
+}));
+
 /**
  * A hosszabb nevek elöl: ha egy szöveg egyszerre tartalmazza a „Szíjj László"
  * és a „Szíjj" alakot, a hosszabbra kell illeszteni előbb. (A rollupban ma
  * csak teljes nevek vannak, de a sorrend garancia, nem feltételezés.)
  */
-export const PERSON_LINKS: PersonLink[] = PERSON_ROLLUPS.map((p) => ({
-  name: p.personName,
-  href: `/adatbazis/szemely/${p.slug}`,
-  pattern: new RegExp(
-    `(?<![${WORD_CHAR}])(${escapeRegExp(p.personName)}[${WORD_CHAR}]{0,6})(?![${WORD_CHAR}])`,
-  ),
-}))
-  .sort((a, b) => b.name.length - a.name.length);
+export const PERSON_LINKS: PersonLink[] = [...ROLLUP_LINKS, ...FELTARO_LINKS].sort(
+  (a, b) => b.name.length - a.name.length,
+);
 
 export type PersonMatch = {
   before: string;
@@ -65,6 +107,51 @@ export type PersonMatch = {
 };
 
 /**
+ * A minta első olyan találata, amit nem tilt ki a `notFollowedBy`. Azért kell
+ * végigjárni a találatokat, mert egy bekezdésben szerepelhet előbb a tiltott
+ * („Juhász Péter Pál"), utána a valódi („Juhász Péter") alak — az elsőnél
+ * megállva a másodikat sosem találnánk meg.
+ *
+ * A `pattern` globális, ezért a `lastIndex`-et minden híváskor nullázni kell:
+ * enélkül a következő bekezdés keresése ott folytatódna, ahol az előző
+ * abbamaradt, és a szöveg eleji neveket átugraná.
+ */
+function firstAllowedMatch(link: PersonLink, text: string): RegExpExecArray | null {
+  link.pattern.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = link.pattern.exec(text)) !== null) {
+    const after = text.slice(m.index + m[1]!.length);
+    if (!link.notFollowedBy?.some((deny) => after.startsWith(deny))) return m;
+    // Végtelen ciklus elleni védelem nulla hosszú illeszkedésnél.
+    if (m.index === link.pattern.lastIndex) link.pattern.lastIndex += 1;
+  }
+  return null;
+}
+
+/**
+ * Mely nevek fordulnak elő a megadott szövegekben — linkelés nélkül, csak
+ * felderítés.
+ *
+ * Azért van rá szükség, mert egy oldalon egy név csak EGYSZER lehet link, és
+ * nem mindegy, hol. Egy ügyoldalon a videó forrás-címkéje („HADHÁZY ÁKOS")
+ * hamarabb áll a DOM-ban, mint az ismertető szövege („Hadházy Ákos
+ * feljelentése nyomán…") — pedig SEO-ból a mondatba ágyazott név ér többet.
+ * A hívó ezzel előre kiszedi a szövegekben szereplő neveket, és a címkéknél
+ * ezeket kihagyja: így a link mindig a prózában köt ki.
+ */
+export function namesInTexts(texts: (string | null | undefined)[]): Set<string> {
+  const found = new Set<string>();
+  for (const text of texts) {
+    if (!text) continue;
+    for (const link of PERSON_LINKS) {
+      if (found.has(link.name)) continue;
+      if (firstAllowedMatch(link, text)) found.add(link.name);
+    }
+  }
+  return found;
+}
+
+/**
  * Megkeresi a szöveg ELSŐ olyan személynevét, amelyik még nem volt linkelve
  * ezen az oldalon. Ha nincs ilyen, `null`.
  *
@@ -72,11 +159,17 @@ export type PersonMatch = {
  * újrahívja, így egy bekezdésben több különböző név is linkelődhet, de
  * ugyanaz a név nem kétszer.
  */
-export function findPersonLink(text: string, alreadyLinked: Set<string>): PersonMatch | null {
+export function findPersonLink(
+  text: string,
+  alreadyLinked: Set<string>,
+  /** A RENDERELT oldal saját útvonala — önmagára egyetlen lap sem linkel. */
+  skipHref?: string,
+): PersonMatch | null {
   let best: (PersonMatch & { index: number }) | null = null;
   for (const link of PERSON_LINKS) {
     if (alreadyLinked.has(link.name)) continue;
-    const m = link.pattern.exec(text);
+    if (skipHref && link.href === skipHref) continue;
+    const m = firstAllowedMatch(link, text);
     if (!m || m.index === undefined) continue;
     // A szövegben előrébb álló név nyer, hogy a bekezdés olvasási sorrendjét
     // kövessük, ne a névlista sorrendjét.
