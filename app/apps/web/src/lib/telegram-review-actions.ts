@@ -788,14 +788,15 @@ ${article.excerpt}`;
       sourceNames: article.sourceName ? [article.sourceName] : [],
       sourceHeadlines: article.headline ? [article.headline.slice(0, 500)] : [],
       sourceDates: [todayIso],
-      reviewStatus: reviewStatus === 'approved' ? 'approved' : 'pending',
+      // 2026-09-21 user kérés: ÚJ feljelentés sose kerüljön ki az oldalra
+      // jóváhagyás nélkül — ez a MÁSODIK beszúró útvonal (kézi tipp a
+      // Telegram-boton át), l. detect-criminal-complaints.ts azonos kapuja.
+      reviewStatus: 'pending',
     }).returning({ id: schema.criminalComplaints.id });
 
-    if (reviewStatus === 'pending') {
+    {
       pendingIds.push(row!.id);
       await notifyReviewNeeded({ type: 'pending', detectorType: 'criminal_complaint', name: complaint.targetName, confidence: complaint.confidence, articleUrl: article.sourceUrl ?? '', articleId: article.id, recordId: row!.id });
-    } else {
-      insertedIds.push(row!.id);
     }
   }
 

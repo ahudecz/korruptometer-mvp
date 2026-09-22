@@ -26,7 +26,6 @@ import { getDb, schema } from '@/lib/db';
 import { notifyReviewNeeded } from '@/lib/notify';
 import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
 import { createBypassGuardedFunction, runArticleDetectionBatch, type ArticleProcessResult } from '../lib/detector-runner';
-import { recordSubscriberAlert } from '@/lib/notify-subscribers';
 
 const DETECTOR_TYPE = 'criminal_complaint' as const;
 
@@ -207,6 +206,17 @@ ${article.excerpt}`;
       reviewStatus = 'pending';
     }
 
+    // 2026-09-21 user kérés: ÚJ feljelentés sose kerüljön ki az oldalra a
+    // jóváhagyása nélkül. A szabály 2026-09-07-én már meg volt írva
+    // (9c27aa7), de az a commit az origin/011-nvvh-case-poll ágon maradt, és
+    // sosem került main-re — élesben ezért továbbra is auto-publikált minden
+    // AUTO_PUBLISH_THRESHOLD fölötti sor. Itt, a beszúrásnál kényszerítjük,
+    // hogy egyetlen ág se tudja megkerülni.
+    //
+    // A MEGLÉVŐ sorok státuszváltása (fent) szándékosan nincs gate-elve: ott
+    // a Telegram „Elutasítom" sor-törlő lenne, tehát adatvesztés-kockázat.
+    const insertReviewStatus = 'pending' as const;
+
     const [insertedRow] = await db.insert(schema.criminalComplaints).values({
       targetName: complaint.targetName.slice(0, 200),
       filerName: complaint.filerName.slice(0, 200),
@@ -219,13 +229,13 @@ ${article.excerpt}`;
       sourceNames: article.sourceName ? [article.sourceName] : [],
       sourceHeadlines: [article.headline.slice(0, 500)],
       sourceDates: [todayIso],
-      reviewStatus,
+      reviewStatus: insertReviewStatus,
     }).returning({ id: schema.criminalComplaints.id });
 
     anyHandled = true;
     handledNames.push(complaint.targetName);
 
-    if (reviewStatus === 'pending') {
+    {
       await notifyReviewNeeded({
         type: 'pending',
         detectorType: DETECTOR_TYPE,
@@ -235,17 +245,10 @@ ${article.excerpt}`;
         articleId: article.id,
         recordId: insertedRow!.id,
       });
-    } else {
-      anyApproved = true;
-      // 012-reader-subscriptions FR-018 — 4. hívási hely. Csak az
-      // auto-publikált feljelentés riaszt.
-      await recordSubscriberAlert({
-        section: 'criminal_complaint',
-        entityId: insertedRow!.id,
-        title: complaint.targetName,
-        detail: [complaint.filerName, complaint.amountLabel].filter(Boolean).join(' — '),
-      });
     }
+    // 012-reader-subscriptions FR-018 — az ÚJ feljelentés innentől mindig
+    // jóváhagyásra vár, tehát nincs auto-publikált sor, amiről itt riasztani
+    // lehetne. Az olvasói értesítés a jóváhagyáskor keletkezik.
   }
 
   if (anyHandled) {
