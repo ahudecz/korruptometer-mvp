@@ -13,6 +13,7 @@ import { DicsosegfalTeaser } from './_home/dicsosegfal-teaser';
 import { MiniClosureCard } from './_home/closure-card';
 import { SubmissionCTA } from './_home/submission-cta';
 import { NewsletterCta } from './_home/newsletter-cta';
+import { NEWSLETTER_PAUSED } from '@/lib/newsletter-paused';
 import { TelegramChannelCard, hasTelegramChannel } from './_home/telegram-channel-card';
 import { SocialFeed } from './_home/social-feed';
 import { FtValue } from './_home/ft-value';
@@ -1576,19 +1577,21 @@ export default async function HomePage() {
 
           <div>
             <TelegramChannelCard />
-            <div className="chan">
-              <div className="chan-head">
-                <span className="chan-title">E-mail összefoglaló</span>
-                <span className="chan-when">Hetente</span>
+            {!NEWSLETTER_PAUSED && (
+              <div className="chan">
+                <div className="chan-head">
+                  <span className="chan-title">E-mail összefoglaló</span>
+                  <span className="chan-when">Hetente</span>
+                </div>
+                <div className="chan-body">
+                  <p>
+                    Egy levél hetente, csak a kipipált témákról. Minden levelet
+                    szerkesztő néz át, mielőtt kimegy.
+                  </p>
+                  <NewsletterCta />
+                </div>
               </div>
-              <div className="chan-body">
-                <p>
-                  Egy levél hetente, csak a kipipált témákról. Minden levelet
-                  szerkesztő néz át, mielőtt kimegy.
-                </p>
-                <NewsletterCta />
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </section>

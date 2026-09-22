@@ -14,12 +14,20 @@ name: Reader subscriptions (flush, digest, health)
 # amire egy ember élőben vár: beírta a címét, és az űrlap azt mondta neki,
 # hogy jön a levél. Tizenöt perc várakozás után feladja, vagy másodszor is
 # feliratkozik. A többi ütemezés gépnek dolgozik, ez emberi türelemnek.
+# 2026-09-22, user: „a hírlevelet állítsd le, zéró feliratkozó van, az most
+# nem kell még. majd szólok, ha menjen." — mind a négy ütemezés KIKAPCSOLVA.
+# Nulla feliratkozó mellett ez 5 percenként hívott egy Vercel-végpontot a
+# semmiért. A workflow_dispatch MARAD, tehát kézzel bármikor futtatható.
+#
+# VISSZAKAPCSOLÁS: vedd ki a kommentet a schedule-blokkról, állítsd a
+# NEWSLETTER_PAUSED-ot false-ra (apps/web/src/lib/newsletter-paused.ts), és
+# tedd vissza a RESEND_API_KEY-t a Vercel env-be. Mindhárom kell.
 on:
-  schedule:
-    - cron: '*/5 * * * *'         # megerősítő levelek — /api/cron/confirm-send
-    - cron: '*/15 * * * *'        # FLUSH_CRON — /api/cron/flush-alerts
-    - cron: '5 7 * * 1'           # heti összefoglaló — /api/cron/digest
-    - cron: '20 6 * * *'          # őrkutya — /api/cron/subscription-health
+  # schedule:
+  #   - cron: '*/5 * * * *'         # megerősítő levelek — /api/cron/confirm-send
+  #   - cron: '*/15 * * * *'        # FLUSH_CRON — /api/cron/flush-alerts
+  #   - cron: '5 7 * * 1'           # heti összefoglaló — /api/cron/digest
+  #   - cron: '20 6 * * *'          # őrkutya — /api/cron/subscription-health
   workflow_dispatch:
     inputs:
       target:

@@ -5,6 +5,7 @@ import { listQuizzes } from '@/lib/quiz-queries';
 import { QuizSidebar } from './_components/quiz-sidebar';
 import { PollBottomPromo } from '../szavazas/_components/poll-bottom-promo';
 import { NewsletterCta } from '../_home/newsletter-cta';
+import { NEWSLETTER_PAUSED } from '@/lib/newsletter-paused';
 import { TelegramChannelCard, hasTelegramChannel } from '../_home/telegram-channel-card';
 
 export const metadata = {
@@ -70,19 +71,21 @@ export default async function KvizLayout({ children }: { children: ReactNode }) 
 
           <div>
             <TelegramChannelCard />
-            <div className="chan">
-              <div className="chan-head">
-                <span className="chan-title">E-mail összefoglaló</span>
-                <span className="chan-when">Hetente</span>
+            {!NEWSLETTER_PAUSED && (
+              <div className="chan">
+                <div className="chan-head">
+                  <span className="chan-title">E-mail összefoglaló</span>
+                  <span className="chan-when">Hetente</span>
+                </div>
+                <div className="chan-body">
+                  <p>
+                    Egy levél hetente, csak a kipipált témákról. Minden levelet
+                    szerkesztő néz át, mielőtt kimegy.
+                  </p>
+                  <NewsletterCta />
+                </div>
               </div>
-              <div className="chan-body">
-                <p>
-                  Egy levél hetente, csak a kipipált témákról. Minden levelet
-                  szerkesztő néz át, mielőtt kimegy.
-                </p>
-                <NewsletterCta />
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </section>

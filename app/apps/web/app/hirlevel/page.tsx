@@ -1,4 +1,5 @@
 import { NewsletterCta } from '@app/_home/newsletter-cta';
+import { NEWSLETTER_PAUSED } from '@/lib/newsletter-paused';
 import { TelegramChannelCard, hasTelegramChannel } from '@app/_home/telegram-channel-card';
 
 export const metadata = {
@@ -35,16 +36,25 @@ export default function HirlevelPage() {
         <div className="chan">
           <div className="chan-head">
             <span className="chan-title">E-mail összefoglaló</span>
-            <span className="chan-when">Hetente</span>
+            <span className="chan-when">{NEWSLETTER_PAUSED ? 'Szünetel' : 'Hetente'}</span>
           </div>
           <div className="chan-body">
-            <p>
-              Egy levél hetente, csak a kipipált témákról. Minden levelet
-              szerkesztő néz át, mielőtt kimegy. A cím megerősítéséig semmit
-              nem küldünk, és bármelyik levélből egy kattintással
-              leiratkozhatsz.
-            </p>
-            <NewsletterCta />
+            {NEWSLETTER_PAUSED ? (
+              <p>
+                Az e-mailes összefoglaló egyelőre szünetel — még dolgozunk
+                rajta. Amíg nem indul el, feliratkozást nem gyűjtünk.
+              </p>
+            ) : (
+              <>
+                <p>
+                  Egy levél hetente, csak a kipipált témákról. Minden levelet
+                  szerkesztő néz át, mielőtt kimegy. A cím megerősítéséig semmit
+                  nem küldünk, és bármelyik levélből egy kattintással
+                  leiratkozhatsz.
+                </p>
+                <NewsletterCta />
+              </>
+            )}
           </div>
         </div>
 
