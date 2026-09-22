@@ -85,8 +85,17 @@ export async function runKormanyHuSyncCore({
   const addedLines: string[] = [];
   const updatedLines: string[] = [];
 
+  // A hivatalos lista a MINISZTÉRIUMOK saját feljelentéseit tartalmazza, ezért
+  // csak kormányzati bejelentőjű sorral szabad párosítani. Eddig a matcher az
+  // ÖSSZES sorunk között keresett, így egy harmadik fél (cég, magánszemély,
+  // Hadházy, TI) sorát is „elvihette" egy hivatalos tétel, és ráírhatta annak
+  // összegét/státuszát. 2026-09-22: a „Rendőrségi okosórás nyomkövető-beszerzés"
+  // sorunkon (bejelentő: egy cég) a kormany.hu „Kismotor-megrendelés" tételének
+  // 239,2 millió Ft-ja szerepelt — a cikkben ilyen összeg nincs.
+  const govRows = ourRows.filter((r) => looksGovernmentFiled(r.filerName));
+
   for (const item of official) {
-    const match = findBestMatch(item, ourRows, matchedIds);
+    const match = findBestMatch(item, govRows, matchedIds);
 
     if (match) {
       matchedIds.add(match.id);
