@@ -21,6 +21,7 @@ import {
   whyItMattersFor,
   type ContextCounts,
   complaintHeadline,
+  looksLikeDescriptiveFiler,
   truncateAtWordBoundary,
   fitCompleteSentences,
   IMAGE_DETAIL_MAX_CHARS,
@@ -475,6 +476,9 @@ async function buildComplaintTriggers(db: ReturnType<typeof getDb>, counts: Cont
     // detektor-kapu ma már megfogja az ÚJ sorokat, de a poszt-építő a
     // meglévőkből is dolgozik — inkább ne menjen poszt, mint szemét.
     if (containsPlaceholderText(headline, whatHappened)) continue;
+    // 2026-09-22: ugyanez körülírt bejelentőre („a pórul járt cég
+    // feljelentést tett: …") — azonosíthatatlan feljelentőről nem posztolunk.
+    if (looksLikeDescriptiveFiler(c.filerName)) continue;
     const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
     out.push({
       triggerType: 'criminal_complaint',

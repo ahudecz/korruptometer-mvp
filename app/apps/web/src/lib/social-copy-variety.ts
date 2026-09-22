@@ -120,12 +120,48 @@ export function hookShortName(value: string): string {
   return stripped || value.trim();
 }
 
+// 2026-09-22 user report: „a pórul járt cég feljelentést tett: Rendőrség
+// nyomkövetős okosóra-beszerzés" — KÉT külön hiba egy mondatban.
+//
+// 1. A filerName nem NÉV volt, hanem körülírás („a pórul járt cég"). Ez a
+//    harmadik megjelenése ugyanannak a hibaosztálynak: az LLM egy
+//    név-mezőbe leírást ír (2026-09-07 targetName, 2026-09-08 targetEntity,
+//    most filerName). Feljelentőt megnevezni kell tudni — ha nincs neve,
+//    inkább ne menjen poszt, mint egy azonosíthatatlan „valaki feljelentett
+//    valamit" hír. Ugyanaz a zárt szólistás minta, mint a
+//    CRIME_DESCRIPTION_MARKERS fent.
+// 2. A mondat kisbetűvel kezdődött, mert a hook a nyers mezőértékkel indul.
+//    Ez független a fentitől (a „kormány" és „a jegybank" is legitim,
+//    kisbetűs bejelentő a táblában), ezért a nagybetűsítés MINDIG megtörténik.
+const DESCRIPTIVE_FILER_MARKERS = [
+  'pórul járt', 'az érintett', 'a károsult', 'a panaszos', 'a sértett',
+  'az egyik cég', 'egy cég', 'a cég', 'a vállalkozás', 'a társaság',
+  'ismeretlen bejelentő', 'egy magánszemély', 'a feljelentő',
+];
+
+/** True, ha `value` nem a bejelentő NEVE, hanem körülírás („a pórul járt
+ *  cég"). Ilyen sorból nem épülhet poszt — l. fenti komment. */
+export function looksLikeDescriptiveFiler(value: string): boolean {
+  const normalized = ` ${value.trim().toLowerCase()} `;
+  return DESCRIPTIVE_FILER_MARKERS.some((marker) => normalized.includes(marker));
+}
+
+/** A hook első betűje nagy — a mezőértékek egy része kisbetűs („kormány",
+ *  „a jegybank", „közmédia átmeneti vezetése"), és mondatot sose kezdünk
+ *  kisbetűvel. A többi karakter érintetlen marad (a „veglegestorles.hu"
+ *  típusú neveket nem írjuk át). */
+export function capitalizeFirst(value: string): string {
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return trimmed;
+  return trimmed[0]!.toLocaleUpperCase('hu-HU') + trimmed.slice(1);
+}
+
 export function complaintHeadline(filerName: string, targetEntity: string | null | undefined, targetName: string): string {
   const filer = hookShortName(filerName);
   if (targetEntity && !looksLikeCrimeDescription(targetEntity)) {
-    return `${filer} feljelentést tett ${targetEntity} ellen`;
+    return capitalizeFirst(`${filer} feljelentést tett ${targetEntity} ellen`);
   }
-  return `${filer} feljelentést tett: ${targetName}`;
+  return capitalizeFirst(`${filer} feljelentést tett: ${targetName}`);
 }
 
 // 2026-09-08 user report ("levágod a szöveget mindkettőn a felénél") — a

@@ -3,6 +3,7 @@ import {
   complaintHeadline,
   hookFor,
   looksLikeCrimeDescription,
+  looksLikeDescriptiveFiler,
   pickBySeed,
   resignationHeadline,
   truncateAtWordBoundary,
@@ -116,5 +117,37 @@ describe('truncateAtWordBoundary', () => {
     const long = 'a'.repeat(50) + ' ' + 'b'.repeat(50) + ' ' + 'c'.repeat(50);
     const result = truncateAtWordBoundary(long, 60)!;
     expect(result.length).toBeLessThanOrEqual(61);
+  });
+});
+
+// 2026-09-22 user report: „a pórul járt cég feljelentést tett: Rendőrség
+// nyomkövetős okosóra-beszerzés" — kisbetűs mondatkezdés + körülírt bejelentő.
+describe('complaintHeadline — mondatkezdés és körülírt bejelentő', () => {
+  it('nagybetűvel kezdi a mondatot a kisbetűs mezőértékek esetén is', () => {
+    expect(complaintHeadline('kormány', null, 'M6 koncesszió')).toBe(
+      'Kormány feljelentést tett: M6 koncesszió',
+    );
+    expect(complaintHeadline('a jegybank', null, 'Matolcsy-kör')).toBe(
+      'A jegybank feljelentést tett: Matolcsy-kör',
+    );
+  });
+
+  it('a név belsejét nem írja át', () => {
+    expect(complaintHeadline('veglegestorles.hu üzemeltetője', null, 'X')).toBe(
+      'Veglegestorles.hu üzemeltetője feljelentést tett: X',
+    );
+  });
+
+  it('felismeri a körülírt (névtelen) bejelentőt', () => {
+    expect(looksLikeDescriptiveFiler('a pórul járt cég')).toBe(true);
+    expect(looksLikeDescriptiveFiler('Az érintett vállalkozás')).toBe(true);
+    expect(looksLikeDescriptiveFiler('a panaszos')).toBe(true);
+  });
+
+  it('a valódi bejelentőneveket nem jelöli meg', () => {
+    expect(looksLikeDescriptiveFiler('Transparency International Magyarország')).toBe(false);
+    expect(looksLikeDescriptiveFiler('Hadházy Ákos')).toBe(false);
+    expect(looksLikeDescriptiveFiler('kormány')).toBe(false);
+    expect(looksLikeDescriptiveFiler('Közlekedési és Beruházási Minisztérium')).toBe(false);
   });
 });

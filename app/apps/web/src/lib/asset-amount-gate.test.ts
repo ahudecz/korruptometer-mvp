@@ -1,4 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// A modul importlánca (asset-amount-gate → … → digest-send) 'server-only'-t
+// húz be, amit a vitest nem tud feloldani — enélkül az egész fájl elszáll.
+vi.mock('server-only', () => ({}));
 
 import { AMOUNT_CALLBACK_PREFIX, parseAmountReply } from './asset-amount-gate';
 
