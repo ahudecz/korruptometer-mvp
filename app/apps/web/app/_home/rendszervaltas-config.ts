@@ -2368,8 +2368,10 @@ export const FELTAROK: Feltaro[] = [
             videos: [
               {
                 id: 'qPrRFqWDqz4',
+                label: 'Kontroll · 2025. jún. 10.',
                 title: 'Indul a Polgári Ellenállás — tüntetés a Kossuth téren',
-                summary: 'Felvétel a mozgalom első nagy demonstrációjáról, 2025 júniusában.',
+                summary:
+                  'A Kontroll élő közvetítése a mozgalom első nagy demonstrációjáról a Kossuth térről. 193 ezer megtekintés.',
               },
             ],
           },
@@ -2406,6 +2408,15 @@ export const FELTAROK: Feltaro[] = [
                 lead: 'A szervezés menete: hogyan állt össze a fellépői névsor a választás előtti hetekben.',
               },
             ],
+            videos: [
+              {
+                id: 't6BEQJTqnXY',
+                label: 'Szélsőközép · 2026. ápr. 10.',
+                title: 'Rendszerbontó Nagykoncert — a teljes közvetítés',
+                summary:
+                  'A Hősök terére szervezett estét több mint kétmillióan látták a YouTube-on. A hétórás közvetítés egyben a nap dokumentuma is: fellépőnként egy rendszerkritikus dal.',
+              },
+            ],
           },
         ],
       },
@@ -2416,13 +2427,14 @@ export const FELTAROK: Feltaro[] = [
         items: [
           {
             id: '2xNWw53cNRI',
+            label: 'Puzsér Róbert · 2024. márc. 15.',
             title: 'Puzsér Róbert a kormányváltásról és a kegyelmi ügyről',
             summary:
               'A kegyelmi ügy mint a hatalom működésének tünete, és a kérdés, hogy egy kormányváltás mennyiben változtat a rendszer működésén.',
           },
           {
             id: 'kHXfgjm0j4E',
-            label: 'Klasszis Podcast · 2025. június',
+            label: 'Puzsér Róbert · 2025. jún. 24.',
             title: 'Puzsér Róbert a Polgári Ellenállásról és a civil kontrollról',
             summary:
               'Miért nem pártként jött létre a mozgalom, és mit jelent nála a mindenkori hatalom ellenőrzése — a rendszerváltás a választás napján nem ér véget.',
