@@ -1,0 +1,45 @@
+name: Hourly pipeline (tartalék indító)
+
+# 2026-09-23 — MÉRT PROBLÉMA, nem elméleti: a hourly-pipeline.yml ütemezése
+# óránkénti ('7 * * * *'), a GitHub mégis 3-5 óránként indítja el. 16 nap
+# adata a workflow-futásokból: napi 5-7 futás a várt 24 helyett, és MINDEGYIK
+# sikeres — tehát nem hiba, hanem a GitHub scheduled-workflow fojtása. A
+# gyakorlati következmény: egy friss hír órákig nem került ki az oldalra
+# (2026-09-23, aranykonvoj-feljelentés: a cikk 24 perccel az utolsó futás
+# UTÁN jelent meg, és a következő futásig senki nem ment érte).
+#
+# Ez a workflow a fél órával eltolt MÁSODIK esély ugyanarra az órára. A
+# GitHub a fojtást workflow-nként, a saját sorában végzi, így két külön
+# workflow két független dobás — együtt érdemben sűrűbb a tényleges futás.
+#
+# Miért nem okoz dupla LLM-költést, ha mindkettő lefut:
+# az /api/cron/pipeline route-ban 20 perces szünet-kapu van (l.
+# MIN_INTERVAL_MINUTES ott) — ha az előző futás friss, a hívás munkavégzés
+# nélkül tér vissza `{"skipped":"ran_recently"}`-vel. A kapu nélkül két
+# egyszerre érkező indító ugyanazt az új cikket kétszer fizettette volna ki
+# az AI-nál.
+#
+# Ugyanaz a CRON_SECRET repo secret kell hozzá, mint a párjához.
+
+on:
+  schedule:
+    - cron: '37 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  trigger-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call /api/cron/pipeline
+        run: |
+          set -e
+          http_code=$(curl -sS -m 280 -o /tmp/response.json -w '%{http_code}' \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://www.kegyencjarat.hu/api/cron/pipeline)
+          echo "HTTP status: $http_code"
+          cat /tmp/response.json
+          echo ""
+          if [ "$http_code" != "200" ]; then
+            echo "::error::pipeline endpoint returned HTTP $http_code"
+            exit 1
+          fi
