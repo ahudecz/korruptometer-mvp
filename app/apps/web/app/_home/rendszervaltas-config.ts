@@ -2232,6 +2232,297 @@ export const FELTAROK: Feltaro[] = [
         'A közbeszédre gyakorolt hatása elsősorban abban mérhető, hogy a hatalomkritika nem maradt egyetlen politikai tábor tulajdona.',
       ],
     },
+    related: [
+      { label: 'Dicsőségfal', href: '/rendszervaltas' },
+      { label: 'Kiemelt ügyek', href: '/ugyek' },
+    ],
+    live: true,
+    detail: {
+      seoTitle: 'Puzsér Róbert: civil kontroll, Sétáló Budapest, Polgári Ellenállás',
+      seoDescription:
+        'Miért van Puzsér Róbert a Dicsőségfalon? A Sétáló Budapest átláthatósági vállalásai, a kormányváltás–rendszerváltás megkülönböztetése, a Polgári Ellenállás és a Rendszerbontó Nagykoncert — forrásokkal.',
+      lead:
+        'Puzsér Róbert nem oknyomozó újságíró, nem korrupciós ügyek dokumentátora, és nem olyan politikus, aki egyetlen intézmény ellen vitt volna éveken át tartó kampányt. A Dicsőségfalon másért van: évek óta következetesen azt a kérdést állítja a középpontba, hogy egy kormányváltás önmagában rendszerváltás-e, és mi történik akkor, ha a politikai hatalom ellenőrzésének intézményi és társadalmi garanciái nem változnak meg.',
+      cases: {
+        heading: 'A legfontosabb állomások',
+        intro:
+          'Ez más típusú teljesítmény, mint Panyi Szabolcs oknyomozó újságírása vagy Hadházy Ákos közpénzellenőrző munkája. Puzsér Róbert esetében nem egyetlen feltárt ügyet kell keresni: a hozzájárulása az, hogy a politikai hatalommal szembeni társadalmi kontroll szükségességét önálló témává tette — és ehhez konkrét civil-politikai kezdeményezéseket is épített.',
+        items: [
+          {
+            title: 'Sétáló Budapest — civil politika és átláthatóság',
+            when: '2018–2019',
+            body:
+              'Puzsér Róbert 2018-ban dolgozta ki a Sétáló Budapest koncepcióját a 2019-es önkormányzati választásra, amelyen főpolgármester-jelöltként indult. A kezdeményezés nem pusztán városfejlesztési programként jelent meg: saját meghatározása szerint kísérlet volt arra, hogy pártpolitikától független, civil alapokra helyezett politikai és kulturális precedenst teremtsen.',
+            more: [
+              'A mintegy 150 oldalas, tizenegy fejezetből álló programot több tucat szakember — építészek, urbanisták, tájépítészek, szociálpolitikai és közlekedési szakértők — közreműködésével állították össze. A területek között szerepelt a várostervezés, a közlekedés, a szociálpolitika, az oktatás, a hulladékgazdálkodás és a turizmus is.',
+              'A Dicsőségfal szempontjából a szervezeti fejezet a lényeg: a program a teljes transzparenciát, a közbeszerzések alapelveinek tisztázását és a döntés-előkészítés nyitottá tételét — kifejezetten a civil szervezetek felé — fogalmazta meg az önkormányzati működés elveként. Itt tehát már nem egy publicista politikai kommentárjáról volt szó, hanem egy kezdeményezésről, amelynek deklarált alapelve az átláthatóság és a számonkérhetőség volt.',
+              'A kampányhoz az Állampolgárok a centrumban Egyesület is kapcsolódott, közösségi finanszírozással és civil aktivisták részvételével.',
+            ],
+            sources: [
+              {
+                source: 'Sétáló Budapest',
+                headline: 'Sétáló Budapest — a 2019-es program teljes szövege',
+                url: 'https://github.com/setalo-budapest/program',
+                lead:
+                  'A program tizenegy fejezete nyilvánosan elérhető. A szervezeti fejezet mondja ki a teljes transzparenciát, a közbeszerzések alapelveinek tisztázását és a döntés-előkészítés nyitottá tételét.',
+              },
+              {
+                source: 'Index',
+                date: '2019. jún. 13.',
+                headline: 'Visszaállítaná Budapest történelmi zászlaját Puzsér Róbert',
+                url: 'https://index.hu/belfold/2019/06/13/puzser_setalo_budapest_program/',
+                lead:
+                  'Korabeli beszámoló a program bemutatásáról: mit tartalmazott, és milyen szakmai háttérrel készült.',
+              },
+            ],
+          },
+          {
+            title: 'Kormányváltás vagy rendszerváltás?',
+            when: '2020-tól',
+            body:
+              'Puzsér Róbert közéleti gondolkodásának visszatérő témája a kormányváltás és a rendszerváltás megkülönböztetése. A Magyar Hangban 2020-ban megjelent publicisztikájában azt fejtette ki, hogy a politikai vezetés lecserélése önmagában nem feltétlenül alakítja át azokat az intézményi és társadalmi viszonyokat, amelyek a hatalom működését meghatározzák.',
+            more: [
+              'Az érvelésben megjelent az arányosabb választási rendszer, az erősebb civil szervezetek, a független és minőségi média, valamint az igazságszolgáltatás és az ügyészség függetlenségének kérdése is.',
+              'Ez lett a rendszerkritikájának központi gondolata: nem elég azt megkérdezni, hogy ki kormányoz — azt is meg kell kérdezni, milyen intézmények és társadalmi erők képesek ellenőrizni a kormányzati hatalmat. A gondolat a későbbi megszólalásaiban is visszatért; a 2026-os választás előtt például úgy fogalmazott, hogy a kormányváltásra sokkal nagyobb esélyt lát, mint a tényleges rendszerváltásra.',
+            ],
+            sources: [
+              {
+                source: 'Magyar Hang',
+                date: '2020. febr. 21.',
+                headline: 'Kormányváltás vagy rendszerváltás?',
+                url: 'https://hang.hu/publicisztika/kormanyvaltas-vagy-rendszervaltas-113446',
+                lead:
+                  'A publicisztika, amelyben a különbségtételt kifejti: arányos választási rendszer, erős civil szervezetek, független média és független igazságszolgáltatás.',
+              },
+              {
+                source: 'Népszava',
+                headline:
+                  'Puzsér Róbert: Jelenleg 60 százalékot tennék rá, hogy kormányváltás lesz, a rendszerváltásra 40 százalékot',
+                url: 'https://nepszava.hu/3298072_puzser-robert-valasztas-2026-politika-magyarorszag-tisza-part-fidesz-ellenzek-kormanyvaltas-rendszervaltas-interju',
+                lead:
+                  'Ugyanaz a gondolat a választás előtt, számokra lefordítva — a kormányváltás és a rendszerváltás nála nem ugyanannak a folyamatnak a két neve.',
+              },
+            ],
+          },
+          {
+            title: 'A 2024-es kegyelmi ügy — a hatalom ellenőrzésének kérdése',
+            when: '2024',
+            body:
+              'A kegyelmi döntés nyilvánosságra kerülése után Puzsér Róbert a Spirit FM műsorában arról beszélt, hogy az ügy szerinte súlyos válságot jelentett a fennálló politikai rendszer számára. Nem ő tárta fel a kegyelmi döntést, és nem is ő volt az oknyomozó feltárás szereplője.',
+            more: [
+              'A jelentősége másban állt: a nyilvánosságban a konkrét ügyet a hatalom működésének és társadalmi ellenőrzésének nagyobb kérdésével kapcsolta össze. Az értelmezésében az ügy azt is felvetette, milyen garanciák akadályozzák meg, hogy a politikai hatalom belső döntési mechanizmusai ellenőrizetlenül működjenek.',
+              'Fontos elkülöníteni a szerepeket: ez Puzsér Róbert értelmezése az ügyről, nem ténymegállapítás a kegyelmi döntés körülményeiről.',
+            ],
+            sources: [
+              {
+                source: 'Spirit FM',
+                headline: 'Puzsér a kegyelmi ügyről: Hogy kell ezt megmagyarázni?',
+                url: 'https://spiritfm.hu/cikk/puzser-a-kegyelmi-ugyrol-hogy-kell-ezt-megmagyarazni',
+                lead:
+                  'A rádióműsor összefoglalója, amelyben a kegyelmi ügyet a rendszer működésének válságaként értelmezi.',
+              },
+              {
+                source: 'Magyar Hang',
+                headline: 'Puzsér Róbert: Nem elég Novákék távozása',
+                url: 'https://hang.hu/magyar-hang-plusz/nem-eleg-novakek-tavozasa-162077',
+                lead:
+                  'Ugyanaz az alapállás írásban: a személyi következmények önmagukban nem érintik a döntési mechanizmusokat.',
+              },
+            ],
+          },
+          {
+            title: 'Polgári Ellenállás — civil mozgalom a hatalom ellenőrzésére',
+            when: '2025',
+            body:
+              'Puzsér Róbert 2025-ben indította el a Polgári Ellenállást. A kezdeményezés nem pártként jött létre, hanem civil társadalmi mozgalomként: a célja saját megfogalmazása szerint az volt, hogy a társadalom ne csak választóként jelenjen meg a politikában, hanem a hatalom gyakorlását folyamatosan ellenőrző és számon kérő közösségként is.',
+            more: [
+              'A mozgalom első nagy demonstrációját 2025. június 10-én tartották a Kossuth téren, részben az akkori nyilvánosságkorlátozó törvényjavaslat ellen. A Telexnek adott hosszú interjújában Puzsér Róbert úgy írta le a Polgári Ellenállást, mint amely nem alternatívája a Tisza Pártnak, hanem az a feltételrendszer, amely az új hatalmat kontrollálhatja.',
+              'A 2025-ös nyilatkozataiban egyértelműen megkülönböztette a kormányváltást és a rendszerváltást: a Tisza Párt szerepét elsősorban az Orbán-rendszer leváltásának eszközeként értelmezte, miközben a civil mozgalom feladatának a politikai és társadalmi kontroll fenntartását tartotta.',
+              'A modell lényege tehát nem az, hogy a civil társadalom kormányozzon egy új kormány helyett. Éppen ellenkezőleg: az a dolga, hogy a mindenkori kormányt ellenőrizze.',
+            ],
+            sources: [
+              {
+                source: 'Telex',
+                date: '2025. jún. 20.',
+                headline:
+                  'Puzsér Róbert: Az utolsó töltényig támogatni fogjuk a Tisza Pártot, hogy váltsa le az Orbán-rendszert',
+                url: 'https://telex.hu/video/2025/06/20/puzser-robert-polgari-ellenallas-video-interju',
+                lead:
+                  'Vágatlan, órás interjú a mozgalom céljairól: miért nem párt, mi a viszonya a Tisza Párthoz, és mit jelent nála a civil kontroll.',
+              },
+              {
+                source: 'Telex',
+                date: '2025. jún. 10.',
+                headline: 'Puzsér: Már csak egyetlen értelmes követelés van, takarodjanak!',
+                url: 'https://telex.hu/belfold/2025/06/10/polgari-ellenallas-tuntetes-fuggetlen-nyilvanossag-ellehetetlenitesi-torveny',
+                lead: 'Helyszíni beszámoló a mozgalom első nagy demonstrációjáról a Kossuth téren.',
+              },
+              {
+                source: 'Kontroll',
+                date: '2025. jún. 9.',
+                headline: 'Indul a polgári ellenállás — élő adás Puzsér Róberttel',
+                url: 'https://kontroll.hu/cikk/belfold/2025/06/09/indul-a-polgari-ellenallas-elo-adas-puzser-roberttel-1',
+                lead: 'A mozgalom indulása a saját szavaival, a tüntetés előtti napon.',
+              },
+            ],
+            videos: [
+              {
+                id: 'qPrRFqWDqz4',
+                title: 'Indul a Polgári Ellenállás — tüntetés a Kossuth téren',
+                summary: 'Felvétel a mozgalom első nagy demonstrációjáról, 2025 júniusában.',
+              },
+            ],
+          },
+          {
+            title: 'Rendszerbontó Nagykoncert — a Hősök terén',
+            when: '2026. április 10.',
+            body:
+              'A Polgári Ellenállás 2026-ban a Rendszerbontó Nagykoncert megszervezésével hozott létre jelentős nyilvános eseményt. A Hősök terére szervezett, ingyenes rendezvényt a parlamenti választás előtt két nappal tartották, és Puzsér Róbert a szervezésben és a fellépők megkeresésében is részt vett.',
+            more: [
+              'Több mint negyven előadó lépett fel — a szervezők ötven fellépőnél húzták meg a határt —, és minden fellépő egyetlen, rendszerkritikus dalt adott elő. A jelentősége nem egy konkrét korrupciós ügy feltárásában keresendő: a cél a rendszerkritikus társadalmi aktivitás összekapcsolása volt egy szélesebb kulturális közeggel.',
+              'Ez mutatja meg a legpontosabban Puzsér Róbert szerepét a Dicsőségfalon: nem egyetlen intézményben végzett feltáró munkával, hanem nyilvánosságépítéssel, közösségszervezéssel és civil politikai aktivitással járult hozzá a rendszerkritikus közeghez.',
+            ],
+            sources: [
+              {
+                source: '444',
+                date: '2026. ápr. 10.',
+                headline: 'Fiatalok tízezrei gyűltek össze a rendszerbontó nagykoncerten a Hősök terén',
+                url: 'https://444.hu/2026/04/10/nagy-tomeg-elott-kezdodott-a-rendszerbonto-nagykoncert-mar-az-elso-fellepo-utan-megindult-a-mocskosfideszezes',
+                lead: 'Helyszíni tudósítás a koncertről, amelyet a választás előtt két nappal tartottak.',
+              },
+              {
+                source: 'Népszava',
+                date: '2026. ápr. 10.',
+                headline: 'Rendszerbontó Nagykoncert: a hatalom fárasztóbb hét óra zenénél',
+                url: 'https://nepszava.hu/3318312_rendszerbonto-nagykoncert-hosok-tere-polgari-ellenallas-puzser-robert',
+                lead:
+                  'Hét óra zene, ingyenes belépés, fellépőnként egyetlen rendszerkritikus dal — beszámoló az estéről.',
+              },
+              {
+                source: 'Index',
+                date: '2026. márc. 20.',
+                headline: 'Újabb 12 előadó csatlakozott Puzsér Róbert rendszerbontó nagykoncertjéhez',
+                url: 'https://index.hu/belfold/2026/03/20/puzser-robert-rendszerbonto-nagykoncert-hosook-tere-ujabb-fellepok-bejelentes-polgari-ellenallas/',
+                lead: 'A szervezés menete: hogyan állt össze a fellépői névsor a választás előtti hetekben.',
+              },
+            ],
+          },
+        ],
+      },
+      videoBlock: {
+        heading: 'Videók Puzsér Róberttől',
+        intro:
+          'Nem általános interjúkat gyűjtöttünk ide, hanem azt az ívet, amiért ezen a lapon szerepel: a kormányváltás és a rendszerváltás megkülönböztetésétől a civil kontroll megszervezéséig.',
+        items: [
+          {
+            id: '2xNWw53cNRI',
+            title: 'Puzsér Róbert a kormányváltásról és a kegyelmi ügyről',
+            summary:
+              'A kegyelmi ügy mint a hatalom működésének tünete, és a kérdés, hogy egy kormányváltás mennyiben változtat a rendszer működésén.',
+          },
+          {
+            id: 'kHXfgjm0j4E',
+            label: 'Klasszis Podcast · 2025. június',
+            title: 'Puzsér Róbert a Polgári Ellenállásról és a civil kontrollról',
+            summary:
+              'Miért nem pártként jött létre a mozgalom, és mit jelent nála a mindenkori hatalom ellenőrzése — a rendszerváltás a választás napján nem ér véget.',
+          },
+        ],
+      },
+      extra: [
+        {
+          heading: 'Nem egyetlen politikai oldal szócsöve',
+          paragraphs: [
+            'A Dicsőségfal szempontjából fontos, hogy Puzsér Róbert nem kizárólag a kormányoldallal szemben fogalmazott meg kritikát. A Tisza Párt és Magyar Péter kapcsán is rendszeresen bírált, miközben 2025-ben arról beszélt, hogy a Tisza szerepét az Orbán-rendszer leváltásában támogatja.',
+            'Ez nála nem ellentmondás: a saját értelmezése szerint egy politikai erő támogatása egy adott történelmi cél elérésében nem jelenti azt, hogy a civil társadalomnak fel kellene adnia ugyanannak az erőnek az ellenőrzését. A hatalom leváltása és a hatalom ellenőrzése két külön feladat.',
+            'Az elszámoltatásról és a vagyonvisszaszerzésről is ebben a keretben beszél: azt kifogásolja, ha a korábbi kormányzati időszakhoz kapcsolódó ügyekben a jogerős döntésekre hosszú éveket kell várni. A szerepe itt sem a nyomozóhatóságé — azt kérdezi, létrejönnek-e azok az intézményi feltételek, amelyek valóban képesek számon kérni a korábbi hatalom működését.',
+          ],
+          sources: [
+            {
+              source: 'Szeretlek Magyarország',
+              headline: 'Puzsér Róbert nemcsak Orbán Viktort, Gyurcsány Ferencet is bíróság elé állítaná',
+              url: 'https://www.szeretlekmagyarorszag.hu/szempont/puzser-robert-elszamoltatas-orban-gyurcsany-birosag/',
+              lead: 'Az elszámoltatásról szóló álláspontja, amely nem áll meg az egyik politikai oldal határánál.',
+            },
+          ],
+        },
+        {
+          heading: 'Miért van Puzsér Róbert a Dicsőségfalon?',
+          paragraphs: [
+            'Nem egyetlen feltárt korrupciós ügy miatt. Nem a klasszikus oknyomozó újságírói modell képviselője, és nem is politikus a hagyományos értelemben.',
+            'A hozzájárulása más természetű: éveken keresztül következetesen azt a kérdést tette fel, mi történik az országgal akkor, ha a politikai hatalom leváltása nem jár együtt a hatalom működésének megváltoztatásával. A Sétáló Budapest konkrét civil-politikai kísérlet volt az átláthatóság és a számonkérhetőség hangsúlyozására, a Polgári Ellenállás a társadalmi részvételt és a politikai kontrollt helyezte középpontba, a Rendszerbontó Nagykoncert pedig ennek kulturális és közösségi mozgósítási oldalát erősítette.',
+            'A helye tehát a civil kontroll, a rendszerkritikus nyilvánosság és a politikai kultúra kategóriájában értelmezhető. A története nem egyetlen ügy története, hanem annak a gondolatnak a története, hogy egy demokráciában nemcsak azt kell figyelni, ki kerül hatalomra, hanem azt is, hogy a társadalom milyen eszközökkel képes számon kérni azt, aki hatalomra került.',
+          ],
+        },
+      ],
+      faq: [
+        {
+          q: 'Miért van Puzsér Róbert a Dicsőségfalon?',
+          a: 'Mert hosszú éveken keresztül foglalkozott a politikai hatalom társadalmi ellenőrzésének, az átláthatóságnak, a civil részvételnek és a kormányváltás–rendszerváltás különbségének kérdésével. A szerepe nem klasszikus oknyomozóként, hanem rendszerkritikus publicistaként és civil szervezőként értelmezhető.',
+        },
+        {
+          q: 'Puzsér Róbert oknyomozó újságíró?',
+          a: 'A klasszikus értelemben nem. Elsősorban publicista, kritikus és közéleti szereplő; nem konkrét korrupciós ügyek feltárására épülő újságírói életmű miatt szerepel a Dicsőségfalon.',
+        },
+        {
+          q: 'Mi volt a Sétáló Budapest program?',
+          a: 'Puzsér Róbert 2018-ban kidolgozott politikai-civil kezdeményezése a 2019-es budapesti főpolgármester-választásra. A program az átláthatóságot, a számonkérhetőséget és a pártpolitikától független civil részvételt is hangsúlyozta: a szervezeti fejezete teljes transzparenciát, a közbeszerzések alapelveinek tisztázását és nyitott döntés-előkészítést fogalmazott meg.',
+        },
+        {
+          q: 'Mi a Polgári Ellenállás?',
+          a: 'Puzsér Róbert által 2025-ben elindított civil mozgalom. A feladatát a társadalmi részvétel és a politikai hatalommal szembeni civil kontroll erősítésében határozta meg; nem pártként jött létre.',
+        },
+        {
+          q: 'Puzsér Róbert politikus?',
+          a: '2019-ben elindult Budapest főpolgármesteri posztjáért a Sétáló Budapest programmal és az Állampolgárok a centrumban Egyesület támogatásával, de a közéleti szerepe elsősorban publicistaként és civil-politikai szereplőként ismert. A Sétáló Budapest a saját programja szerint kifejezetten pártpolitikától független, civil alapokra épülő kísérletként határozta meg magát.',
+        },
+        {
+          q: 'Mit mondott a kormányváltás és a rendszerváltás különbségéről?',
+          a: 'Rendszeresen amellett érvelt, hogy egy kormány lecserélése önmagában nem feltétlenül jelenti az intézményi és politikai rendszer átalakítását. Szerinte a politikai hatalom ellenőrzéséhez a választásokon túl erős civil társadalomra, független intézményekre és társadalmi részvételre is szükség van.',
+        },
+        {
+          q: 'Mi volt a szerepe a 2024-es kegyelmi ügyben?',
+          a: 'Nem az ügy feltárója volt, hanem publicistaként kommentálta. A Spirit FM műsorában a kegyelmi ügyet a fennálló politikai rendszer szempontjából súlyos válságként értelmezte.',
+        },
+        {
+          q: 'Mi volt a Rendszerbontó Nagykoncert?',
+          a: 'A Polgári Ellenállás által 2026. április 10-én, a budapesti Hősök terén szervezett ingyenes rendezvény, a parlamenti választás előtt két nappal. Több mint negyven előadó lépett fel, egyenként egy rendszerkritikus dallal; Puzsér Róbert a szervezésben és a fellépők megkeresésében is szerepet vállalt.',
+        },
+        {
+          q: 'Puzsér Róbert csak az Orbán-kormányt kritizálja?',
+          a: 'Nem. Más ellenzéki politikai szereplőkkel és a Tisza Párttal kapcsolatban is fogalmazott meg kritikát. A saját érvelése szerint a kormányváltás támogatása nem jelenti azt, hogy a mindenkori új hatalom civil ellenőrzését fel kellene adni.',
+        },
+        {
+          q: 'Mi a legfontosabb témája a rendszerváltással kapcsolatban?',
+          a: 'Visszatérő témája, hogy a politikai hatalom leváltása mellett a hatalom ellenőrzésének intézményi és társadalmi feltételeit is meg kell teremteni. Ennek részeként rendszeresen beszél átláthatóságról, elszámoltathatóságról, civil társadalomról és a választásokon túli politikai részvételről.',
+        },
+      ],
+      sources: [
+        {
+          source: 'Sétáló Budapest',
+          headline: 'Sétáló Budapest — a 2019-es program teljes szövege',
+          url: 'https://github.com/setalo-budapest/program',
+        },
+        {
+          source: 'Magyar Hang',
+          date: '2020. febr. 21.',
+          headline: 'Kormányváltás vagy rendszerváltás?',
+          url: 'https://hang.hu/publicisztika/kormanyvaltas-vagy-rendszervaltas-113446',
+        },
+        {
+          source: 'Spirit FM',
+          headline: 'Puzsér a kegyelmi ügyről: Hogy kell ezt megmagyarázni?',
+          url: 'https://spiritfm.hu/cikk/puzser-a-kegyelmi-ugyrol-hogy-kell-ezt-megmagyarazni',
+        },
+        {
+          source: 'Telex',
+          date: '2025. jún. 20.',
+          headline:
+            'Puzsér Róbert: Az utolsó töltényig támogatni fogjuk a Tisza Pártot, hogy váltsa le az Orbán-rendszert',
+          url: 'https://telex.hu/video/2025/06/20/puzser-robert-polgari-ellenallas-video-interju',
+        },
+      ],
+    },
   },
   {
     id: 'carson-coma',
