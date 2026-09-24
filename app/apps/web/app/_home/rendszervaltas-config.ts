@@ -3168,7 +3168,240 @@ export const FELTAROK: Feltaro[] = [
         'A feltáró újságírás legnagyobb gyengesége, hogy a legalaposabb anyagot is kevesen olvassák végig. Egy heti, követhető formátum ezt oldja meg — nem helyettesíti a mélyfúrást, hanem eljuttatja azokhoz, akik különben sosem találkoznának vele.',
       ],
     },
-    related: [{ label: 'Videóriportok és podcastok', href: '/podcastok' }],
+    related: [
+      { label: 'Videóriportok és podcastok', href: '/podcastok' },
+      { label: 'Dicsőségfal', href: '/rendszervaltas' },
+    ],
+    live: true,
+    detail: {
+      seoTitle: 'Pottyondy Edina: videók, influenszertüntetés, könyv',
+      seoDescription:
+        'Ki Pottyondy Edina? A YouTube-csatorna, a legnézettebb közéleti videói, a 2024-es Hősök téri influenszertüntetés, a Démonok és hormonok és a Közösségi irányelvek megsértése — forrásokkal.',
+      lead:
+        'Pottyondy Edina a magyar közélet egyik legismertebb online véleményformálója: YouTuber, stand-up előadó és szerző. A Dicsőségfalon nem a követőszáma miatt van, hanem azért, mert a közéleti témákat olyan közönséghez is eljuttatja, amely nem a hagyományos híroldalakon keresztül követi a politikát — 2024-ben pedig ő volt az egyik szervezője annak a Hősök téri influenszertüntetésnek, amely több tízezer embert mozgatott meg.',
+      cases: {
+        heading: 'A legfontosabb állomások',
+        intro:
+          'A tevékenysége négy területre bontható: közéleti videók, élő előadások, könyv, valamint közösségszervezés és közvetlen közéleti szerepvállalás. A közös pont, hogy ugyanaz a téma több formában is eljut ugyanahhoz a közönséghez — videóban, közösségi médiában, színpadon és könyvben is.',
+        items: [
+          {
+            title: 'A csatorna — közélet, politika és szatíra',
+            when: '2013-tól',
+            body:
+              'A csatorna 2013-ban indult, és ma nagyjából 377 ezer feliratkozónál tart. A videók témája széles, de a közös pont a magyar közélet: politikusok, kormányzati kommunikáció, propaganda, közéleti botrányok és ismert közszereplők. A formátum nem klasszikus politikai elemzés — a humor, a szatíra, az irónia és a személyes vélemény ugyanolyan fontos benne, mint a tárgyalt ügy.',
+            more: [
+              'A feltáró újságírás legnagyobb gyengesége, hogy a legalaposabb anyagot is kevesen olvassák végig. Egy követhető, nézhető formátum ezt oldja meg: nem helyettesíti a mélyfúrást, hanem eljuttatja azokhoz, akik különben sosem találkoznának vele. Ennek a mércéje a nézettség — a legnagyobbat futott videói egyenként közel egymillió megtekintésnél járnak.',
+            ],
+          },
+          {
+            title: 'A Magyar Péter-jelenség feldolgozása',
+            when: '2024. március',
+            body:
+              'A csatorna legnézettebb anyagai közül kettő is ahhoz az időszakhoz kötődik, amikor Magyar Péter politikai szereplőként néhány hét alatt a közélet központi témája lett. Előbb a jelenség értelmezése érkezett, néhány nappal később pedig a következő fejlemények feldolgozása — jól látszik rajtuk, hogyan reagál egy ilyen csatorna egy gyorsan változó politikai helyzetre.',
+            videos: [
+              {
+                id: '5iQGujvf0ug',
+                label: 'Pottyondy Edina · 2024. márc. 19.',
+                title: 'A Magyar Péter jelenség',
+                summary: 'Az első feldolgozás a politikai színrelépésről. 678 ezer megtekintés.',
+              },
+              {
+                id: '12JY1P1PUHA',
+                label: 'Pottyondy Edina · 2024. márc. 26.',
+                title: 'Magyar Péter ledobta 💣🖤',
+                summary:
+                  'A csatorna legnézettebb videója, egy héttel az előző után: 1,1 millió megtekintés.',
+              },
+            ],
+          },
+          {
+            title: 'Bulvár és NER — a visszatérő módszer',
+            when: '2023–2024',
+            body:
+              'A csatorna egyik állandó fogása, hogy ismert celeb- és bulvárszereplők történeteit kapcsolja össze a politikai és gazdasági elit világával, majd szatirikus keretben dolgozza fel. Két ilyen videó is a legnézettebbek között van — mindkettő 950 ezer fölött.',
+            videos: [
+              {
+                id: 'S0am-J4kagU',
+                label: 'Pottyondy Edina · 2023. aug. 13.',
+                title: 'Tóth Gabi válik, Lölőné kávézik. Asszonysorsok a NER-ben.',
+                summary: 'A bulvár és a hatalmi elit világának összekapcsolása. 983 ezer megtekintés.',
+              },
+              {
+                id: 'e7lGjqcuGzA',
+                label: 'Pottyondy Edina · 2024. szept. 8.',
+                title: 'A sztárpap kettős élete: Bese atya tündöklése és bukása',
+                summary:
+                  'Egy konkrét közéleti botrány feldolgozása, a vallás, a politika és a nyilvánosság kapcsolatáról. 969 ezer megtekintés.',
+              },
+            ],
+          },
+          {
+            title: 'Az influenszertüntetés — Odakint most szörnyek járnak',
+            when: '2024. február 16.',
+            body:
+              'Pottyondy Edina közéleti szerepvállalásának legfontosabb eseménye a Hősök téri influenszertüntetés volt, amelynek egyik szervezője volt. A demonstrációt a bicskei gyermekotthon ügye és a kegyelmi botrány után hat nappal tartották, és több ismert online tartalomkészítő állt mögötte. A résztvevőkkel a Hősök tere mellett az Andrássy út, a Felvonulási tér és a Városliget egy része is megtelt.',
+            more: [
+              'Ez más szerep volt, mint egy videó elkészítése: itt nem egy véleményt kellett megfogalmazni, hanem egy több tízezres nyilvános eseményt megszervezni. A tüntetés végén adománygyűjtés indult egy korábban bántalmazott, hajléktalanná vált fiatal megsegítésére; a szombat reggelig összegyűlt összeg már megközelítette a 60 millió forintot.',
+              'A gyűjtés ennél jóval tovább jutott: 2024 májusában a Telex arról számolt be, hogy a tüntetésen indított kampányban összegyűlt 219 millió forintból tizenegy fiatalt támogatnak. Egy online közösségből tehát nemcsak fizikai tömeg lett, hanem konkrét, számon kérhető eredmény is.',
+              'Az esemény később a saját munkásságának is része lett: a 2025-ben megjelent könyvében külön ír a tüntetés kulisszáiról és a szervezés tapasztalatairól.',
+            ],
+            sources: [
+              {
+                source: 'Mérce',
+                date: '2024. febr. 16.',
+                headline: 'Több tízezren tüntettek a Hősök terén a kegyelmi ügy miatt',
+                url: 'https://merce.hu/2024/02/16/mar-kezdes-elott-tizezre-tomeg-gyult-ossze-az-influenszerek-a-kegyelmi-ugy-miatti-tuntetesere-a-hosok-teren/',
+                lead: 'Helyszíni beszámoló: mekkora tömeg gyűlt össze, és kik beszéltek a színpadon.',
+              },
+              {
+                source: '444',
+                date: '2024. febr. 16.',
+                headline: 'Az áldozatokért és a gyerekekért tüntetnek a Hősök terén',
+                url: 'https://444.hu/2024/02/16/az-aldozatokert-es-a-gyerekekert-tuntetnek-a-hosok-teren',
+                lead: 'Mi volt a demonstráció tétje, és mi hangzott el a színpadról.',
+              },
+              {
+                source: 'Qubit',
+                date: '2024. febr. 17.',
+                headline: 'Az egész világon egyedülálló tüntetést tartottak péntek este a Hősök terén',
+                url: 'https://qubit.hu/2024/02/17/az-egesz-vilagon-egyedulallo-tuntetest-tartottak-pentek-este-a-hosok-teren',
+                lead: 'Elemzés arról, miért szokatlan, hogy egy tüntetést online tartalomkészítők szerveznek.',
+              },
+              {
+                source: 'Telex',
+                date: '2024. máj. 3.',
+                headline: 'Tizenegy fiatalt támogatnak az influenszertüntetésen gyűjtött 219 millió forintból',
+                url: 'https://telex.hu/belfold/2024/05/03/influenszer-utcarol-lakasba-gyujtes-adakozas',
+                lead: 'A gyűjtés végelszámolása: mennyi jött össze, és kikre költik.',
+              },
+            ],
+            videos: [
+              {
+                id: '2eDR4tYMb4c',
+                label: 'Pottyondy Edina · 2024. febr. 17.',
+                title: '„Odakint most szörnyek járnak" — a beszéd a Hősök terén',
+                summary:
+                  'A saját felvétele a színpadon elmondott beszédéről, amely a tüntetés nevét is adta. 171 ezer megtekintés.',
+              },
+            ],
+          },
+          {
+            title: 'Démonok és hormonok — élő előadás',
+            when: '2025-től',
+            body:
+              'A tevékenysége nem korlátozódik az internetre: stand-up előadóként önálló esteket is tart. A Démonok és hormonok nem a videók színpadi változata — személyes történetekből, az anyasággal és hétköznapi élethelyzetekkel kapcsolatos témákból építkezik.',
+            more: [
+              'A forma azért érdekes, mert ugyanazt a közvetlen, személyes megszólalásmódot viszi át egy teljesen más közegbe: a YouTube-on egy kamera előtt, az élő előadáson pedig közvetlenül a közönség előtt működik.',
+            ],
+            sources: [
+              {
+                source: 'pottyondyedina.hu',
+                headline: 'Démonok és hormonok — aktuális időpontok',
+                url: 'https://www.pottyondyedina.hu/',
+                lead: 'A hivatalos oldal, ahol az előadás időpontjai és a jegyek elérhetők.',
+              },
+            ],
+          },
+          {
+            title: 'Közösségi irányelvek megsértése — könyv',
+            when: '2025',
+            body:
+              '2025-ben megjelent az első könyve, a Közösségi irányelvek megsértése, a PETAverzum Kiadó gondozásában, 196 oldalon. Nem hagyományos politikai elemzőkönyv: rövidprózai, szatirikus és személyes szövegekből áll, ugyanarról a világról, amelyről a videói is szólnak — csak írott formában.',
+            more: [
+              'A kötet témái között szerepel, hogyan változtatja meg a mesterséges intelligencia a szexualitást, létezik-e ideális párkapcsolat, hogyan működik a közéleti előítélet, és mi történt az influenszertüntetés kulisszái mögött. Ez utóbbi a könyv legérdekesebb része a Dicsőségfal szempontjából: olyan eseményről ír, amelyben nem külső kommentátorként, hanem szervezőként vett részt.',
+            ],
+            sources: [
+              {
+                source: 'pottyondyedina.hu',
+                headline: 'Közösségi irányelvek megsértése',
+                url: 'https://www.pottyondyedina.hu/merch/pottyondy-edina-kozossegi-iranyelvek-megsertese/',
+                lead: 'A könyv hivatalos adatlapja: kiadó, terjedelem, tartalom.',
+              },
+            ],
+          },
+          {
+            title: 'A csatorna azóta is fut',
+            when: '2026',
+            body:
+              'A 2026-os választási időszak anyagai is a legnézettebbek közé kerültek: a választás utáni feldolgozás néhány hónap alatt közel egymillió megtekintésig jutott. A csatorna tehát nem egyetlen politikai pillanathoz kötődik.',
+            videos: [
+              {
+                id: 'fjDDmi4Sbts',
+                label: 'Pottyondy Edina · 2026. ápr. 20.',
+                title: 'A rossz vesztesek: Kövér, Rákay, Orbán és a propagandisták',
+                summary: 'A választás utáni hetek feldolgozása. 997 ezer megtekintés.',
+              },
+            ],
+          },
+        ],
+      },
+      extra: [
+        {
+          heading: 'Miért van Pottyondy Edina a Dicsőségfalon?',
+          paragraphs: [
+            'Nem a követőszáma miatt. Azért, mert a tevékenysége több különböző nyilvánossági formát kapcsol össze: az online videót, a közösségi médiát, az élő színpadi jelenlétet, az írást és a közösségszervezést. Ugyanaz a téma így nemcsak egyszer ér el egy embert.',
+            'A 2024-es influenszertüntetés azt is megmutatta, hogy egy online közönség bizonyos esetekben fizikai közösséggé alakítható — és hogy ennek mérhető eredménye is lehet: a tüntetésen indított gyűjtésből tizenegy fiatal támogatása lett.',
+            'A pályája egyben arra is példa, hogyan változott meg a közéleti nyilvánosság a videóplatformok térnyerésével. Egy csatorna ma már nem feltétlenül szórakoztató felület: rendszeres tartalom és közönség mellett önálló közéleti platformmá válhat, amely egy-egy témát több százezer emberhez juttat el.',
+          ],
+        },
+      ],
+      faq: [
+        {
+          q: 'Ki Pottyondy Edina?',
+          a: 'Magyar YouTuber, közéleti tartalomkészítő, stand-up előadó és szerző. Elsősorban politikai és társadalmi témájú, humorral és szatírával készített videóiról ismert.',
+        },
+        {
+          q: 'Hányan követik Pottyondy Edinát?',
+          a: 'A YouTube-csatornájának nagyjából 377 ezer feliratkozója van, a legnézettebb videói pedig egyenként közel egymillió, illetve annál több megtekintésnél járnak. Facebookon és Instagramon is aktív.',
+        },
+        {
+          q: 'Mi Pottyondy Edina legnézettebb videója?',
+          a: 'A „Magyar Péter ledobta 💣🖤" című, 2024. március 26-i videó, amely több mint 1,09 millió megtekintésnél jár.',
+        },
+        {
+          q: 'Miről szólnak Pottyondy Edina videói?',
+          a: 'Magyar politikai és társadalmi témákról, politikusokról, közéleti botrányokról, propagandáról és ismert közszereplőkről — jellemzően szatirikus, humoros formában.',
+        },
+        {
+          q: 'Pottyondy Edina szervezte a Hősök téri influenszertüntetést?',
+          a: 'Egyik szervezője volt a 2024. február 16-i demonstrációnak, amelyet több ismert online tartalomkészítő közösen szervezett. A tüntetés a bicskei gyermekotthon ügyét és a gyermekvédelem rendszerszintű problémáit állította a középpontba.',
+        },
+        {
+          q: 'Mi lett a tüntetésen indított gyűjtésből?',
+          a: 'A kampányban 219 millió forint gyűlt össze, amelyből a Telex 2024. májusi beszámolója szerint tizenegy fiatalt támogatnak.',
+        },
+        {
+          q: 'Mi az a Démonok és hormonok?',
+          a: 'Pottyondy Edina önálló stand-up előadása. Az online közéleti tartalmaknál személyesebb témákat is feldolgoz — az anyaságot, a magánéletet és saját élethelyzeteit.',
+        },
+        {
+          q: 'Van könyve Pottyondy Edinának?',
+          a: 'Igen: 2025-ben jelent meg a Közösségi irányelvek megsértése című, 196 oldalas kötete a PETAverzum Kiadónál. Rövidprózai, szatirikus szövegek, köztük az influenszertüntetés kulisszáiról szóló rész.',
+        },
+      ],
+      sources: [
+        {
+          source: 'YouTube',
+          headline: 'Pottyondy Edina csatornája',
+          url: 'https://www.youtube.com/@pottyondyedina',
+        },
+        {
+          source: 'pottyondyedina.hu',
+          headline: 'Hivatalos oldal — előadások és könyv',
+          url: 'https://www.pottyondyedina.hu/',
+        },
+        {
+          source: 'Instagram',
+          headline: 'Pottyondy Edina Instagram-oldala',
+          url: 'https://www.instagram.com/nematellerede/',
+        },
+        {
+          source: 'Facebook',
+          headline: 'Pottyondy Edina Facebook-oldala',
+          url: 'https://www.facebook.com/PottyondyEdina/',
+        },
+      ],
+    },
   },
   {
     id: 'osvath-zsolt',
