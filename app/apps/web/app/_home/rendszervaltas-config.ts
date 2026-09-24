@@ -97,6 +97,10 @@ export type FeltaroVideoRef = {
   label?: string;
   title: string;
   summary?: string;
+  /** Nézettség, saját kiemelt sorban a leírás alatt (pl. „1,1 millió
+   *  megtekintés"). User kérés, 2026-09-24: ne a leírás végén, mondatba
+   *  ágyazva — ez a videó legbeszédesebb adata. */
+  views?: string;
   list?: string;
   /**
    * Apró lábjegyzet a videó alá, benne EGY külső hivatkozással.
@@ -3185,12 +3189,15 @@ export const FELTAROK: Feltaro[] = [
           'A tevékenysége négy területre bontható: közéleti videók, élő előadások, könyv, valamint közösségszervezés és közvetlen közéleti szerepvállalás. A közös pont, hogy ugyanaz a téma több formában is eljut ugyanahhoz a közönséghez — videóban, közösségi médiában, színpadon és könyvben is.',
         items: [
           {
-            title: 'A csatorna — közélet, politika és szatíra',
+            title: 'A YouTube-csatorna — közélet, politika és szatíra',
             when: '2013-tól',
+            links: [{ text: 'YouTube-csatornája', href: 'https://www.youtube.com/@pottyondyedina', external: true }],
             body:
-              'A csatorna 2013-ban indult, és ma nagyjából 377 ezer feliratkozónál tart. A videók témája széles, de a közös pont a magyar közélet: politikusok, kormányzati kommunikáció, propaganda, közéleti botrányok és ismert közszereplők. A formátum nem klasszikus politikai elemzés — a humor, a szatíra, az irónia és a személyes vélemény ugyanolyan fontos benne, mint a tárgyalt ügy.',
+              'A YouTube-csatornája 2013-ban indult, és ma nagyjából 377 ezer feliratkozónál tart. A videók témája széles, de a közös pont a magyar közélet: politikusok, kormányzati kommunikáció, propaganda, közéleti botrányok és ismert közszereplők. A formátum nem klasszikus politikai elemzés — a humor, a szatíra, az irónia és a személyes vélemény ugyanolyan fontos benne, mint a tárgyalt ügy.',
             more: [
               'A feltáró újságírás legnagyobb gyengesége, hogy a legalaposabb anyagot is kevesen olvassák végig. Egy követhető, nézhető formátum ezt oldja meg: nem helyettesíti a mélyfúrást, hanem eljuttatja azokhoz, akik különben sosem találkoznának vele. Ennek a mércéje a nézettség — a legnagyobbat futott videói egyenként közel egymillió megtekintésnél járnak.',
+              'A forma működésének két összetevője van. Az egyik a rendszeresség: a néző tudja, hogy lesz következő adás, és nem egyetlen botrány idejére kapcsolódik be. A másik a nézőpont — a videók nem a politikai szereplők belső logikáját magyarázzák, hanem azt kérdezik, hogy ez az egész kívülről nézve mennyire abszurd. Ez a nézőpont a szatíra alapja, és egyben az oka annak, hogy olyanokhoz is eljut, akik politikai elemzést soha nem néznének meg.',
+              'A műfaj lebecsülése tipikus hiba. Egy csatornát, amelynek a legnézettebb darabjai egyenként annyi embert érnek el, mint egy országos napilap havi olvasótábora, nem a formátuma alapján érdemes megítélni, hanem aszerint, hogy mit tesz azzal az elérésssel.',
             ],
           },
           {
@@ -3198,19 +3205,24 @@ export const FELTAROK: Feltaro[] = [
             when: '2024. március',
             body:
               'A csatorna legnézettebb anyagai közül kettő is ahhoz az időszakhoz kötődik, amikor Magyar Péter politikai szereplőként néhány hét alatt a közélet központi témája lett. Előbb a jelenség értelmezése érkezett, néhány nappal később pedig a következő fejlemények feldolgozása — jól látszik rajtuk, hogyan reagál egy ilyen csatorna egy gyorsan változó politikai helyzetre.',
+            more: [
+              'A két videó között egyetlen hét telt el, a nézettségük mégis háromszoros különbséget mutat. Ez önmagában is adat arról, milyen tempóban gyorsult fel akkoriban a közéleti érdeklődés: ugyanaz a csatorna, ugyanaz a téma, egy héttel később négyszázezerrel több néző.',
+              'A Dicsőségfal szempontjából nem az a lényeg, hogy egyetért-e valaki a videók értékelésével. Az a lényeg, hogy egy politikai fordulat első heteiben több százezer ember ezeken a csatornákon keresztül tájékozódott — nem a pártok kommunikációjából és nem is a közmédiából.',
+            ],
             videos: [
               {
                 id: '5iQGujvf0ug',
                 label: 'Pottyondy Edina · 2024. márc. 19.',
                 title: 'A Magyar Péter jelenség',
-                summary: 'Az első feldolgozás a politikai színrelépésről. 678 ezer megtekintés.',
+                summary: 'Az első feldolgozás a politikai színrelépésről.',
+                views: '678 ezer megtekintés',
               },
               {
                 id: '12JY1P1PUHA',
                 label: 'Pottyondy Edina · 2024. márc. 26.',
                 title: 'Magyar Péter ledobta 💣🖤',
-                summary:
-                  'A csatorna legnézettebb videója, egy héttel az előző után: 1,1 millió megtekintés.',
+                summary: 'A csatorna legnézettebb videója, egy héttel az előző után.',
+                views: '1,1 millió megtekintés',
               },
             ],
           },
@@ -3224,14 +3236,16 @@ export const FELTAROK: Feltaro[] = [
                 id: 'S0am-J4kagU',
                 label: 'Pottyondy Edina · 2023. aug. 13.',
                 title: 'Tóth Gabi válik, Lölőné kávézik. Asszonysorsok a NER-ben.',
-                summary: 'A bulvár és a hatalmi elit világának összekapcsolása. 983 ezer megtekintés.',
+                summary: 'A bulvár és a hatalmi elit világának összekapcsolása.',
+                views: '983 ezer megtekintés',
               },
               {
                 id: 'e7lGjqcuGzA',
                 label: 'Pottyondy Edina · 2024. szept. 8.',
                 title: 'A sztárpap kettős élete: Bese atya tündöklése és bukása',
                 summary:
-                  'Egy konkrét közéleti botrány feldolgozása, a vallás, a politika és a nyilvánosság kapcsolatáról. 969 ezer megtekintés.',
+                  'Egy konkrét közéleti botrány feldolgozása, a vallás, a politika és a nyilvánosság kapcsolatáról.',
+                views: '969 ezer megtekintés',
               },
             ],
           },
@@ -3243,6 +3257,7 @@ export const FELTAROK: Feltaro[] = [
             more: [
               'Ez más szerep volt, mint egy videó elkészítése: itt nem egy véleményt kellett megfogalmazni, hanem egy több tízezres nyilvános eseményt megszervezni. A tüntetés végén adománygyűjtés indult egy korábban bántalmazott, hajléktalanná vált fiatal megsegítésére; a szombat reggelig összegyűlt összeg már megközelítette a 60 millió forintot.',
               'A gyűjtés ennél jóval tovább jutott: 2024 májusában a Telex arról számolt be, hogy a tüntetésen indított kampányban összegyűlt 219 millió forintból tizenegy fiatalt támogatnak. Egy online közösségből tehát nemcsak fizikai tömeg lett, hanem konkrét, számon kérhető eredmény is.',
+              'A Qubit elemzése szerint a demonstráció formája nemzetközi összevetésben is szokatlan volt: nem párt, nem szakszervezet és nem klasszikus civil szervezet hívta össze, hanem online tartalomkészítők, akiknek addig semmilyen politikai szervezeti hátterük nem volt. A tüntetés így egyszerre volt tiltakozás és annak bizonyítéka, hogy egy online közönség képes egyetlen ügy köré szervezetten felsorakozni.',
               'Az esemény később a saját munkásságának is része lett: a 2025-ben megjelent könyvében külön ír a tüntetés kulisszáiról és a szervezés tapasztalatairól.',
             ],
             sources: [
@@ -3280,8 +3295,8 @@ export const FELTAROK: Feltaro[] = [
                 id: '2eDR4tYMb4c',
                 label: 'Pottyondy Edina · 2024. febr. 17.',
                 title: '„Odakint most szörnyek járnak" — a beszéd a Hősök terén',
-                summary:
-                  'A saját felvétele a színpadon elmondott beszédéről, amely a tüntetés nevét is adta. 171 ezer megtekintés.',
+                summary: 'A saját felvétele a színpadon elmondott beszédéről, amely a tüntetés nevét is adta.',
+                views: '171 ezer megtekintés',
               },
             ],
           },
@@ -3309,6 +3324,7 @@ export const FELTAROK: Feltaro[] = [
               '2025-ben megjelent az első könyve, a Közösségi irányelvek megsértése, a PETAverzum Kiadó gondozásában, 196 oldalon. Nem hagyományos politikai elemzőkönyv: rövidprózai, szatirikus és személyes szövegekből áll, ugyanarról a világról, amelyről a videói is szólnak — csak írott formában.',
             more: [
               'A kötet témái között szerepel, hogyan változtatja meg a mesterséges intelligencia a szexualitást, létezik-e ideális párkapcsolat, hogyan működik a közéleti előítélet, és mi történt az influenszertüntetés kulisszái mögött. Ez utóbbi a könyv legérdekesebb része a Dicsőségfal szempontjából: olyan eseményről ír, amelyben nem külső kommentátorként, hanem szervezőként vett részt.',
+              'A könyv címe egyben a műfaj önreflexiója is. A közösségi irányelvek megsértése az a kifejezés, amellyel a platformok a korlátozásaikat indokolják — egy olyan szerzőnél, akinek a munkája ezeken a platformokon él, ez nem ártatlan szójáték. A tartalomkészítő nyilvánossága ugyanis nem a sajátja: bármikor szűkíthető olyan döntésekkel, amelyekre nincs ráhatása, és amelyeket nem kell megindokolni neki.',
             ],
             sources: [
               {
@@ -3329,13 +3345,22 @@ export const FELTAROK: Feltaro[] = [
                 id: 'fjDDmi4Sbts',
                 label: 'Pottyondy Edina · 2026. ápr. 20.',
                 title: 'A rossz vesztesek: Kövér, Rákay, Orbán és a propagandisták',
-                summary: 'A választás utáni hetek feldolgozása. 997 ezer megtekintés.',
+                summary: 'A választás utáni hetek feldolgozása.',
+                views: '997 ezer megtekintés',
               },
             ],
           },
         ],
       },
       extra: [
+        {
+          heading: 'Mit tud ez a forma, és mit nem?',
+          paragraphs: [
+            'Érdemes pontosan elkülöníteni a szerepeket. Pottyondy Edina nem oknyomozó újságíró: nem dokumentumokat szerez meg, nem adatigényléseket futtat, és nem ő tárja fel az ügyeket, amelyekről beszél. A videói jellemzően már nyilvánosságra került történetekre reagálnak — a hozzáadott érték a terjesztés, az értelmezés és az, hogy a téma egyáltalán eljut valakihez.',
+            'A nézettség sem azonos a hatással. Egy egymilliós megtekintés nem jelenti azt, hogy egymillió ember politikai álláspontja megváltozott; azt viszont igen, hogy a téma kilépett abból a néhány tízezres buborékból, amelyben a közéleti sajtó jellemzően mozog. A Dicsőségfalon ezért nem az szerepel, hogy „meggyőzött", hanem az, hogy elért.',
+            'A szatíra műfaja ráadásul saját korlátokat is hoz. Az irónia élesen fogalmaz, de nehezen árnyal, és a humor néha épp azt a részletet vágja le egy ügyből, amelyik a legfontosabb lenne. Ez nem kifogás a forma ellen — csak annak az oka, hogy egy ilyen csatorna kiegészíti a feltáró újságírást, nem pedig helyettesíti.',
+          ],
+        },
         {
           heading: 'Miért van Pottyondy Edina a Dicsőségfalon?',
           paragraphs: [

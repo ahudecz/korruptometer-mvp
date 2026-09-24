@@ -321,6 +321,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                 title={f.section.video.title}
                 label={f.section.video.label}
                 summary={f.section.video.summary}
+                views={f.section.video.views}
                 playlistId={f.section.video.list}
                 note={f.section.video.note}
                 vimeoId={f.section.video.vimeoId}
@@ -370,6 +371,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                               title={v.title}
                               label={v.label}
                               summary={v.summary}
+                              views={v.views}
                               playlistId={v.list}
                               note={v.note}
                               vimeoId={v.vimeoId}
@@ -403,6 +405,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                           title={v.title}
                           label={v.label}
                           summary={v.summary}
+                          views={v.views}
                           playlistId={v.list}
                           note={v.note}
                           vimeoId={v.vimeoId}
@@ -427,6 +430,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                               title={c.highlight.video.title}
                               label={c.highlight.video.label}
                               summary={c.highlight.video.summary}
+                              views={c.highlight.video.views}
                               playlistId={c.highlight.video.list}
                               note={c.highlight.video.note}
                               vimeoId={c.highlight.video.vimeoId}
@@ -470,6 +474,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                       title={v.title}
                       label={v.label}
                       summary={v.summary}
+                      views={v.views}
                       playlistId={v.list}
                       note={v.note}
                       vimeoId={v.vimeoId}
@@ -647,6 +652,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                 title={d.video.title}
                 label={d.video.label}
                 summary={d.video.summary}
+                views={d.video.views}
                 playlistId={d.video.list}
                 note={d.video.note}
                 vimeoId={d.video.vimeoId}

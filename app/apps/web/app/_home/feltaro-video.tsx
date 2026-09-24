@@ -18,6 +18,7 @@ export function FeltaroVideo({
   title,
   label,
   summary,
+  views,
   variant,
   playlistId,
   note,
@@ -28,6 +29,9 @@ export function FeltaroVideo({
   title: string;
   label?: string;
   summary?: string;
+  /** Nézettség saját, kiemelt sorban — user kérés, 2026-09-24: a szám ne
+   *  folyjon bele a leírásba, mert az a videó legfontosabb adata. */
+  views?: string;
   /** Lábjegyzet egy külső hivatkozással — l. FeltaroVideoRef.note. */
   note?: { text: string; linkText: string; href: string };
   /** Vimeo-videó a YouTube helyett — l. PodcastVideoBoxControlled. */
@@ -56,6 +60,7 @@ export function FeltaroVideo({
       )}
       <h3 className="podcast-title feltaro-video-title">{title}</h3>
       {summary && <p className="feltaro-video-summary">{summary}</p>}
+      {views && <p className="feltaro-video-views">{views}</p>}
       {note && (
         <p className="feltaro-video-note">
           {note.text}{' '}
