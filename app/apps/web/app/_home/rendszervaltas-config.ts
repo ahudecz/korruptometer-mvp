@@ -3333,51 +3333,380 @@ export const FELTAROK: Feltaro[] = [
       { label: 'NKA-botrány', href: '/ugyek/nka-botrany' },
       { label: 'Videóriportok és podcastok', href: '/podcastok' },
     ],
+    live: true,
     detail: {
-      seoTitle: 'Molnár Áron és az NKA-botrány: mit tárt fel?',
+      seoTitle: 'Molnár Áron (noÁr): a Tanulni akaruntól az NKA-botrányig',
       seoDescription:
-        'Molnár Áron (noÁr) robbantotta ki az NKA-botrányt: elsőként beszélt a rejtett, 17 milliárdos keretről és az ismeretlen kollégiumról. Mi történt pontosan?',
+        'Ki Molnár Áron? A noÁr Mozgalom, a tanártüntetések, az SZFE, a Loupe Színházi Társulás, a Magyarország Kedvenc Reggeli Műsora és az NKA-botrány kirobbantása — forrásokkal.',
       lead:
-        'Molnár Áron színész és aktivista, az NKA-botrány kirobbantója. Az ügy időben kilóg a többi feltárásból: nem a 2026. április 12-i fordulat előtt robbant, hanem utána — és épp ezért mutat rá arra, hogy egy kormányváltás nem zárja le az elszámoltatást, hanem elkezdi.',
+        'Molnár Áron helye a Dicsőségfalon nem azért indokolható, mert színészként ismert, és nem is azért, mert minden közéleti megszólalásában igaza lenne. A szerepe más: 2018 óta a saját művészi ismertségét, a közösségi médiát, a zenét, a színházat és 2026-tól a politikai tartalomgyártást is társadalmi ügyek szolgálatába állította — az NKA-botrányban pedig egy belső forrástól kapott dokumentumokat hozott nyilvánosságra.',
       cases: {
-        heading: 'Az NKA-botrány — mit tárt fel',
+        heading: 'A legfontosabb állomások és ügyek',
+        intro:
+          'Ez más típusú teljesítmény, mint Panyi Szabolcs oknyomozó újságírása, Hadházy Ákos közpénzellenőrző munkája vagy Jámbor András lakhatási és parlamenti jogvédelme. Molnár Áron fő eszköze a kulturális mozgósítás és a nyilvánosság: 2018 után a noÁr Mozgalom, később a Loupe Színházi Társulás, 2026-ban pedig a napi politikai tartalomgyártás és az NKA-ügy dokumentumainak nyilvánosságra hozatala.',
         items: [
           {
-            title: 'A rejtett, 17 milliárdos keret',
+            title: 'A noÁr Mozgalom létrehozása',
+            when: '2018-tól',
             body:
-              'Elsőként ő beszélt arról, hogy a Nemzeti Kulturális Alapnál létezett egy nagyságrendileg 17 milliárd forintos keret, amelyből a kormányzati holdudvar gazdasági, közéleti és művészeti szereplői részesültek. A pénz egy részéről egy addig gyakorlatilag ismeretlen testület, a „Kiemelt Kulturális Programok Ideiglenes Kollégiuma" döntött — vagyis a szakmai kollégiumi rendszert meg lehetett kerülni.',
-            sources: [
-              { source: 'Index', date: '2026. ápr. 28.', headline: 'Nem csitul a botrány a Fidesz-holdudvarnak kifizetett milliárdok körül', url: 'https://index.hu/kultur/2026/04/28/nemzeti-kulturalis-alap-fidesz-holdudvar-milliardok-hanko-balazs-molnar-aron/' },
+              'Molnár Áron 2018-ban indította el a noÁr Mozgalmat. A név a saját nevének anagrammája, de rövid idő alatt önálló kulturális és aktivista márkává vált. Az alapötlet az volt, hogy a közéleti részvételt nem kell kizárólag pártokhoz vagy parlamenti politikusokhoz kötni: egy művész, egy zenész, egy diák, egy tanár vagy egy civil közösség is képes ügyeket láthatóvá tenni és embereket mozgósítani.',
+            more: [
+              'A noÁr ehhez a hagyományos politikai kommunikációtól eltérő eszközöket használt: dalokat, klipeket, koncerteket, közösségi médiát, tüntetéseket és adománygyűjtéseket. A modell új közönséget kapcsolt be a közéleti vitákba — olyan embereket is, akikhez a klasszikus ellenzéki pártpolitika vagy a civil szervezetek szokásos kommunikációja kevésbé ért el.',
+              'Molnár Áron később maga is beszélt arról, hogy a mozgalom személycentrikussága jogos kritika volt: a noÁr ismertsége nagyrészt az ő személyéhez kötődött, ami egyszerre jelentett nagy elérést és szervezeti kockázatot.',
             ],
           },
           {
-            title: 'Az ügy nem állt meg egy bejelentésnél',
-            when: '2026 nyara és ősze',
+            title: 'Oktatás — Tanulni akarunk! és Tanítani akarunk!',
+            when: '2018–2023',
             body:
-              'A feltárás nem egyszeri poszt volt: augusztusban újabb szervezeteket nevezett meg a kedvezményezettek közül, szeptemberben pedig mentelmi jogok felfüggesztését követelte az érintett politikusoknál. Ez a kitartás a különbség a botrány és az ügy között.',
+              'A noÁr első nagy ügye az oktatás volt. A Tanulni akarunk! 2018-ban jelent meg, és az oktatási rendszer problémáit a diákok perspektívájából dolgozta fel; a videó a saját YouTube-csatornáján ma több mint 1,9 millió megtekintésnél jár. 2022-ben érkezett a Tanítani akarunk!, amely ugyanezt a pedagógusok oldaláról fogalmazta meg, több mint 860 ezer megtekintéssel.',
+            more: [
+              'A két projekt jelentősége nem az, hogy Molnár Áron találta volna fel az oktatási tiltakozást. A Tanítanék Mozgalom, a pedagógus-szakszervezetek, diákcsoportok és más civil szervezetek évek óta dolgoztak az ügyön. A noÁr hozzájárulása az volt, hogy az oktatás kérdését kulturális nyelven is kommunikálta, és olyan közönséget vont be, amely az oktatáspolitikai vitákban kevésbé volt aktív.',
+              'A 2022-es oktatási tiltakozásokban a noÁr már nemcsak tartalomkészítőként, hanem szervezőként és színpadi szereplőként is jelen volt: a 2022. október 5-i országos tanártüntetésen és koncerten a pedagógusok mellett álltak ki.',
+            ],
+            sources: [
+              {
+                source: 'Telex',
+                date: '2022. okt. 5.',
+                headline: 'Sztrájk, polgári engedetlenség, élőlánc, hídfoglalás, tüntetés és koncert — így telt az országos tanártüntetés napja',
+                url: 'https://telex.hu/belfold/2022/10/05/sztrajk-polgari-engedetlenseg-elolanc-budapest-videk-hidfoglalas-tuntetes-koncert-tanarok',
+                lead:
+                  'Helyszíni összefoglaló a nap eseményeiről, benne az esti koncerttel, ahol a noÁr is fellépett.',
+              },
+            ],
+            videos: [
+              {
+                id: 'yfR4dzjGKJs',
+                label: 'Molnár Áron · 2018. ápr. 4.',
+                title: 'noÁr — TANULNI AKARUNK!',
+                summary:
+                  'A noÁr legnagyobb elérésű közéleti videója: az oktatási rendszer kritikája a diákok szemszögéből. Több mint 1,9 millió megtekintés.',
+              },
+              {
+                id: 'Vd6jmqzyu0I',
+                label: 'Molnár Áron · 2022. márc. 14.',
+                title: 'noÁr — TANÍTANI AKARUNK!',
+                summary:
+                  'A 2018-as kampány folytatása, már a pedagógusok oldaláról. Több mint 860 ezer megtekintés.',
+              },
+            ],
           },
           {
-            title: 'A visszatámadás',
+            title: 'A pedagógusok melletti szolidaritás és adománygyűjtés',
+            when: '2022–2023',
             body:
-              'A feltárás után őt magát is megvádolták azzal, hogy NKA-pénzeket fogadott el — amit visszautasított. Ez a mintázat ismerős: a feltáró hitelességének megkérdőjelezése rendszerint gyorsabban érkezik, mint az érdemi válasz a feltárt tényekre.',
-            sources: [
-              { source: '444', date: '2026. júl. 2.', headline: 'Az NKA-pénzek elfogadásával vádolt Molnár Áron szerint nem fogadott el NKA-pénzeket', url: 'https://444.hu/2026/07/02/az-nka-penzek-elfogadasaval-vadolt-molnar-aron-szerint-nem-fogadott-el-nka-penzeket' },
+              'Az oktatási tiltakozások legsúlyosabb szakasza az volt, amikor a polgári engedetlenségben részt vevő pedagógusokat elbocsátották. A noÁr és a Tanítanék ekkor nemcsak demonstrációkon vett részt, hanem adománygyűjtésekkel is próbált gyakorlati segítséget nyújtani az érintetteknek.',
+            more: [
+              'A Tanítanék tevékenységi naplója dokumentálja az együttműködéseket és az adományok felhasználását: a támogatásokból többek között a kirúgott pedagógusokat, valamint más civil és szociális kezdeményezéseket segítettek.',
+              'Ezt nem Molnár Áron egyéni eredményeként kell feltüntetni: a tanárokért zajló mozgalom mögött több szervezet és több ezer résztvevő állt. Az ő hozzájárulása elsősorban a kulturális nyilvánosság, a mozgósítás és a közösségi támogatás megszervezése volt.',
             ],
+            sources: [
+              {
+                source: 'Tanítanék',
+                headline: 'Tevékenységi napló, 2023',
+                url: 'https://www.tanitanek.info/tevekenysegi-naplo-2022/tevekenysegi-naplo-2023/',
+                lead:
+                  'A mozgalom saját, tételes naplója az együttműködésekről és arról, mire fordították az összegyűlt adományokat.',
+              },
+            ],
+          },
+          {
+            title: 'Az SZFE és a kulturális autonómia ügye',
+            when: '2020-tól',
+            body:
+              'A Színház- és Filmművészeti Egyetem modellváltása után Molnár Áron is azok közé a művészek közé tartozott, akik nyilvánosan támogatták az egyetem autonómiájáért tiltakozó hallgatókat. A noÁr korábbi munkájában is központi kérdés volt a kultúra függetlensége, ezért az SZFE ügye szervesen kapcsolódott a szerepéhez.',
+            more: [
+              'A kulturális intézmények függetlenségét a későbbi megszólalásaiban is rendszeresen összekapcsolta a demokratikus intézményrendszer működésével — a kérdés tehát nála nem egyetlen egyetemi konfliktus volt.',
+            ],
+            videos: [
+              {
+                id: 'Co2FWVsu7ck',
+                label: 'Molnár Áron · 2022. jan. 19.',
+                title: 'noÁr — Milyen áron?',
+                summary:
+                  'Az egyik legdirektebb politikai noÁr-dal: a kulturális politika, az SZFE, a szegénység és a politikai részvétel kérdéseit kapcsolja össze. Több mint 82 ezer megtekintés.',
+              },
+            ],
+          },
+          {
+            title: 'Nemzetközi elismerés — Premio Tenco',
+            when: '2021',
+            body:
+              '2021-ben Molnár Áron és a noÁr kapta a Premio Tenco Grup Yorum-díját. Az elismerést olyan művészeknek és formációknak ítélik oda, amelyek társadalmi és emberi jogi kérdésekben is aktívak.',
+            more: [
+              'A díj önmagában nem bizonyítja egyetlen politikai állítás helyességét sem. Azt viszont dokumentálja, hogy a művészetet és a társadalmi aktivizmust összekapcsoló modell nemzetközi kulturális közegben is értelmezhető és elismert teljesítmény volt.',
+            ],
+            sources: [
+              {
+                source: '24.hu',
+                date: '2021. okt. 8.',
+                headline: 'Rangos olasz elismerést kapott a noÁr',
+                url: 'https://24.hu/kultura/2021/10/08/noar-molnar-aron-premium-tenco-grup-yorum-dij-dalszerzo-elismeres/',
+                lead: 'Mi a Premio Tenco Grup Yorum-díj, és kik kapták korábban.',
+              },
+            ],
+          },
+          {
+            title: 'A noÁr Mozgalom felfüggesztése',
+            when: '2024',
+            body:
+              '2024-ben Molnár Áron bejelentette, hogy a noÁr Mozgalom működését egy időre felfüggesztik. Ez korszakhatár: a klasszikus noÁr-modell — dalok, klipek, kampányok, mozgalmi akciók és adománygyűjtések — ekkor zárt le egy többéves aktív időszakot.',
+            more: [
+              'A közéletből viszont nem vonult ki: a következő években egyre nagyobb szerepet kapott a színházi munka, majd 2026-ban a rendszeres politikai tartalomgyártás.',
+            ],
+          },
+          {
+            title: 'A Loupe Színházi Társulás — közélet a színpadon',
+            when: '2021-től',
+            body:
+              'A noÁr mellett a színház lett Molnár Áron közéleti munkájának másik fontos terepe. A Loupe Színházi Társulás alapító tagjaként és művészeti tanácsának tagjaként olyan független formáció létrehozásában vett részt, amelynek repertoárjában rendszeresen jelennek meg társadalmi és közéleti kérdések.',
+            more: [
+              'A Loupe nem egyszerűen politikai színházként működik: az előadások családi kapcsolatokat, felelősséget, manipulációt, kommunikációt, társadalmi konfliktusokat és hatalmi viszonyokat is vizsgálnak. Egyik fontos közéleti akciójuk a Levegőt! demonstráció volt, amely a gyűlöletkampányok és a közbeszéd romlása ellen szerveződött.',
+              'A repertoár egyik 2026-os darabja, A kezdet/vége Molnár Áron, Földes Eszter és Mohai Tamás főszereplésével készült, és a felelősségvállalás, a felnőtté válás és a párkapcsolati döntések kérdéseit dolgozza fel.',
+            ],
+            sources: [
+              {
+                source: 'Loupe Színházi Társulás',
+                headline: 'Molnár Áron — alkotói bemutatkozó',
+                url: 'https://loupe.hu/alkotok/molnar-aron',
+                lead: 'A társulat saját oldala: milyen szerepben vesz részt a Loupe munkájában.',
+              },
+              {
+                source: 'Loupe Színházi Társulás',
+                headline: 'A kezdet/vége',
+                url: 'https://loupe.hu/repertoar/a-kezdet-vege',
+                lead: 'A 2026-os előadás adatlapja a társulat repertoárjában.',
+              },
+            ],
+          },
+          {
+            title: 'Itt érzem magam otthon — rendszerkritika a mozivásznon',
+            when: '2026. február',
+            body:
+              '2026 februárjában került a magyar mozikba Holtai Gábor Itt érzem magam otthon című nagyjátékfilmje. Molnár Áron nemcsak szereplője volt, hanem executive producerként is részt vett a létrehozásában; a főszerepeket Lovas Rozi és Molnár Áron játsszák. A film 2026. február 19-én került a mozikba.',
+            more: [
+              'A történetben egy nőt elrabolnak, majd egy családba kényszerítik, ahol azt állítják róla, hogy valójában a család eltűnt tagja. Az alaphelyzet thrillerként is működik, de több kritika politikai allegóriaként, illetve társadalomkritikus történetként értelmezte.',
+              'A Telex szerint a forgatókönyv öt évvel korábban készült, és eredetileg nem kifejezetten a regnáló hatalommal akart párhuzamot vonni — a bemutató idejére viszont rendszerkritikus alkotásként került a közbeszédbe. A Revizor kritikája ennél konkrétabban politikai allegóriaként értelmezi, és a NER működésével állítja párhuzamba; ez azonban kritikusi olvasat, nem a film hivatalos műfaji meghatározása.',
+            ],
+            sources: [
+              {
+                source: 'Telex',
+                date: '2026. ápr. 9.',
+                headline: 'Miért ne nézhetné meg egy fideszes a filmünket?',
+                url: 'https://telex.hu/after/2026/04/09/itt-erzem-magam-otthon-producerek-martonffy-zoltan-farkas-adam-cinesuper-mitol-fuggetlen-egy-film',
+                lead:
+                  'Interjú a producerekkel a film keletkezéséről és arról, mitől független egy film Magyarországon.',
+              },
+              {
+                source: '24.hu',
+                date: '2026. febr. 20.',
+                headline: 'Molnár Áron a rendszerkritikáról és a politikáról',
+                url: 'https://24.hu/szorakozas/2026/02/20/molnar-aron-rendszerkritika-politika/',
+                lead: 'A bemutató utáni interjú: hogyan látja ő a film politikai olvasatát.',
+              },
+              {
+                source: 'Revizor',
+                headline: 'Foglyul ejtett ország — Itt érzem magam otthon',
+                url: 'https://revizoronline.com/holtai-gabor-itt-erzem-magam-otthon/',
+                lead: 'A kritika, amely a filmet politikai allegóriaként olvassa.',
+              },
+            ],
+          },
+          {
+            title: 'Magyarország Kedvenc Reggeli Műsora — napi politikai tartalom',
+            when: '2026-tól',
+            body:
+              '2026-ban Molnár Áron közéleti szerepe új formát kapott: a Magyarország Kedvenc Reggeli Műsora rendszeres hírelemző adásaiban Lengyel Tamás és Rainer-Micsinyei Nóra mellett szerepel. A műsor keddenként és csütörtökönként jelentkezik, és a napi politikai híreket, közéleti ügyeket és a politikai szereplők kommunikációját kommentálja.',
+            more: [
+              'Ez lényegesen más modell, mint a noÁr eredeti működése. A noÁr ügyeket próbált népszerűsíteni; a reggeli műsor klasszikus hírelemző formátum, amely napi eseményekre reagál. Az adások jelentős közönséget érnek el — a márciusi és áprilisi epizódok egyenként 140 ezer körüli megtekintésnél járnak.',
+              'Ez azért fontos, mert Molnár Áron közéleti jelenléte 2026-ra már nem kizárólag a noÁr örökségéből élt: önálló politikai médiakarakterré vált.',
+            ],
+            videos: [
+              {
+                id: 'h4Bswz6ztZw',
+                label: 'Magyarország Kedvenc Műsora · 2026. márc. 12.',
+                title: 'ORBÁN telefonál, indul az országjárás! — #7',
+                summary: 'A 2026-os korszak jellemző tartalma: napi politikai hírek kommentálása. 141 ezer megtekintés.',
+              },
+              {
+                id: 'vu1kFXJ7d94',
+                label: 'Magyarország Kedvenc Műsora · 2026. ápr. 1.',
+                title: 'A SZAVAZAT ára! — #13',
+                summary:
+                  'Az áprilisi választás előtti adás, közvetlenül a választási rendszerről és a politikai részvételről. 143 ezer megtekintés.',
+              },
+            ],
+          },
+          {
+            title: 'Az NKA-botrány kirobbantása',
+            when: '2026. áprilistól',
+            body:
+              '2026. április 24-én Molnár Áron a Magyarország Kedvenc Reggeli Műsorában olyan információkat hozott nyilvánosságra, amelyek szerint a Nemzeti Kulturális Alap és az NKTK környezetében egy több milliárd forintos, nem megfelelően átlátható kulturális támogatási rendszer működött. A nyilvánosságra hozott adatok egy nagyságrendileg 17 milliárd forintos keretre irányították a figyelmet, amelynek egy részéről egy addig gyakorlatilag ismeretlen testület, a „Kiemelt Kulturális Programok Ideiglenes Kollégiuma" döntött — vagyis a szakmai kollégiumi rendszert meg lehetett kerülni.',
+            more: [
+              'A forrás később személyesen is azonosította magát: Papp Gergely, az NKTK projektmenedzsere elmondta, hogy ő szolgáltatott információkat a támogatási keretről, amelyről állítása szerint az intézményen belül is sokan nem tudtak. A nyertesek listája ezt követően vált olyan formában elérhetővé, amelyből a kedvezményezettek és az összegek vizsgálhatók lettek.',
+              'A feltárás nem egyszeri bejelentés volt: májusban Molnár Áron további dokumentumokat is bemutatott — köztük egy e-mailt, amely a 24.hu beszámolója szerint azt dokumentálta, hogy Mága Zoltán koncertsorozatához közel félmilliárd forintos állami támogatást próbáltak biztosítani, a kampányidőszakhoz kötött célokkal. Augusztusban újabb szervezeteket nevezett meg a kedvezményezettek közül, szeptemberben pedig mentelmi jogok felfüggesztését követelte az érintett politikusoknál.',
+              'Fontos a szerepek elkülönítése. Nem ő indította a NAV nyomozását, nem ő hozott bírósági döntéseket, és nem lehet minden későbbi hatósági eredményt neki tulajdonítani. A dokumentálható állítás ennél szűkebb: egy belső forrástól kapott információkat és dokumentumokat hozott nyilvánosságra, és ezzel hozzájárult ahhoz, hogy az NKA támogatási rendszere országos közpénzügyi üggyé váljon. A későbbi büntetőeljárásokban érintettek bűnösségét nem lehet előre kijelenteni.',
+            ],
+            sources: [
+              {
+                source: 'Index',
+                date: '2026. ápr. 28.',
+                headline: 'Nem csitul a botrány a Fidesz-holdudvarnak kifizetett milliárdok körül',
+                url: 'https://index.hu/kultur/2026/04/28/nemzeti-kulturalis-alap-fidesz-holdudvar-milliardok-hanko-balazs-molnar-aron/',
+                lead: 'Az ügy kiszélesedése a nyilvánosságra hozatal után néhány nappal.',
+              },
+              {
+                source: 'Telex',
+                date: '2026. ápr. 30.',
+                headline: 'Fideszes képviselők vurstlijára mentek el tízmilliók az NKA eltitkolt keretéből',
+                url: 'https://telex.hu/belfold/2026/04/30/fideszes-kepviselok-vurstlijara-mentek-el-tizmilliok-az-nka-eltitkolt-keretebol',
+                lead: 'Konkrét tételek a keretből, nevesített kedvezményezettekkel.',
+              },
+              {
+                source: '24.hu',
+                date: '2026. máj. 18.',
+                headline: 'Molnár Áron: Mága Zoltán Hankó Balázs támogatásával kért állami pénzt a Fidesz kampányára',
+                url: 'https://24.hu/kultura/2026/05/18/molnar-aron-maga-zoltan/',
+                lead: 'A bemutatott dokumentum és ami kiolvasható belőle.',
+              },
+              {
+                source: 'Telex',
+                date: '2026. máj. 18.',
+                headline: 'Mága Zoltán 500 milliós NKA-kérelme',
+                url: 'https://telex.hu/belfold/2026/05/18/hanko-balazs-miniszterium-nka-500-millio-novo-studium-maga-zoltan-nemzeti-oldal-valasztasi-gyozelme',
+                lead: 'Ugyanaz a kérelem független feldolgozásban, a minisztériumi háttérrel.',
+              },
+              {
+                source: '444',
+                date: '2026. júl. 2.',
+                headline: 'Az NKA-pénzek elfogadásával vádolt Molnár Áron szerint nem fogadott el NKA-pénzeket',
+                url: 'https://444.hu/2026/07/02/az-nka-penzek-elfogadasaval-vadolt-molnar-aron-szerint-nem-fogadott-el-nka-penzeket',
+                lead:
+                  'A visszatámadás: a feltárás után őt magát is megvádolták NKA-pénzek elfogadásával, amit visszautasított.',
+              },
+            ],
+            videos: [
+              {
+                id: 'iEEH5e1_-rc',
+                label: 'Magyarország Kedvenc Műsora · 2026. máj. 6.',
+                title: 'Kitálal az NKA forrásunk! — #23',
+                summary:
+                  'Az az adás, amelyben a belső forrás maga szólal meg a támogatási keretről. 285 ezer megtekintés.',
+              },
+            ],
+            promo: {
+              href: '/ugyek/nka-botrany',
+              eyebrow: 'KIEMELT ÜGY',
+              title: 'NKA-botrány',
+              lead:
+                'A teljes ügy adatlapja: a 17 milliárdos keret, a gyanúsítottak, az őrizetbe vételek és a visszafizetések — folyamatosan frissítve.',
+              cta: 'Az ügy adatlapja →',
+            },
           },
         ],
       },
-      faq: [
+      extra: [
         {
-          q: 'Ki robbantotta ki az NKA-botrányt?',
-          a: 'Molnár Áron színész-aktivista. Elsőként ő beszélt a Nemzeti Kulturális Alap rejtett, nagyságrendileg 17 milliárdos kereteiről és az azokról döntő, addig ismeretlen ideiglenes kollégiumról.',
+          heading: 'A módszer: művészet, közösség, média, dokumentum',
+          paragraphs: [
+            'Kulturális megszólítás: dalokkal, klipekkel és koncertekkel olyan közönséget is elért, amelyet a klasszikus politikai kommunikáció nehezebben ér el.',
+            'Közösségi mozgósítás: a noÁr az oktatási és kulturális ügyeket tüntetésekkel, kampányokkal és adománygyűjtésekkel kapcsolta össze.',
+            'Független művészeti tér: a Loupe Színházi Társulással a társadalmi kérdések a színpadon is megjelentek.',
+            'Politikai tartalom és dokumentumok: 2026-ban már napi politikai híreket kommentált, az NKA-ügyben pedig belső információkat és dokumentumokat tett nyilvánossá.',
+            'A módszer változása a lényeg. A 2018-as Molnár Áron azt kérdezte, hogyan lehet egy dalt politikai üggyé tenni; a 2026-os Molnár Áron napi politikai műsort készít és közpénzügyi dokumentumokat dolgoz fel. Ez az aktivista szerep fokozatos átalakulása a kulturális mozgósítótól a politikai tartalomkészítőig.',
+          ],
         },
         {
-          q: 'Mikor robbant ki az NKA-botrány?',
-          a: '2026 tavaszán, vagyis a április 12-i rendszerváltás UTÁN. Ezért is különleges eset: azt mutatja, hogy a feltárás nem ér véget egy kormányváltással.',
+          heading: 'Milyen kritikák érték a munkáját?',
+          paragraphs: [
+            'A legfontosabb a személycentrikusság. A noÁr jelentős része Molnár Áron ismertségére épült, ami komoly elérést biztosított, de felvetette a kérdést, mennyire képes egy mozgalom egyetlen ismert arc nélkül önállóan működni.',
+            'A második a politikai elfogultság. Molnár Áron nem semleges kulturális kommentátorként beszél a közéletről: nyíltan rendszerkritikus, és 2026-ban már politikai műsorban vesz részt. A megszólalásait ezért ugyanúgy forrásokkal és dokumentumokkal kell ellenőrizni, mint bármely más politikai szereplő állításait.',
+            'A harmadik a kulturális aktivizmus eredményének mérhetősége. Egy többmilliós megtekintés nem jelenti azt, hogy ugyanennyi ember politikai álláspontja megváltozott, és egy tüntetés létszáma sem azonos egy jogszabályi eredménnyel. Az NKA-ügyben ezért különösen fontos az időrend betartása: ő információkat és dokumentumokat hozott nyilvánosságra, a NAV-nyomozás, az őrizetbe vételek és a visszafizetések már hatósági és más sajtóforrásokból dokumentálhatók.',
+            'A negyedik a közéleti és a művészi szerep összemosódása. Egyszerre színész, producer, színházi alkotó és politikai tartalomkészítő — ez új közönséget biztosít, ugyanakkor egy-egy politikai állítása könnyen összekeverhető a művészi munkájával. A Dicsőségfalon ezért a két szerepet külön kezeljük: nem azért kerül ide, mert jó színész, hanem azért, mert a nyilvánosságát következetesen közéleti ügyekre használta.',
+          ],
+        },
+        {
+          heading: 'Miért van Molnár Áronnak helye a Dicsőségfalon?',
+          paragraphs: [
+            'A története nem egyetlen korrupciós ügy története. A noÁr az oktatás ügyét vitte el a kulturális közegbe, az SZFE ügyében a kulturális autonómia mellett szólalt fel, a Loupe-on keresztül társadalmi kérdéseket vitt színpadra, 2026-ban pedig rendszeres politikai hírelemző szerepet vállalt.',
+            'Az NKA-ügyben egy belső forrás által átadott információk nyilvánosságra hozatalával hozzájárult egy olyan közpénzügyi ügy feltárásához, amely később hatósági nyomozásig, kényszerintézkedésekig és több milliárd forintos visszafizetésekig jutott. Ez nem jelenti azt, hogy ő lenne az ügy nyomozója, vagy hogy minden későbbi eredmény neki tulajdonítható.',
+            'A dokumentálható teljesítmény pontosan ennyi: a magyar rendszerkritikus közélet egyik olyan szereplője, aki a művészi ismertséget, a közösségi médiát, a közösségszervezést, a színházat és 2026-tól a politikai tartalomgyártást is következetesen közéleti ügyek szolgálatába állította. A helye tehát közéleti aktivistaként, kulturális mozgósítóként és politikai tartalomkészítőként értelmezhető.',
+          ],
+        },
+      ],
+      faq: [
+        {
+          q: 'Ki Molnár Áron?',
+          a: 'Színész, szinkronszínész, közéleti aktivista és producer. A noÁr Mozgalom alapítója, valamint a Loupe Színházi Társulás alapító tagja és művészeti tanácsának tagja.',
+        },
+        {
+          q: 'Mi a noÁr?',
+          a: '2018-ban létrehozott kulturális és aktivista mozgalom, amely művészeti eszközökkel, közösségi médiával, kampányokkal és közösségszervezéssel foglalkozott társadalmi ügyekkel. Működését 2024-ben felfüggesztették.',
+        },
+        {
+          q: 'Mi volt a noÁr legfontosabb ügye?',
+          a: 'Az oktatás. A Tanulni akarunk! és a Tanítani akarunk! kampányok a diákok, illetve a pedagógusok helyzetére hívták fel a figyelmet — az előbbi több mint 1,9 millió megtekintésnél jár.',
+        },
+        {
+          q: 'Molnár Áron oknyomozó újságíró?',
+          a: 'A klasszikus értelemben nem. Elsősorban színész, aktivista, művészeti alkotó és politikai tartalomkészítő. Az NKA-ügyben információkat és dokumentumokat hozott nyilvánosságra, de a büntetőeljárást a hatóságok folytatják.',
+        },
+        {
+          q: 'Mi volt Molnár Áron szerepe az NKA-botrányban?',
+          a: '2026 áprilisában egy belső forrástól kapott információkat hozott nyilvánosságra a Nemzeti Kulturális Alap támogatási rendszeréről. A forrás később Papp Gergely NKTK-projektmenedzserként azonosította magát. Az ügy ezt követően hatósági nyomozássá szélesedett.',
+        },
+        {
+          q: 'Miért fontos az NKA-ügy?',
+          a: 'Az ügy nagyságrendileg 17 milliárd forintnyi támogatási döntést érintett, a NAV hűtlen kezelés gyanújával nyomozott, és több érintett ellen kényszerintézkedést is elrendeltek. A Kegyencjárat külön adatlapban követi az ügyet, a visszafizetéseket és az érintett személyeket.',
+        },
+        {
+          q: 'Mi az a Magyarország Kedvenc Reggeli Műsora?',
+          a: '2026-ban indult rendszeres politikai hírelemző műsor, amelyben Molnár Áron, Lengyel Tamás és Rainer-Micsinyei Nóra vesz részt. Az adások keddenként és csütörtökönként jelentkeznek.',
+        },
+        {
+          q: 'Mi a Loupe Színházi Társulás?',
+          a: 'Független színházi formáció, amelynek Molnár Áron alapító tagja és művészeti tanácsának tagja. Előadásaiban rendszeresen jelennek meg társadalmi kérdések.',
+        },
+        {
+          q: 'Mi az Itt érzem magam otthon?',
+          a: 'Holtai Gábor 2026-os magyar nagyjátékfilmje, amelyben Molnár Áron főszereplőként és executive producerként vett részt. A film 2026. február 19-én került a mozikba; több kritika politikai allegóriaként értelmezte.',
+        },
+        {
+          q: 'Molnár Áron csak a Fideszt kritizálja?',
+          a: 'A kommunikációja alapvetően erősen rendszerkritikus és a Fidesz-kormányt gyakran bíráló, miközben 2026-ban a reggeli műsorban szélesebb politikai hírelemzést folytat. A Dicsőségfal nem azt állítja, hogy minden politikai értékelése helyes, hanem a dokumentálható közéleti tevékenységét mutatja be.',
+        },
+        {
+          q: 'Miért van Molnár Áron a Dicsőségfalon?',
+          a: 'Nem azért, mert színész, és nem azért, mert minden közéleti állításával egyet kellene érteni. Azért, mert 2018 óta következetesen közéleti ügyekre használja a nyilvánosságát: a noÁr révén kulturális mozgósítást végzett, az oktatási tiltakozásokban részt vett, az SZFE autonómiája mellett állt ki, a Loupe-on keresztül társadalmi témákat vitt színpadra, 2026-ban pedig politikai hírműsorban szerepelt és az NKA-ügyben dokumentumokat hozott nyilvánosságra.',
         },
       ],
       sources: [
-        { source: 'Kegyencjárat', headline: 'NKA-botrány', url: 'https://www.kegyencjarat.hu/ugyek/nka-botrany' },
+        {
+          source: 'Kegyencjárat',
+          headline: 'NKA-botrány — az ügy teljes adatlapja',
+          url: 'https://www.kegyencjarat.hu/ugyek/nka-botrany',
+        },
+        {
+          source: 'Kegyencjárat',
+          headline: 'NKA-pályázatok: így működött a rendszer',
+          url: 'https://www.kegyencjarat.hu/ugyek/nka-botrany/nka-palyazatok',
+        },
+        {
+          source: 'Kegyencjárat',
+          headline: 'Visszaszerzett és visszakövetelt vagyon',
+          url: 'https://www.kegyencjarat.hu/visszaszerzett-vagyon?sort=amount',
+        },
+        {
+          source: '24.hu',
+          date: '2026. máj. 18.',
+          headline: 'Molnár Áron: Birtokunkban van egy bizonyíték az eddigi legsúlyosabb tiltott kampányfinanszírozásról',
+          url: 'https://24.hu/kultura/2026/05/18/molnar-aron-nka-visszaeles/',
+        },
+        {
+          source: 'CineFest',
+          headline: 'Itt érzem magam otthon — filmadatlap',
+          url: 'https://www.cinefest.hu/film/itt-erzem-magam-otthon/',
+        },
       ],
     },
   },
