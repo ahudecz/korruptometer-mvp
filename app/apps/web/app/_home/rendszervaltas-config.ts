@@ -3455,15 +3455,6 @@ export const FELTAROK: Feltaro[] = [
             ],
           },
           {
-            title: 'A noÁr Mozgalom felfüggesztése',
-            when: '2024',
-            body:
-              '2024-ben Molnár Áron bejelentette, hogy a noÁr Mozgalom működését egy időre felfüggesztik. Ez korszakhatár: a klasszikus noÁr-modell — dalok, klipek, kampányok, mozgalmi akciók és adománygyűjtések — ekkor zárt le egy többéves aktív időszakot.',
-            more: [
-              'A közéletből viszont nem vonult ki: a következő években egyre nagyobb szerepet kapott a színházi munka, majd 2026-ban a rendszeres politikai tartalomgyártás.',
-            ],
-          },
-          {
             title: 'A Loupe Színházi Társulás — közélet a színpadon',
             when: '2021-től',
             body:
@@ -3621,35 +3612,6 @@ export const FELTAROK: Feltaro[] = [
                 'Hol tart most az NKA-botrány? Nézd meg az ügy teljes történetét az első hírektől a mai fejleményekig: videók, cikkek, gyanúsítottak, őrizetbe vételek, letartóztatások és visszafizetések — minden egy helyen, folyamatosan frissítve.',
               cta: 'Az ügy adatlapja',
             },
-          },
-        ],
-      },
-      socialHighlights: {
-        heading: 'A legnagyobbat futott videói',
-        intro:
-          'Molnár Áron elérése nem a hosszú interjúkból jön, hanem a rövid, egy ügyre kihegyezett Facebook-videókból. Az alábbi kettő nézettsége nagyságrendileg felülmúlja a legnagyobb YouTube-os anyagát is — a megtekintés- és reakciószám a Facebook saját, nyilvános adata a videó oldaláról.',
-        platformLabel: 'Facebook',
-        pageName: 'Molnár Áron',
-        profileUrl: 'https://www.facebook.com/molnararonofficial',
-        profileLabel: 'Molnár Áron a Facebookon',
-        items: [
-          {
-            when: '2025. július',
-            title: 'Üzenet Várkonyi Andreának — 4,7 millió megtekintés',
-            body:
-              'Ez a videó a legnagyobbat futott anyaga: 4,7 millió megtekintés és 161 ezer reakció. A műfaj jól mutatja a módszerét — nem elemzés és nem oknyomozás, hanem egyetlen, mindenki számára érthető helyzetre kihegyezett, két-három perces közvetlen megszólalás.',
-            quote: 'Üzenet Várkonyi Andreának egy adófizető „fanyalgótól".',
-            href: 'https://www.facebook.com/molnararonofficial/videos/1286245732862967/',
-            ctaLabel: 'Megnézem a videót',
-          },
-          {
-            when: '2025. június',
-            title: 'Tiltják a videóimat a TikTokon — 1,4 millió megtekintés',
-            body:
-              'A második legnagyobb elérésű videója éppen arról szól, hogy a tartalmait korlátozzák az egyik platformon: 1,4 millió megtekintés és 74 ezer reakció. A történet önmagában is adat arról, hogy egy politikai tartalomkészítő elérése mennyire függ a platformok döntéseitől.',
-            quote: 'Tiltják a videóimat a tiktokon! Kövessétek be az insta és facebook oldalamat!',
-            href: 'https://www.facebook.com/molnararonofficial/videos/9692374157555902/',
-            ctaLabel: 'Megnézem a videót',
           },
         ],
       },
