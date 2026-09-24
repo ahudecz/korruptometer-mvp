@@ -541,7 +541,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                           <img src={post.image} alt={post.imageAlt ?? post.title} loading="lazy" />
                         </span>
                       )}
-                      <span className={styles.postCta}>Elolvasom a posztot →</span>
+                      <span className={styles.postCta}>{post.ctaLabel ?? 'Elolvasom a posztot'} →</span>
                     </a>
                     <div className={styles.postNote}>
                       <h3 className={styles.postNoteTitle}>{post.title}</h3>

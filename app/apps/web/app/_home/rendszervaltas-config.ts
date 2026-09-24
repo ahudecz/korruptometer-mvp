@@ -322,6 +322,9 @@ export type FeltaroDetail = {
       imageAlt?: string;
       /** A poszt permalinkje. */
       href?: string;
+      /** A kártya CTA-ja. Alapból „Elolvasom a posztot" — videónál ez félrevezető
+       *  (user, 2026-09-24), ezért felülírható: „Megnézem a videót". */
+      ctaLabel?: string;
       sources?: FeltaroLink[];
       promo?: { href: string; eyebrow: string; title: string; lead: string; cta: string };
     }[];
@@ -3615,9 +3618,38 @@ export const FELTAROK: Feltaro[] = [
               eyebrow: 'KIEMELT ÜGY',
               title: 'NKA-botrány',
               lead:
-                'A teljes ügy adatlapja: a 17 milliárdos keret, a gyanúsítottak, az őrizetbe vételek és a visszafizetések — folyamatosan frissítve.',
+                'Hol tart most az NKA-botrány? Nézd meg az ügy teljes történetét az első hírektől a mai fejleményekig: videók, cikkek, gyanúsítottak, őrizetbe vételek, letartóztatások és visszafizetések — minden egy helyen, folyamatosan frissítve.',
               cta: 'Az ügy adatlapja',
             },
+          },
+        ],
+      },
+      socialHighlights: {
+        heading: 'A legnagyobbat futott videói',
+        intro:
+          'Molnár Áron elérése nem a hosszú interjúkból jön, hanem a rövid, egy ügyre kihegyezett Facebook-videókból. Az alábbi kettő nézettsége nagyságrendileg felülmúlja a legnagyobb YouTube-os anyagát is — a megtekintés- és reakciószám a Facebook saját, nyilvános adata a videó oldaláról.',
+        platformLabel: 'Facebook',
+        pageName: 'Molnár Áron',
+        profileUrl: 'https://www.facebook.com/molnararonofficial',
+        profileLabel: 'Molnár Áron a Facebookon',
+        items: [
+          {
+            when: '2025. július',
+            title: 'Üzenet Várkonyi Andreának — 4,7 millió megtekintés',
+            body:
+              'Ez a videó a legnagyobbat futott anyaga: 4,7 millió megtekintés és 161 ezer reakció. A műfaj jól mutatja a módszerét — nem elemzés és nem oknyomozás, hanem egyetlen, mindenki számára érthető helyzetre kihegyezett, két-három perces közvetlen megszólalás.',
+            quote: 'Üzenet Várkonyi Andreának egy adófizető „fanyalgótól".',
+            href: 'https://www.facebook.com/molnararonofficial/videos/1286245732862967/',
+            ctaLabel: 'Megnézem a videót',
+          },
+          {
+            when: '2025. június',
+            title: 'Tiltják a videóimat a TikTokon — 1,4 millió megtekintés',
+            body:
+              'A második legnagyobb elérésű videója éppen arról szól, hogy a tartalmait korlátozzák az egyik platformon: 1,4 millió megtekintés és 74 ezer reakció. A történet önmagában is adat arról, hogy egy politikai tartalomkészítő elérése mennyire függ a platformok döntéseitől.',
+            quote: 'Tiltják a videóimat a tiktokon! Kövessétek be az insta és facebook oldalamat!',
+            href: 'https://www.facebook.com/molnararonofficial/videos/9692374157555902/',
+            ctaLabel: 'Megnézem a videót',
           },
         ],
       },
