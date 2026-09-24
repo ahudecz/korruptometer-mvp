@@ -3254,6 +3254,22 @@ export const FELTAROK: Feltaro[] = [
             when: '2024. február 16.',
             body:
               'Pottyondy Edina közéleti szerepvállalásának legfontosabb eseménye a Hősök téri influenszertüntetés volt, amelynek egyik szervezője volt. A demonstrációt a bicskei gyermekotthon ügye és a kegyelmi botrány után hat nappal tartották, és több ismert online tartalomkészítő állt mögötte. A résztvevőkkel a Hősök tere mellett az Andrássy út, a Felvonulási tér és a Városliget egy része is megtelt.',
+            links: [
+              {
+                text: 'Qubit',
+                href: 'https://qubit.hu/2024/02/17/az-egesz-vilagon-egyedulallo-tuntetest-tartottak-pentek-este-a-hosok-teren',
+                external: true,
+              },
+            ],
+            promoPlacement: 'top',
+            promo: {
+              href: '/ugyek/ki-az-a-zsolt-bacsi',
+              eyebrow: 'Kiemelt ügy · Ki az a Zsolti bácsi?',
+              title: 'A gyermekvédelmi botrány, ami idáig vezetett',
+              lead:
+                'A kegyelmi ügy után a gyermekvédelmi intézményrendszer működése került a nyilvánosság elé. Mi hangzott el a felvételen, ki a koronatanú, mit állít és mit cáfol, és hol tart most az eljárás?',
+              cta: 'Az ügy megnyitása',
+            },
             more: [
               'Ez más szerep volt, mint egy videó elkészítése: itt nem egy véleményt kellett megfogalmazni, hanem egy több tízezres nyilvános eseményt megszervezni. A tüntetés végén adománygyűjtés indult egy korábban bántalmazott, hajléktalanná vált fiatal megsegítésére; a szombat reggelig összegyűlt összeg már megközelítette a 60 millió forintot.',
               'A gyűjtés ennél jóval tovább jutott: 2024 májusában a Telex arról számolt be, hogy a tüntetésen indított kampányban összegyűlt 219 millió forintból tizenegy fiatalt támogatnak. Egy online közösségből tehát nemcsak fizikai tömeg lett, hanem konkrét, számon kérhető eredmény is.',
