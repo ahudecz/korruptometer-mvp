@@ -3,6 +3,7 @@ import {
   IMAGE_SUBLINE_MAX_WORDS,
   imageSubline,
   imageClaimLine,
+  claimLine,
   withAttribution,
   complaintHeadline,
   hookFor,
@@ -298,5 +299,59 @@ describe('imageClaimLine — strukturált mezőkből épített képsor', () => {
 
   it('név nélkül nem gyárt sort', () => {
     expect(imageClaimLine({ ...alap, personName: '  ' })).toBe('');
+  });
+});
+
+describe('claimLine — a képsor közös építője', () => {
+  it('SOSE gyárt tautológiát: ha nincs új tény, üres a sor', () => {
+    // A korábbi „A feljelentés státusza: feljelentés" pont ez volt.
+    expect(claimLine({ parts: [null, '', undefined], seed: 'x' })).toBe('');
+  });
+
+  it('a megadott tényeket fűzi össze, nagybetűvel kezdve', () => {
+    expect(claimLine({ parts: ['főigazgató', 'Terror Háza Múzeum'], seed: 'x' }))
+      .toBe('Főigazgató, Terror Háza Múzeum');
+  });
+
+  it('forrás-előtag esetén nincs feszültség-nyitány', () => {
+    const out = claimLine({ parts: ['üzletember'], tension: ['Szorul a hurok'], attribution: 'A Kontroll', seed: 'x' });
+    expect(out).toBe('A Kontroll azt írja — üzletember');
+    expect(out).not.toContain('Szorul a hurok');
+  });
+
+  it('a „hatósági megerősítés nélkül" csak kérésre kerül ki', () => {
+    expect(claimLine({ parts: ['üzletember'], attribution: 'A Kontroll', seed: 'x', unconfirmedNote: true }))
+      .toContain('hatósági megerősítés nélkül');
+    expect(claimLine({ parts: ['üzletember'], attribution: 'A Kontroll', seed: 'x' }))
+      .not.toContain('hatósági megerősítés nélkül');
+  });
+
+  it('nem teszi ki a nyitányt, ha az ugyanazt mondja, mint a tartalom', () => {
+    expect(claimLine({ parts: ['Lehúzta a rolót'], tension: ['Lehúzta a rolót'], seed: 'x' }))
+      .toBe('Lehúzta a rolót');
+  });
+});
+
+describe('claimLine — szó-korlát', () => {
+  it('a kevésbé fontos részt hagyja el, ha nem fér be', () => {
+    const out = claimLine({
+      parts: ['volt államtitkár', 'a bíróság vagyonelkobzást rendelt el a birtokában lévő ingatlanokra és bankszámlákra'],
+      seed: 'x',
+    });
+    expect(out.split(' ').length).toBeLessThanOrEqual(IMAGE_SUBLINE_MAX_WORDS);
+    // Az ELSŐ (fontosabb) rész marad meg, a második esik ki.
+    expect(out.toLowerCase()).toContain('volt államtitkár');
+    expect(out.toLowerCase()).not.toContain('bankszámlákra');
+  });
+
+  it('a nyitányt dobja el előbb, mint a tényt', () => {
+    const teny = 'a bíróság vagyonelkobzást rendelt el a volt államtitkár ingatlanjaira';
+    const out = claimLine({ parts: [teny], tension: ['Visszakerült a kasszába'], seed: 'x' });
+    expect(out).not.toContain('Visszakerült a kasszába');
+    expect(out.toLowerCase()).toContain('vagyonelkobzást');
+  });
+
+  it('ha egyetlen tény sem fér be, üres', () => {
+    expect(claimLine({ parts: ['egy kifejezetten hosszú mondat amely semmiképpen sem fér bele a képre szánt tizenkét szavas korlátba sehogy'], seed: 'x' })).toBe('');
   });
 });

@@ -494,6 +494,62 @@ const VERDICT_TENSION: Record<string, readonly string[]> = {
   'eljárás megszűnt': ['Vége az eljárásnak'],
 };
 
+/**
+ * A képsor közös építője MINDEN poszt-típushoz.
+ *
+ * Egy szabály van benne, és az összes típusra ugyanaz: a kicker és a headline
+ * már kimondja, KI és MI TÖRTÉNT — ide csak az kerül, ami azokban NINCS.
+ * Ha nem marad ilyen, inkább ÜRES a sor, mint tautológia
+ * („A feljelentés státusza: feljelentés" — user, 2026-09-24).
+ */
+export function claimLine(opts: {
+  /** A headline-ban NEM szereplő tények, fontossági sorrendben. */
+  parts: Array<string | null | undefined>;
+  /** Feszültség-nyitány; csak forrás-előtag hiányában jön. */
+  tension?: readonly string[];
+  /** Hírforrás neve — ha meg van adva, kötelező előtag lesz belőle. */
+  attribution?: string | null;
+  /** Stabil választás ugyanarra a rekordra. */
+  seed: string;
+  /** Kiírja-e, hogy „hatósági megerősítés nélkül" (csak ott, ahol ez értelmes). */
+  unconfirmedNote?: boolean;
+}): string {
+  const reszek = opts.parts.map((p) => (p ?? '').trim()).filter(Boolean);
+  if (reszek.length === 0) return '';
+  // Szó-korlát: a `parts` fontossági sorrendben jön, ezért a VÉGÉRŐL hagyunk
+  // el, amíg befér. Enélkül a sor túlcsordulna a képen — a korlát eddig csak
+  // az imageSubline()-ban volt, itt nem.
+  const szavak = (s: string) => s.split(/\s+/).filter(Boolean).length;
+  const befer = [...reszek];
+  while (befer.length > 1 && szavak(befer.join(', ')) > IMAGE_SUBLINE_MAX_WORDS) befer.pop();
+  const mag = befer.join(', ');
+  // Egyetlen rész maradt, és még az sem fér be — nincs mit kiírni.
+  if (szavak(mag) > IMAGE_SUBLINE_MAX_WORDS) return '';
+
+  const forras = (opts.attribution ?? '').trim().replace(/[.:]+$/, '');
+  if (forras) {
+    return `${forras} azt írja — ${mag}${opts.unconfirmedNote ? ', hatósági megerősítés nélkül' : ''}`;
+  }
+  if (!opts.tension || opts.tension.length === 0) {
+    return mag.charAt(0).toUpperCase() + mag.slice(1);
+  }
+  const valasztott = pickBySeed(opts.seed, opts.tension);
+  const to = (s: string) => s.toLowerCase().replace(/[^a-záéíóöőúüű]/g, '').slice(0, 8);
+  const nagybetus = mag.charAt(0).toUpperCase() + mag.slice(1);
+  if (to(valasztott) === to(mag)) return nagybetus;
+  // A nyitány is szavakba kerül — ha vele együtt kifutna a korlátból, a
+  // TÉNY a fontosabb, a nyitány marad el.
+  const teljes = `${valasztott} — ${mag}`;
+  return szavak(teljes) <= IMAGE_SUBLINE_MAX_WORDS ? teljes : nagybetus;
+}
+
+/** Feszültség-nyitányok a nem-ítélet típusokhoz. Kézzel írt, nulla LLM. */
+export const CLAIM_TENSION = {
+  resignation: ['Újabb név a listán', 'Eggyel kevesebben'],
+  media_closure: ['Lehúzta a rolót', 'Eggyel kevesebb'],
+  asset_recovery: ['Visszakerült a kasszába'],
+} as const;
+
 export function imageClaimLine(v: {
   personName: string;
   position?: string | null;

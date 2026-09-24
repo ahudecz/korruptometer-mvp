@@ -17,6 +17,8 @@ import {
   complaintWhatHappened,
   imageSubline,
   imageClaimLine,
+  claimLine,
+  CLAIM_TENSION,
   withAttribution,
   resignationHeadline,
   resignationWhatHappened,
@@ -252,7 +254,13 @@ async function buildResignationTriggers(db: ReturnType<typeof getDb>, counts: Co
     const whyItMatters = whyItMattersFor('resignation', counts, kicker);
     // Brief 8. — a képre az INTÉZMÉNY megy (rövid, 3–7 szó); a név és az
     // esemény már a headline-ban van. Üres képsor nem maradhat.
-    const imageDetail = imageSubline(r.institution, r.position);
+    // A név és az esemény a headline-ban van — ide a beosztás és az intézmény
+    // jön, ami ott NINCS (user, 2026-09-24).
+    const imageDetail = claimLine({
+      parts: [r.position, r.institution],
+      tension: CLAIM_TENSION.resignation,
+      seed: r.id,
+    }) || imageSubline(r.institution, r.position);
     if (containsPlaceholderText(headline, whatHappened)) continue;
     const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
     out.push({
@@ -302,7 +310,11 @@ async function buildMediaClosureTriggers(db: ReturnType<typeof getDb>, counts: C
     const verb = MEDIA_CLOSURE_VERBS[m.eventType];
     const headline = verb ? `${m.name}: ${verb}` : m.name;
     const detail = m.description ?? undefined;
-    const imageDetail = imageSubline(m.description, m.name);
+    const imageDetail = claimLine({
+      parts: [m.description],
+      tension: CLAIM_TENSION.media_closure,
+      seed: m.id,
+    }) || imageSubline(m.description, m.name);
     const whyItMatters = whyItMattersFor('media_closure', counts, kicker);
     const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
     out.push({
@@ -438,7 +450,12 @@ async function buildAssetRecoveryTriggers(db: ReturnType<typeof getDb>, counts: 
     // nem volt rövidítve, mielőtt a képre került — brief 8. pont.
     // A számot tartalmazó mondatok külön felsorolásba kerülnek (brief 3.3).
     const { lead: detail, bullets } = numberBullets(a.description);
-    const imageDetail = imageSubline(a.description);
+    // Az összeg már a headline-ban van, ide a körülmény jön.
+    const imageDetail = claimLine({
+      parts: [imageSubline(a.description)],
+      tension: CLAIM_TENSION.asset_recovery,
+      seed: a.id,
+    });
     const whyItMatters = whyItMattersFor('asset_recovery', counts, kicker);
     const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
     out.push({
@@ -488,10 +505,13 @@ async function buildComplaintTriggers(db: ReturnType<typeof getDb>, counts: Cont
     const whyItMatters = whyItMattersFor('criminal_complaint', counts, kicker);
     // Brief 8. — összeg + esemény a képre; összeg híján a feljelentés
     // szakasza. Sose üres (eddig gyakran az volt).
-    const imageDetail = imageSubline(
-      c.amountLabel ? `Érintett összeg: ${c.amountLabel}` : null,
-      `A feljelentés státusza: ${c.status}`,
-    );
+    // 2026-09-24 — a korábbi tartalék („A feljelentés státusza: feljelentés")
+    // önmagát ismételte, nulla információval. Ha nincs összeg, inkább maradjon
+    // üres a sor: a kicker és a headline már mindent elmond.
+    const imageDetail = claimLine({
+      parts: [c.amountLabel ? `Érintett összeg: ${c.amountLabel}` : null],
+      seed: c.id,
+    });
     // Élesre ment 2026-09-16: „📄 <UNKNOWN> feljelentést tett: …". A
     // detektor-kapu ma már megfogja az ÚJ sorokat, de a poszt-építő a
     // meglévőkből is dolgozik — inkább ne menjen poszt, mint szemét.
