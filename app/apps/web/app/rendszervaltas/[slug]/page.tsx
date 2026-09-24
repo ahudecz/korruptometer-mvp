@@ -8,6 +8,7 @@ import {
   GROUP_META,
   RENDSZERVALTAS_HUB,
   getFeltaro,
+  contentUpdatedAt,
   type Feltaro,
   type FeltaroCase as FeltaroCaseType,
   type FeltaroLink,
@@ -296,7 +297,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
             <div className="person-hero-eyebrow">{group.title} · {f.badge}</div>
             <h1 className="person-hero-name">{f.name}</h1>
             <p className="person-hero-desc">{d?.lead ?? f.tagline}</p>
-            <div className="seo-updated">Frissítve: {huDate(RENDSZERVALTAS_HUB.updatedAt)}</div>
+            <div className="seo-updated">Frissítve: {huDate(contentUpdatedAt(f))}</div>
           </div>
         </div>
       </div>

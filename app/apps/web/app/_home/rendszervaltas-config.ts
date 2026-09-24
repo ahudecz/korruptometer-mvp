@@ -166,6 +166,18 @@ export type Feltaro = {
   /** Van-e már élő profil-aloldala (/rendszervaltas/<id>). Ha false, a
    *  kártya nem kattintható és a sitemapbe sem kerül be. */
   live?: boolean;
+  /**
+   * Mikor változott utoljára ENNEK a profilnak a TARTALMA (ISO dátum).
+   *
+   * 2026-09-24, user: a lapokon hónapokig a hub egyetlen, kézzel írt dátuma
+   * állt, miközben a tartalom közben változott. Innentől minden profil a
+   * sajátját mutatja, a hub pedig a legfrissebbet az összes közül (l.
+   * contentUpdatedAt()). Ha hiányzik, a hub dátumára esik vissza.
+   *
+   * SZABÁLY: ha egy profil szövegén, videóin vagy forrásain változtatsz,
+   * ezt a mezőt is állítsd át ugyanabban a commitban.
+   */
+  updatedAt?: string;
   /** A végoldal (/rendszervaltas/<id>) tartalma. A `section` bekezdései
    *  mindenképp megjelennek rajta; ez a mező az, ami fölé épül. Ha
    *  hiányzik, a végoldal akkor is működik — csak rövidebb. */
@@ -2248,6 +2260,7 @@ export const FELTAROK: Feltaro[] = [
       { label: 'Dicsőségfal', href: '/rendszervaltas' },
       { label: 'Kiemelt ügyek', href: '/ugyek' },
     ],
+    updatedAt: '2026-09-23',
     live: true,
     detail: {
       seoTitle: 'Puzsér Róbert: civil kontroll, Sétáló Budapest, Polgári Ellenállás',
@@ -3176,6 +3189,7 @@ export const FELTAROK: Feltaro[] = [
       { label: 'Videóriportok és podcastok', href: '/podcastok' },
       { label: 'Dicsőségfal', href: '/rendszervaltas' },
     ],
+    updatedAt: '2026-09-24',
     live: true,
     detail: {
       seoTitle: 'Pottyondy Edina: videók, influenszertüntetés, könyv',
@@ -3615,6 +3629,7 @@ export const FELTAROK: Feltaro[] = [
       { label: 'NKA-botrány', href: '/ugyek/nka-botrany' },
       { label: 'Videóriportok és podcastok', href: '/podcastok' },
     ],
+    updatedAt: '2026-09-24',
     live: true,
     detail: {
       seoTitle: 'Molnár Áron (noÁr): a Tanulni akaruntól az NKA-botrányig',
@@ -4257,3 +4272,17 @@ export const RENDSZERVALTAS_FAQ: { q: string; a: string }[] = [
     a: 'Igen. A lista nyitott, és bővül. Ha szerinted valaki hiányzik róla, a bejelentő űrlapon keresztül lehet javaslatot küldeni.',
   },
 ];
+
+
+/**
+ * A lapon kiírt „Frissítve" dátum.
+ *
+ * A hubon a legfrissebb tartalomváltozás számít — akár a hub saját szövegéé,
+ * akár bármelyik profil-aloldalé (user, 2026-09-24). Egy profiloldalon a saját
+ * dátuma, annak hiányában a hubé.
+ */
+export function contentUpdatedAt(feltaro?: Feltaro): string {
+  if (feltaro) return feltaro.updatedAt ?? RENDSZERVALTAS_HUB.updatedAt;
+  const all = [RENDSZERVALTAS_HUB.updatedAt, ...FELTAROK.map((f) => f.updatedAt).filter((d): d is string => Boolean(d))];
+  return all.reduce((latest, d) => (d > latest ? d : latest), RENDSZERVALTAS_HUB.updatedAt);
+}

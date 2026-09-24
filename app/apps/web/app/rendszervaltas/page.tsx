@@ -10,6 +10,7 @@ import {
   type Feltaro,
   type FeltaroGroup,
   type InlineLink,
+  contentUpdatedAt,
 } from '../_home/rendszervaltas-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../_home/cross-promo';
 import { FeltaroVideo } from '../_home/feltaro-video';
@@ -216,7 +217,7 @@ export default function RendszervaltasPage() {
             <div className="person-hero-eyebrow">{hub.eyebrow}</div>
             <h1 className="person-hero-name">{hub.h1}</h1>
             <p className="person-hero-desc">{hub.lead}</p>
-            <div className="seo-updated">Frissítve: {huDate(hub.updatedAt)}</div>
+            <div className="seo-updated">Frissítve: {huDate(contentUpdatedAt())}</div>
           </div>
         </div>
       </div>
