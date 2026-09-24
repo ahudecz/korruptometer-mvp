@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -9,6 +9,7 @@ import {
   RENDSZERVALTAS_HUB,
   getFeltaro,
   type Feltaro,
+  type FeltaroCase as FeltaroCaseType,
   type FeltaroLink,
   type InlineLink,
 } from '../../_home/rendszervaltas-config';
@@ -183,6 +184,20 @@ function Sources({ sources, label }: { sources: FeltaroLink[]; label?: string })
   );
 }
 
+/** Az ügy-ajánló keretes doboza. Külön komponens, mert két helyen jelenhet
+ *  meg: alapból az ügy végén, `promoPlacement: 'top'` esetén az első
+ *  bekezdés után (l. FeltaroCase.promoPlacement). */
+function CasePromo({ promo }: { promo: NonNullable<FeltaroCaseType['promo']> }) {
+  return (
+    <Link href={promo.href} className="ugy-subpage-promo">
+      <span className="ugy-subpage-promo-eyebrow">{promo.eyebrow}</span>
+      <span className="ugy-subpage-promo-title">{promo.title}</span>
+      <span className="ugy-subpage-promo-lead">{promo.lead}</span>
+      <span className="ugy-subpage-promo-cta">{promo.cta} →</span>
+    </Link>
+  );
+}
+
 export default async function FeltaroPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const f: Feltaro | undefined = getFeltaro(slug);
@@ -330,7 +345,12 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                       </h3>
                       {c.when && <div className={styles.caseWhen}>{c.when}</div>}
                       {splitParas(c.body).map((para, i) => (
-                        <p className={styles.caseBody} key={`b${i}`}>{withAutoLinks(para, c.links, linkedPersons, selfHref)}</p>
+                        <Fragment key={`b${i}`}>
+                          <p className={styles.caseBody}>{withAutoLinks(para, c.links, linkedPersons, selfHref)}</p>
+                          {/* user, 2026-09-24: hosszú szakasznál az ügy-ajánló az ELSŐ
+                              bekezdés után áll, ne a lap alján, ahova kevesen jutnak el. */}
+                          {i === 0 && c.promoPlacement === 'top' && c.promo && <CasePromo promo={c.promo} />}
+                        </Fragment>
                       ))}
                       {c.more?.flatMap((para) => splitParas(para)).map((para, i) => (
                         <p className={styles.caseBody} key={`m${i}`}>{withAutoLinks(para, c.links, linkedPersons, selfHref)}</p>
@@ -420,14 +440,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                         </>
                       )}
                       {c.sources && c.sources.length > 0 && <Sources sources={c.sources} />}
-                      {c.promo && (
-                        <Link href={c.promo.href} className="ugy-subpage-promo">
-                          <span className="ugy-subpage-promo-eyebrow">{c.promo.eyebrow}</span>
-                          <span className="ugy-subpage-promo-title">{c.promo.title}</span>
-                          <span className="ugy-subpage-promo-lead">{c.promo.lead}</span>
-                          <span className="ugy-subpage-promo-cta">{c.promo.cta} →</span>
-                        </Link>
-                      )}
+                      {c.promo && c.promoPlacement !== 'top' && <CasePromo promo={c.promo} />}
                     </li>
                     );
                   })}

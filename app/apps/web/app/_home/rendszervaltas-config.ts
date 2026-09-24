@@ -238,6 +238,11 @@ export type FeltaroCase = {
    *  ügynél, amelyhez van /ugyek/<id> oldalunk — user szabály, 2026-09-16:
    *  ha egy feltáró egy KIEMELT ügyhöz kapcsolható, arra át kell hivatkozni. */
   promo?: { href: string; eyebrow: string; title: string; lead: string; cta: string };
+  /** Hol jelenjen meg a `promo` doboz. Alapból az ügy VÉGÉN, a források után.
+   *  `'top'` esetén rögtön az ELSŐ bekezdés után — user kérés, 2026-09-24:
+   *  a hosszú NKA-szakasz aljára tett ajánlót az olvasók nagy része sosem
+   *  éri el, pedig ott a teljes ügy adatlapja. */
+  promoPlacement?: 'top';
 };
 
 export type FeltaroDetail = {
@@ -3511,6 +3516,15 @@ export const FELTAROK: Feltaro[] = [
                 lead: 'A kritika, amely a filmet politikai allegóriaként olvassa.',
               },
             ],
+            videos: [
+              {
+                id: 'BWg1IqIrIhM',
+                label: 'IGN Hungary · 2026. jan. 14.',
+                title: 'Itt érzem magam otthon — előzetes',
+                summary:
+                  'A film hivatalos előzetese Lovas Rozi és Molnár Áron főszereplésével, egy hónappal a február 19-i bemutató előtt.',
+              },
+            ],
           },
           {
             title: 'Magyarország Kedvenc Reggeli Műsora — napi politikai tartalom',
@@ -3541,11 +3555,13 @@ export const FELTAROK: Feltaro[] = [
             title: 'Az NKA-botrány kirobbantása',
             when: '2026. áprilistól',
             body:
-              '2026. április 24-én Molnár Áron a Magyarország Kedvenc Reggeli Műsorában olyan információkat hozott nyilvánosságra, amelyek szerint a Nemzeti Kulturális Alap és az NKTK környezetében egy több milliárd forintos, nem megfelelően átlátható kulturális támogatási rendszer működött. A nyilvánosságra hozott adatok egy nagyságrendileg 17 milliárd forintos keretre irányították a figyelmet, amelynek egy részéről egy addig gyakorlatilag ismeretlen testület, a „Kiemelt Kulturális Programok Ideiglenes Kollégiuma" döntött — vagyis a szakmai kollégiumi rendszert meg lehetett kerülni.',
+              'Az NKA-botrány 2026. április 24-én robbant ki: Molnár Áron a Magyarország Kedvenc Reggeli Műsorában olyan információkat hozott nyilvánosságra, amelyek szerint a Nemzeti Kulturális Alap és az NKTK környezetében egy több milliárd forintos, nem megfelelően átlátható kulturális támogatási rendszer működött. A nyilvánosságra hozott adatok egy nagyságrendileg 17 milliárd forintos keretre irányították a figyelmet, amelynek egy részéről egy addig gyakorlatilag ismeretlen testület, a „Kiemelt Kulturális Programok Ideiglenes Kollégiuma" döntött — vagyis a szakmai kollégiumi rendszert meg lehetett kerülni.',
+            links: [{ text: 'NKA-botrány', href: '/ugyek/nka-botrany' }],
+            promoPlacement: 'top',
             more: [
               'A forrás később személyesen is azonosította magát: Papp Gergely, az NKTK projektmenedzsere elmondta, hogy ő szolgáltatott információkat a támogatási keretről, amelyről állítása szerint az intézményen belül is sokan nem tudtak. A nyertesek listája ezt követően vált olyan formában elérhetővé, amelyből a kedvezményezettek és az összegek vizsgálhatók lettek.',
               'A feltárás nem egyszeri bejelentés volt: májusban Molnár Áron további dokumentumokat is bemutatott — köztük egy e-mailt, amely a 24.hu beszámolója szerint azt dokumentálta, hogy Mága Zoltán koncertsorozatához közel félmilliárd forintos állami támogatást próbáltak biztosítani, a kampányidőszakhoz kötött célokkal. Augusztusban újabb szervezeteket nevezett meg a kedvezményezettek közül, szeptemberben pedig mentelmi jogok felfüggesztését követelte az érintett politikusoknál.',
-              'Fontos a szerepek elkülönítése. Nem ő indította a NAV nyomozását, nem ő hozott bírósági döntéseket, és nem lehet minden későbbi hatósági eredményt neki tulajdonítani. A dokumentálható állítás ennél szűkebb: egy belső forrástól kapott információkat és dokumentumokat hozott nyilvánosságra, és ezzel hozzájárult ahhoz, hogy az NKA támogatási rendszere országos közpénzügyi üggyé váljon. A későbbi büntetőeljárásokban érintettek bűnösségét nem lehet előre kijelenteni.',
+              'Fontos a szerepek elkülönítése. Nem ő indította a NAV nyomozását, nem ő hozott bírósági döntéseket, és nem lehet minden későbbi hatósági eredményt neki tulajdonítani. A dokumentálható állítás ennél szűkebb: egy belső forrástól kapott információkat és dokumentumokat hozott nyilvánosságra, és ezzel hozzájárult ahhoz, hogy az NKA-botrányból országos közpénzügyi ügy legyen. A későbbi büntetőeljárásokban érintettek bűnösségét nem lehet előre kijelenteni.',
             ],
             sources: [
               {
@@ -3600,7 +3616,7 @@ export const FELTAROK: Feltaro[] = [
               title: 'NKA-botrány',
               lead:
                 'A teljes ügy adatlapja: a 17 milliárdos keret, a gyanúsítottak, az őrizetbe vételek és a visszafizetések — folyamatosan frissítve.',
-              cta: 'Az ügy adatlapja →',
+              cta: 'Az ügy adatlapja',
             },
           },
         ],
