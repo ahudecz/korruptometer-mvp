@@ -105,8 +105,12 @@ function FeltaroCard({ f }: { f: Feltaro }) {
         <div className={styles.name}>{f.name}</div>
         <div className={styles.role}>{f.role}</div>
         <div className={styles.tagline}>{f.tagline}</div>
+        {/* 2026-09-24, user: a „Mit tárt fel?" a fal felének nem igaz — Pottyondy
+            Edina vagy Puzsér Róbert nem tárt fel ügyet, Molnár Áron pedig a
+            választás UTÁN. Ez a kérdés viszont mindegyik profilra illik, és
+            minden végoldalon van rá egy saját szakasz. */}
         {f.live ? (
-          <div className={styles.cta}>Mit tárt fel? →</div>
+          <div className={styles.cta}>Miért van a falon? →</div>
         ) : (
           <div className={styles.ctaSoon}>Részletes profil hamarosan</div>
         )}
