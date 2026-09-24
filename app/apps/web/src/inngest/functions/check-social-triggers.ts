@@ -16,6 +16,8 @@ import { listPolls, getPollWithResults } from '@/lib/poll-queries';
 import {
   complaintWhatHappened,
   imageSubline,
+  imageClaimLine,
+  withAttribution,
   resignationHeadline,
   resignationWhatHappened,
   whyItMattersFor,
@@ -300,7 +302,7 @@ async function buildMediaClosureTriggers(db: ReturnType<typeof getDb>, counts: C
     const verb = MEDIA_CLOSURE_VERBS[m.eventType];
     const headline = verb ? `${m.name}: ${verb}` : m.name;
     const detail = m.description ?? undefined;
-    const imageDetail = imageSubline(fitCompleteSentences(m.description, IMAGE_DETAIL_MAX_CHARS), m.name);
+    const imageDetail = imageSubline(m.description, m.name);
     const whyItMatters = whyItMattersFor('media_closure', counts, kicker);
     const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
     out.push({
@@ -357,7 +359,7 @@ const VERDICT_VERBS: Record<string, string> = {
 async function buildCourtVerdictTriggers(db: ReturnType<typeof getDb>, counts: ContextCounts): Promise<OutboxInsert[]> {
   const since = new Date(Date.now() - BREAKING_LOOKBACK_HOURS * 60 * 60 * 1000);
   const recent = await db
-    .select({ id: schema.courtVerdicts.id, personName: schema.courtVerdicts.personName, sentenceLabel: schema.courtVerdicts.sentenceLabel, sentenceYears: schema.courtVerdicts.sentenceYears, summary: schema.courtVerdicts.summary, verdictType: schema.courtVerdicts.verdictType })
+    .select({ id: schema.courtVerdicts.id, personName: schema.courtVerdicts.personName, sentenceLabel: schema.courtVerdicts.sentenceLabel, sentenceYears: schema.courtVerdicts.sentenceYears, summary: schema.courtVerdicts.summary, verdictType: schema.courtVerdicts.verdictType, position: schema.courtVerdicts.position, court: schema.courtVerdicts.court, sourceNames: schema.courtVerdicts.sourceNames })
     .from(schema.courtVerdicts)
     .where(and(
       eq(schema.courtVerdicts.reviewStatus, 'approved'),
@@ -379,7 +381,25 @@ async function buildCourtVerdictTriggers(db: ReturnType<typeof getDb>, counts: C
     const headline = verb ? `${v.personName}: ${verb}` : sentence ? `${v.personName}: ${sentence}` : v.personName;
     const detail = v.summary;
     // Brief 8. — a képre rövid, befejezett gondolat megy, nem a fél summary.
-    const imageDetail = imageSubline(fitCompleteSentences(v.summary, IMAGE_DETAIL_MAX_CHARS), sentence);
+    //
+    // 2026-09-24 — KÖTELEZŐ FORRÁS-ELŐTAG, ha nincs hatósági megerősítés.
+    // Jelzés: a `court` mező. Az kinyerő oda megnevezett bíróságot/ügyészséget
+    // ír, ha a cikk említ ilyet („Fővárosi Törvényszék", „Központi Nyomozó
+    // Főügyészség"); ha nem, marad az „Ismeretlen bíróság" tartalék. Tehát
+    // ismeretlen bíróság = a cikkben nem állt mögötte megnevezett hatóság,
+    // ilyenkor a képre kiírjuk, KI SZERINT (a hírforrás neve).
+    const hatosagiKozles = Boolean(v.court) && !/^ismeretlen\s+bír/i.test(v.court);
+    const forras = hatosagiKozles ? undefined : v.sourceNames?.[0];
+    // A képre STRUKTURÁLT mezőkből épített sor megy, nem a summary tömörítése
+    // (user, 2026-09-24). A summary marad a caption-ben, teljes egészében.
+    const imageDetail = imageClaimLine({
+      personName: v.personName,
+      position: v.position,
+      verdictType: v.verdictType,
+      sentenceLabel: v.sentenceLabel,
+      attribution: forras,
+      seed: v.id,
+    }) || withAttribution(imageSubline(v.summary, sentence), forras);
     const whyItMatters = whyItMattersFor('court_verdict', counts, kicker);
     const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
     out.push({
@@ -418,7 +438,7 @@ async function buildAssetRecoveryTriggers(db: ReturnType<typeof getDb>, counts: 
     // nem volt rövidítve, mielőtt a képre került — brief 8. pont.
     // A számot tartalmazó mondatok külön felsorolásba kerülnek (brief 3.3).
     const { lead: detail, bullets } = numberBullets(a.description);
-    const imageDetail = imageSubline(fitCompleteSentences(a.description, IMAGE_DETAIL_MAX_CHARS));
+    const imageDetail = imageSubline(a.description);
     const whyItMatters = whyItMattersFor('asset_recovery', counts, kicker);
     const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
     out.push({

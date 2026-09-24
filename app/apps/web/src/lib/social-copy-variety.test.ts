@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  IMAGE_SUBLINE_MAX_WORDS,
+  imageSubline,
+  imageClaimLine,
+  withAttribution,
   complaintHeadline,
   hookFor,
   looksLikeCrimeDescription,
@@ -149,5 +153,150 @@ describe('complaintHeadline — mondatkezdés és körülírt bejelentő', () =>
     expect(looksLikeDescriptiveFiler('Hadházy Ákos')).toBe(false);
     expect(looksLikeDescriptiveFiler('kormány')).toBe(false);
     expect(looksLikeDescriptiveFiler('Közlekedési és Beruházási Minisztérium')).toBe(false);
+  });
+});
+
+describe('imageSubline — a képre kerülő kiegészítő sor', () => {
+  // 2026-09-24 REGRESSZIÓ: pontosan ez a szöveg ment ki Facebookra, befejezett
+  // mondatnak látszó csonkként. A `fitCompleteSentences` helyesen dolgozott,
+  // az `imageSubline` vágta szét utána a 7. szónál.
+  const ELES_HIBA = 'Mikucza Tamást, Seszták Miklós volt fejlesztési miniszter feltételezett strómanjának nevezik…';
+
+  it('a záró „…"-t csonknak tekinti, és nem adja vissza egészben', () => {
+    // 12 szó alatt van, tehát a szó-korlát átengedné — de a „…" elárulja,
+    // hogy egy korábbi lépés már elvágta.
+    const out = imageSubline('Galgóczy Ferenc bejegyzése szerint őrizetbe vették Mikucza Tamás kisvárdai…');
+    expect(out).not.toMatch(/…$/);
+  });
+
+  it('SOSE ad vissza mondat közepén elvágott csonkot', () => {
+    const out = imageSubline(ELES_HIBA);
+    expect(out).not.toBe('Mikucza Tamást, Seszták Miklós volt fejlesztési miniszter');
+    // Amit visszaad, az vagy üres, vagy önmagában értelmes tagmondat.
+    if (out) expect(out.split(' ').length).toBeLessThanOrEqual(IMAGE_SUBLINE_MAX_WORDS);
+  });
+
+  it('a korláton belüli szöveget érintetlenül hagyja', () => {
+    expect(imageSubline('Érintett összeg: 1,01 milliárd Ft')).toBe('Érintett összeg: 1,01 milliárd Ft');
+  });
+
+  it('hosszú szövegből az első beférő, önmagában megálló tagmondatot adja', () => {
+    const out = imageSubline(
+      'A hatóságok tegnap este őrizetbe vették a vállalkozót, a gyanúsítás pontos tartalmáról '
+      + 'azonban egyelőre semmilyen hivatalos tájékoztatás nem érkezett egyetlen szervtől sem.',
+    );
+    expect(out).toBe('A hatóságok tegnap este őrizetbe vették a vállalkozót');
+  });
+
+  it('SOSE emel ki későbbi tagmondatot — az elveszti az alanyát', () => {
+    // 2026-09-24: az első tagmondat itt 2 szó („Mikucza Tamást"), a második
+    // viszont beférne — de önmagában úgy olvasódna, mintha SESZTÁK lenne a
+    // stróman. Inkább essen vissza a tartalékra, mint hogy hamisat állítson.
+    const out = imageSubline(
+      'Mikucza Tamást, a Seszták Miklós volt fejlesztési miniszterhez köthető kisvárdai '
+      + 'üzleti kör ismert szereplőjét a hatóságok szerda este őrizetbe vették.',
+      'őrizetbe vétel',
+    );
+    expect(out).toBe('őrizetbe vétel');
+  });
+
+  it('ha semmi nem fér be, inkább ÜRES, mint csonk', () => {
+    // Egyetlen tagmondat, 12 szónál hosszabb, vessző és mondathatár nélkül —
+    // nincs mit levágni belőle úgy, hogy értelmes maradjon.
+    const egybefuggo = 'Rendkívül hosszú összetett szavakból álló megnevezhetetlen intézményi elnevezés amely '
+      + 'sehogyan sem rövidíthető értelmes módon rövidebb formára';
+    expect(imageSubline(egybefuggo)).toBe('');
+  });
+
+  it('üres értéknél a fallbackre esik vissza', () => {
+    expect(imageSubline('', 'Mészáros Lőrinc')).toBe('Mészáros Lőrinc');
+  });
+
+  it('a fallbackot is ugyanúgy védi — abból sem lesz csonk', () => {
+    const out = imageSubline('', ELES_HIBA);
+    expect(out).not.toBe('Mikucza Tamást, Seszták Miklós volt fejlesztési miniszter');
+  });
+});
+
+describe('withAttribution — kötelező „ki szerint" (user, 2026-09-24)', () => {
+  it('kiteszi a forrást, ha nincs hatósági megerősítés', () => {
+    expect(withAttribution('Őrizetbe vették Mikucza Tamást', 'A Kontroll'))
+      .toBe('A Kontroll azt írja: Őrizetbe vették Mikucza Tamást');
+  });
+
+  it('NEM kisbetűsíti a mondatkezdő tulajdonnevet', () => {
+    // Korábbi hibaosztály: „A Kontroll szerint mikucza Tamást…"
+    expect(withAttribution('Mikucza Tamást elvitték', 'A Kontroll'))
+      .toBe('A Kontroll azt írja: Mikucza Tamást elvitték');
+  });
+
+  it('nem teszi ki kétszer, ha már van „szerint" a mondatban', () => {
+    const s = 'Galgóczy szerint őrizetben Seszták embere';
+    expect(withAttribution(s, 'A Kontroll')).toBe(s);
+  });
+
+  it('nem ismétli a forrást, ha az már szerepel a szövegben', () => {
+    const s = 'A Kontroll birtokába került dokumentum';
+    expect(withAttribution(s, 'A Kontroll')).toBe(s);
+  });
+
+  it('hatósági közlésnél (nincs átadott forrás) érintetlenül hagyja', () => {
+    expect(withAttribution('Jogerősen elítélték a volt államtitkárt'))
+      .toBe('Jogerősen elítélték a volt államtitkárt');
+  });
+
+  it('üres sorból nem csinál forrás-mondatot', () => {
+    expect(withAttribution('', 'A Kontroll')).toBe('');
+  });
+});
+
+describe('imageClaimLine — strukturált mezőkből épített képsor', () => {
+  const alap = { personName: 'Mikucza Tamás', position: 'kisvárdai vállalkozó', verdictType: 'előzetesben', sentenceLabel: 'előzetes letartóztatás', seed: 'a' };
+
+  it('NEM ismétli a nevet — az a kickerben és a headline-ban már szerepel', () => {
+    // Ez a sor lényege: a képen a név és az esemény már kétszer ott van,
+    // harmadszor unalmas. Ide a beosztás és a megerősítettség jön.
+    expect(imageClaimLine(alap)).not.toContain('Mikucza Tamás');
+    expect(imageClaimLine(alap)).toContain('kisvárdai vállalkozó');
+  });
+
+  it('nincs hatósági megerősítés → forrás-előtag + kimondja, hogy nincs megerősítés', () => {
+    const out = imageClaimLine({ ...alap, attribution: 'A Kontroll' });
+    expect(out.startsWith('A Kontroll azt írja —')).toBe(true);
+    expect(out).toContain('hatósági megerősítés nélkül');
+    expect(out).not.toMatch(/:.*:/); // sose dupla kettőspont
+  });
+
+  it('hatósági közlésnél feszültség-nyitány jön, forrás és mentegetőzés nélkül', () => {
+    const out = imageClaimLine(alap);
+    expect(out).not.toContain('azt írja');
+    expect(out).not.toContain('hatósági megerősítés nélkül');
+  });
+
+  it('nem ismétli a büntetés-címkét, ha az ugyanazt mondja, mint a kicker', () => {
+    // verdictType 'előzetesben' + sentenceLabel 'előzetes letartóztatás' —
+    // a kicker már kiírta, ne álljon ott megint.
+    expect(imageClaimLine(alap)).not.toContain('előzetes letartóztatás');
+  });
+
+  it('a büntetés MÉRTÉKÉT viszont kiírja, mert az új információ', () => {
+    const out = imageClaimLine({ personName: 'Völner Pál', position: 'volt államtitkár', verdictType: 'jogerős', sentenceLabel: '5 év fegyház', seed: 'b' });
+    expect(out).toContain('5 év fegyház');
+    expect(out).toContain('volt államtitkár');
+  });
+
+  it('SOSE használ igés+tárgyesetes szerkezetet (névragozás-csapda)', () => {
+    for (const t of ['előzetesben', 'jogerős', 'vádemelés', 'szabadlábra helyezve']) {
+      expect(imageClaimLine({ ...alap, verdictType: t })).not.toContain('Tamást');
+    }
+  });
+
+  it('a képre szánt szó-korlátba fér', () => {
+    const out = imageClaimLine({ ...alap, attribution: 'A Kontroll' });
+    expect(out.split(' ').length).toBeLessThanOrEqual(IMAGE_SUBLINE_MAX_WORDS);
+  });
+
+  it('név nélkül nem gyárt sort', () => {
+    expect(imageClaimLine({ ...alap, personName: '  ' })).toBe('');
   });
 });

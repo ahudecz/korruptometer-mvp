@@ -440,15 +440,176 @@ export function whyItMattersFor(
  *   - „felügyelőbizottsági elnök, Nemzeti Reorganizációs Nonprofit Kft. (NRN)"
  *     — 7 szó, de se nevet, se eseményt nem közöl, csak beosztást.
  */
-export const IMAGE_SUBLINE_MAX_WORDS = 7;
+/**
+ * 2026-09-24: 7 → 12 szó (user döntés).
+ *
+ * A 7 szavas korlát mellett a képre matematikailag nem fért ki értelmes
+ * mondat, csak mezőnév-érték párok („Érintett összeg: 130 millió Ft") vagy
+ * csonkok. A user saját példái a jó képszövegre 9-13 szavasak — ezért ennyi.
+ */
+export const IMAGE_SUBLINE_MAX_WORDS = 12;
 
+/**
+ * KÖTELEZŐ FORRÁS-ELŐTAG (user, 2026-09-24).
+ *
+ * Ha egy állítást nem erősítette meg hatóság, a képen ki KELL írni, hogy ki
+ * szerint. A 2026-09-24-i Mikucza-poszt pont ezen bukott: tényként közölte az
+ * őrizetbe vételt, holott a forráscikk szó szerint azt írta, hogy „hatósági
+ * megerősítés egyelőre nem érkezett", és az egyetlen forrás egy Facebook-
+ * bejegyzés volt. Ez egyben jogi kockázat is: megerősítetlen állítás tényként
+ * kimondva pont az a minta, amiből ügyvédi felszólítás lesz.
+ *
+ * A túl-attribuálás ártalmatlan („A Telex szerint…" akkor is igaz, ha a
+ * hatóság is megerősítette), a hiánya viszont nem — ezért a hívó oldalon a
+ * szabály a biztonságos irányba téved.
+ */
+/**
+ * A KÉPRE KERÜLŐ SOR STRUKTURÁLT MEZŐKBŐL — nem a summary tömörítéséből.
+ *
+ * 2026-09-24, user: a gépi sorok unalmasak („A feljelentés státusza:
+ * feljelentés"), az ő saját példái viszont ilyenek: „Szorul a hurok:
+ * előzetesben Seszták strómanja!", „A Kontroll azt írja: Előállították
+ * Seszták strómanját!". Ezek NEM tömörítések — újraírt mondatok, strukturált
+ * tényekből: feszültség + esemény + ki.
+ *
+ * Ezért ez a függvény nem a prózát vágja, hanem sablonból épít. Előnye, hogy
+ * SOSE lesz csonk, sose veszti el az alanyát, és nulla LLM-költség — ugyanaz
+ * a megoldás, mint a hook-rétegnél.
+ *
+ * Két nyelvtani szabály van beleégetve:
+ *  - SOSE igés+tárgyesetes szerkezet („Előállították Mikucza Tamást"): a név
+ *    tárgyragja ismeretlen névvégződésen elcsúszik. Helyette kettőspontos,
+ *    alanyesetű forma — ugyanaz az elv, mint a headline-nál (l.
+ *    check-social-triggers.ts VERDICT_VERBS melletti komment).
+ *  - A FESZÜLTSÉG-NYITÁNY csak akkor jön, ha nincs kötelező forrás-előtag;
+ *    a kettő együtt túl hosszú, és a forrás fontosabb.
+ */
+const VERDICT_TENSION: Record<string, readonly string[]> = {
+  'előzetesben': ['Szorul a hurok', 'Rács mögött', 'Letartóztatás'],
+  'elsőfokú': ['Megszületett az ítélet', 'Kimondták'],
+  'jogerős': ['Jogerős', 'Vége a pernek', 'Kimondták'],
+  'vádemelés': ['Bíróság elé áll', 'Vádemelés'],
+  'szabadlábra helyezve': ['Kiengedték', 'Szabadlábon'],
+  'felmentve': ['Felmentés'],
+  'eljárás megszűnt': ['Vége az eljárásnak'],
+};
+
+export function imageClaimLine(v: {
+  personName: string;
+  position?: string | null;
+  verdictType: string;
+  sentenceLabel?: string | null;
+  /** A hírforrás neve — KÖTELEZŐ, ha nincs hatósági megerősítés. */
+  attribution?: string | null;
+  /** Stabil választás ugyanarra a rekordra (rendszerint a sor id-ja). */
+  seed: string;
+}): string {
+  // NÉV nélkül nincs sor. A puszta beosztás („felügyelőbizottsági elnök,
+  // Nemzeti Reorganizációs Nonprofit Kft.") 2026-09-15/16-ban már kiment
+  // élesbe: se nevet, se eseményt nem közölt. A beosztás csak kiegészítő.
+  const nev = v.personName.trim();
+  if (!nev) return '';
+  const who = [nev, (v.position ?? '').trim()].filter(Boolean).join(', ');
+
+  // A KÉPEN A NÉV ÉS AZ ESEMÉNY MÁR KÉTSZER SZEREPEL: a kickerben
+  // („ELŐZETESBEN") és a headline-ban („Pilz Tamás: előzetesben!"). Ha ez a
+  // sor is azt ismételné, háromszor ugyanaz állna a képen — pont ettől
+  // unalmas (user, 2026-09-24). Ezért ide csak az kerül, ami a másik kettőben
+  // NINCS: ki az illető (beosztás), mennyi a büntetés, és megerősített-e.
+  const norm2 = (s: string) => s.toLowerCase().replace(/[^a-záéíóöőúüű]/g, '');
+  const cimke = (v.sentenceLabel ?? '').trim();
+  // A büntetés-címke csak akkor új információ, ha nem ugyanazt mondja, mint a
+  // verdictType (amit a kicker már kiír).
+  // Szótő-összevetés: az „előzetesben" és az „előzetes letartóztatás" ugyanaz
+  // a hír, csak más raggal — a puszta includes() ezt nem fogja meg.
+  const to = (s: string) => norm2(s).slice(0, 8);
+  const cimkeUj = Boolean(cimke) && to(cimke) !== to(v.verdictType);
+  const reszek = [(v.position ?? '').trim(), cimkeUj ? cimke : ''].filter(Boolean);
+  const mag = reszek.length > 0 ? reszek.join(', ') : who;
+
+  // Forrás-előtag esetén GONDOLATJEL, nem kettőspont — különben dupla
+  // kettőspont lenne („…azt írja: őrizetbe vétel: Mikucza Tamás").
+  const forras = (v.attribution ?? '').trim().replace(/[.:]+$/, '');
+  // A megerősítés hiánya maga is hír — és ez a legfontosabb, amit a képen
+  // látni kell, ha egyetlen lap/Facebook-poszt az egyetlen forrás.
+  if (forras) return `${forras} azt írja — ${mag}, hatósági megerősítés nélkül`;
+
+  const nyitany = VERDICT_TENSION[v.verdictType];
+  if (!nyitany) return mag;
+  const valasztott = pickBySeed(v.seed, nyitany);
+  // „Vádemelés — vádemelés: …" — a nyitány és az esemény ugyanaz. Ilyenkor
+  // nincs nyitány, elég az esemény.
+  // Ha a nyitány ugyanazt mondja, mint a sor tartalma, nincs nyitány.
+  const azonos = to(valasztott) === to(mag);
+  // Nyitány nélkül a sor kisbetűvel kezdődhet — l. a 2026-09-08-i nagybetűs
+  // mondatkezdés javítást ugyanerre a hibaosztályra.
+  return azonos ? mag.charAt(0).toUpperCase() + mag.slice(1) : `${valasztott} — ${mag}`;
+}
+
+export function withAttribution(line: string, attribution?: string | null): string {
+  const clean = (line ?? '').trim();
+  const who = (attribution ?? '').trim().replace(/[.:]+$/, '');
+  if (!clean) return '';
+  if (!who) return clean;
+  // Már tartalmaz forrás-megjelölést — ne tegyük ki kétszer.
+  if (new RegExp(`${who}\\b`, 'i').test(clean) || /\bszerint\b/i.test(clean)) return clean;
+  // KETTŐSPONTOS forma, nem „X szerint <kisbetű>". A kisbetűsítés tulajdonnéven
+  // elromlik („A Kontroll szerint mikucza Tamást…"), a kettőspont után viszont
+  // a mondat megtartja a saját nagybetűjét. Ez egyben a user saját példája is:
+  // „A Kontroll azt írja: Előállították Seszták strómanját!"
+  return `${who} azt írja: ${clean}`;
+}
+
+/**
+ * A szó-korlátot TAGMONDAT-HATÁRON érvényesíti, nem a 7. szónál vakon.
+ *
+ * 2026-09-24, élesre ment hiba: a képre ez került, befejezett mondatnak
+ * látszó csonkként: „Mikucza Tamást, Seszták Miklós volt fejlesztési
+ * miniszter". Az ok NEM a `fitCompleteSentences` volt — az helyesen adott
+ * vissza egy egész gondolatot —, hanem az, hogy UTÁNA ez a függvény még
+ * egyszer vágott, a 7. szónál, mondatszerkezettől függetlenül. Két őr
+ * dolgozott egymás ellen: az első befejezett gondolatra vágott, a második
+ * szétvágta.
+ *
+ * A „…" hiánya (2026-09-10) ezt súlyosbította: a csonk nem látszik csonknak,
+ * hanem kész mondatnak, ami semmit nem állít.
+ *
+ * Új sorrend:
+ *   1. ha belefér a szó-korlátba, marad;
+ *   2. különben az ELSŐ olyan tagmondat/mondat, ami belefér — így a sor
+ *      mindig önmagában értelmes;
+ *   3. ha még a legrövidebb tagmondat sem fér be, inkább ÜRES sztringgel
+ *      térünk vissza, mint csonkkal — a hívó ilyenkor a `fallback`-et kapja,
+ *      és ha az sincs, a kép inkább kiegészítő sor nélkül megy ki, mint
+ *      értelmetlen szöveggel.
+ */
 export function imageSubline(value: string | null | undefined, fallback?: string | null): string {
-  const clean = (value ?? '').replace(/\s+/g, ' ').trim().replace(/[,;:—-]+$/, '');
-  const pick = clean || (fallback ?? '').replace(/\s+/g, ' ').trim();
-  if (!pick) return '';
-  const words = pick.split(' ');
-  if (words.length <= IMAGE_SUBLINE_MAX_WORDS) return pick;
-  // Szóhatáron vágunk, és NEM teszünk ki „…"-t: a képen az úgy néz ki,
-  // mintha elfogyott volna a szöveg (2026-09-10 user report).
-  return words.slice(0, IMAGE_SUBLINE_MAX_WORDS).join(' ').replace(/[,;:—-]+$/, '');
+  const norm = (s: string | null | undefined) => (s ?? '').replace(/\s+/g, ' ').trim().replace(/[,;:—-]+$/, '');
+  const wordCount = (s: string) => s.split(' ').filter(Boolean).length;
+
+  for (const candidate of [norm(value), norm(fallback)]) {
+    if (!candidate) continue;
+    // A záró „…" azt jelenti, hogy egy KORÁBBI lépés (fitCompleteSentences)
+    // már elvágta a mondatot. Ilyenkor a szó-szám hiába fér bele: a szöveg
+    // attól még csonk. Nem fogadjuk el egészben, hanem tagmondatra bontjuk.
+    const csonkolt = /…$/.test(candidate);
+    if (!csonkolt && wordCount(candidate) <= IMAGE_SUBLINE_MAX_WORDS) return candidate;
+
+    // Az első önmagában is megálló tagmondat/mondat, ami belefér.
+    const clauses = candidate
+      .split(/(?<=[.!?])\s+|,\s+|\s+—\s+|;\s+/)
+      .map((c) => norm(c.replace(/…$/, '')))
+      .filter(Boolean);
+    // CSAK AZ ELSŐ tagmondat jöhet szóba — sose egy későbbi.
+    //
+    // 2026-09-24, mérve: egy későbbi tagmondat kiemelve elveszti az alanyát,
+    // és ettől TARTALMILAG HAMIS lesz. A „Mikucza Tamást, Seszták Miklós volt
+    // fejlesztési miniszter feltételezett strómanjának nevezik." mondatból a
+    // második tagmondat önmagában úgy olvasódik, mintha SESZTÁK lenne az, akit
+    // strómannak neveznek. Inkább legyen a sor unalmas (tartalék szöveg), mint
+    // hamis.
+    const first = clauses[0];
+    if (first && wordCount(first) <= IMAGE_SUBLINE_MAX_WORDS && wordCount(first) >= 3) return first;
+  }
+  return '';
 }
