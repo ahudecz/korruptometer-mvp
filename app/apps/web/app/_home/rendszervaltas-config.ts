@@ -288,6 +288,8 @@ export type FeltaroDetail = {
      *  User, 2026-09-25: a Momentum-frakció képe a frakcióról szóló bekezdés
      *  után kell, ne a szakasz alján. */
     cardsAfterParagraph?: number;
+    /** Ugyanez a `videos`-ra: a videó(k) ennyiedik bekezdés (0-tól) után. */
+    videosAfterParagraph?: number;
   }[];
   video?: FeltaroVideoRef;
   /** Több beágyazott videó egy blokkban, saját felvezetővel. Akkor kell,
@@ -2870,6 +2872,16 @@ export const FELTAROK: Feltaro[] = [
             'A DK valamivel átlépte az 1 százalékot.',
             'Az MKKP viszont nem érte el.',
             'És ennek az MKKP számára nagyon konkrét pénzügyi következménye lett.',
+          ],
+          videosAfterParagraph: 3,
+          videos: [
+            {
+              id: 'k_v1OyUgOrk',
+              label: 'ATV Magyarország · 2025. augusztus 7.',
+              title: 'Önállóan indul az MSZP, a Kutyapárt és a DK a 2026-os választáson',
+              summary:
+                'Kilenc hónappal a választás előtt: a DK és a Kutyapárt önálló indulást tervez, a Momentum pedig úgy döntött, hogy el sem indul, mert az csak a kormányváltó szavazatokat osztaná meg.',
+            },
           ],
           sources: [
             { source: 'Telex', date: '2026. ápr. 18.', headline: 'Itt a választás eredménye: a Tisza még több mandátumot szerzett, a Fidesz veresége még nagyobb', url: 'https://telex.hu/belfold/2026/04/18/valasztas-vegeredmeny-mandatumok-tisza-fidesz-mi-hazank' },
