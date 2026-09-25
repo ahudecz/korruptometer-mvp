@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { unstable_cache } from 'next/cache';
 import { desc, eq } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
@@ -7,6 +8,23 @@ import { pickDiverse } from './social-feed-select';
 
 const TEASER_SIZE = 18;
 const FETCH_POOL = 400; // elég nagy merítés, hogy minden aktív oldalhoz jusson legalább 1 poszt
+
+// 2026-09-26: gyorsítótár nélkül ez a 400 soros lekérdezés a nyitóoldal MINDEN
+// kiszolgálásánál lefutott (a8dfa22 óta), a session-módú pooler 15 slotjáért
+// versengve — ez volt az egyik oka az időszakos 60 mp-es 504-nek. A page.tsx
+// fejléce is előírja: a nyitóoldal render-útján minden DB-hívás unstable_cache.
+const loadSocialPool = unstable_cache(
+  async () =>
+    getDb()
+      .select()
+      .from(schema.socialPosts)
+      .where(eq(schema.socialPosts.hidden, false))
+      // A megjelenés ideje szerint, nem a beolvasásé szerint — l. social-feed-select.ts
+      .orderBy(desc(schema.socialPosts.postedAt))
+      .limit(FETCH_POOL),
+  ['home-social-feed-pool'],
+  { revalidate: 300 },
+);
 
 export async function SocialFeed() {
   try {
@@ -17,14 +35,7 @@ export async function SocialFeed() {
     // /legfontosabb-hangok — miközben az adatbázisban minden poszt megvolt.
     // Ugyanaz a Postgres, csak a közvetlen kapcsolaton át (mint az összes
     // többi oldalunk), amit az egress-korlát nem érint.
-    const db = getDb();
-    const pool = await db
-      .select()
-      .from(schema.socialPosts)
-      .where(eq(schema.socialPosts.hidden, false))
-      // A megjelenés ideje szerint, nem a beolvasásé szerint — l. social-feed-select.ts
-      .orderBy(desc(schema.socialPosts.postedAt))
-      .limit(FETCH_POOL);
+    const pool = await loadSocialPool();
 
     if (pool.length === 0) return null;
 

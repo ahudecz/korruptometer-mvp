@@ -1,8 +1,15 @@
+import { unstable_cache } from 'next/cache';
+
 import { getActiveBreaking } from '@/lib/breaking';
 import { condenseBreakingHeadline } from '@/lib/breaking-headline';
 
+// 2026-09-26: ugyanaz a cache-kulcs, mint a page.tsx getCachedActiveBreaking-jé,
+// így a csík nem indít külön, gyorsítótár nélküli DB-lekérdezést minden
+// nyitóoldal-kiszolgálásnál (az időszakos 504 egyik oka).
+const getCachedActiveBreaking = unstable_cache(getActiveBreaking, ['active-breaking'], { revalidate: 60 });
+
 export async function BreakingBanner() {
-  const breaking = await getActiveBreaking();
+  const breaking = await getCachedActiveBreaking();
   const latest = breaking[0];
   if (!latest) return null;
 

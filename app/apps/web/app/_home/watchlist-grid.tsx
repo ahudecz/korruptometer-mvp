@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { unstable_cache } from 'next/cache';
 
 import { getDb } from '@/lib/db';
 import { resolveWatchListPersons } from '@/lib/watchlist-status';
@@ -63,9 +64,16 @@ function WatchCard({ person }: { person: WatchPerson }) {
   );
 }
 
+// 2026-09-26: a nyitóoldalon (ResignationsSection) és a /lemondasok-on minden
+// kiszolgálásnál gyorsítótár nélkül futott — az időszakos 504 egyik oka.
+const getCachedWatchListPersons = unstable_cache(
+  async () => resolveWatchListPersons(getDb()),
+  ['watchlist-grid-persons'],
+  { revalidate: 300 },
+);
+
 export async function WatchlistGrid() {
-  const db = getDb();
-  const persons = await resolveWatchListPersons(db);
+  const persons = await getCachedWatchListPersons();
 
   return (
     <div className="watchlist-grid">
