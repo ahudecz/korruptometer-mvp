@@ -54,7 +54,24 @@ export function getDb(): DbClient {
   // (next.config.js staticGenerationMinPagesPerWorker), a build alatt
   // összesen 6 kapcsolat nyílik a pooler 15-ös keretéből.
   const isBuild = process.env.NEXT_PHASE === 'phase-production-build';
-  const sql = postgres(url, { prepare: false, max: isBuild ? 6 : 10 });
+  // 2026-09-25: az időszakos 20+ mp-es nyitóoldal-betöltés oka. Az éles
+  // DATABASE_URL a Supabase pooler SESSION módja (5432-es port, pool_size 15):
+  // ott minden kliens-kapcsolat egy teljes szerver-slotot foglal, amíg él. A
+  // postgres.js alapból SOSEM zárja az üresjárati kapcsolatot (idle_timeout 0),
+  // így egy meleg Vercel-példány a nyitóoldal egyetlen renderelése után 10
+  // slotot tart magánál percekig. A második példány (hidegindítás, cron,
+  // Inngest-függvény) már csak 5 szabadot talál, a többi lekérdezése sorban
+  // áll, amíg valami fel nem szabadul — ez a „nem tölt be" tünet.
+  // idle_timeout: 20 mp üresjárat után visszaadjuk a slotot; max_lifetime:
+  // 5 percnél tovább egy kapcsolat sem él; connect_timeout: ha nincs szabad
+  // slot, 10 mp után hibázunk ahelyett, hogy a 60 mp-es limitig lógnánk.
+  const sql = postgres(url, {
+    prepare: false,
+    max: isBuild ? 6 : 10,
+    idle_timeout: 20,
+    max_lifetime: 60 * 5,
+    connect_timeout: 10,
+  });
   const client = drizzle(sql, { schema });
   globalForDb.__dbClient = client;
   return client;
