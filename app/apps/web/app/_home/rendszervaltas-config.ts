@@ -274,6 +274,10 @@ export type FeltaroDetail = {
     heading: string;
     paragraphs: string[];
     links?: InlineLink[];
+    /** Beágyazott videók a szakasz bekezdései után (pl. Momentum/NOlimpia).
+     *  Akkor kell, amikor a videó egy adott szakaszhoz tartozik, és a lap
+     *  alján lévő `videoBlock` kiszakítaná a helyéről. */
+    videos?: FeltaroVideoRef[];
     sources?: FeltaroLink[];
   }[];
   video?: FeltaroVideoRef;
@@ -2690,22 +2694,282 @@ export const FELTAROK: Feltaro[] = [
     badge: 'VISSZALÉPETT',
     tagline:
       'Parlamenti pártként mondott le arról, hogy induljon a 2026-os választáson, hogy ne forgácsolja szét a kormányváltó szavazatokat.',
+    // A szöveg a user kánonja (2026-09-25) — tartalmilag ne írd át. Egyetlen
+    // eltérés: a DK/MKKP listás eredménye a VÉGLEGES számokra javítva (1,10 /
+    // 0,82 %; Telex 2026-04-18 + NVI-szavazatszámok), a beküldött 1,14 / 0,81
+    // előzetes adat volt. A „**" kiemelések nem renderelhetők, kimaradtak.
     section: {
-      heading: 'Momentum — a párt, amely nem indult el',
+      heading: 'Momentum — amikor egy párt a saját indulásáról is lemondott a kormányváltásért',
       paragraphs: [
-        'A Momentum Mozgalom a 2017-es NOlimpia-aláírásgyűjtésből alakult meg 2017. március 4-én; az akció 266 151 aláírással érte el, hogy Budapest visszalépjen az olimpiai pályázattól.',
-        'A 2026-os fordulathoz a legnagyobb hozzájárulása egy döntés volt, nem egy leleplezés: a párt küldöttgyűlése 2025. június 7-én úgy határozott, hogy a kormányváltás esélyeinek érdekében nem indul az országgyűlési választáson. Ezt megelőzően több képviselője — köztük Hajnal Miklós és Tóth Endre — már bejelentette, hogy nem indul újra a körzetében.',
-        'A korrupcióellenes munkájából a legismertebb Tompos Márton Orbánék-sorozata és a KorrupcióVadász munkacsoport.',
+        'A Momentum története különleges helyet foglal el a rendszerváltás utáni magyar politika történetében. Egy olyan politikai mozgalomról van szó, amely a NOlimpia kampánnyal robbant be a közéletbe, néhány év alatt parlamenti párttá vált, majd 2025-ben egy olyan döntést hozott, amelyre kevés példa akad a magyar pártpolitikában: lemondott a 2026-os országgyűlési választáson való indulásról.',
+        'A döntés mögött nem az állt, hogy a Momentum ne rendelkezett volna parlamenti tapasztalattal vagy politikai infrastruktúrával. Éppen ellenkezőleg. A Momentum 2022-ben tíz képviselővel jutott be az Országgyűlésbe, és ezzel önálló parlamenti frakciót alakíthatott.',
+        '2025-ben mégis azt választotta, hogy nem indít saját országos listát és egyéni jelölteket a 2026-os választáson.',
+        'A párt indoklása szerint azért, mert az önálló indulás a NER választási rendszerében megosztaná az ellenzéki szavazatokat, és ezzel nehezítené a kormányváltást. A Momentum Küldöttgyűlése 2025. június 7-én döntött a távolmaradásról.',
+        'A Dicsőségfal szempontjából éppen ez teszi érdekessé a Momentum történetét: egy párt, amelynek volt parlamenti jelenléte, saját politikai érdekeit és a következő választáson megszerezhető mandátumokat is háttérbe szorította egy általa fontosabbnak tartott politikai cél érdekében.',
       ],
       links: [
         {
-          text: 'küldöttgyűlése 2025. június 7-én',
+          text: 'A Momentum Küldöttgyűlése 2025. június 7-én döntött a távolmaradásról',
           href: 'https://telex.hu/belfold/2025/06/07/momentum-kuldottgyules-valasztas-2026',
           external: true,
         },
       ],
     },
+    related: [
+      { label: 'Dicsőségfal', href: '/rendszervaltas' },
+      { label: 'Kiemelt ügyek', href: '/ugyek' },
+    ],
     updatedAt: '2026-09-25',
+    live: true,
+    detail: {
+      seoTitle: 'Momentum: a NOlimpia és a 2026-os visszalépés — Dicsőségfal',
+      seoDescription:
+        'Miért van a Momentum a Dicsőségfalon? A 266 151 aláírásos NOlimpia-kampány, és a döntés, hogy parlamenti pártként nem indult a 2026-os választáson a kormányváltásért — forrásokkal.',
+      extra: [
+        {
+          heading: 'A Momentum nem egyszerűen nem indult – volt miről lemondania',
+          paragraphs: [
+            'Fontos különbséget tenni aközött, hogy egy párt nem képes bejutni a parlamentbe, és aközött, hogy egy parlamenti párt tudatosan lemond az indulásról.',
+            'A Momentum 2022-ben tíz képviselővel jutott be az Országgyűlésbe. Ez azt jelentette, hogy a pártnak valódi parlamenti frakciója, képviselői, állami támogatása és országos politikai infrastruktúrája volt.',
+            'A tízfős frakció nagysága önmagában is jól mutatja, hogy a Momentum nem egy jelentéktelen parlamenti szereplő volt: a 2022-es Momentum-frakció nagyobb volt, mint a Mi Hazánk 2026-ban megszerzett hatmandátumos parlamenti képviselete.',
+            'Vagyis amikor a Momentum 2025-ben úgy döntött, hogy nem indul a következő országgyűlési választáson, nem egy olyan párt hozott áldozatot, amelynek egyébként sem lett volna reális parlamenti jelenléte.',
+            'Egy korábban tízfős frakcióval rendelkező párt mondott le arról a lehetőségről, hogy megpróbálja megőrizni parlamenti képviseletét.',
+            'A Momentum saját bemutatkozása szerint a párt azért nem indult 2026-ban, hogy „ne osszuk meg az ellenzéki szavazatokat”, és ezzel segítsék a kormányváltást.',
+            'Ez a döntés politikai szempontból természetesen vitatható. Lehet érvelni mellette és ellene is.',
+            'A Dicsőségfal szempontjából azonban éppen a döntés ténye az érdekes: a Momentum a saját parlamenti jelenlétének megőrzését nem tekintette minden más szempontnál fontosabbnak.',
+          ],
+          links: [
+            { text: 'saját bemutatkozása', href: 'https://momentum.hu/a-momentumrol/', external: true },
+          ],
+        },
+        {
+          heading: 'A Momentum volt az első parlamenti párt, amely hátralépett',
+          paragraphs: [
+            'A történeti pontosság kedvéért érdemes hozzátenni, hogy a Momentum nem az első magyar politikai szervezet volt, amely a 2026-os választástól való távolmaradás mellett döntött.',
+            'A Momentum jelentősége abban áll, hogy elsőként a parlamenti pártok közül választotta ezt az utat.',
+            'A döntés 2025. június 7-én született meg, amikor a Momentum Küldöttgyűlése kimondta, hogy a párt nem indul a 2026-os országgyűlési választáson. A Momentum hivatalos indoklása szerint ezzel a kormányváltás elősegítéséhez kívánt hozzájárulni.',
+            'Ez azért volt különösen jelentős, mert a párt számára az önálló indulás egyáltalán nem lett volna szokatlan vagy lehetetlen.',
+            'A Momentum 2022-ben már bizonyította, hogy képes parlamenti pártként működni.',
+            '2025-ben azonban a párt vezetése arra jutott, hogy a saját jelöltek indítása többet árthat a kormányváltás esélyének, mint amennyit a Momentum önálló parlamenti jelenléte jelentene.',
+            'Ezt követően a Momentum nem saját választási kampányt épített fel, hanem a kormányváltás támogatását helyezte előtérbe.',
+          ],
+          sources: [
+            { source: 'Telex', date: '2025. jún. 7.', headline: 'Nem indul a Momentum a 2026-os országgyűlési választáson', url: 'https://telex.hu/belfold/2025/06/07/momentum-kuldottgyules-valasztas-2026' },
+            { source: 'Népszava', headline: 'Nem indul a 2026-os parlamenti választáson a Momentum Mozgalom', url: 'https://nepszava.hu/3282808_momentum-mozgalom-2026-parlamenti-valasztas-nem-indul' },
+          ],
+        },
+        {
+          heading: 'Fekete-Győr András: a saját indulásról is lemondott',
+          paragraphs: [
+            'A döntés egyik legfontosabb előzménye Fekete-Győr András kezdeményezése volt.',
+            'A Momentum alapítója és korábbi elnöke már 2025 tavaszán amellett érvelt, hogy a pártnak nem kellene elindulnia a 2026-os országgyűlési választáson.',
+            'Ez azért is fontos, mert Fekete-Győr nem egy kívülállóként tett javaslatot.',
+            'Ő volt a Momentum egyik alapítója, a párt első elnöke, a NOlimpia kampányának egyik legismertebb arca, később pedig országgyűlési képviselő.',
+            'A Momentum döntése ezért számára személyesen is azt jelentette, hogy saját politikai karrierjének következő parlamenti állomásáról mond le.',
+            'Nem arról volt szó, hogy egy politikus elveszített egy választást.',
+            'Hanem arról, hogy a saját pártja által választott stratégia miatt eleve nem indult el azon.',
+            'Fekete-Győr esetében ez különösen szimbolikus, hiszen a Momentum történetének két meghatározó pontján is jelen volt: a párt politikai megszületését jelentő NOlimpia-kampánynál, majd a párt 2026-os választási visszalépésének folyamatánál.',
+          ],
+          sources: [
+            { source: 'ATV', date: '2025. máj. 8.', headline: 'Fekete-Győr András: Szeretnék a tükörbe nézni 2026 után is', url: 'https://www.atv.hu/belfold/20250508/fekete-gyor-andras-momentum-2026/' },
+          ],
+        },
+        {
+          heading: 'Tompos Márton: a Momentum elnökeként vitte végig a döntést',
+          paragraphs: [
+            'A másik meghatározó név Tompos Márton.',
+            'Tompos Márton a Momentum elnökeként vett részt abban a folyamatban, amelynek végén a párt lemondott az önálló választási indulásról.',
+            'Ez azért lényeges, mert a Momentumon belül korábban komoly vita volt arról, hogy a párt induljon-e saját jelöltekkel.',
+            'A döntés tehát nem egy automatikus, konfliktusmentes folyamat eredménye volt.',
+            'A Momentum végül meghozta a döntést, és Tompos Márton elnökként képviselte azt.',
+            'A későbbi elnöki lemondása után sem úgy beszélt a történtekről, mintha a választási indulás elmaradása önmagában politikai kudarc lenne. A Momentum történetében ezzel egy olyan időszak zárult le, amelyben a párt saját parlamenti jelenlétének fenntartása helyett egy szélesebb kormányváltási cél mögé állt.',
+            'Fekete-Győr és Tompos története ezért különösen fontos a Momentum Dicsőségfal-oldalán: mindketten a Momentum vezető politikusaként vállalták azt a politikai stratégiát, amelynek következménye az lett, hogy a párt és saját maguk sem indultak el a 2026-os országgyűlési választáson.',
+          ],
+          sources: [
+            { source: 'Telex', date: '2025. máj. 7.', headline: 'A Momentum elnöke szerint Fekete-Győr lájkokra vált egy belső dilemmát', url: 'https://telex.hu/belfold/2025/05/07/tompos-marton-fekete-gyor-andras-momentum-valasztas' },
+          ],
+        },
+        {
+          heading: 'A Momentum és a Tisza Párt',
+          paragraphs: [
+            'A Momentum 2026-os döntésének értelmezéséhez megkerülhetetlen a Tisza Párt megjelenése.',
+            'A Momentum nem azért mondott le az indulásról, mert minden politikai kérdésben azonos álláspontra került volna a Tiszával.',
+            'A párt saját politikai identitását továbbra is fenntartotta.',
+            'A döntés lényege az volt, hogy a kormányváltást fontosabb stratégiai célnak tekintette, mint a saját parlamenti jelenlétének megőrzését.',
+            'Ez egy fontos különbség.',
+            'A Momentum nem azt állította, hogy a Tisza minden kérdésben ugyanazt képviseli, mint ő.',
+            'Azt állította, hogy a 2026-os választás legfontosabb politikai kérdésében – a kormányváltásban – nem akarja saját jelöltekkel megosztani azokat a választókat, akik változást szeretnének.',
+            'A párt hivatalos álláspontja szerint a 2026-os választáson ezért nem indult, hanem a kormányváltás elősegítésére koncentrált.',
+          ],
+        },
+        {
+          heading: 'A Momentum és a többi ellenzéki párt közötti különbség',
+          paragraphs: [
+            'A 2026-os választás után különösen látványossá vált a Momentum döntésének sajátossága.',
+            'A Demokratikus Koalíció és a Magyar Kétfarkú Kutya Párt is elindult a választáson.',
+            'A Momentum nem.',
+            'A végeredmény alapján a három párt közül a Momentum nem kapott listás szavazatot, hiszen nem indult, a DK 1,10 százalékot, az MKKP pedig 0,82 százalékot szerzett.',
+            'Vagyis azt sem lenne pontos állítani, hogy „mindhárman 1 százalék alatt maradtak”.',
+            'A DK valamivel átlépte az 1 százalékot.',
+            'Az MKKP viszont nem érte el.',
+            'És ennek az MKKP számára nagyon konkrét pénzügyi következménye lett.',
+          ],
+          sources: [
+            { source: 'Telex', date: '2026. ápr. 18.', headline: 'Itt a választás eredménye: a Tisza még több mandátumot szerzett, a Fidesz veresége még nagyobb', url: 'https://telex.hu/belfold/2026/04/18/valasztas-vegeredmeny-mandatumok-tisza-fidesz-mi-hazank' },
+          ],
+        },
+        {
+          heading: 'Az MKKP 686 milliós tartozása',
+          paragraphs: [
+            'A választási kampányok állami finanszírozásának szabályai miatt az MKKP-nak vissza kell fizetnie a kampányra kapott állami támogatást, miután országos listája nem érte el az 1 százalékot.',
+            'A visszafizetendő összeg 686 millió forint.',
+            'A párt ezért a választás után adománygyűjtést indított, hogy előteremtse az összeget.',
+            'A gyűjtés azonban a nyár folyamán gyakorlatilag lelassult.',
+            'A 2026. szeptember 22-én megjelent 24.hu-beszámoló szerint az MKKP addig mindössze 155,6 millió forintot tudott összegyűjteni a 686 millióból. Ez azt jelenti, hogy még körülbelül 530 millió forint hiányzott. A lap szerint május végén már 150 millió forintnál jártak, vagyis csak 5,6 millió forinttal sikerült növelniük az összeget a következő csaknem négy hónapban.',
+            'Más friss beszámolók szintén arról számoltak be, hogy az adománygyűjtés a nyár folyamán megtorpant, miközben a pártnak továbbra is jelentős visszafizetési kötelezettsége maradt.',
+            'Ez egy nagyon érdekes kontraszt a Momentum 2026-os döntésével.',
+            'Az MKKP elindult.',
+            'A Momentum nem indult.',
+            'Az MKKP kampányolt és felvette a kampánytámogatást, majd az 1 százalékos küszöb el nem érése miatt jelentős összeget kell visszafizetnie.',
+            'A Momentum ezzel szemben nem állított országos listát és nem indított saját parlamenti választási kampányt.',
+            'Ez természetesen nem jelenti azt, hogy az MKKP döntése önmagában helytelen lett volna. A pártok saját politikai stratégiájuk alapján döntenek arról, hogy indulnak-e.',
+            'A különbség azonban jól látható:',
+            'a Momentum a saját parlamenti jelenlétének lehetőségét is feladta, miközben az MKKP a saját indulását választotta.',
+          ],
+          links: [
+            { text: '24.hu-beszámoló', href: 'https://24.hu/belfold/2026/09/22/ketfarku-kutyapart-tartozas-mak-nav-valasztas-kampany-mkkp/', external: true },
+          ],
+          sources: [
+            { source: '24.hu', date: '2026. szept. 22.', headline: 'Bajban a Kutya Párt: befulladt a gyűjtés, óriási a tartozás', url: 'https://24.hu/belfold/2026/09/22/ketfarku-kutyapart-tartozas-mak-nav-valasztas-kampany-mkkp/' },
+            { source: 'ATV', date: '2026. szept. 22.', headline: 'Kutyaszorítóban a Kutya Párt: befuccsolt a gyűjtés, rászabadulhat a NAV a jelöltek magánvagyonára is', url: 'https://www.atv.hu/belfold/20260922/kutya-part-gyujtes-tartozas' },
+            { source: 'Economx', date: '2026. szept. 22.', headline: 'Nagy bajban a Kutyapárt: 686 millióval tartoznak az államnak, ennek töredékét tudták csak összekaparni', url: 'https://www.economx.hu/belfold/2026/09/22/kutyapart-adossag-tamogatasok/' },
+          ],
+        },
+        {
+          heading: 'A NOlimpia – ahol a Momentum története igazán elkezdődött',
+          paragraphs: [
+            'Ha a Momentum történetének egyetlen olyan eseményét kellene megnevezni, amely nélkül a párt mai politikai identitása aligha érthető meg, az a NOlimpia.',
+            '2017-ben a még fiatal Momentum Mozgalom népszavazási kezdeményezést indított Budapest 2024-es olimpiai pályázatáról.',
+            'A cél az volt, hogy a budapestiek dönthessenek arról, szeretnék-e, hogy a főváros rendezze meg az olimpiai játékokat.',
+            'A kezdeményezéshez szükséges aláírások összegyűjtése óriási szervezési feladat volt.',
+            'A Momentum végül 266 151 aláírást adott le.',
+            'A népszavazás kiírásához 138 ezer érvényes aláírásra lett volna szükség. Az RTL korabeli beszámolója szerint a Momentum tehát jelentősen túlteljesítette a szükséges mennyiséget.',
+            'Ez volt az a pillanat, amikor a Momentum országosan is megkerülhetetlen politikai szereplővé vált.',
+            'A NOlimpia nélkül a Momentum valószínűleg teljesen más politikai pályán indult volna el.',
+          ],
+          links: [
+            { text: 'Az RTL korabeli beszámolója', href: 'https://rtl.hu/hirado/2017/02/17/266-151-alairas-gyult-ossze', external: true },
+          ],
+        },
+        {
+          heading: '266 151 aláírás',
+          paragraphs: [
+            'A szám önmagában is fontos.',
+            '266 151.',
+            'Ennyi aláírást gyűjtött össze a Momentum az olimpiai népszavazás kezdeményezéséhez.',
+            'A párt akkor még nem rendelkezett a későbbi parlamenti infrastruktúrával, nem volt ismert, régi politikai szereplő, és nem volt mögötte évtizedes pártszervezet.',
+            'A NOlimpia kampány viszont megmutatta, hogy egy új politikai közösség képes lehet rövid idő alatt jelentős társadalmi mobilizációra.',
+            'Az RTL akkori beszámolója szerint a Momentum 266 ezer aláírást gyűjtött, miközben a népszavazáshoz 138 ezer érvényes aláírásra lett volna szükség.',
+          ],
+          sources: [
+            { source: 'RTL', date: '2017. febr. 17.', headline: '266.151 aláírás gyűlt össze', url: 'https://rtl.hu/hirado/2017/02/17/266-151-alairas-gyult-ossze' },
+          ],
+        },
+        {
+          heading: 'Miért volt fontos a NOlimpia gazdasági szempontból?',
+          paragraphs: [
+            'A NOlimpia nem pusztán arról szólt, hogy valaki szereti-e az olimpiai játékokat.',
+            'A vita egyik központi kérdése az volt, hogy mennyibe kerülne Budapestnek és Magyarországnak az olimpia megrendezése.',
+            'A hivatalos Budapest 2024 megvalósíthatósági tanulmány jelentős, több százmilliárdos nettó költséggel számolt, a teljes bruttó költség pedig meghaladta az ezer milliárd forintot.',
+            'A Momentum ennél magasabb tényleges költséggel számolt, és arra hívta fel a figyelmet, hogy az olimpiai beruházásoknál komoly kockázatot jelenthetnek a költségtúllépések.',
+            'A későbbi történelmi értékelésben azonban érdemes elkerülni azt az állítást, hogy a Momentum „megakadályozta az államcsődöt”.',
+            'Ezt ugyanis nem lehet bizonyítani.',
+            'Budapest nem rendezett olimpiát, ezért nem létezik olyan tényleges költségvetési adat, amelyből megállapíthatnánk, mi történt volna az olimpia megrendezése esetén.',
+            'Ami viszont bizonyítható, az az, hogy a Momentum a NOlimpia kampánnyal kikényszerítette az olimpiai pályázat társadalmi és pénzügyi kockázatainak széles körű politikai vitáját, majd 266 151 aláírást gyűjtött össze.',
+            'Ez már önmagában is jelentős politikai teljesítmény volt.',
+          ],
+          sources: [
+            { source: '444', date: '2015. jún. 23.', headline: '12 egészen meglepő állítás a budapesti olimpiát megalapozó tanulmányból', url: 'https://444.hu/2015/06/23/10-meglepo-allitas-a-budapesti-olimpiat-megalapozo-tanulmanybol' },
+          ],
+        },
+        {
+          heading: 'Videó: a NOlimpia története',
+          paragraphs: [
+            'Az RTL Híradó korabeli anyaga közvetlenül a 266 151 aláírásról szól. Nem utólagos politikai összefoglalóról van szó: közvetlenül akkor készült, amikor a Momentum leadta a több mint 266 ezer aláírást.',
+            'Van egy másik, szintén RTL-es anyag, amely a NOlimpia történetét később, 2022-ben foglalta össze.',
+            'Az RTL-anyagok az RTL oldalán nézhetők meg. Alább a leadás napjának euronews-felvétele és a Momentum saját kampányvideója látható.',
+          ],
+          links: [
+            { text: 'Az RTL Híradó korabeli anyaga', href: 'https://rtl.hu/hirado/2017/02/17/266-151-alairas-gyult-ossze', external: true },
+            { text: 'szintén RTL-es anyag', href: 'https://rtl.hu/valasztas-2022/2022/03/23/fidesz-2017-olimpia-nepszavazas-ceu-civil-szervezetek', external: true },
+          ],
+          videos: [
+            {
+              id: 'Tir1iXstaBk',
+              label: 'euronews (magyarul) · 2017. február 17.',
+              title: 'Aláírásgyűjtés az olimpiáról: „nem szabad félni!”',
+              summary: 'A leadás napja: bejelentik, hogy több mint 266 ezer aláírás gyűlt össze az olimpiai népszavazás kiírásáért.',
+            },
+            {
+              id: 'cKbxOsVwh3c',
+              label: 'Momentum Mozgalom · 2017. január 19.',
+              title: 'A NOlimpia-kampány',
+              summary: 'A Momentum saját kampányvideója az aláírásgyűjtés indulásának napjáról: miért ne legyen olimpia Budapesten.',
+            },
+          ],
+          sources: [
+            { source: 'RTL', date: '2017. febr. 17.', headline: '266.151 aláírás gyűlt össze', url: 'https://rtl.hu/hirado/2017/02/17/266-151-alairas-gyult-ossze' },
+            { source: 'RTL', date: '2022. márc. 23.', headline: '12 év Fidesz, 8. rész: Nemzeti konzultáció a „sátáni” Soros-tervről, a CEU kiszorítása és Nolimpia Budapesten', url: 'https://rtl.hu/valasztas-2022/2022/03/23/fidesz-2017-olimpia-nepszavazas-ceu-civil-szervezetek' },
+          ],
+        },
+        {
+          heading: 'A Momentum történetének két fontos döntése',
+          paragraphs: [
+            'A Momentum történetében két esemény különösen jól megmutatja a párt politikai karakterét.',
+            'Az első a NOlimpia.',
+            '2017-ben egy akkor még új politikai mozgalom nem elégedett meg azzal, hogy kommentálja a kormány olimpiai terveit. Aláírásokat kezdett gyűjteni, és több mint 266 ezer aláírást adott le.',
+            'A második a 2026-os választás.',
+            '2025-ben a Momentum nem egyszerűen megpróbált bejutni a parlamentbe, majd elvesztette a választást.',
+            'A Momentum úgy döntött, hogy nem indul.',
+            'Egy tízfős korábbi parlamenti frakcióval rendelkező párt mondott le arról, hogy megpróbálja megőrizni parlamenti jelenlétét.',
+            'A párt hivatalos álláspontja szerint azért, hogy ne ossza meg az ellenzéki szavazatokat, és ezzel hozzájáruljon a kormányváltáshoz.',
+            'Ez a két esemény időben kilenc évre van egymástól.',
+            'Mégis van közöttük egy közös elem.',
+            'Mindkettőben az történt, hogy a Momentum egy politikai cél érdekében vállalt jelentős kockázatot.',
+            '2017-ben egy új mozgalom kockára tette politikai jövőjét egy olyan kampánnyal, amely az olimpiai pályázat visszavonását célozta.',
+            '2025-ben pedig egy már parlamenti párt vállalta annak kockázatát, hogy saját maga nem lesz jelen a következő Országgyűlésben.',
+          ],
+        },
+        {
+          heading: 'Miért kerül a Momentum a Dicsőségfalra?',
+          paragraphs: [
+            'A Dicsőségfalra kerülés nem azt jelenti, hogy egy politikai párt minden döntése helyes volt, minden politikusa hibátlan volt, vagy hogy minden politikai álláspontjával egyet kell érteni.',
+            'A Momentum esetében a Dicsőségfal szempontjából két konkrét döntés emelkedik ki.',
+            'Az egyik a NOlimpia.',
+            'Egy új politikai közösség több mint 266 ezer aláírást gyűjtött össze azért, hogy népszavazás dönthessen Budapest olimpiai pályázatáról.',
+            'A másik a 2026-os választási visszalépés.',
+            'Egy korábban tízfős parlamenti frakcióval rendelkező párt úgy döntött, hogy nem indul el a következő országgyűlési választáson, mert saját értékelése szerint ezzel segítheti a kormányváltást.',
+            'Fekete-Győr András a párt egyik meghatározó alapítójaként és korábbi vezetőjeként a visszalépés gondolatának egyik kezdeményezője volt.',
+            'Tompos Márton a Momentum elnökeként képviselte és vitte tovább a párt döntését.',
+            'A Momentum pedig ezt követően nem egyszerűen eltűnt a választási térképről: a párt saját beszámolója szerint a rendelkezésére álló időszakban a kormányváltás elősegítésére koncentrált.',
+            'Lehet vitatkozni arról, hogy ez volt-e a megfelelő stratégia.',
+            'A Dicsőségfal szempontjából azonban a Momentum történetének ez a része azért érdekes, mert egy politikai párt nem mindenáron a saját mandátumát választotta.',
+            'És ez ritka dolog a politikában.',
+            'A Momentum történetének egyik legfontosabb üzenete ezért nem az, hogy mindig neki kell nyernie.',
+            'Hanem az, hogy egy politikai közösségnek néha azt is tudnia kell mondani:',
+            '„Most nem mi indulunk.”',
+            'És ha ezt kimondja, akkor a saját politikai érdeke ellenére is végig kell vinnie a döntést.',
+            'A NOlimpia és a 2026-os választási visszalépés között kilenc év telt el.',
+            'Az egyik egy új párt megszületésének története.',
+            'A másik egy parlamenti párt önkéntes hátralépésének története.',
+            'Ezért van helye a Momentumnak a Dicsőségfalon.',
+          ],
+          links: [
+            { text: 'a párt saját beszámolója szerint', href: 'https://momentum.hu/a-momentumrol/', external: true },
+          ],
+        },
+      ],
+    },
   },
   {
     id: 'panyi-szabolcs',

@@ -459,6 +459,25 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                 {x.paragraphs.flatMap((para) => splitParas(para)).map((para, i) => (
                   <p key={i}>{withAutoLinks(para, x.links, linkedPersons, selfHref)}</p>
                 ))}
+                {x.videos && x.videos.length > 0 && (
+                  <div className={x.videos.length > 1 ? 'feltaro-video-pair' : undefined}>
+                    {x.videos.map((v) => (
+                      <FeltaroVideo
+                        key={v.id}
+                        videoId={v.id}
+                        title={v.title}
+                        label={v.label}
+                        summary={v.summary}
+                        views={v.views}
+                        playlistId={v.list}
+                        note={v.note}
+                        vimeoId={v.vimeoId}
+                        poster={v.poster}
+                        variant={x.videos!.length > 1 ? undefined : 'wide'}
+                      />
+                    ))}
+                  </div>
+                )}
                 {x.sources && x.sources.length > 0 && <Sources sources={x.sources} />}
               </div>
             ))}
