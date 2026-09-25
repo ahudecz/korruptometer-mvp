@@ -18,6 +18,7 @@ import {
   imageSubline,
   imageClaimLine,
   claimLine,
+  trimCutTail,
   CLAIM_TENSION,
   withAttribution,
   resignationHeadline,
@@ -309,12 +310,15 @@ async function buildMediaClosureTriggers(db: ReturnType<typeof getDb>, counts: C
     const kicker = MEDIA_CLOSURE_KICKERS[m.eventType] ?? 'MÉDIA-HÍR';
     const verb = MEDIA_CLOSURE_VERBS[m.eventType];
     const headline = verb ? `${m.name}: ${verb}` : m.name;
-    const detail = m.description ?? undefined;
+    // 2026-09-25: a leírás szó-korláton elvágva érkezhet a detektorból
+    // („…szűnt meg, köztük") — a csonk vége levágva, mondatként lezárva.
+    const cleanDesc = trimCutTail(m.description);
+    const detail = cleanDesc ? (/[.!?]$/.test(cleanDesc) ? cleanDesc : `${cleanDesc}.`) : undefined;
     const imageDetail = claimLine({
-      parts: [m.description],
+      parts: [cleanDesc],
       tension: CLAIM_TENSION.media_closure,
       seed: m.id,
-    }) || imageSubline(m.description, m.name);
+    }) || imageSubline(cleanDesc, m.name);
     const whyItMatters = whyItMattersFor('media_closure', counts, kicker);
     const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
     out.push({
@@ -590,10 +594,13 @@ async function buildQuizTriggers(db: ReturnType<typeof getDb>): Promise<OutboxIn
   // befekte…" félbevágott szót: a nyers char-slice a szó KÖZEPÉN vágott, és
   // ugyanaz a levágott szöveg ment a képre ÉS a caption-be is.
   const detail = pick.intro;
-  const imageDetail = imageSubline(fitCompleteSentences(pick.intro, IMAGE_DETAIL_MAX_CHARS));
   // Brief 3.3 — kvíznél a „miért érdekes" maga a kvíz paramétere: hány
   // kérdés, mennyi idő. Ez konkrét és tényszerű, nem klisé.
   const whyItMatters = questionCount > 0 ? `${questionCount} kérdés, nagyjából 3 perc.` : undefined;
+  // 2026-09-25: a képre az intro ELSŐ TELJES MONDATA megy, ha belefér; ha
+  // nem, a kérdésszám — sose egy mondat levágott eleje (élesre ment:
+  // „Nézzük, mennyit tudsz … — a Matolcsy-kör körüli ügyről").
+  const imageDetail = imageSubline(fitCompleteSentences(pick.intro, IMAGE_DETAIL_MAX_CHARS), whyItMatters);
   const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
   return [{
     triggerType: 'quiz_highlight',

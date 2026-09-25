@@ -24,7 +24,7 @@
  *     baszakodnom külön"), a Facebookra akkor sem kerülnek egyszerre.
  */
 
-import { IMAGE_DETAIL_MAX_CHARS } from './social-copy-variety';
+import { IMAGE_DETAIL_MAX_CHARS, isCutPrefixOf, looksCutOff } from './social-copy-variety';
 
 /**
  * Egy futásban legfeljebb ennyi jelölt mehet ki JÓVÁHAGYÁSRA (Telegramra).
@@ -153,11 +153,15 @@ export function parseHungarianFtAmount(label: string | null | undefined): bigint
 }
 
 /**
- * A kapu. Minden jelölt ezen megy át közvetlenül a beszúrás előtt.
+ * A SZÖVEG-szabályok önmagukban. A kiküldés előtt (social-publish.ts) is
+ * lefutnak: a jóváhagyás és a posztolás között a szöveg még változhat
+ * (✏️ Módosítás), és a szabály előtt sorba került régi sorokat is el kell
+ * kapni. Az összeg-szabály nincs itt — azt csak a sorba-állítás tudja mérni.
  */
-export function checkPostGate(c: GateCandidate): GateResult {
+export function checkTextGate(c: Omit<GateCandidate, 'provenAmountFt'>): GateResult {
   if (!c.headline.trim()) return { ok: false, reason: 'üres fejléc' };
   if (!c.caption.trim()) return { ok: false, reason: 'üres poszt-szöveg' };
+  if (looksCutOff(c.headline)) return { ok: false, reason: `a fejléc félbehagyott: „${c.headline.trim()}"` };
 
   if (!isStructuredImageText(c.triggerType)) {
     const img = c.imageText.trim();
@@ -167,6 +171,13 @@ export function checkPostGate(c: GateCandidate): GateResult {
     }
     if (img.length > IMAGE_DETAIL_MAX_CHARS) {
       return { ok: false, reason: `a kép szövege ${img.length} karakter, a korlát ${IMAGE_DETAIL_MAX_CHARS}` };
+    }
+    // 2026-09-25: „…szűnt meg, köztük" — „…" nélküli csonk (l. looksCutOff).
+    if (img && looksCutOff(img)) {
+      return { ok: false, reason: `a kép szövege félbehagyott mondat: „${img}"` };
+    }
+    if (img && isCutPrefixOf(img, c.caption)) {
+      return { ok: false, reason: `a kép szövege egy hosszabb mondat levágott eleje: „${img}"` };
     }
     if (isPlaceholderSummary(c.caption)) {
       // a caption a teljes szöveg — ha AZ is csonk/placeholder, nincs mit posztolni
@@ -179,6 +190,24 @@ export function checkPostGate(c: GateCandidate): GateResult {
   if (/[…]/.test(c.caption)) {
     return { ok: false, reason: 'a poszt szövege csonkolt („…") — a caption mindig teljes kell legyen' };
   }
+  // A poszt MINDEN bekezdése külön — 09-25-én a törzs-bekezdés volt a csonk.
+  // Záró kettőspont a posztban szándékos felvezetés („👉 Nézd meg, miből áll
+  // össze a 298 milliárd:" + link a következő sorban) — azt nem, de az előtte
+  // álló szót ugyanúgy nézzük („…köztük:" továbbra is csonk).
+  for (const para of c.caption.split(/\r?\n+/)) {
+    if (looksCutOff(para.replace(/:\s*$/, ''))) {
+      return { ok: false, reason: `a poszt egyik bekezdése félbehagyott mondat: „${para.trim()}"` };
+    }
+  }
+  return { ok: true };
+}
+
+/**
+ * A kapu. Minden jelölt ezen megy át közvetlenül a beszúrás előtt.
+ */
+export function checkPostGate(c: GateCandidate): GateResult {
+  const text = checkTextGate(c);
+  if (!text.ok) return text;
 
   if (c.triggerType === 'catalog_highlight' || c.triggerType === 'gallery_highlight') {
     const amount = c.provenAmountFt ?? null;

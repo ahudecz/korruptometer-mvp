@@ -443,7 +443,7 @@ describe('truncateDescriptionWords', () => {
     });
 
     it('backs off past a trailing relative pronoun', () => {
-      expect(truncateDescriptionWords('Felmentették a vezetői posztról, ami')).toBe('Felmentették a vezetői posztról,');
+      expect(truncateDescriptionWords('Felmentették a vezetői posztról, ami')).toBe('Felmentették a vezetői posztról');
     });
 
     it('backs off past a bare trailing article', () => {
@@ -536,5 +536,13 @@ describe('isSuspiciouslyEarlyDate', () => {
   it('is false (fail-safe, not fail-open-to-block) on unparseable dates', () => {
     expect(isSuspiciouslyEarlyDate('not-a-date', '2026-08-24')).toBe(false);
     expect(isSuspiciouslyEarlyDate('2026-08-24', 'not-a-date')).toBe(false);
+  });
+});
+
+describe('truncateDescriptionWords — felsorolás-nyitó a végén (2026-09-25)', () => {
+  it('a „köztük" és az előtte álló vessző is lekerül', () => {
+    expect(truncateDescriptionWords('Tizennégy kormányközeli alapítvány szűnt meg, köztük a Kék Bolygó')).toBe(
+      'Tizennégy kormányközeli alapítvány szűnt meg',
+    );
   });
 });

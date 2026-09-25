@@ -9,7 +9,7 @@ import {
   selectQueueBatch,
 } from '@/lib/social-post-policy';
 import { GAP_HOURS, scheduleBatch } from '@/lib/social-schedule';
-import { fitCompleteSentences, IMAGE_DETAIL_MAX_CHARS } from '@/lib/social-copy-variety';
+import { fitCompleteSentences, IMAGE_DETAIL_MAX_CHARS, imageSubline, looksCutOff, trimCutTail } from '@/lib/social-copy-variety';
 import { UGYEK } from '@app/_home/ugyek-config';
 
 const okCandidate = {
@@ -233,5 +233,82 @@ describe('the 2026-09-10 incident cannot repeat', () => {
       imageText: line!,
       provenAmountFt: 2_000_000_000n,
     })).toEqual({ ok: true });
+  });
+});
+
+// 2026-09-25 — „…" NÉLKÜLI csonkok. Mindhárom élesen ment ki / került
+// Telegramra, a régi kapu mindegyiket átengedte.
+describe('csonk „…" nélkül (2026-09-25)', () => {
+  it('Kék Bolygó-poszt: a képsor és a törzs is „köztük"-re végződött', () => {
+    const r = checkPostGate({
+      triggerType: 'media_closure',
+      headline: 'MCC alapítvány, Kék Bolygó, Élvonal: megszűnt!',
+      caption: '📉 MCC alapítvány, Kék Bolygó, Élvonal: megszűnt! 🚨\n\nTizennégy kormányközeli alapítvány szűnt meg, köztük\n\nVele együtt már 30 megszűnt vagy leépített médiumot tartunk számon.\n\nRészletek: kegyencjarat.hu/megszunt\n#kegyencjarat #korrupció',
+      imageText: 'Eggyel kevesebb — Tizennégy kormányközeli alapítvány szűnt meg, köztük',
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it('a törzs-bekezdés csonkja magában is megbuktatja a posztot', () => {
+    const r = checkPostGate({
+      ...okCandidate,
+      caption: 'Fejléc!\n\nTizennégy kormányközeli alapítvány szűnt meg, köztük\n\nRészletek: kegyencjarat.hu/megszunt',
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it('Mikucza: a képsor egy hosszabb mondat levágott eleje', () => {
+    const r = checkPostGate({
+      triggerType: 'court_verdict',
+      headline: 'Mikucza Tamás: előzetesben!',
+      caption: '🔴 Mikucza Tamás: előzetesben!\n\nMikucza Tamást, Seszták Miklós volt fejlesztési miniszter feltételezett strómanjának nevezik.\n\nRészletek: kegyencjarat.hu/birosagi-iteletek',
+      imageText: 'Mikucza Tamást, Seszták Miklós volt fejlesztési miniszter',
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it('kvíz: a képsor az intro első felét vágta ki', () => {
+    const r = checkPostGate({
+      triggerType: 'quiz_highlight',
+      headline: 'Lehetnél te az NVVH legfőbb ügyésze?',
+      caption: '🧠 Lehetnél te az NVVH legfőbb ügyésze?\n\nNézzük, mennyit tudsz az MNB-alapítványi botrányról — a Matolcsy-kör körüli ügyről, amiben milliárdok tűntek el.\n\n10 kérdés, nagyjából 3 perc.\n\nRészletek: kegyencjarat.hu/kviz/mnb-bankrablas',
+      imageText: 'Nézzük, mennyit tudsz az MNB-alapítványi botrányról — a Matolcsy-kör körüli ügyről',
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it('a kérdésszám-képsor és a teljes mondatot idéző képsor átmegy', () => {
+    expect(checkPostGate({
+      triggerType: 'quiz_highlight',
+      headline: 'Lehetnél te az NVVH legfőbb ügyésze?',
+      caption: '🧠 Lehetnél te az NVVH legfőbb ügyésze?\n\nNézzük, mennyit tudsz.\n\n10 kérdés, nagyjából 3 perc.\n\nRészletek: kegyencjarat.hu/kviz/mnb-bankrablas',
+      imageText: '10 kérdés, nagyjából 3 perc.',
+    })).toEqual({ ok: true });
+    expect(checkPostGate({
+      triggerType: 'criminal_complaint',
+      headline: 'Belügyminisztérium feljelentést tett: BOK Sportcsarnok',
+      caption: 'Belügyminisztérium feljelentést tett: BOK Sportcsarnok! 💥\n\nA feljelentés 130 millió forintos vagyoni kárra vonatkozik.\nAz érintett összeg: 130 millió Ft.\n\nRészletek: kegyencjarat.hu/birosagi-iteletek\n#kegyencjarat #korrupció',
+      imageText: 'Érintett összeg: 130 millió Ft',
+    })).toEqual({ ok: true });
+  });
+});
+
+describe('looksCutOff / trimCutTail', () => {
+  it('felismeri a folytatást igénylő végeket', () => {
+    expect(looksCutOff('Tizennégy kormányközeli alapítvány szűnt meg, köztük')).toBe(true);
+    expect(looksCutOff('A lap megszűnt, és')).toBe(true);
+    expect(looksCutOff('A lap megszűnt,')).toBe(true);
+    expect(looksCutOff('MCC alapítvány, Kék Bolygó, Élvonal: megszűnt! 🚨')).toBe(false);
+    expect(looksCutOff('Részletek: kegyencjarat.hu/megszunt')).toBe(false);
+    expect(looksCutOff('#kegyencjarat #korrupció')).toBe(false);
+  });
+  it('levágja a csonk végét, és ha nem marad értelmes rész, üres', () => {
+    expect(trimCutTail('Tizennégy kormányközeli alapítvány szűnt meg, köztük')).toBe('Tizennégy kormányközeli alapítvány szűnt meg');
+    expect(trimCutTail('Megszűnt a, és')).toBe('');
+    expect(trimCutTail('A Magyar Nemzet megszűnt.')).toBe('A Magyar Nemzet megszűnt.');
+  });
+  it('imageSubline sose ad vissza vessző előtti tagmondatot', () => {
+    expect(imageSubline('Mikucza Tamást, Seszták Miklós volt fejlesztési miniszter feltételezett strómanjának nevezik a lapok szerint.')).toBe('');
+    expect(imageSubline('Tizennégy kormányközeli alapítvány szűnt meg, köztük')).toBe('');
   });
 });

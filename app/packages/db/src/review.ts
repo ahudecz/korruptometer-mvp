@@ -43,6 +43,10 @@ const DANGLING_LAST_WORDS = new Set([
   'és', 'vagy', 'de', 'hogy', 'mint', 'mivel', 'ha', 'amely', 'amelyet',
   'amelynek', 'aki', 'akit', 'akinek', 'ami', 'amit', 'amik', 'mert',
   'illetve', 'valamint', 'majd', 'míg', 'pedig',
+  'akik', 'amelyek', 'ahol', 'amikor', 'sőt', 'továbbá', 'azonban',
+  // enumeration openers — 2026-09-25: 'Tizennégy kormányközeli alapítvány
+  // szűnt meg, köztük' went out on Facebook verbatim
+  'köztük', 'közöttük', 'például', 'többek', 'úgymint', 'ideértve', 'beleértve',
   // bare articles that always need an object
   'a', 'az', 'egy',
 ]);
@@ -76,7 +80,8 @@ export function truncateDescriptionWords(value: string, limit = DESCRIPTION_WORD
   while (words.length > 0 && isDanglingLastWord(words[words.length - 1]!)) {
     words = words.slice(0, -1);
   }
-  return words.join(' ');
+  // A dropped dangler leaves its preceding comma behind ("…szűnt meg,").
+  return words.join(' ').replace(/[\s,;:—–-]+$/, '');
 }
 
 /**

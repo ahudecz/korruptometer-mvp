@@ -181,12 +181,14 @@ describe('imageSubline — a képre kerülő kiegészítő sor', () => {
     expect(imageSubline('Érintett összeg: 1,01 milliárd Ft')).toBe('Érintett összeg: 1,01 milliárd Ft');
   });
 
-  it('hosszú szövegből az első beférő, önmagában megálló tagmondatot adja', () => {
+  // 2026-09-25: vesszőnél többé NEM vág — a vessző előtti rész egy hosszabb
+  // mondat csonkja, és a posztszövegben ott a folytatás (l. isCutPrefixOf).
+  it('hosszú, egyetlen mondatból nem vág ki tagmondatot — inkább üres', () => {
     const out = imageSubline(
       'A hatóságok tegnap este őrizetbe vették a vállalkozót, a gyanúsítás pontos tartalmáról '
       + 'azonban egyelőre semmilyen hivatalos tájékoztatás nem érkezett egyetlen szervtől sem.',
     );
-    expect(out).toBe('A hatóságok tegnap este őrizetbe vették a vállalkozót');
+    expect(out).toBe('');
   });
 
   it('SOSE emel ki későbbi tagmondatot — az elveszti az alanyát', () => {

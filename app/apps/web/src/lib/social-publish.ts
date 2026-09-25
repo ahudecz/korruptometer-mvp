@@ -5,6 +5,7 @@ import { getDb, schema } from '@/lib/db';
 import { postPhotoViaMake } from '@/lib/make-facebook';
 import { postPhotoToPage } from '@/lib/facebook';
 import { formatSlot, scheduleBatch } from '@/lib/social-schedule';
+import { checkTextGate } from '@/lib/social-post-policy';
 
 /**
  * A SocialPostOutbox jóváhagyás → ÜTEMEZÉS → kiposztolás útja egy helyen.
@@ -27,6 +28,25 @@ type OutboxRow = typeof schema.socialPostOutbox.$inferSelect;
 /** Ténylegesen kiposztol egy sort, és a végállapotot beírja a DB-be. */
 export async function publishOutboxRow(row: OutboxRow): Promise<PublishResult> {
   const db = getDb();
+
+  // Második kapu, KÖZVETLENÜL a kiposztolás előtt (2026-09-25): a sorba-
+  // állításkori kapu után a szöveg még változhat (✏️ Módosítás), és a
+  // szabály szigorítása előtt sorba került sorok is itt akadnak fenn. Ami
+  // csonk, az nem megy ki, akkor sem, ha valaki jóváhagyta.
+  const gate = checkTextGate({
+    triggerType: row.triggerType,
+    headline: row.headline ?? '',
+    caption: row.caption ?? '',
+    imageText: row.imageText ?? '',
+  });
+  if (!gate.ok) {
+    await db
+      .update(schema.socialPostOutbox)
+      .set({ status: 'failed', failureReason: `Kapu: ${gate.reason}` })
+      .where(eq(schema.socialPostOutbox.id, row.id));
+    return { ok: false, text: `Nem ment ki — ${gate.reason}`, retryable: false };
+  }
+
   const imageBuffer = Buffer.from(row.imagePng, 'base64');
 
   // Elsődleges út a Make.com (Advanced Access-es FB Pages app), visszaesés a

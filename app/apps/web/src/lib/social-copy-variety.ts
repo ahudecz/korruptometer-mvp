@@ -450,6 +450,91 @@ export function whyItMattersFor(
 export const IMAGE_SUBLINE_MAX_WORDS = 12;
 
 /**
+ * CSONK-FELISMERÉS „…" NÉLKÜL IS.
+ *
+ * 2026-09-25, élesre ment: „Tizennégy kormányközeli alapítvány szűnt meg,
+ * köztük" — a képen ÉS a poszt törzseként. A kapu addig csak a „…"-t
+ * kereste, de a csonkok nagy része nem így néz ki: a detektor szó-korlátja
+ * (review.ts truncateDescriptionWords) vagy a képsor tagmondat-bontása
+ * pontjel nélkül vág, és a csonk kész szövegnek látszik. Ugyanez a
+ * hibaosztály volt a 09-24-i „Mikucza Tamást, Seszták Miklós volt fejlesztési
+ * miniszter" és a 09-25-i kvíz-képsor is.
+ *
+ * Két független jel (a social-post-policy.ts kapuja mindkettőt futtatja):
+ *  1. looksCutOff — a szöveg olyan szóra/írásjelre végződik, ami után
+ *     KÖTELEZŐEN folytatás jön (vessző, „köztük", „és", névelő…);
+ *  2. isCutPrefixOf — a képsor egy HOSSZABB mondat eleje, ami a
+ *     posztszövegben tovább folytatódik, vagyis valaki levágta.
+ */
+const CONTINUATION_WORDS = new Set([
+  // felsorolás-nyitók: „…, köztük" / „többek között" / „például"
+  'köztük', 'közöttük', 'például', 'pl', 'úgymint', 'többek', 'ideértve', 'beleértve',
+  // kötőszavak
+  'és', 'vagy', 'de', 'hogy', 'mint', 'mivel', 'ha', 'mert', 'illetve', 'valamint',
+  'majd', 'míg', 'pedig', 'sőt', 'továbbá', 'azonban', 'viszont', 'ám', 'hanem', 'ill',
+  // vonatkozó névmások mondatközi helyzetben
+  'amely', 'amelyet', 'amelynek', 'amelyek', 'amelyben', 'aki', 'akit', 'akinek', 'akik',
+  'ami', 'amit', 'amik', 'amiben', 'ahol', 'amikor', 'miután', 'mielőtt', 'ahogy',
+  // névelők
+  'a', 'az', 'egy',
+  // jelzők, amik után főnév jön (review.ts DANGLING_LAST_WORDS mintájára)
+  'volt', 'korábbi', 'jelenlegi', 'egykori', 'leendő', 'megbízott', 'helyettes', 'akkori',
+]);
+
+export function looksCutOff(text: string | null | undefined): boolean {
+  // Záró emoji/szóköz nem számít (a headline „megszűnt! 🚨" formájú).
+  const s = (text ?? '').replace(/[\s\p{Extended_Pictographic}️‍]+$/u, '');
+  if (!s) return false;
+  if (/…$|\.\.\.$/.test(s)) return true;
+  if (/[,;:—–-]$/.test(s)) return true;
+  if (/[.!?)"”»]$/.test(s)) return false;
+  const last = (s.split(/\s+/).pop() ?? '').toLowerCase().replace(/[^\p{L}]/gu, '');
+  return CONTINUATION_WORDS.has(last);
+}
+
+/**
+ * Egy szó-korláton elvágott mezőérték (pl. MediaClosure.description) záró
+ * csonkját levágja: „Tizennégy kormányközeli alapítvány szűnt meg, köztük" →
+ * „Tizennégy kormányközeli alapítvány szűnt meg". Ha ezután 3 szónál kevesebb
+ * marad, üres — abból nem lesz értelmes mondat.
+ */
+export function trimCutTail(text: string | null | undefined): string {
+  let s = (text ?? '').replace(/\s+/g, ' ').trim();
+  while (s && looksCutOff(s)) {
+    // előbb a záró írásjel, aztán a folytatást igénylő utolsó szó
+    const next = /[,;:—–…-]$|\.\.\.$/.test(s) ? s.replace(/[\s,;:—–….-]+$/, '') : s.replace(/\s*\S+$/, '');
+    if (next === s) break;
+    s = next.trim();
+  }
+  return s.split(' ').filter(Boolean).length >= 3 ? s : '';
+}
+
+/**
+ * Egy hosszabb mondat levágott eleje-e a képsor? Akkor az, ha (a forrás-/
+ * feszültség-előtag nélküli) magja szó szerint szerepel a posztszövegben, és
+ * ott NEM mondatvég/sorvég követi, hanem a mondat folytatódik.
+ */
+export function isCutPrefixOf(imageText: string, fullText: string): boolean {
+  const norm = (x: string) => x.replace(/[ \t]+/g, ' ').trim();
+  const img = norm(imageText).replace(/[.!?]+$/, '');
+  const full = norm(fullText);
+  if (!img || !full) return false;
+  const cores = [img];
+  const dash = img.lastIndexOf(' — ');
+  if (dash >= 0) cores.push(img.slice(dash + 3));
+  const hay = full.toLowerCase();
+  for (const core of cores) {
+    if (core.split(' ').length < 3) continue;
+    const needle = core.toLowerCase();
+    for (let at = hay.indexOf(needle); at >= 0; at = hay.indexOf(needle, at + 1)) {
+      const next = full.charAt(at + needle.length);
+      if (next !== '' && !/[.!?\r\n]/.test(next)) return true;
+    }
+  }
+  return false;
+}
+
+/**
  * KÖTELEZŐ FORRÁS-ELŐTAG (user, 2026-09-24).
  *
  * Ha egy állítást nem erősítette meg hatóság, a képen ki KELL írni, hogy ki
@@ -514,7 +599,9 @@ export function claimLine(opts: {
   /** Kiírja-e, hogy „hatósági megerősítés nélkül" (csak ott, ahol ez értelmes). */
   unconfirmedNote?: boolean;
 }): string {
-  const reszek = opts.parts.map((p) => (p ?? '').trim()).filter(Boolean);
+  // Félbehagyott mezőérték sose kerül a képre (2026-09-25: a MediaClosure
+  // leírása „…szűnt meg, köztük" volt, és ez ment ki a képsorban).
+  const reszek = opts.parts.map((p) => (p ?? '').trim()).filter((p) => p && !looksCutOff(p));
   if (reszek.length === 0) return '';
   // Szó-korlát: a `parts` fontossági sorrendben jön, ezért a VÉGÉRŐL hagyunk
   // el, amíg befér. Enélkül a sor túlcsordulna a képen — a korlát eddig csak
@@ -643,19 +730,26 @@ export function imageSubline(value: string | null | undefined, fallback?: string
   const norm = (s: string | null | undefined) => (s ?? '').replace(/\s+/g, ' ').trim().replace(/[,;:—-]+$/, '');
   const wordCount = (s: string) => s.split(' ').filter(Boolean).length;
 
-  for (const candidate of [norm(value), norm(fallback)]) {
+  for (const raw of [value, fallback]) {
+    const candidate = norm(raw);
     if (!candidate) continue;
     // A záró „…" azt jelenti, hogy egy KORÁBBI lépés (fitCompleteSentences)
     // már elvágta a mondatot. Ilyenkor a szó-szám hiába fér bele: a szöveg
     // attól még csonk. Nem fogadjuk el egészben, hanem tagmondatra bontjuk.
-    const csonkolt = /…$/.test(candidate);
+    const csonkolt = /…$/.test(candidate) || looksCutOff(raw);
     if (!csonkolt && wordCount(candidate) <= IMAGE_SUBLINE_MAX_WORDS) return candidate;
 
-    // Az első önmagában is megálló tagmondat/mondat, ami belefér.
+    // Az első önmagában is megálló MONDAT, ami belefér.
+    //
+    // 2026-09-25: korábban vesszőnél és gondolatjelnél is bontott — pont ez
+    // gyártotta a csonkokat („Mikucza Tamást, …", a kvíz „Nézzük, mennyit
+    // tudsz … — a Matolcsy-kör körüli ügyről"). Magyarban egy vessző előtti
+    // rész szinte sosem önálló állítás. Ezért csak mondatvégnél bontunk, és
+    // csak pontra/felkiáltó-/kérdőjelre végződő mondatot fogadunk el.
     const clauses = candidate
-      .split(/(?<=[.!?])\s+|,\s+|\s+—\s+|;\s+/)
-      .map((c) => norm(c.replace(/…$/, '')))
-      .filter(Boolean);
+      .split(/(?<=[.!?])\s+/)
+      .map((c) => c.trim())
+      .filter((c) => /[.!?]$/.test(c));
     // CSAK AZ ELSŐ tagmondat jöhet szóba — sose egy későbbi.
     //
     // 2026-09-24, mérve: egy későbbi tagmondat kiemelve elveszti az alanyát,
