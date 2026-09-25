@@ -545,6 +545,10 @@ async function buildComplaintTriggers(db: ReturnType<typeof getDb>, counts: Cont
  * függvény üres tömböt ad, amíg le nem jár. Több kvíz esetén a legrégebben
  * (vagy sose) posztolt kap elsőbbséget, hogy körbeforogjanak.
  */
+/** Kvízek, amikről a user nem kér több Facebook-posztot (a kvíz az oldalon
+ *  marad). 2026-09-25, user: „az mnb kvíz posztot nem kérem többet". */
+const SOCIAL_EXCLUDED_QUIZ_SLUGS = new Set(['mnb-bankrablas']);
+
 async function buildQuizTriggers(db: ReturnType<typeof getDb>): Promise<OutboxInsert[]> {
   const cooldownSince = new Date(Date.now() - QUIZ_COOLDOWN_DAYS * 24 * 60 * 60 * 1000);
   const [recentRow] = await db
@@ -556,7 +560,8 @@ async function buildQuizTriggers(db: ReturnType<typeof getDb>): Promise<OutboxIn
     ));
   if ((recentRow?.c ?? 0) > 0) return [];
 
-  const allQuizzes = await db.select({ id: schema.quizzes.id, slug: schema.quizzes.slug, title: schema.quizzes.title, intro: schema.quizzes.intro }).from(schema.quizzes);
+  const quizRows = await db.select({ id: schema.quizzes.id, slug: schema.quizzes.slug, title: schema.quizzes.title, intro: schema.quizzes.intro }).from(schema.quizzes);
+  const allQuizzes = quizRows.filter((q) => !SOCIAL_EXCLUDED_QUIZ_SLUGS.has(q.slug));
   if (allQuizzes.length === 0) return [];
 
   const lastPostedRows = await db
