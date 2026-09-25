@@ -466,8 +466,15 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
             {d?.extra?.map((x) => (
               <div className="ugy-block-text" key={x.heading}>
                 <h2 className="ugy-block-heading">{x.heading}</h2>
-                {x.paragraphs.flatMap((para) => splitParas(para)).map((para, i) => (
-                  <p key={i}>{withAutoLinks(para, x.links, linkedPersons, selfHref)}</p>
+                {x.paragraphs.map((para, pi) => (
+                  <Fragment key={pi}>
+                    {splitParas(para).map((sub, i) => (
+                      <p key={i}>{withAutoLinks(sub, x.links, linkedPersons, selfHref)}</p>
+                    ))}
+                    {x.cardsAfterParagraph === pi && (
+                      <Sources sources={(x.sources ?? []).filter((src) => src.lead)} />
+                    )}
+                  </Fragment>
                 ))}
                 {x.videos && x.videos.length > 0 && (
                   <div className={x.videos.length > 1 ? 'feltaro-video-pair' : undefined}>
@@ -488,7 +495,13 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                     ))}
                   </div>
                 )}
-                {x.sources && x.sources.length > 0 && <Sources sources={x.sources} />}
+                {x.sources && x.sources.length > 0 && (
+                  <Sources
+                    sources={
+                      x.cardsAfterParagraph === undefined ? x.sources : x.sources.filter((src) => !src.lead)
+                    }
+                  />
+                )}
               </div>
             ))}
 

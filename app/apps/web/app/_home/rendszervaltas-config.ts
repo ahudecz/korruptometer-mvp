@@ -283,6 +283,11 @@ export type FeltaroDetail = {
      *  alján lévő `videoBlock` kiszakítaná a helyéről. */
     videos?: FeltaroVideoRef[];
     sources?: FeltaroLink[];
+    /** A KERETES (lead-es) források ennyiedik bekezdés (0-tól) UTÁN jelennek
+     *  meg, nem a szakasz végén. A sima forrás-sorok maradnak a végén.
+     *  User, 2026-09-25: a Momentum-frakció képe a frakcióról szóló bekezdés
+     *  után kell, ne a szakasz alján. */
+    cardsAfterParagraph?: number;
   }[];
   video?: FeltaroVideoRef;
   /** Több beágyazott videó egy blokkban, saját felvezetővel. Akkor kell,
@@ -2748,6 +2753,7 @@ export const FELTAROK: Feltaro[] = [
           links: [
             { text: 'saját bemutatkozása', href: 'https://momentum.hu/a-momentumrol/', external: true },
           ],
+          cardsAfterParagraph: 1,
           videos: [
             {
               id: 'JG5XL2asrl8',
