@@ -756,6 +756,18 @@ a.card:hover {
   opacity: 0.85;
 }
 
+/* Kép a keretes cikk-kártya tetején (FeltaroLink.image). */
+.cardFigure {
+  margin: 0 0 14px;
+}
+
+.cardFigureImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
 /* Logó a fotó helyén: egészben látszódjon, fehér alapon. A `cover` levágná a
    fekvő logók szélét, a sötét kártyaháttéren pedig a fekete rajzolatú logók
    (Partizán, Szikra) eltűnnének. */

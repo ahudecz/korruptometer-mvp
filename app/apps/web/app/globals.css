@@ -16012,10 +16012,11 @@ code {
 .feltaro-video--wide .podcast-video-wrap {
   width: 100%;
 }
-/* Egyetlen forrás-sornál is legyen lezáró vonal a blokk alatt. */
+/* A forrás-blokk alá NEM kell külön lezáró vonal: minden sornak (az
+   egyetlennek is) saját alsó vonala van, így a blokk szegélye közvetlenül
+   alatta kettős csíkot rajzolt (user, 2026-09-25). */
 .feltaro-news {
   padding-bottom: 10px;
-  border-bottom: 1px solid var(--line);
 }
 
 /* ── Dicsőségfal: bekezdés-térköz ─────────────────────────────────────────

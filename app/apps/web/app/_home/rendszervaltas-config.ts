@@ -199,6 +199,10 @@ export type FeltaroLink = {
   url: string;
   /** Ha van, a hivatkozás KERETES article-cardként jelenik meg. */
   lead?: string;
+  /** Kép a keretes kártya tetején (csak `lead`-del együtt). HELYI fájl, a
+   *  forrás képét letöltjük — l. FeltaroImage. User, 2026-09-25: a Momentum
+   *  saját cikkeinél a cikk képe is kerüljön a keretbe. */
+  image?: FeltaroImage;
 };
 
 /**
@@ -2632,6 +2636,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'person',
     role: 'a Momentum alapítója, a NOlimpia arca',
     badge: 'NOLIMPIA',
+    photo: '/images/rendszervaltas/fekete-gyor-andras.webp',
     tagline:
       'Egy aláírásgyűjtéssel leállíttatta a budapesti olimpiai pályázatot, 2025-ben pedig ő javasolta elsőként, hogy a saját pártja ne induljon.',
     section: {
@@ -2658,6 +2663,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'person',
     role: 'volt képviselő, a Momentum volt elnöke',
     badge: 'ORBÁNÉK',
+    photo: '/images/rendszervaltas/tompos-marton.webp',
     tagline:
       'Tízrészes videósorozatban rakta össze, hogyan épült fel az Orbán-család cégbirodalma — a választás előtti évben, közérthetően.',
     section: {
@@ -2692,6 +2698,7 @@ export const FELTAROK: Feltaro[] = [
     group: 'media',
     role: 'párt, a NOlimpia-kampányból alakult',
     badge: 'VISSZALÉPETT',
+    photo: '/images/rendszervaltas/momentum.webp',
     tagline:
       'Parlamenti pártként mondott le arról, hogy induljon a 2026-os választáson, hogy ne forgácsolja szét a kormányváltó szavazatokat.',
     // A szöveg a user kánonja (2026-09-25) — tartalmilag ne írd át. Egyetlen
@@ -2741,6 +2748,29 @@ export const FELTAROK: Feltaro[] = [
           links: [
             { text: 'saját bemutatkozása', href: 'https://momentum.hu/a-momentumrol/', external: true },
           ],
+          videos: [
+            {
+              id: 'JG5XL2asrl8',
+              label: 'ATV Magyarország · 2025. szeptember 1.',
+              title: 'A Tisza mellé állt a Momentum',
+              summary:
+                'Rózsa András, a Momentum új elnöke arról, miért nem indul a párt 2026-ban, és hogyan kampányolnak a kormányváltásért, különösen a vidéki településeken.',
+            },
+          ],
+          sources: [
+            {
+              source: 'Momentum Mozgalom',
+              date: '2022. máj. 2.',
+              headline: 'Megalakult az első Momentum-frakció',
+              url: 'https://momentum.hu/megalakult-az-elso-momentum-frakcio/',
+              lead: 'Május 2-án megalakult a Momentum történetének első parlamenti frakciója. Az eskütétel után az összes képviselőnk kivonult a Parlament alakuló ülés érdemi részéről.',
+              image: {
+                src: '/images/rendszervaltas/posts/momentum-frakcio-2022.webp',
+                alt: 'A Momentum tízfős országgyűlési frakciója a Parlament előtt, 2022 májusában',
+                credit: 'Momentum Mozgalom',
+              },
+            },
+          ],
         },
         {
           heading: 'A Momentum volt az első parlamenti párt, amely hátralépett',
@@ -2754,8 +2784,29 @@ export const FELTAROK: Feltaro[] = [
             'Ezt követően a Momentum nem saját választási kampányt épített fel, hanem a kormányváltás támogatását helyezte előtérbe.',
           ],
           sources: [
-            { source: 'Telex', date: '2025. jún. 7.', headline: 'Nem indul a Momentum a 2026-os országgyűlési választáson', url: 'https://telex.hu/belfold/2025/06/07/momentum-kuldottgyules-valasztas-2026' },
+            {
+              source: 'Telex',
+              date: '2025. jún. 7.',
+              headline: 'Nem indul a Momentum a 2026-os országgyűlési választáson',
+              url: 'https://telex.hu/belfold/2025/06/07/momentum-kuldottgyules-valasztas-2026',
+              lead: 'A Momentum azt ígéri, a következő tíz hónapban minden erejével azon lesz, hogy Magyarországon megvalósuljon a kormányváltás.',
+            },
             { source: 'Népszava', headline: 'Nem indul a 2026-os parlamenti választáson a Momentum Mozgalom', url: 'https://nepszava.hu/3282808_momentum-mozgalom-2026-parlamenti-valasztas-nem-indul' },
+          ],
+        },
+        {
+          heading: 'Nem indult, de kampányolt: plakátok és a legfideszesebb települések',
+          paragraphs: [
+            'A visszalépés nem jelentett visszavonulást a kampánytól. 2025. augusztus 16-án a Momentum „A kormányváltás rajtad is múlik” címmel óriásplakát-kampányt indított, azzal a bejelentéssel, hogy 2026 áprilisáig egyetlen célja a kormányváltás támogatása.',
+            'Rózsa András, akit 2025. augusztus 31-én választottak a párt elnökévé, a megválasztásakor így foglalta össze a stratégiát: „Plakátkampányainkon a billegő körzetekbe juttatjuk el a kormányváltás üzenetét, miközben politikusaink és aktivistáink a legfideszesebb településeket járják be. Olyan helyekre fogunk eljutni, ahol 16 éve nem járt ellenzéki párt, de szavazataik sorsdöntőek lehetnek jövő áprilisban.”',
+            '2025 szeptemberében ehhez országos plakátkiállítás társult a NER luxuskiadásairól: a plakátokat vidéki, billegő választókerületek közterein állították ki.',
+            'A választás után, 2026 májusában a Momentum óriásplakáton gratulált a győztesnek: „Gratulálunk a Tiszának! Köszönjük Magyarország! Kezdődjön a rendszerváltás!”',
+          ],
+          sources: [
+            { source: 'Momentum Mozgalom', date: '2025. aug. 16.', headline: 'A kormányváltás rajtad is múlik — plakátkampányt indítottunk', url: 'https://momentum.hu/a-kormanyvaltas-rajtad-is-mulik-plakatkampanyt-inditottunk/' },
+            { source: 'Momentum Mozgalom', date: '2025. aug. 31.', headline: 'Rózsa András a Momentum új elnöke', url: 'https://momentum.hu/rozsa-andras-a-momentum-uj-elnoke/' },
+            { source: 'Momentum Mozgalom', date: '2025. szept. 22.', headline: 'Országos plakátkiállítást indítunk a NER legpofátlanabb luxizásairól', url: 'https://momentum.hu/orszagos-plakatkiallitast-inditunk-a-ner-legpofatlanabb-luxizasairol/' },
+            { source: 'Telex', date: '2026. máj. 5.', headline: 'Óriásplakáton gratulál a Momentum a Tisza Pártnak', url: 'https://telex.hu/belfold/2026/05/05/momentum-oriasplakat-tisza-part' },
           ],
         },
         {
@@ -2859,6 +2910,20 @@ export const FELTAROK: Feltaro[] = [
           ],
           links: [
             { text: 'Az RTL korabeli beszámolója', href: 'https://rtl.hu/hirado/2017/02/17/266-151-alairas-gyult-ossze', external: true },
+          ],
+          sources: [
+            {
+              source: 'Momentum Mozgalom',
+              date: '2017. febr. 21.',
+              headline: 'Így adtunk le 266 151 aláírást',
+              url: 'https://momentum.hu/momentum-a-tarsadalom-atvette-a-kezdemenyezest/',
+              lead: 'Kezdetben 160 ezer, a vége felé már 220 ezer aláírás volt a legoptimistább becslésünk. Aztán kicsit több lett.',
+              image: {
+                src: '/images/rendszervaltas/posts/momentum-nolimpia-alairasok-2017.webp',
+                alt: 'A NOlimpia-aláírásokat tartalmazó dobozok a Fővárosi Választási Irodában, körülöttük újságírók és fotósok',
+                credit: 'Momentum Mozgalom',
+              },
+            },
           ],
         },
         {

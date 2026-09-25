@@ -152,6 +152,16 @@ function Sources({ sources, label }: { sources: FeltaroLink[]; label?: string })
           rel="noopener noreferrer"
           className="ugy-block-article-card"
         >
+          {c.image && (
+            <figure className={styles.cardFigure}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={c.image.src} alt={c.image.alt} loading="lazy" className={styles.cardFigureImg} />
+              <figcaption className={styles.caseFigureCaption}>
+                {c.image.caption ? `${c.image.caption} ` : ''}
+                <span className={styles.caseFigureCredit}>Fotó: {c.image.credit}</span>
+              </figcaption>
+            </figure>
+          )}
           <div className="ugy-block-article-meta">
             <span className="ugy-block-article-source">{c.source}</span>
             {c.date && <span className="ugy-block-article-date">{c.date}</span>}
