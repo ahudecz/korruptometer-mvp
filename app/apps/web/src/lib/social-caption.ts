@@ -176,6 +176,7 @@ export const KICKER_EMOJI: Record<string, string> = {
   'KIEMELT ÜGY': '🔎',
   'ADATBÁZIS': '🔎',
   'SZAVAZÁS EREDMÉNYE': '📊',
+  'DICSŐSÉGFAL': '🏆',
 };
 
 /** A `/lemondasok/[id]` végoldal KIZÁRÓLAG a 8 WATCH_LIST-es tisztségviselőt

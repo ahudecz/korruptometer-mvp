@@ -11,6 +11,8 @@ import { countActualVerdicts } from '@app/birosagi-iteletek/verdict-stats';
 import { containsPlaceholderText } from '@/lib/social-caption';
 import { computeNextMilestone, formatMilliardLabel } from '@/lib/social-milestone';
 import { UGYEK } from '@app/_home/ugyek-config';
+import { liveFeltarok } from '@app/_home/rendszervaltas-config';
+import { DICSOSEGFAL_KICKER, buildDicsosegfalCopy, nextDicsosegfalProfile } from '@/lib/social-dicsosegfal';
 import { toAsciiId, autoDisplayTitle, RETIRED_SCANDAL_IDS } from '@app/_home/case-detail-config';
 import { listPolls, getPollWithResults } from '@/lib/poll-queries';
 import {
@@ -869,7 +871,38 @@ async function pendingApprovalCount(db: ReturnType<typeof getDb>): Promise<numbe
   return row?.c ?? 0;
 }
 
+/**
+ * Dicsőségfal-profil felidézése — SORBAN, az utoljára posztolt utáni élő
+ * profillal, és a poszt sorszámától függő, mindig más sablonnal (l.
+ * social-dicsosegfal.ts). User kérés, 2026-09-25.
+ */
+async function buildDicsosegfalTrigger(db: ReturnType<typeof getDb>): Promise<OutboxInsert | null> {
+  const rows = await db
+    .select({ triggerRefId: schema.socialPostOutbox.triggerRefId })
+    .from(schema.socialPostOutbox)
+    .where(eq(schema.socialPostOutbox.triggerType, 'dicsosegfal_highlight'))
+    .orderBy(desc(schema.socialPostOutbox.createdAt));
+  const profile = nextDicsosegfalProfile(liveFeltarok(), rows[0]?.triggerRefId ?? null);
+  if (!profile) return null;
+  const copy = buildDicsosegfalCopy(profile, rows.length);
+  if (!copy) return null;
+
+  const kicker = DICSOSEGFAL_KICKER;
+  const image = await renderBreakingImage({ kicker, headline: copy.headline, detail: copy.imageText });
+  return {
+    triggerType: 'dicsosegfal_highlight',
+    triggerRefId: profile.id,
+    milestoneValueFt: null,
+    headline: copy.headline,
+    caption: breakingCaption(kicker, copy.headline, copy.whatHappened, copy.linkPath, copy.cta, copy.whyItMatters, copy.bullets),
+    imagePng: image,
+    imageText: copy.imageText,
+    kicker,
+  };
+}
+
 async function buildFallbackTrigger(kind: FallbackKind, db: ReturnType<typeof getDb>): Promise<OutboxInsert | null> {
+  if (kind === 'dicsosegfal_highlight') return buildDicsosegfalTrigger(db);
   if (kind === 'summary_stats') return buildSummaryStatsTrigger(db);
   if (kind === 'catalog_highlight') return buildCatalogHighlightTrigger(db);
   return buildGalleryHighlightTrigger(db);

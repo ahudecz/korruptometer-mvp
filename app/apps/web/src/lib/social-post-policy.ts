@@ -74,7 +74,7 @@ export const REAL_EVENT_TYPES = new Set([
 ]);
 
 /** Tartalék-típusok: nincs mögöttük friss esemény, csak a nap kitöltése. */
-export type FallbackKind = 'catalog_highlight' | 'gallery_highlight' | 'summary_stats';
+export type FallbackKind = 'dicsosegfal_highlight' | 'catalog_highlight' | 'gallery_highlight' | 'summary_stats';
 
 export type GateCandidate = {
   triggerType: string;
@@ -229,7 +229,8 @@ export function checkPostGate(c: GateCandidate): GateResult {
  * sor VÉGÉN, tehát a két ügy-felidéző után.
  */
 export function fallbackKindsForRun(opts: { now: Date; lastSummaryAt: Date | null }): FallbackKind[] {
-  const base: FallbackKind[] = ['catalog_highlight', 'gallery_highlight'];
+  // 2026-09-25: a Dicsőségfal élő profiljai is a rotációban (user kérés).
+  const base: FallbackKind[] = ['dicsosegfal_highlight', 'catalog_highlight', 'gallery_highlight'];
   const dayIndex = Math.floor(opts.now.getTime() / (24 * 60 * 60 * 1000)) % base.length;
   const rotated = [...base.slice(dayIndex), ...base.slice(0, dayIndex)];
 
