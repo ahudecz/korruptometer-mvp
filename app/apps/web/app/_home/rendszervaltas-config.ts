@@ -2622,6 +2622,92 @@ export const FELTAROK: Feltaro[] = [
     },
   },
   {
+    id: 'fekete-gyor-andras',
+    name: 'Fekete-Győr András',
+    kind: 'person',
+    group: 'person',
+    role: 'a Momentum alapítója, a NOlimpia arca',
+    badge: 'NOLIMPIA',
+    tagline:
+      'Egy aláírásgyűjtéssel leállíttatta a budapesti olimpiai pályázatot, 2025-ben pedig ő javasolta elsőként, hogy a saját pártja ne induljon.',
+    section: {
+      heading: 'Fekete-Győr András — a NOlimpiától a visszalépés javaslatáig',
+      paragraphs: [
+        '2017 januárjában indította el a NOlimpia-aláírásgyűjtést a budapesti olimpiai pályázatról szóló népszavazásért. Egy hónap alatt 266 151 aláírás gyűlt össze, a népszavazáshoz szükséges 138 ezer közel kétszerese, és a kormány 2017. február 22-én visszavonta a pályázatot.',
+        'A kampányból nőtt ki a Momentum Mozgalom, amelynek 2021 októberéig elnöke volt, 2022 és 2024 között pedig országgyűlési képviselője.',
+        '2025 májusában, a párt elnökségi ülése előtt nyilvánosan javasolta, hogy a Momentum ne induljon a 2026-os választáson, mert a 2–4 százalékos támogatottsága éppen elég ahhoz, hogy szétforgácsolja a kormányváltó szavazatokat. „Szeretnék a tükörbe nézni ’26 után is” — mondta az ATV-nek. Egy hónappal később a párt küldöttgyűlése így döntött.',
+      ],
+      links: [
+        {
+          text: '„Szeretnék a tükörbe nézni ’26 után is”',
+          href: 'https://www.atv.hu/belfold/20250508/fekete-gyor-andras-momentum-2026/',
+          external: true,
+        },
+      ],
+    },
+    updatedAt: '2026-09-25',
+  },
+  {
+    id: 'tompos-marton',
+    name: 'Tompos Márton',
+    kind: 'person',
+    group: 'person',
+    role: 'volt képviselő, a Momentum volt elnöke',
+    badge: 'ORBÁNÉK',
+    tagline:
+      'Tízrészes videósorozatban rakta össze, hogyan épült fel az Orbán-család cégbirodalma — a választás előtti évben, közérthetően.',
+    section: {
+      heading: 'Tompos Márton — az Orbánék-sorozat',
+      paragraphs: [
+        'Tompos Márton 2022 és 2026 között országgyűlési képviselő volt, 2020 októberétől a Momentum KorrupcióVadász munkacsoportját vezette, 2024 júliusától 2025 augusztusáig pedig a párt elnöke volt.',
+        'A legtöbbet hivatkozott munkája az Orbánék című YouTube-sorozat: 2025 januárja és májusa között tíz epizódban vette végig a miniszterelnök közvetlen családjának vagyonosodását — Tiborcz István első milliárdjaitól és a BDPST Group terjeszkedésétől az Orbán Ráhel-féle turisztikai üzleten át az apa bányacégeiig és a testvérek vállalkozásaiig. Az epizódok egyenként 20–58 ezer megtekintést értek el.',
+        'Az általa elnökként vezetett párt 2025 júniusában döntött úgy, hogy nem indul a 2026-os választáson.',
+      ],
+      links: [
+        {
+          text: 'Orbánék',
+          href: 'https://www.youtube.com/playlist?list=PLo6_mFiNzuy_lFgRtMJ_uoh9-_uFLSYNg',
+          external: true,
+        },
+      ],
+      video: {
+        id: 'U8n0L5e2iMk',
+        label: 'Tompos Márton · 2025. január 21.',
+        title: 'Az Orbán-család szabadrablása: A BDPST Group története — Orbánék #2',
+        summary:
+          'A sorozat második része Tiborcz István BDPST Groupjának felépülését követi végig, a szállodáktól az ingatlanfejlesztésekig.',
+      },
+    },
+    related: [{ label: 'Podcastok és videók', href: '/podcastok' }],
+    updatedAt: '2026-09-25',
+  },
+  {
+    id: 'momentum',
+    name: 'Momentum',
+    kind: 'org',
+    group: 'media',
+    role: 'párt, a NOlimpia-kampányból alakult',
+    badge: 'VISSZALÉPETT',
+    tagline:
+      'Parlamenti pártként mondott le arról, hogy induljon a 2026-os választáson, hogy ne forgácsolja szét a kormányváltó szavazatokat.',
+    section: {
+      heading: 'Momentum — a párt, amely nem indult el',
+      paragraphs: [
+        'A Momentum Mozgalom a 2017-es NOlimpia-aláírásgyűjtésből alakult meg 2017. március 4-én; az akció 266 151 aláírással érte el, hogy Budapest visszalépjen az olimpiai pályázattól.',
+        'A 2026-os fordulathoz a legnagyobb hozzájárulása egy döntés volt, nem egy leleplezés: a párt küldöttgyűlése 2025. június 7-én úgy határozott, hogy a kormányváltás esélyeinek érdekében nem indul az országgyűlési választáson. Ezt megelőzően több képviselője — köztük Hajnal Miklós és Tóth Endre — már bejelentette, hogy nem indul újra a körzetében.',
+        'A korrupcióellenes munkájából a legismertebb Tompos Márton Orbánék-sorozata és a KorrupcióVadász munkacsoport.',
+      ],
+      links: [
+        {
+          text: 'küldöttgyűlése 2025. június 7-én',
+          href: 'https://telex.hu/belfold/2025/06/07/momentum-kuldottgyules-valasztas-2026',
+          external: true,
+        },
+      ],
+    },
+    updatedAt: '2026-09-25',
+  },
+  {
     id: 'panyi-szabolcs',
     name: 'Panyi Szabolcs',
     kind: 'person',
