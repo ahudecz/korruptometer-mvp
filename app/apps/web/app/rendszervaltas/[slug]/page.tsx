@@ -105,7 +105,16 @@ function renderPara(
   const q = parseQuote(para);
   if (q) {
     return (
-      <blockquote key={key} className={q.big ? `${styles.pullQuote} ${styles.pullQuoteBig}` : styles.pullQuote}>
+      <blockquote
+        key={key}
+        className={[
+          styles.pullQuote,
+          q.big && styles.pullQuoteBig,
+          // Hosszú idézet (pl. egy teljes Facebook-mondat) a nagy betűvel
+          // mobilon egy teljes képernyőt töltene ki.
+          !q.big && q.text.length > 110 && styles.pullQuoteLong,
+        ].filter(Boolean).join(' ')}
+      >
         {/* span, nem p: a .ugy-block-text p margó- és betűméret-szabályai
             különben felülírnák a kiemelést. */}
         <span className={styles.pullQuoteText}>{q.text}”</span>

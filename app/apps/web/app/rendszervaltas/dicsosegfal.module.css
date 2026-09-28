@@ -886,6 +886,10 @@ a.card:hover {
 .pullQuote.pullQuoteBig .pullQuoteText {
   font-size: 44px;
 }
+.pullQuote.pullQuoteLong .pullQuoteText {
+  font-size: 22px;
+  line-height: 1.35;
+}
 @media (max-width: 600px) {
   .pullQuote {
     padding: 18px 16px 14px 44px;
@@ -900,5 +904,8 @@ a.card:hover {
   }
   .pullQuote.pullQuoteBig .pullQuoteText {
     font-size: 32px;
+  }
+  .pullQuote.pullQuoteLong .pullQuoteText {
+    font-size: 18px;
   }
 }

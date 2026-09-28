@@ -2967,20 +2967,514 @@ export const FELTAROK: Feltaro[] = [
     name: 'Szél Bernadett',
     kind: 'person',
     group: 'person',
-    role: 'független országgyűlési képviselő',
+    role: 'országgyűlési képviselő 2010–2022',
     badge: 'ADATIGÉNYLŐ',
     photo: '/images/rendszervaltas/szel-bernadett.webp',
     tagline:
       'Írásbeli kérdések és közérdekűadat-igénylések százaival kényszerítette válaszadásra a minisztériumokat — és a megtagadott válaszokat is nyilvánosságra hozta.',
+    // A végoldal szövege a user sajátja (2026-09-28), forrásokkal egyeztetve.
+    // Idézetdobozba csak szó szerint megtalált alak került; a forrásban
+    // nem fellelt idézetek („Nekünk Mészáros Lőrinc nem diktál", „Aki itt
+    // eddig kormányzott…", a kórházi ágyas két mondat) kimaradtak. A Paks,
+    // AB, Pegasus, Pózva és kormánygépes szakaszok a user kérésére végzett
+    // teljességi keresésből származnak.
     section: {
       heading: 'Szél Bernadett — aki a hivatali hallgatást is dokumentálta',
       paragraphs: [
-        'Szél Bernadett a parlamenti ellenőrzés legkevésbé látványos, mégis leghatékonyabb eszközével dolgozott: írásbeli kérdésekkel és közérdekűadat-igénylésekkel. Ezek nem adnak főcímet, viszont hivatalos, iktatott nyomot hagynak — egy minisztérium vagy válaszol, vagy dokumentáltan megtagadja a választ.',
-        'Éppen ezért lett a módszerének a második fele legalább olyan fontos, mint az első: a kitérő és elutasító válaszokat is rendszeresen nyilvánosságra hozta. Így állt össze az a kép, hogy egyes területeken az adat nem azért hiányzott, mert nem létezett, hanem mert nem akarták kiadni.',
-        'A megfigyelési botrány magyar szálának egyik legkövetkezetesebb parlamenti számonkérője volt — akkor is napirenden tartotta az ügyet, amikor az már rég lekerült a címlapokról.',
+        'Szél Bernadett 2010 és 2022 között volt országgyűlési képviselő. Volt az LMP társelnöke, frakcióvezetője, 2018-ban pedig a párt miniszterelnök-jelöltje. Ezek azonban önmagukban még nem indokolnák, hogy felkerüljön egy olyan Dicsőségfalra, amelynek lényege nem a politikai karrier bemutatása, hanem azoknak a politikusoknak a megmutatása, akik konkrét ügyekben mentek neki a hatalomnak.',
+        'Szélnél bőven van ilyen.',
+        'Nem egyetlen nagy korrupciós ügy fűződik a nevéhez, mint Hadházy Ákosnál, hanem egy hosszú sor kisebb-nagyobb történet: gyermekotthonokba ment be, adatokat kért ki, közérdekű adatperekben vett részt, kormányzati döntések hátterét próbálta feltárni, kórházi adatokat szedett össze, parlamenti bizottságokban próbált ügyeket napirendre venni, és akkor is folytatta, amikor az ügyből nem lett politikailag kényelmes történet.',
+        'Saját összesítése szerint a 2018–2022 közötti parlamenti ciklusban 471 kérdést és törvényjavaslatot adott be, 38 alkalommal fordult az ombudsmanhoz, több száz közérdekű adatigénylést nyújtott be, tucatnyi feljelentést tett és közérdekű adatpereket indított. Emellett közel száz alkalommal látogatott állami intézményeket, köztük kormányhivatalokat, minisztériumokat, szociális intézményeket és gyermekotthonokat.',
+        'De a számoknál sokkal érdekesebbek azok a konkrét ügyek, amelyek mögöttük vannak.',
       ],
     },
-    related: [{ label: 'Adatbázis', href: '/adatbazis' }],
+    related: [
+      { label: 'Dicsőségfal', href: '/rendszervaltas' },
+      { label: 'Adatbázis', href: '/adatbazis' },
+    ],
+    updatedAt: '2026-09-28',
+    live: true,
+    detail: {
+      seoTitle: 'Szél Bernadett: fóti gyermekotthon, Budapest–Belgrád-per, dudálós tüntetés',
+      seoDescription:
+        'Miért van Szél Bernadett a Dicsőségfalon? A fóti gyermekotthon ügye, a Budapest–Belgrád hitelszerződés pere, a kórházi ágyak adatai, Paks II, Pegasus és a dudálásért ledolgozott közmunka — idézetekkel, videókkal, forrásokkal.',
+      lead:
+        'Országgyűlési képviselő 2010 és 2022 között, 2018-ban az LMP miniszterelnök-jelöltje, utána független képviselő. A Dicsőségfalon nem a tisztségei miatt szerepel, hanem egy ügylista miatt: gyermekotthonokba ment be, adatokat perelt ki, és a mentelmi jogáról is lemondott egy tüntetésen.',
+      extra: [
+        {
+          heading: 'A fóti gyermekotthon: amikor 5–6 fokban aludtak a gyerekek',
+          paragraphs: [
+            '2018 októberében Szél Bernadett kiment a fóti Károlyi István Gyermekközponthoz, ahol egy egészen abszurd helyzetbe ütközött: elromlott a kazán, az intézményben pedig éjszakánként mindössze 5–6 fok volt.',
+            'A gyerekek és az ott dolgozók is fáztak.',
+            'Szél nem parlamenti kérdést írt róla, majd hónapokkal később várt a válaszra. Kiment, megnézte, mi történik, és videóban mutatta meg.',
+            '> „Tisztelt Kormány, ha leszálltak a privát jetek, nem tudnának 6 millió forintot adni a gyermekotthonba?” | Szél Bernadett · videó a fóti gyermekotthonból, 2018. október',
+            'A hatmillió forint ugyanis nagyjából ennyibe került volna a kazán javítása.',
+            'A történet azért lett különösen erős, mert a nyilvánosságra hozatal után rövid időn belül az állami fenntartó bejelentette, hogy a fűtésrendszer hibáját elhárították, a munkálatok befejeződtek, és biztosított a hőszolgáltatás.',
+            'Nem lehet minden esetben bizonyítani, hogy egy politikusi akció közvetlenül okozott egy intézkedést. Ebben az esetben viszont a sorrend meglehetősen látványos: Szél helyszíni videót készített a fűtetlen gyermekotthonról, a történet országos nyilvánosságot kapott, majd a fenntartó közölte a javítás elkészültét.',
+            'Ez már pontosan az a fajta történet, amiért egy ilyen oldalra fel lehet tenni egy politikust.',
+            'Nem azért, mert beszélt a gyermekvédelemről, hanem mert kiment egy gyermekotthonba, meglátta a problémát, megmutatta, és abból ügy lett.',
+          ],
+          sources: [
+            {
+              source: 'Index',
+              date: '2018. okt. 2.',
+              headline: 'Jéghideg szobákban alszanak egy fóti speciális gyerekotthonban',
+              url: 'https://index.hu/belfold/2018/10/02/5-6_fokra_hul_a_levego_ejszakankent_egy_foti_specialis_gyerekotthonban/',
+              lead: 'Éjszakánként 5-6 fokra hűl a levegő, de nincs pénzük új kazánra.',
+            },
+            {
+              source: 'Népszava',
+              headline: 'Amíg nem lett botrány, nem volt fűtés a fóti gyermekotthonban',
+              url: 'https://nepszava.hu/3010481_amig-nem-lett-botrany-nem-volt-futes-a-foti-gyermekotthonban',
+            },
+          ],
+        },
+        {
+          heading: 'De Fót nem ért véget a kazánnál',
+          paragraphs: [
+            'A fóti gyermekközpont története ennél sokkal hosszabb.',
+            'A kormány a Károlyi István Gyermekközpont megszüntetését és az ott élő gyerekek áthelyezését tervezte. Szél Bernadett azt kezdte el feszegetni, hogy pontosan hová kerülnek a gyerekek, milyen körülmények közé, és mi alapján született meg a döntés.',
+            'Az Emberi Erőforrások Minisztériuma az adatkérését azzal utasította el, hogy a gyerekek elhelyezésére vonatkozó iratok döntés-előkészítő anyagok, ezért tíz évig nem nyilvánosak. Szél a Magyar Helsinki Bizottság segítségével bírósághoz fordult.',
+            'A bíróság 2019 őszén első fokon kimondta: a minisztériumnak ki kell adnia a fóti gyermekközpontban élő gyerekek további ellátására vonatkozó adatokat. A per során az is kiderült, hogy a gyerekek elhelyezésére nem is létezett szakmai terv.',
+            'Ez azért fontos, mert a történet innentől már nem egyszerűen arról szólt, hogy egy képviselő elégedetlen egy kormányzati döntéssel.',
+            'Szél azt mondta: rendben, akkor mutassátok meg, mi alapján hoztátok meg.',
+            'És amikor nem mutatták meg, bíróságra ment.',
+          ],
+          videos: [
+            {
+              id: 'kzo9qrEsAqA',
+              label: 'Szél Bernadett · 2019. május 6.',
+              title: 'Szél Bernadett bemutatja a fóti gyermekotthon területét',
+              summary: 'Így néz ki az a gyermekközpont, amelyet a kormány korszerűtlennek nevezett, és be akart zárni.',
+              views: '5,7 ezer megtekintés',
+            },
+          ],
+          sources: [
+            {
+              source: '444',
+              date: '2019. márc. 30.',
+              headline: 'Tíz évig titkosították a fóti gyerekek elhelyezésével kapcsolatos információkat',
+              url: 'https://444.hu/2019/03/30/tiz-evig-titkositottak-a-foti-gyerekek-elhelyezesevel-kapcsolatos-informaciokat',
+              lead: 'Szél Bernadett adatkérését utasította el az Emmi, a képviselő jogi útra lép.',
+            },
+            {
+              source: 'Mérce',
+              date: '2019. szept. 24.',
+              headline: 'Egyesével pörgetik ki a fóti gyerekeket a semmibe',
+              url: 'https://merce.hu/2019/09/24/egyesevel-porgetik-ki-a-foti-gyerekeket-a-semmibe/',
+            },
+            {
+              source: 'Magyar Helsinki Bizottság',
+              headline: 'A Helsinki utánajár, az állam mit tett az intézetben élő gyerekekért',
+              url: 'https://helsinki.hu/a-helsinki-bizottsag-utanajar-az-allam-mit-tett-az-intezetben-elo-gyerekekert/',
+            },
+          ],
+        },
+        {
+          heading: '„Hova kerülnek a gyerekek?”',
+          paragraphs: [
+            'Szél később személyesen is megpróbált utánajárni annak, hogy a fóti gyerekeket milyen intézményekbe helyeznék át.',
+            '2019 márciusában végigjárta azokat a helyeket — Kalocsán, Aszódon és Zalaegerszegen —, ahová a kormány a fóti gyerekeket áthelyezte volna. A 444 beszámolója szerint az érintett intézmények sem tudtak többet az áthelyezésről, mint ő.',
+            'A történetből videót is készített.',
+            '> „Nézze meg velem, hova kerülnének a fóti gyermekek!” | Szél Bernadett videójának címe, 2019. március 13.',
+            'Ez a Szél-féle politizálás egyik visszatérő eleme volt: nem elégedett meg azzal, amit egy minisztériumi sajtóközlemény mondott. Megpróbálta megnézni a helyszínen.',
+            'A parlament folyosóján is megpróbálta kérdőre vonni Fülöp Attila szociális államtitkárt a gyermekotthon bezárásáról. A jelenetet videóra vette.',
+            '> „Szeretném, ha válaszolna! A gyerekek fontosabbak, mint az urak, akikkel most ön van.” | Szél Bernadett Fülöp Attila államtitkárnak, a Parlament folyosóján, 2019. március 5.',
+            'Amikor pedig a parlamenti népjóléti bizottságban akarta napirendre vetetni a fóti gyermekváros ügyét, a kormánypárti képviselők távolmaradása miatt az ülés nem tudta megtárgyalni a napirendi pontot. Szél azt javasolta volna, hogy állítsák le az áthelyezési eljárásokat, biztosítsák az intézmény működéséhez szükséges forrásokat, és hozzanak létre állandó gyermekvédelmi egyeztető fórumot.',
+            'És még egy egészen különös epizód is kapcsolódott a fóti ügyhöz.',
+          ],
+          videosAfterParagraph: 3,
+          videos: [
+            {
+              id: 'tWeBEQPGh7o',
+              label: 'Szél Bernadett · 2019. március 13.',
+              title: 'Nézze meg velem, hova kerülnének a fóti gyermekek!',
+              summary:
+                'Miután az államtitkár a folyosón és a bizottsági ülésen is elkerülte a kérdéseit, videón mutatta meg azokat a helyeket, ahová a gyerekeket költöztették volna.',
+              views: '3 ezer megtekintés',
+            },
+          ],
+          sources: [
+            {
+              source: '444',
+              date: '2019. márc. 11.',
+              headline: 'Omladozó falak és a puszta várja a fóti gyerekeket',
+              url: 'https://444.hu/2019/03/11/omladozo-falak-es-a-puszta-varja-a-foti-gyerekeket',
+              lead: 'A kormány megnevezte, hová helyeznék át a gyerekeket, de erről mintha az érintett intézményeket elfelejtette volna értesíteni.',
+            },
+            {
+              source: '444',
+              date: '2019. márc. 5.',
+              headline: 'Szél Bernadett azt gondolta, fontosabbak a fóti gyermekotthon lakói, mint az államtitkárral beszélgető urak',
+              url: 'https://444.hu/2019/03/05/szel-bernadett-azt-gondolta-fontosabbak-a-foti-gyermekotthon-lakoi-mint-az-allamtitkarral-beszelgeto-urak',
+            },
+            {
+              source: 'Mérce',
+              date: '2019. dec. 2.',
+              headline: 'Ma tárgyalták volna a fóti gyermekotthon ügyét, de a fideszes képviselők nem jelentek meg',
+              url: 'https://merce.hu/2019/12/02/ma-targyaltak-volna-a-foti-gyermekotthon-ugyet-am-a-bizottsagi-targyalason-elfelejtettek-megjelenni-a-kormanyparti-kepviselok/',
+            },
+          ],
+        },
+        {
+          heading: 'A fiú, aki rappelni kezdett a gyermekváros bezárásáról',
+          paragraphs: [
+            '2020-ban a fóti gyermekotthon egyik 17 éves lakója rapdalt készített arról, hogy ne zárják be az otthont. A dal címe: Gyermekváros maradj talpon.',
+            'A videó után belső vizsgálat indult ellene, és a sajtó beszámolói szerint megtiltották neki, hogy dolgozni menjen. Szél Bernadett nyílt levélben az ombudsmanhoz fordult: azt kérdezte, érvényesül-e a véleménynyilvánítás szabadsága a gyermekvédelmi rendszerben. A fiú melletti tüntetésen is ott volt.',
+            'A dal egyik sora így szólt:',
+            '> „Fontosabb minden a kölyköknél, te meg a pénzhegyeken szörföznél.” | a Gyermekváros maradj talpon című dalból, 2020',
+            'Szél itt sem engedte el az ügyet azzal, hogy „nem az én dolgom”.',
+          ],
+          sources: [
+            {
+              source: 'HVG',
+              date: '2020. febr. 21.',
+              headline: 'A fóti gyerekközpont bezárásáról rappelt annak egy fiatal lakója: megbüntették a fiút',
+              url: 'https://hvg.hu/elet/20200221_A_foti_gyerekkozpont_bezarasarol_rappelt_annak_egy_fiatal_lakoja_megbuntettek_a_fiut',
+              lead: 'Belső vizsgálat indult a fiú ellen, és megtiltották neki, hogy dolgozni menjen. Mindezt egy dal miatt.',
+            },
+          ],
+        },
+        {
+          heading: 'Budapest–Belgrád: két év pereskedés egy hitelszerződésért',
+          paragraphs: [
+            'Ha valaki azt kérdezi, mi volt Szél egyik legfontosabb konkrét átláthatósági ügye, a Budapest–Belgrád vasút hitelszerződésének története biztosan ide tartozik.',
+            '2020. április 24-én Varga Mihály bejelentette, hogy aláírták a Budapest–Belgrád vasútvonal építésének finanszírozásához szükséges hitelmegállapodást.',
+            'Szél Bernadett rögtön közérdekű adatigénylést nyújtott be, hogy megismerhesse a szerződés részleteit.',
+            'Közben azonban a parlament elfogadott egy törvényt, amely lehetővé tette, hogy a beruházással kapcsolatos egyes szerződéseket tíz évre titkosítsák, ha azok nyilvánosságra kerülése a kormány szerint külpolitikai érdeket sértene.',
+            'Szél nem állt meg az adatigénylésnél. 2020 májusában hűtlen kezelés gyanújával feljelentést is tett a beruházás miatt.',
+            'És perelt.',
+            'A történet közel két évig húzódott. A Fővárosi Ítélőtábla 2021 októberében jogerősen úgy döntött, hogy a szerződést ki kell adni: a minisztérium nem tudta bizonyítani, hogy a nyilvánosság sértené Magyarország külpolitikai érdekeit. A Kúria 2022 nyarán hatályon kívül helyezte ezt a döntést. A perből annyi mégis kiderült, hogy a dokumentumokat kínai kérésre titkosították.',
+            'Vagyis itt nem arról van szó, hogy Szél egyszer feltett egy kérdést a parlamentben a Budapest–Belgrád vasútról.',
+            'Fogta a dokumentumot, amit nem akartak kiadni, és két éven keresztül jogi úton próbálta megszerezni.',
+            'Ez a Dicsőségfal szempontjából sokkal érdekesebb, mint az, hogy melyik évben milyen tisztséget töltött be.',
+          ],
+          videos: [
+            {
+              id: 'WgvgiVOZo6U',
+              label: 'ATV Magyarország · 2021. november 18.',
+              title: 'A bíróság szerint ki kell adni a Budapest-Belgrád vasút hitelszerződését',
+              summary: 'A másodfokú győzelem után: Szél Bernadett arról, miért kötelezte el a kormány Magyarországot Kínának.',
+              views: '5,3 ezer megtekintés',
+            },
+          ],
+          sources: [
+            {
+              source: '444',
+              date: '2021. okt. 7.',
+              headline: 'Jogerős: a külügyminisztérium ki kell, hogy adja Szél Bernadettnek a Budapest-Belgrád vasút hitelszerződését',
+              url: 'https://444.hu/2021/10/07/jogeros-a-kulugyminiszterium-ki-kell-hogy-adja-szel-bernadettnek-a-budapest-belgrad-vasut-hitelszerzodeset',
+              lead: 'A minisztérium nem tudta hitelt érdemlően bizonyítani a bíróságon, hogy a szerződés kiadása sértené Magyarország külügyi érdekeit.',
+            },
+            {
+              source: 'HVG',
+              date: '2022. szept. 5.',
+              headline: 'Kínai kérésre titkosították a Budapest–Belgrád vasútvonal hitelszerződését',
+              url: 'https://hvg.hu/itthon/20220905_kina_budapest_belgrad_vasut_hitelcsomag_szerzodes_kinai',
+            },
+            {
+              source: 'Népszava',
+              date: '2020. máj. 23.',
+              headline: 'Hűtlen kezelés gyanújával tett feljelentést Szél Bernadett a Budapest-Belgrád vasútépítés miatt',
+              url: 'https://nepszava.hu/3079160_hutlen-kezeles-gyanujaval-tett-feljelentest-szel-bernadett-a-budapest-belgrad-vasutepites-miatt',
+            },
+          ],
+        },
+        {
+          heading: 'Paks II: az első adatper már 2014-ben',
+          paragraphs: [
+            'Az adatperek nem a független képviselői időszakban kezdődtek. 2014-ben, alig egy nappal azután, hogy Moszkvában aláírták a paksi bővítésről szóló megállapodást, Szél Bernadett közérdekű adatigénylést nyújtott be az MVM-hez: a megvalósítás ütemterveit és a hatástanulmányokat kérte.',
+            'Az MVM döntés-előkészítésre hivatkozva megtagadta az adatok kiadását, a Szekszárdi Törvényszék pedig a cégnek adott igazat. A beruházás adatainak harminc évre szóló titkosítását ellenzéki képviselők egynegyede 2015-ben az Alkotmánybíróság elé vitte — a testület csak 2021 januárjában döntött, és nem találta alaptörvény-ellenesnek.',
+            'Szél ekkor azt mondta, hogy az adatnyilvánosságért folytatott küzdelem következő állomása a strasbourgi Emberi Jogok Európai Bírósága lesz.',
+          ],
+          sources: [
+            {
+              source: 'Mérce',
+              date: '2021. febr. 24.',
+              headline: '„Kivételt vagy mérlegelést nem tűrően” – Az Alkotmánybíróság hat éves döntéshozatala a paksi titoktörvényről',
+              url: 'https://merce.hu/2021/02/24/kivetelt-vagy-merlegelest-nem-turoen-az-alkotmanybirosag-hat-eves-donteshozatala-a-paksi-titoktorvenyrol/',
+              lead: 'Paks II. rendkívüli terheket ró az országra pénzügyi, gazdasági, környezeti és társadalmi szempontból is. Mégis rengeteg titkolózás övezi.',
+            },
+          ],
+        },
+        {
+          heading: 'A kórházi ágyak ügye: amikor a számok mögött emberek vannak',
+          paragraphs: [
+            '2020 tavaszán a koronavírus-járvány miatt a kormány nagyszámú kórházi ágy felszabadítását rendelte el.',
+            'Szél Bernadett elkezdte összevetni a kormányzati kommunikációt az elérhető egészségügyi adatokkal.',
+            'Az NEAK adatai alapján arra jutott, hogy az érintett kórházi ágyak kihasználtsága jóval magasabb volt annál, mint amit a kormány kommunikációja sugallt. Az adatokat konkrét intézményekre lebontva is vizsgálta, és a kormány állításait nyíltan hazugságnak nevezte.',
+            'A vita nem pusztán arról szólt, hogy ki milyen politikai narratívát használ. Szél adatokat keresett, majd ezek alapján vitatta a kormány állításait.',
+            'Azt is meg akarta tudni, hány beteget küldtek haza a kórházakból. Az NEAK előbb a veszélyhelyzetre hivatkozva kitolta a határidőt, majd elutasította az igénylést. Szél beperelte — a NEAK nem védekezett, hanem 2020 októberében kiadta a kórházakra és időszakokra bontott adatokat. Ezekből derült ki, hogy csak áprilisban 19 165 beteget küldtek haza.',
+            '> „Újabb eredményt értünk el: megígértem, hogy nem hagyom annyiban, pontosan mi történt az »ágyfelszabadítás« kapcsán.” | Szél Bernadett · 2020. október',
+          ],
+          videos: [
+            {
+              id: 'oG7tHEzJsxY',
+              label: 'Szél Bernadett · 2020. április 20.',
+              title: 'Szél Bernadett: Miért csinál a kormány Taigetoszt a magyar egészségügy maradékából?',
+              summary: 'A kórházi ágyak kiürítéséről, a járvány első heteiben.',
+            },
+          ],
+          sources: [
+            {
+              source: 'Euronews',
+              date: '2020. okt. 16.',
+              headline: 'Kiderült, hány beteget küldtek haza tavasszal a magyar kórházakból',
+              url: 'https://hu.euronews.com/2020/10/16/kiderult-hany-beteget-kuldtek-haza-a-korhazakbol',
+              lead: 'Egy hónap alatt körülbelül húszezer beteget küldtek haza a koronavírus-járványra hivatkozva a magyarországi kórházakból.',
+            },
+            {
+              source: 'Privátbankár',
+              date: '2020. máj. 26.',
+              headline: 'Szél Bernadett: itt van az új ágykapacitás-számítás!',
+              url: 'https://privatbankar.hu/cikkek/makro/szel-bernadett-itt-van-az-uj-agykapacitas-szamitas.html',
+            },
+          ],
+        },
+        {
+          heading: 'Az Alkotmánybíróság előtt: a járvány sem ok a hallgatásra',
+          paragraphs: [
+            'A járvány idején a kormány rendeletben tette lehetővé, hogy az állami szervek a veszélyhelyzetre hivatkozva 90 napig is elhúzhassák a közérdekű adatok kiadását. Szél Bernadett ezt az Alkotmánybíróság elé vitte.',
+            'Az Alkotmánybíróság 2021 áprilisában kimondta: a hosszabb határidő önmagában nem alaptörvény-ellenes, de nem lehet automatikusan alkalmazni. Az adatkezelőnek meg kell neveznie, pontosan melyik közfeladata maradna el, ha teljesítené az igénylést.',
+            '> „Pont a titkolózás hátráltatja a védekezést, nem a közérdekű adatok átadása.” | Szél Bernadett · 2021. április',
+          ],
+          sources: [
+            {
+              source: '444',
+              date: '2021. ápr. 15.',
+              headline: 'Nem pattinthatják le indoklás nélkül az adatigénylőket az állami szervek',
+              url: 'https://444.hu/2021/04/15/nem-pattinthatjak-le-indoklas-nelkul-az-adatigenyloket-az-allami-szervek',
+              lead: 'Az Alkotmánybíróság szerint nem lehet automatikusan alkalmazni a 90 napos szabályt, ha valaki információhoz akar jutni.',
+            },
+          ],
+        },
+        {
+          heading: 'A pózvai otthon: ahol szinte mindenki megfertőződött',
+          paragraphs: [
+            '2020 szeptemberében Szél Bernadett arról számolt be, hogy személyesen járt a zalaegerszeg-pózvai szociális otthonban, ahol súlyos fogyatékossággal élő embereket gondoznak. A 94 fős intézményben a járvány első hullámában augusztus elejéig 29 megerősített fertőzöttet, 54 gyógyultat és 6 halálesetet tartottak nyilván.',
+            'Beszerezte egy bejelentés nélküli hatósági ellenőrzés dokumentumait is. Ezek szerint a szükséges 22 helyett 9 ember dolgozott, és hiányos volt a higiénia és a védőfelszerelés. Szél az ombudsmanhoz fordult.',
+          ],
+          sources: [
+            {
+              source: 'Mérce',
+              date: '2020. szept. 6.',
+              headline: 'Szél Bernadett szerint szinte mindenki megfertőződött a pózvai szociális otthonban a járvány első hullámában',
+              url: 'https://merce.hu/2020/09/06/szel-bernadett-szerint-szinte-mindenki-megfertozodott-a-pozvai-szocialis-otthonban-a-jarvany-elso-hullamaban/',
+              lead: 'Minősíthetetlenek a higiéniai állapotok, az országgyűlési képviselő az ombudsmanhoz fordul.',
+            },
+          ],
+        },
+        {
+          heading: 'És ebből lett a dudálós tüntetés',
+          paragraphs: [
+            'A kórházi ágyak kiürítésének ügye nem maradt a Facebookon és a parlamentben.',
+            'Szél Bernadett Hadházy Ákossal együtt 2020 tavaszán autós tiltakozásokat szervezett a Clark Ádám térre.',
+            'A cél az volt, hogy a demonstrációt a járvány miatti gyülekezési korlátozások mellett is megtartsák: az emberek autókkal érkeztek, és dudálással jelezték tiltakozásukat.',
+            'A rendőrség a második alkalommal, 2020. április 27-én több résztvevőt igazoltatott, és eljárást indított ellenük.',
+            'Szél Bernadett mentelmi jogáról ott helyben lemondott.',
+            '> „A mentelmi jogomról ott helyben lemondtam, teljes sorsközösséget vállalok mindenkivel, akit megbüntettek és azokkal is, akikért kiálltunk most egy dudaszóval – amit már nem bírt elviselni a hatalom.” | Szél Bernadett · 2020. április 27.',
+            'A történetnek pedig lett következménye.',
+            '2021-ben Szélnek 100 ezer forintos bírság, 20 nap elzárás vagy 120 óra közérdekű munka közül kellett választania. Ő a közérdekű munkát választotta.',
+            'Kórházban vagy idősek otthonában dolgozott volna, erre azonban nem kapott engedélyt. Végül segédkönyvtárosként dolgozott a budakeszi könyvtárban.',
+            '> „Én úgy döntöttem, ledolgozom, mert tartom: semmilyen bűnt nem követtem el.” | Szél Bernadett · 2021. május 20.',
+            'És nem úgy állt hozzá, hogy ez valami politikai tragédia lenne: azért dolgozta le, mert szerinte nem követett el bűnt azzal, hogy kiállt az általa fontosnak tartott ügy mellett.',
+            'Ez az egyik legjobban megjegyezhető történet Szél Bernadett politikai pályájáról.',
+            'Dudált a kórházi ágyak miatt. Megbüntették. Nem bújt a mentelmi joga mögé. Ledolgozta.',
+          ],
+          videosAfterParagraph: 5,
+          videos: [
+            {
+              id: 'FmegRAfZiVA',
+              label: '444 · 2020. április 27.',
+              title: '„Persze nincs diktatúra, csak ne nyomjad a dudát, és ne mondd el a véleményed”',
+              summary: 'A második dudálós tiltakozás a Clark Ádám téren — ezúttal már a rendőrség is fellépett.',
+              views: '148 ezer megtekintés',
+            },
+          ],
+          sources: [
+            {
+              source: 'HVG',
+              date: '2020. ápr. 27.',
+              headline: 'Orbán ellen dudáltak, a rendőrség igazoltatta és megbírságolta őket',
+              url: 'https://hvg.hu/itthon/20200427_orban_viktor_tuntetes_dudalas_clark_adam_ter',
+              lead: 'A Clark Ádám téren tartott demonstráción most többen vettek részt, így a rendőrség is nagyobb erővel volt jelen.',
+            },
+            {
+              source: 'Telex',
+              date: '2021. máj. 20.',
+              headline: 'Szél Bernadett a budakeszi könyvtárban dolgozza le a dudálásért járó közmunkát',
+              url: 'https://telex.hu/belfold/2021/05/20/szel-bernadett-kozmunka-budakeszi-konyvtar',
+            },
+          ],
+        },
+        {
+          heading: 'Pegasus: kérdések, amelyekre nem jött válasz',
+          paragraphs: [
+            'Amikor 2021 júliusában kiderült, hogy magyar újságírók, ügyvédek és üzletemberek telefonszáma is szerepel a Pegasus kémszoftver célpontjainak listáján, Szél Bernadett 2021. július 19-én írásbeli kérdéseket nyújtott be.',
+            'Azt kérdezte, ki és mikor vásárolta meg a szoftvert, mennyiért, ki engedélyezte újságírók, üzletemberek, ügyvédek és ellenzéki politikusok megfigyelését, melyik szolgálat végezte, és indult-e vizsgálat a megfigyelések jogszerűségéről.',
+            'A válaszok egyforma, általános mondatokból álltak: Magyarország demokratikus jogállam, amely a hatályos jogszabályok szerint jár el. Pintér Sándor belügyminiszter szerint a részletek minősített adatok, és csak az Országgyűlés nemzetbiztonsági bizottságának zárt ülésén beszélhet róluk.',
+          ],
+          sources: [
+            {
+              source: 'Index',
+              date: '2021. aug. 4.',
+              headline: 'Pegasus-ügy: a kormány válaszolt is meg nem is',
+              url: 'https://index.hu/belfold/2021/08/04/pegasus-ugy-a-kormany-valaszolt-is-meg-nem-is/',
+              lead: 'Magyarország demokratikus jogállam, nem történtek illegális megfigyelések – írták.',
+            },
+            {
+              source: 'Telex',
+              date: '2021. júl. 19.',
+              headline: 'Pintér: A magyar nemzetbiztonsági szolgálatok nem folytatnak illegális megfigyelést',
+              url: 'https://telex.hu/belfold/2021/07/19/pinter-sandor-pegasus-botrany-lehallgatas-valasz-szel-bernadettnek',
+            },
+          ],
+        },
+        {
+          heading: 'Kormánygépek: amit 2021-ben senki nem tudott megmondani',
+          paragraphs: [
+            '2021 őszén Szél Bernadett azt akarta megtudni, mennyibe kerülnek Orbán Viktor és Szijjártó Péter utazásai a honvédség repülőgépein. Megkérdezte a Külügyminisztériumot, a Honvédelmi Minisztériumot, a Honvédség Parancsnokságát és a Köztársasági Elnöki Hivatalt is.',
+            'Mindegyik azt válaszolta, hogy nem ő kezeli ezeket az adatokat. A Nemzeti Adatvédelmi és Információszabadság Hatóság ugyanezeket a válaszokat kapta, és 2022 augusztusában lezárta a vizsgálatot, mert nem tudta kideríteni, ki a tényleges adatkezelő.',
+            'Az utazási költségek kérdése 2026-ban tért vissza: szeptemberben a Külügyminisztérium új vezetése feljelentést tett Szijjártó Péter és kísérete korábbi magángépes és honvédségi különgépes utazásai miatt.',
+          ],
+          sources: [
+            {
+              source: 'Telex',
+              date: '2023. ápr. 18.',
+              headline: 'Senki nem tudta megmondani, mennyit fizet a honvédségnek Orbán és Szijjártó az utazásaiért',
+              url: 'https://telex.hu/belfold/2023/04/18/adatvedelmi-hatosag-honvedseg-kormany-repulogep-utazas-koltseg',
+              lead: 'Az adatvédelmi hatóságnak sem tudott választ adni egyik illetékes szerv sem, ezért le is zárták a vizsgálatot.',
+            },
+            {
+              source: 'HVG',
+              date: '2026. szept. 15.',
+              headline: 'Milliárdok mentek el Szijjártóék magángépes utazásaira, feljelentést tett a Külügyminisztérium',
+              url: 'https://hvg.hu/itthon/20260915_feljelentes-szijjarto-maganrepulo-utazas-kulugyminiszterium-orban-anita',
+            },
+          ],
+        },
+        {
+          heading: '„Ne a hatalom ellenőrizzen minket, hanem mi a hatalmat!”',
+          paragraphs: [
+            'Szél parlamenti munkáját is érdemes ebből a szempontból nézni.',
+            'Nemcsak felszólalt, hanem megpróbálta használni azokat az eszközöket, amelyekkel egy ellenzéki képviselő hivatalosan ellenőrizheti az államot.',
+            '2022-ben, a parlamentből való távozása előtt számszerűsítette a munkáját: 471 kérdés és törvényjavaslat, 38 ombudsmani megkeresés, több száz adatigénylés, tucatnyi feljelentés, közérdekű adatperek, valamint közel száz intézménylátogatás.',
+            'Az egyik mondata jól összefoglalja, hogyan gondolkodott erről:',
+            '> „Egy demokráciában az ellenzék ellenőrzi a kormányt – Magyarországon viszont pont fordítva: a kormány ellenőrzi az ellenzéket, mégpedig minden lehetséges módon.” | Szél Bernadett · 2022. április 27.',
+            'Lehet vitatkozni Szél politikai értékeléseivel, pártpolitikai döntéseivel vagy azzal, hogy az LMP-t milyen irányba kellett volna vinnie.',
+            'De a dokumentált munka mennyiségét nehéz úgy leírni, hogy egyszerűen „felszólalgatott a parlamentben”.',
+            'Adatot kért. Intézményekbe ment. Perelt. Ombudsmanhoz fordult. Bizottsági ügyeket vitt. Helyszínen ellenőrzött.',
+            '> „Tegyünk meg mindent azért, hogy ne a hatalom ellenőrizzen minket, hanem mi a hatalmat!” | Szél Bernadett · 2022. április 27.',
+          ],
+          sources: [
+            {
+              source: '444',
+              date: '2022. ápr. 27.',
+              headline: 'Szél Bernadett: Nem lehet úgy tenni, mintha demokratikus választáson maradt volna alul az egyik oldal',
+              url: 'https://444.hu/2022/04/27/szel-bernadett-nem-lehet-ugy-tenni-mintha-demokratikus-valasztason-maradt-volna-alul-az-egyik-oldal',
+              lead: 'Szerinte már a parlamenten kívüli képviselői munkát is jelentős részben a kormány ellenőrzi, ha egyenesen nem akadályozza.',
+            },
+            {
+              source: 'Telex',
+              date: '2022. ápr. 27.',
+              headline: 'Szél Bernadett: Magyarországon a kormány ellenőrzi az ellenzéket',
+              url: 'https://telex.hu/belfold/2022/04/27/aprilis-4-ota-eloszor-megszolalt-szel-bernadett',
+            },
+            {
+              source: 'Magyar Hang',
+              date: '2022. ápr. 27.',
+              headline: 'Szél Bernadett: Számomra most új korszak kezdődik, de igazából Magyarország számára is',
+              url: 'https://hang.hu/belfold/szel-bernadett-szamomra-most-uj-korszak-kezdodik-de-igazabol-magyarorszag-szamara-is-140013',
+            },
+          ],
+        },
+        {
+          heading: 'Nem maradt az LMP-ben',
+          paragraphs: [
+            'Szél Bernadett történetéhez hozzátartozik az is, hogy az LMP-től végül elvált.',
+            '2018-ban ő vezette az LMP kampányát, miniszterelnök-jelöltként indult, majd a választás után a frakció élére került. Az ellenzéki koordináció kérdésében azonban egyre komolyabb konfliktus alakult ki a párton belül.',
+            'Szél támogatta, hogy bizonyos egyéni körzetekben az ellenzéki jelöltek lépjenek vissza egymás javára. Az LMP etikai bizottsága emiatt két évre eltiltotta a párttisztségektől. Szél 2018 augusztusában lemondott társelnöki és frakcióvezetői tisztségéről, majd 2018. október 1-jén kilépett az LMP-ből és annak frakciójából is.',
+            'Innentől független képviselőként folytatta.',
+            'És éppen ebben az időszakban jöttek azok az ügyek, amelyek miatt ma sokkal érdekesebb Szél Bernadett parlamenti pályájáról beszélni, mint egyszerűen felsorolni a párttisztségeit.',
+          ],
+          sources: [
+            {
+              source: '444',
+              date: '2018. okt. 1.',
+              headline: 'Szél Bernadett kilépett az LMP-ből',
+              url: 'https://444.hu/2018/10/01/szel-bernadett-kilepett-az-lmp-bol',
+            },
+          ],
+        },
+        {
+          heading: '„Könnyű lenne lelépni”',
+          paragraphs: [
+            'A 2018-as választás után Szél egy interjúban arról beszélt, hogy az eredmény csalódás volt, de nem akarta egyszerűen otthagyni a magyar politikát.',
+            '> „Könnyű lenne lelépni, de pont az okozna nehézséget, ha ezt az egészet nem tudnánk valahogy helyrehozni.” | Szél Bernadett · 2018. április 24.',
+            'Utólag nézve ez azért érdekes mondat, mert a következő években tényleg nem az történt, hogy eltűnt a politikából.',
+            'Független képviselőként folytatta, és egyre inkább olyan ügyekkel foglalkozott, amelyekhez nem kellett egy párt teljes szervezete.',
+            'Elég volt hozzá egy adatigénylés.',
+            'Egy kamera.',
+            'Egy bírósági kereset.',
+            'Vagy egy autó, amellyel ki lehetett menni egy helyszínre.',
+          ],
+          sources: [
+            {
+              source: '444',
+              date: '2018. ápr. 24.',
+              headline: 'Szél Bernadett: Könnyű lenne lelépni, de pont az okozna nehézséget, ha ezt az egészet nem tudnánk valahogy helyrehozni',
+              url: 'https://444.hu/2018/04/24/szel-bernadett-konnyu-lenne-lelepni-de-pont-az-okozna-nehezseget-ha-ezt-az-egeszet-nem-tudnank-valahogy-helyrehozni',
+            },
+          ],
+        },
+        {
+          heading: 'Miért van helye Szél Bernadettnek a Dicsőségfalon?',
+          paragraphs: [
+            'Szél Bernadett nem azért érdekes, mert mindig sikerült keresztülvinni, amit akart.',
+            'Sőt.',
+            'A fóti gyermekközpontot végül nem sikerült megmentenie a kormányzati átalakítástól. A Budapest–Belgrád hitelszerződését sem tudta végül nyilvánosságra hozni, miután a Kúria hatályon kívül helyezte a másodfokú döntést. 2022-ben pedig mindössze 1,85 százalékponttal maradt el Menczer Tamástól a Pest 02-es körzetben, így nem jutott vissza az Országgyűlésbe.',
+            'De a Dicsőségfalnak nem csak a politikai győzelmekről kell szólnia.',
+            'Hanem arról is, ki mit csinált akkor, amikor egy ügyben kellemetlen volt továbbmenni.',
+            'Szélnél ilyenből van bőven.',
+            'Ott van a fóti gyermekotthon, ahol a helyszíni videó után rövid időn belül megjavították a kazánt.',
+            'Ott van a gyermekközpont bezárásának ügye, ahol nem elégedett meg a kormányzati közlésekkel, hanem adatokat kért és pert indított.',
+            'Ott van a Budapest–Belgrád vasút hitelszerződése, amelyért két évig pereskedett.',
+            'Ott vannak a járvány alatti kórházi adatok, amelyeket perrel szerzett meg.',
+            'Ott vannak az állami intézmények, amelyekbe saját összesítése szerint közel száz alkalommal ment el.',
+            'És ott van a Clark Ádám téri dudálás, amely miatt nemcsak kiállt a demonstráció mellett, hanem a mentelmi jogáról is lemondott, majd a kiszabott közérdekű munkát ténylegesen ledolgozta.',
+            'Ez már nem egy politikai életrajz.',
+            'Ez egy ügylista.',
+            'És pontosan ezért van helye Szél Bernadettnek a Kegyencjárat Dicsőségfalán.',
+          ],
+          sources: [
+            {
+              source: 'HVG',
+              date: '2022. ápr. 4.',
+              headline: 'Minden bizonnyal kiesett a parlamentből Szél Bernadett',
+              url: 'https://hvg.hu/itthon/20220404_Szel_Bernadett_kiesett_a_Parlamentbol',
+            },
+          ],
+        },
+        {
+          heading: 'Szél Bernadett röviden',
+          paragraphs: [
+            'Kiemelt ügyek: fóti gyermekközpont, gyermekvédelmi és szociális intézmények, Budapest–Belgrád vasút hitelszerződése, Paks II adatai, kórházi ágyak és járványadatok, közérdekű adatigénylések.',
+            'A lényeg: Szél Bernadett esetében a Dicsőségfalra kerülés nem egyetlen politikai tisztségből vagy választási eredményből következik. Hanem abból a dokumentált mintából, hogy amikor egy állami intézmény, gyermekotthon, kórház vagy nagyberuházás körül olyan kérdések merültek fel, amelyekre a kormány nem adott megfelelő választ, rendszeresen megpróbált adatot szerezni, helyszínre menni, kérdezni, perelni vagy nyilvánosságot teremteni.',
+            'És néha egészen konkrét eredménye is lett.',
+            'Mint amikor a fűtés nélküli fóti gyermekotthon történetéből országos ügy lett, majd rövid időn belül újra működött a fűtés.',
+          ],
+          timelineAfterParagraph: 0,
+          timeline: [
+            { when: '2010', text: 'az LMP színeiben bekerül az Országgyűlésbe' },
+            { when: '2013–2018', text: 'az LMP társelnöke' },
+            { when: '2018', text: 'az LMP miniszterelnök-jelöltje, majd frakcióvezetője' },
+            { when: '2018. október', text: 'kilép az LMP-ből, független képviselőként folytatja' },
+            { when: '2018–2022', text: '471 kérdés és törvényjavaslat, 38 ombudsmani megkeresés, közel száz intézménylátogatás' },
+            { when: '2022', text: '1,85 százalékponttal marad el Menczer Tamástól, kikerül a parlamentből' },
+          ],
+        },
+      ],
+    },
   },
   {
     id: 'szabo-timea',
