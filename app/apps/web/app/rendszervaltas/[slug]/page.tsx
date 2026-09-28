@@ -75,6 +75,69 @@ function splitParas(text: string): string[] {
   return out;
 }
 
+/**
+ * Kiemelt idézet a config-szövegben (user, 2026-09-28, Márki-Zay-oldal: az
+ * idézetek „ahogy szokták" — nagy betű, idézőjel, keret, eltérő háttér).
+ *
+ *   `> „Van remény.” | Márki-Zay Péter · 2018. február 25.`
+ *   `>> …` — ugyanez nagyobb betűvel (a lap záró mondata)
+ *
+ * A `|` utáni rész a forrásmegjelölés, elhagyható. A nyitó „ idézőjelet a
+ * CSS rajzolja ki díszként, ezért a szövegből leválasztjuk; a záró ” marad.
+ */
+function parseQuote(para: string): { text: string; cite?: string; big: boolean } | null {
+  const m = para.match(/^(>>?)\s+(.*)$/s);
+  if (!m) return null;
+  const [body, cite] = m[2]!.split(/\s+\|\s+/, 2) as [string, string | undefined];
+  const text = body.trim().replace(/^„/, '').replace(/”$/, '');
+  return { text, cite: cite?.trim(), big: m[1] === '>>' };
+}
+
+/** Egy config-bekezdés: vagy kiemelt idézet, vagy (szükség szerint tördelve)
+ *  sima bekezdés(ek). Minden szabad szöveges szakasz ezt hívja. */
+function renderPara(
+  para: string,
+  key: React.Key,
+  links: InlineLink[] | undefined,
+  linkedPersons: Set<string>,
+  selfHref: string,
+): React.ReactNode {
+  const q = parseQuote(para);
+  if (q) {
+    return (
+      <blockquote key={key} className={q.big ? `${styles.pullQuote} ${styles.pullQuoteBig}` : styles.pullQuote}>
+        {/* span, nem p: a .ugy-block-text p margó- és betűméret-szabályai
+            különben felülírnák a kiemelést. */}
+        <span className={styles.pullQuoteText}>{q.text}”</span>
+        {q.cite && <cite className={styles.pullQuoteCite}>{q.cite}</cite>}
+      </blockquote>
+    );
+  }
+  return (
+    <Fragment key={key}>
+      {splitParas(para).map((sub, i) => (
+        <p key={i}>{withAutoLinks(sub, links, linkedPersons, selfHref)}</p>
+      ))}
+    </Fragment>
+  );
+}
+
+/** Függőleges, összekötött idővonal: bal oldalon vonal és pöttyök, mellettük
+ *  az év és a mérföldkő. Mobilon ugyanez, csak szűkebb. */
+function Timeline({ items }: { items: { when: string; text: string }[] }) {
+  return (
+    <ol className={styles.timeline}>
+      {items.map((it) => (
+        <li className={styles.timelineItem} key={`${it.when}-${it.text}`}>
+          <span className={styles.timelineDot} aria-hidden="true" />
+          <span className={styles.timelineWhen}>{it.when}</span>
+          <span className={styles.timelineText}>{it.text}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 /** „Hatvanpuszta — a mezőgazdasági létesítmény…" → rövid cím + a többi.
  *  Mobilon a szám mellett CSAK a rövid cím áll, a folytatás új sorban,
  *  teljes szélességben (user, 2026-09-16). */
@@ -319,11 +382,9 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
               <h2 className="ugy-block-heading">
                 {f.kind === 'person' ? `Ki ${f.name}?` : `Mi az a ${f.name}?`}
               </h2>
-              {f.section.paragraphs
-                .flatMap((para) => splitParas(para))
-                .map((para, i) => (
-                  <p key={i}>{withAutoLinks(para, f.section.links, linkedPersons, selfHref)}</p>
-                ))}
+              {f.section.paragraphs.map((para, i) =>
+                renderPara(para, i, f.section.links, linkedPersons, selfHref),
+              )}
             </div>
 
             {f.section.video && (
@@ -468,9 +529,8 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                 <h2 className="ugy-block-heading">{x.heading}</h2>
                 {x.paragraphs.map((para, pi) => (
                   <Fragment key={pi}>
-                    {splitParas(para).map((sub, i) => (
-                      <p key={i}>{withAutoLinks(sub, x.links, linkedPersons, selfHref)}</p>
-                    ))}
+                    {renderPara(para, 'p', x.links, linkedPersons, selfHref)}
+                    {x.timelineAfterParagraph === pi && x.timeline && <Timeline items={x.timeline} />}
                     {x.cardsAfterParagraph === pi && (
                       <Sources sources={(x.sources ?? []).filter((src) => src.lead)} />
                     )}
@@ -495,6 +555,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                     )}
                   </Fragment>
                 ))}
+                {x.timelineAfterParagraph === undefined && x.timeline && <Timeline items={x.timeline} />}
                 {x.videosAfterParagraph === undefined && x.videos && x.videos.length > 0 && (
                   <div className={x.videos.length > 1 ? 'feltaro-video-pair' : undefined}>
                     {x.videos.map((v) => (

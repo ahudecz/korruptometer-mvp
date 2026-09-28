@@ -777,3 +777,128 @@ a.card:hover {
   background: #fff;
   padding: 10%;
 }
+
+/* Kiemelt idézet a szöveg közé ékelve (user, 2026-09-28, Márki-Zay-oldal):
+   nagy betű, idézőjel, keret, eltérő háttér — nem egy lista a lap alján,
+   hanem ott, ahol a mondat elhangzott. A config-szövegben `> „…” | forrás`
+   bekezdés lesz ilyen (l. parseQuote() a page.tsx-ben). */
+.pullQuote {
+  position: relative;
+  margin: 28px 0;
+  padding: 22px 22px 18px 58px;
+  border: 1px solid var(--line, #e6e6e6);
+  border-left: 5px solid var(--accent, #e31937);
+  border-radius: 0 10px 10px 0;
+  background: var(--surface, #f4f4f4);
+}
+.pullQuote::before {
+  content: '„';
+  position: absolute;
+  left: 14px;
+  top: -18px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 72px;
+  line-height: 1;
+  color: var(--accent, #e31937);
+}
+.pullQuote .pullQuoteText {
+  display: block;
+  margin: 0;
+  font-family: 'Archivo', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--ink, #171a20);
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+.pullQuoteCite {
+  display: block;
+  margin-top: 10px;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--muted, #5c5e62);
+}
+/* Függőleges, összekötött idővonal (user, 2026-09-28): a bal oldali vonal
+   köti össze az állomásokat, minden évhez egy pötty. Ugyanaz a szerkezet
+   asztalon és mobilon — nincs vízszintes változat, ami mobilon szétesne. */
+.timeline {
+  position: relative;
+  list-style: none;
+  margin: 22px 0 26px;
+  padding: 0 0 0 34px;
+}
+.timeline .timelineItem {
+  position: relative;
+  margin: 0;
+  padding: 0 0 22px;
+  list-style: none;
+}
+/* Az összekötő szakasz elemenként fut, a saját pöttyétől a következőéig —
+   így az utolsó pötty alatt nem lóg túl a vonal. */
+.timeline .timelineItem:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: -25px;
+  top: 11px;
+  bottom: -11px;
+  width: 2px;
+  background: var(--line, #e6e6e6);
+}
+.timeline .timelineItem:last-child {
+  padding-bottom: 0;
+}
+.timelineDot {
+  position: absolute;
+  left: -32px;
+  top: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--accent, #e31937);
+  box-sizing: border-box;
+  z-index: 1;
+}
+.timeline .timelineItem:last-child .timelineDot {
+  background: var(--accent, #e31937);
+}
+.timelineWhen {
+  display: block;
+  font-family: 'Archivo', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--accent, #e31937);
+}
+.timelineText {
+  display: block;
+  margin-top: 4px;
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--ink, #171a20);
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* A lap záró mondata: ugyanez, csak nagyobb. */
+.pullQuote.pullQuoteBig .pullQuoteText {
+  font-size: 44px;
+}
+@media (max-width: 600px) {
+  .pullQuote {
+    padding: 18px 16px 14px 44px;
+  }
+  .pullQuote::before {
+    left: 10px;
+    top: -14px;
+    font-size: 56px;
+  }
+  .pullQuote .pullQuoteText {
+    font-size: 22px;
+  }
+  .pullQuote.pullQuoteBig .pullQuoteText {
+    font-size: 32px;
+  }
+}

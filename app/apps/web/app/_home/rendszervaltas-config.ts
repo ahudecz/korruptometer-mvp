@@ -290,6 +290,11 @@ export type FeltaroDetail = {
     cardsAfterParagraph?: number;
     /** Ugyanez a `videos`-ra: a videó(k) ennyiedik bekezdés (0-tól) után. */
     videosAfterParagraph?: number;
+    /** Függőleges, összekötött idővonal (user, 2026-09-28, Márki-Zay-oldal:
+     *  „látszódjon, hogy timeline"). A `timelineAfterParagraph`-adik
+     *  bekezdés (0-tól) után jelenik meg; ha hiányzik, a bekezdések után. */
+    timeline?: { when: string; text: string }[];
+    timelineAfterParagraph?: number;
   }[];
   video?: FeltaroVideoRef;
   /** Több beágyazott videó egy blokkban, saját felvezetővel. Akkor kell,
@@ -2243,12 +2248,372 @@ export const FELTAROK: Feltaro[] = [
     tagline:
       'Egy biztosnak hitt vidéki városban nyert, és ezzel ő bizonyította be elsőként, hogy a rendszer helyben legyőzhető.',
     targetKeyword: { phrase: 'márki zay péter', volume: 8100, kd: 48 },
+    // A végoldal szövege a user sajátja (2026-09-28). Minden szám és idézet
+    // a forrásokkal egyeztetve; ahol a szó szerinti alak eltért, a FORRÁS
+    // szerinti alak került az idézetdobozba (l. „Gyűlölettel…", „Ellenzéket
+    // is váltottunk"). A `> ` kezdetű bekezdés kiemelt idézet (l. parseQuote).
     section: {
       heading: 'Márki-Zay Péter — a hódmezővásárhelyi precedens',
       paragraphs: [
-        'A 2018-as hódmezővásárhelyi időközi polgármester-választás azért lett országos ügy, mert egy olyan városban dőlt el, amelyet minden elemzés bevehetetlennek tartott. A győzelem önmagában egy város vezetéséről szólt, a jelentősége viszont sokkal nagyobb volt: megmutatta, hogy a helyi hatalomgyakorlás nem megdönthetetlen.',
-        'Márki-Zay Péter polgármesterként a városi közbeszerzések és önkormányzati szerződések átvilágításával kezdte — ez a fajta helyi szintű feltárás ritkán kerül országos hírbe, pedig a közpénz nagy része pontosan ezen a szinten mozog.',
-        '2021-ben az ellenzéki előválasztás győzteseként miniszterelnök-jelölt lett. A kampány végkimenetelétől függetlenül az akkor nyilvánosságra hozott anyagok és viták jelentős része később is hivatkozási pont maradt.',
+        'Márki-Zay Péter neve 2018-ban vált országosan ismertté, amikor egy politikailag hosszú időn át stabilnak számító városban, Hódmezővásárhelyen független jelöltként megnyerte az időközi polgármester-választást. A győzelem nem pusztán egy helyi önkormányzati választás eredménye lett: az országos politikában is sokan egy olyan jelzésként értelmezték, amely megmutatta, hogy egy közösen támogatott, pártpolitikán kívülről érkező jelölt is képes komoly választási eredményt elérni.',
+        'Márki-Zay története ugyanakkor nem állt meg a 2018-as győzelemnél. 2019-ben újraválasztották Hódmezővásárhely polgármesterének, 2021-ben megnyerte az ellenzéki előválasztás második fordulóját, így ő lett az ellenzéki összefogás miniszterelnök-jelöltje a 2022-es országgyűlési választáson. A választási vereség után sem vonult ki a közéletből: visszatért a helyi politizáláshoz, 2024-ben pedig ismét megnyerte a hódmezővásárhelyi polgármester-választást.',
+        'A Dicsőségfalon Márki-Zay Péter története elsősorban azért érdekes, mert jól példázza, hogyan válhat egy helyi, pártokon kívülről érkező politikai szereplő néhány év alatt országosan ismert közéleti szereplővé.',
+      ],
+    },
+    related: [
+      { label: 'Dicsőségfal', href: '/rendszervaltas' },
+      { label: 'Kiemelt ügyek', href: '/ugyek' },
+    ],
+    updatedAt: '2026-09-28',
+    live: true,
+    detail: {
+      seoTitle: 'Márki-Zay Péter – a „Van remény” üzenetétől Hódmezővásárhelyig',
+      seoDescription:
+        'Márki-Zay Péter pályája: hódmezővásárhelyi győzelmek 2018-ban, 2019-ben és 2024-ben, a 2021-es előválasztás, a 2022-es vereség és önkritika — idézetekkel, videókkal, forrásokkal.',
+      lead:
+        'Hódmezővásárhely polgármestere. 2018-ban független jelöltként nyert egy Fideszhez erősen kötődő városban, 2021-ben megnyerte az ellenzéki előválasztást, a 2022-es vereség után pedig visszatért a városba, ahol 2024-ben harmadszor is megválasztották.',
+      extra: [
+        {
+          heading: '2018: amikor Hódmezővásárhelyen „van remény”',
+          paragraphs: [
+            '2018 februárjában Hódmezővásárhelyen időközi polgármester-választást tartottak. Márki-Zay Péter független jelöltként indult, és több ellenzéki párt támogatását is maga mögött tudhatta.',
+            'A választáson 22 918 választópolgár jelent meg, ami 61,35 százalékos részvételt jelentett. Márki-Zay Péter 13 076 érvényes szavazatot, vagyis 57,49 százalékot szerzett, míg a Fidesz–KDNP jelöltje, Hegedűs Zoltán 9468 szavazattal 41,63 százalékot kapott.',
+            'A győzelem azért kapott országos figyelmet, mert Hódmezővásárhelyt a korszakban a Fideszhez erősen kötődő városként tartották számon. A választási eredmény ezért messze túlmutatott a város határain: azt mutatta, hogy egy helyi, közös támogatással induló jelölt jelentős választói támogatást tudott szerezni.',
+            'Márki-Zay a győzelmi beszédében nem egyszerűen saját győzelméről beszélt. A hangsúlyt a demokráciára, a részvételre és az összefogásra helyezte.',
+            '> „Van remény.” | Márki-Zay Péter · győzelmi beszéd, Hódmezővásárhely, 2018. február 25.',
+            'Ez lett az egyik legismertebb Márki-Zay-idézet a 2018-as győzelem után.',
+            'A mondat azért vált emblematikussá, mert az egész hódmezővásárhelyi történet röviden összefoglalható benne: egy addig országosan kevéssé ismert, pártpolitikán kívülről érkező jelölt megmutatta, hogy egy választáson a korábbi politikai beidegződések mellett más eredmény is születhet.',
+            'Márki-Zay a győzelme után arról beszélt, hogy Hódmezővásárhelyen és az országban is „rendszerváltó hangulatot” érzékel, és azt hangsúlyozta, hogy a választók részvétele és az összefogás képes lehet politikai változást létrehozni.',
+            'A győzelmi beszéd egy másik, sokat idézett mondata:',
+            '> „Többen vagyunk, mi vagyunk többen.” | Márki-Zay Péter · győzelmi beszéd, Hódmezővásárhely, 2018. február 25.',
+            'A mondat később szorosan összekapcsolódott Márki-Zay politikai karakterével. Nem egy hagyományos pártpolitikai karrierből érkezett, hanem civilként, helyi ügyekből kiindulva került az országos politika középpontjába.',
+          ],
+          sources: [
+            {
+              source: '444',
+              date: '2018. febr. 25.',
+              headline: 'Márki-Zay: Rendszerváltó hangulat van Hódmezővásárhelyen és az országban is',
+              url: 'https://444.hu/2018/02/25/marki-zay-rendszervalto-hangulat-van-hodmezovasarhelyen-es-az-orszagban-is',
+              lead: 'A Lázár János városában győztes polgármester azt üzente, hogy van remény a Fidesz legyőzésére.',
+            },
+            {
+              source: 'Hódmezővásárhely önkormányzata',
+              date: '2018. febr. 27.',
+              headline: 'Márki-Zay Péter nyerte a polgármester-választást',
+              url: 'https://hodmezovasarhely.hu/marki-zay-peter-nyerte-a-polgarmester-valasztast/',
+            },
+          ],
+        },
+        {
+          heading: 'Nem egyszeri siker: 2019-ben újraválasztották',
+          paragraphs: [
+            'A 2018-as győzelem után fontos kérdéssé vált, hogy Márki-Zay Péter eredménye egyszeri politikai áttörés volt-e, vagy tartós helyi támogatottságot is jelent.',
+            'A 2019-es önkormányzati választás erre adott választ.',
+            'Márki-Zay ismét elindult Hódmezővásárhely polgármesteri tisztségéért, ezúttal a Mindenki Magyarországa Mozgalom–Tiszta Vásárhelyért Egyesület támogatásával. Ellenfele Grezsa István volt.',
+            'Márki-Zay 13 478 szavazatot kapott, ami 57,30 százalékos eredményt jelentett. Grezsa István 10 042 szavazattal 42,70 százalékot ért el.',
+            'Ez azért fontos része a történetnek, mert a 2018-as időközi választás után nem egyszerűen újabb négy- vagy ötéves ciklust kapott: az újabb választáson is hasonló arányú támogatást szerzett.',
+            'A 2019-es választással egyúttal a helyi politikai erőviszonyok is megváltoztak: a Márki-Zay mögött álló oldal a képviselő-testületben is többséget szerzett.',
+            'A hódmezővásárhelyi történet így már nem pusztán egy váratlan választási meglepetésről szólt. Két egymást követő önkormányzati választási eredmény kapcsolódott Márki-Zay nevéhez.',
+          ],
+          sources: [
+            {
+              source: '444',
+              date: '2019. okt. 13.',
+              headline: 'Márki-Zay Péter újra nyert Hódmezővásárhelyen',
+              url: 'https://444.hu/2019/10/13/marki-zay-peter-ujra-nyert-hodmezovasarhelyen',
+              lead: 'Ő volt az első, akiért létrejött a teljes összefogás. Másodszorra is működött.',
+            },
+          ],
+        },
+        {
+          heading: '2021: a helyi politikusból országos miniszterelnök-jelölt',
+          paragraphs: [
+            'Márki-Zay Péter 2021-ben már nem kizárólag Hódmezővásárhely polgármestereként volt jelen a magyar politikában.',
+            'Az ellenzéki előválasztás első fordulójában harmadik helyen végzett. Dobrev Klára 34,84, Karácsony Gergely 27,30, Márki-Zay Péter pedig 20,40 százalékot szerzett.',
+            'A második fordulóban azonban jelentősen megváltozott a helyzet.',
+            'Márki-Zay Péter 371 560 szavazatot, 56,71 százalékot kapott, míg Dobrev Klára 283 677 szavazattal 43,29 százalékon végzett.',
+            'Ezzel Márki-Zay lett a hatpárti ellenzéki együttműködés miniszterelnök-jelöltje a 2022-es országgyűlési választáson.',
+            'Ez volt pályafutásának egyik legnagyobb politikai fordulata: egy olyan politikus nyerte meg az előválasztást, aki nem rendelkezett saját parlamenti párttal, és akinek politikai pályája néhány évvel korábban még kizárólag egy hódmezővásárhelyi polgármesteri kampányhoz kötődött.',
+            'Győzelmi beszédében Márki-Zay az ellenzéki oldalon is változást ígért. Egyik sokat idézett mondata így szólt:',
+            '> „Ellenzéket is váltottunk.” | Márki-Zay Péter · előválasztási győzelmi beszéd, 2021. október 17.',
+            'A beszédben a korrupció elleni fellépést is hangsúlyozta: a Telex beszámolója szerint azt mondta, hogy a korrupciónak nincsen színe.',
+            'Ugyanebben a beszédben egy másik, később gyakran idézett gondolatot is megfogalmazott: egy olyan Magyarországról beszélt, ahol a szeretet fontosabb szerepet kap, mint a politikai gyűlölet.',
+            '> „Gyűlölettel nem lehet legyőzni a gyűlöletet, csak szeretettel.” | Márki-Zay Péter · előválasztási győzelmi beszéd, 2021. október 17.',
+            'Ez az idézet jól illeszkedik Márki-Zay 2021-es politikai üzenetéhez. A kampányban nemcsak a kormány leváltásáról beszélt, hanem arról is, hogy szerinte az ellenzéki oldalnak más politikai kultúrát kell képviselnie.',
+          ],
+          videos: [
+            {
+              id: '1OlhNAMTJBY',
+              label: 'Dr. Márki-Zay Péter · 2021. október 18.',
+              title: 'Márki-Zay Péter győzelmi beszéde',
+              summary:
+                'Az előválasztás második fordulója utáni győzelmi beszéd, a saját csatornáján — itt hangzik el az „ellenzéket is váltottunk” és a gyűlöletről és szeretetről szóló gondolat.',
+              views: '15 ezer megtekintés',
+            },
+          ],
+          sources: [
+            {
+              source: 'Telex',
+              date: '2021. okt. 17.',
+              headline: 'Márki-Zay Péter 56,7%-os eredménnyel megnyerte az előválasztást',
+              url: 'https://telex.hu/belfold/2021/10/17/ellenzeki-elovalasztas-2021-marki-zay-peter-dobrev-klara',
+              lead: 'Fordított az első forduló után, közel 88 ezer szavazattal előzte meg Dobrev Klárát.',
+            },
+            {
+              source: 'Telex',
+              date: '2021. okt. 17.',
+              headline: 'Márki-Zay: Ellenzéket is váltottunk',
+              url: 'https://telex.hu/belfold/2021/10/17/marki-zay-ellenzeket-is-valtottunk',
+            },
+            {
+              source: 'Privátbankár',
+              date: '2021. okt. 18.',
+              headline: '„Gyűlölettel nem lehet legyőzni a gyűlöletet, csak szeretettel” — Márki-Zay Péter nyerte az ellenzéki előválasztást',
+              url: 'https://www.privatbankar.hu/cikkek/makro/gyulolettel-nem-lehet-legyozni-a-gyuloletet-csak-szeretettel--marki-zay-peter-nyerte-az-ellenzeki-elovalasztast.html',
+            },
+          ],
+        },
+        {
+          heading: 'Egy politikus, aki nem hagyományos pártkarrierből érkezett',
+          paragraphs: [
+            'Márki-Zay Péter politikai pályájának egyik sajátossága, hogy nem klasszikus pártpolitikai karrierből érkezett.',
+            'A hódmezővásárhelyi polgármesteri tisztség megszerzése előtt külföldön is élt, majd hazatérése után helyi közéleti szerepet vállalt. 2018-as indulása idején nem volt országgyűlési képviselő, nem volt miniszter vagy államtitkár, és nem egy országos párt vezetőjeként vált ismertté.',
+            'A 2018-as győzelem ezért egy olyan politikai történetként is értelmezhető, amelyben egy helyi jelöltből rövid idő alatt országos politikai szereplő lett.',
+            'Ez a pálya különösen látványos a számok alapján:',
+            'A történetben ráadásul nemcsak sikerek, hanem nyíltan vállalt kudarcok és önkritikus megszólalások is vannak.',
+          ],
+          timelineAfterParagraph: 3,
+          timeline: [
+            { when: '2018', text: 'Hódmezővásárhely polgármestere' },
+            { when: '2019', text: 'újraválasztott polgármester' },
+            { when: '2021', text: 'ellenzéki előválasztási győzelem' },
+            { when: '2022', text: 'közös ellenzéki miniszterelnök-jelölt' },
+            { when: '2024', text: 'ismételt hódmezővásárhelyi polgármesteri győzelem' },
+          ],
+        },
+        {
+          heading: '2022: vereség, majd szokatlanul nyílt önkritika',
+          paragraphs: [
+            'A 2022-es országgyűlési választáson Márki-Zay Péter volt a hatpárti ellenzéki összefogás miniszterelnök-jelöltje.',
+            'Az ellenzéki lista nem tudta leváltani a Fidesz–KDNP-t, Márki-Zay pedig később nemcsak a választási vereség okait próbálta magyarázni, hanem saját korábbi politikai elképzeléseit is újraértékelte.',
+            'Ez különösen érdekes része a történetének.',
+            'A 24.hu-nak adott, 2022. április 8-án megjelent interjúban arról beszélt, hogy a Hódmezővásárhelyen működőnek bizonyult politikai modellt országos szinten is alkalmazhatónak gondolta, de a választási eredmény után ezt felül kellett vizsgálnia.',
+            'És itt hangzott el az egyik legerősebb mondata:',
+            '> „Vagyis nem volt jó a modell.” | Márki-Zay Péter · 24.hu-interjú, 2022. április 8.',
+            'Ez azért különösen érdekes idézet, mert nem másokra hárítja a teljes felelősséget. Márki-Zay saját korábbi stratégiai elképzelését nevezi hibásnak.',
+            'Egy politikai vereség után ritkább az olyan mondat, amely ennyire tömören foglalja össze a stratégiai önkorrekciót.',
+            'A 2022-es interjúban arról is beszélt, hogy a választási eredményt nem lehet egyszerűen egy-egy rossz mondatra vagy kampányhibára visszavezetni, hanem a teljes politikai modell működését kell újragondolni.',
+          ],
+          sources: [
+            {
+              source: '24.hu',
+              date: '2022. ápr. 8.',
+              headline: 'Márki-Zay Péter: Nincs meg Orbán száma, Kocsis Mátét kértem, küldje át, hogy felhívhassam a miniszterelnököt',
+              url: 'https://24.hu/belfold/2022/04/08/marki-zay-peter-interju-valasztas-2022-vereseg-orban-viktor/',
+              lead: 'Meggyőződése, hogy nem rajta ment el a választás, arra jutott, hogy a jelenlegi keretek között nem győzhető le a Fidesz. Nagyinterjú Márki-Zay Péterrel.',
+            },
+          ],
+        },
+        {
+          heading: '„Nekem Magyarország a hazám.”',
+          paragraphs: [
+            'Ugyanebben az interjúban Márki-Zay Péter arról is beszélt, hogy a vereség után sem tervezte elhagyni Magyarországot.',
+            '> „Nekem Magyarország a hazám.” | Márki-Zay Péter · 24.hu-interjú, 2022. április 8.',
+            'A mondat mögött személyes történet is áll: Márki-Zay és családja éveket töltött Észak-Amerikában, majd hazatértek Magyarországra. A politikus az interjúban azt mondta, hogy Kanadában megszerzett állampolgárságuk biztonsági tartalékot jelent a család számára, de ő Magyarországon akar élni.',
+            'Nem politikai szlogen, hanem egy rövid, személyes mondat.',
+          ],
+        },
+        {
+          heading: 'A parlament helyett vissza Hódmezővásárhelyre',
+          paragraphs: [
+            'A 2022-es választási vereség után Márki-Zay Péter egy másik fontos döntést is meghozott: nem vette fel parlamenti mandátumát.',
+            'A Telex beszámolója szerint bejelentette, hogy nem ül be az Országgyűlésbe, hanem Hódmezővásárhelyen kívánja folytatni munkáját.',
+            'Ez politikai szempontból azért is érdekes döntés volt, mert a választási vereség után akár az országos politikában is folytathatta volna parlamenti képviselőként.',
+            'Ehelyett visszatért ahhoz a városhoz, ahonnan a politikai pályája indult.',
+            'A történet így visszakanyarodott Hódmezővásárhelyhez: az országos választási kampány után ismét a helyi politikai munkára került a hangsúly.',
+          ],
+          videos: [
+            {
+              id: 'vQvqdCKNksI',
+              label: 'Dr. Márki-Zay Péter · 2025. május 6.',
+              title: 'Városépítés ellenszélben I. — Idén is 1,5 milliárd önerőből fejlesztjük Vásárhelyt',
+              summary:
+                'Nem az országos politika, hanem a polgármesteri munka: a városi fejlesztésekről, saját csatornáján.',
+            },
+          ],
+          sources: [
+            {
+              source: 'Telex',
+              date: '2022. ápr. 6.',
+              headline: 'Márki-Zay Péter nem veszi fel a mandátumát, nem ül be a parlamentbe',
+              url: 'https://telex.hu/valasztas-2022/2022/04/06/marki-zay-peter-nem-veszi-fel-a-mandatumat-nem-ul-be-a-parlamentbe',
+              lead: 'Hódmezővásárhely polgármestereként azt írta: az a legfontosabb feladata, hogy a városa bizalmát megerősítse, és teljesítse ígéretei fennmaradó részét.',
+            },
+          ],
+        },
+        {
+          heading: '2024: újabb választási győzelem Hódmezővásárhelyen',
+          paragraphs: [
+            'A 2024-es önkormányzati választás újabb fontos állomás lett Márki-Zay Péter pályáján.',
+            'Hódmezővásárhelyen ismét elindult a polgármesteri tisztségért, és újra megnyerte a választást.',
+            'A végleges eredmény szerint Márki-Zay Péter 12 504 szavazatot, 55,10 százalékot szerzett. Grezsa István 8658 szavazattal 38,15 százalékot kapott.',
+            'Ez volt a harmadik egymást követő olyan polgármester-választás, amelyen Márki-Zay győzött Hódmezővásárhelyen: 2018, 2019 és 2024.',
+            'A 2024-es győzelem különösen fontos abból a szempontból, hogy két évvel a 2022-es országos vereség után ismét közvetlen választói felhatalmazást kapott ugyanabban a városban.',
+            'A Nemzeti Választási Iroda nyilvántartása szerint Márki-Zay Péter 2024-ben is Hódmezővásárhely polgármestere lett.',
+            'A városi önkormányzat jelenlegi közgyűlési oldalán szintén polgármesterként szerepel.',
+          ],
+          videos: [
+            {
+              id: 'l22LZKa5SV4',
+              label: 'Dr. Márki-Zay Péter · 2024. június 9.',
+              title: 'Megvédtük a Szabadság Városát! — Márki-Zay Péter győzelmi beszéde',
+              summary: 'A 2024-es választás estéjén, élőben Hódmezővásárhelyről.',
+              views: '17 ezer megtekintés',
+            },
+          ],
+          sources: [
+            {
+              source: 'Telex',
+              date: '2024. jún. 9.',
+              headline: 'Márki-Zay: Mögcsináltuk',
+              url: 'https://telex.hu/belfold/2024/06/09/marki-zay-peter-polgarmester-mogcsinaltuk-hodmezovasarhely-gyozelem',
+              lead: 'Nagyot nyert a hódmezővásárhelyi polgármester, pedig intenzíven kampányolt ellene a Fidesz, ráadásul kihátrált mögüle több ellenzéki párt is.',
+            },
+            {
+              source: '444',
+              date: '2024. jún. 9.',
+              headline: 'Orbán Viktor nem fogott vele kezet, mégis Márki-Zay Péter maradt Hódmezővásárhely polgármestere',
+              url: 'https://444.hu/2024/06/09/orban-viktor-nem-fogott-vele-kezet-megis-marki-zay-peter-maradt-hodmezovasarhely-polgarmestere',
+            },
+          ],
+        },
+        {
+          heading: 'A 2024-es kampány: nem egyedül, hanem csapattal',
+          paragraphs: [
+            'Márki-Zay 2024-ben nem csupán saját polgármesteri újraválasztására épített, hanem képviselőjelölti csapatot is állított.',
+            'A kampányoldalán olyan üzenetet fogalmazott meg, amely szerint olyan képviselőket kíván támogatni, akik nem saját gazdagodásukat, hanem a város érdekeit helyezik előtérbe.',
+            'A választási eredmény alapján a polgármesteri pozíció mellett a hozzá kötődő jelöltek több körzetben is mandátumot szereztek, így a helyi politikai struktúra 2024 után is Márki-Zay köré szerveződött.',
+          ],
+        },
+        {
+          heading: '2025: egy újabb politikai döntés – nem indulnak saját jelöltekkel 2026-ban',
+          paragraphs: [
+            'Márki-Zay Péter és a Mindenki Magyarországa Néppárt története 2025-ben újabb fordulóhoz érkezett.',
+            'Az MMN kongresszusa úgy döntött, hogy a 2026-os országgyűlési választáson nem állít saját országos listát, és egyéni választókerületekben sem indít saját jelölteket.',
+            'A párt ezt azzal indokolta, hogy szerintük a választáson az ellenzéki oldalon a szavazatok koncentrálása fontos, és nem kívánják saját indulással megosztani az ellenzéki szavazatokat.',
+            'Márki-Zay erről saját videójában is beszélt:',
+            'Ez a döntés azért illeszkedik a történetbe, mert jól mutatja Márki-Zay politikai pályájának egyik visszatérő elemét: az együttműködés és az ellenzéki koordináció kérdését.',
+          ],
+          videosAfterParagraph: 3,
+          videos: [
+            {
+              id: 'aZC6eyLFfdw',
+              label: 'Dr. Márki-Zay Péter · 2025. június 4.',
+              title: 'Nem állítunk listát, nem lesz saját jelöltünk 2026-ban',
+              summary: 'A Mindenki Magyarországa Néppárt döntése a 2026-os választásról, Márki-Zay Péter saját csatornáján.',
+              views: '10 ezer megtekintés',
+            },
+          ],
+          sources: [
+            {
+              source: 'Telex',
+              date: '2025. jún. 1.',
+              headline: 'Nem indul önállóan a 2026-os választáson Márki-Zay Péter pártja',
+              url: 'https://telex.hu/belfold/2025/06/01/nem-indul-onalloan-a-2026-os-valasztason-marki-zay-peter-partja-mindenki-magyarorszaga-neppart-tisza-part-magyar-peter',
+              lead: 'A Mindenki Magyarországa Néppárt szerint minden választókerületben a legesélyesebb ellenzéki jelöltet kell támogatni.',
+            },
+            {
+              source: 'Index',
+              date: '2025. jún. 1.',
+              headline: 'Márki-Zay Péter pártja nem állít saját listát, és nem indul a 2026-os választásokon',
+              url: 'https://index.hu/belfold/2025/06/01/mindenki-magyarorszaga-neppart-marki-zay-peter-valasztas/',
+            },
+          ],
+        },
+        {
+          heading: 'Miért érdekes Márki-Zay Péter története a Dicsőségfalon?',
+          paragraphs: [
+            'A Dicsőségfal nem politikai pártok vagy politikusok hivatalos listája, hanem egy olyan gyűjtemény, amely azt mutatja meg, kik vállaltak különböző időszakokban olyan közéleti szerepet, amely a rendszerkritikus, demokratikus vagy korrupcióellenes politikai nyilvánosságban meghatározóvá vált.',
+            'Márki-Zay Péter története ebben a kontextusban több pont miatt is figyelemre méltó.',
+            'Először: 2018-ban egy országosan is jelentős figyelmet kiváltó hódmezővásárhelyi győzelemmel vált ismertté.',
+            'Másodszor: nem egyszeri győzelemről volt szó. 2019-ben újraválasztották, 2024-ben pedig ismét megnyerte a polgármester-választást.',
+            'Harmadszor: 2021-ben egy országos ellenzéki előválasztáson 371 560 szavazattal megnyerte a második fordulót, és ezzel az ellenzéki összefogás miniszterelnök-jelöltje lett.',
+            'Negyedszer: a 2022-es vereséget követően sem hagyta abba a politizálást, és visszatért a helyi közélethez.',
+            'Ötödször: a vereség után saját politikai modelljét is kritikusan értékelte. A „Vagyis nem volt jó a modell” mondat éppen azért emlékezetes, mert nem kizárólag külső okokat nevezett meg.',
+            'És végül: a történetnek van egy különösen fontos helyi dimenziója. Márki-Zay Péter politikai pályája nem Budapesten, egy pártközpontban vagy egy parlamenti frakcióban kezdődött, hanem Hódmezővásárhelyen.',
+            'Ott nyert először.',
+            'Ott nyert újra 2019-ben.',
+            'Ott tért vissza a 2022-es országos vereség után.',
+            'És ott nyerte meg ismét a polgármester-választást 2024-ben.',
+            'Ez teszi a történetet koherenssé: az országos politika után mindig vissza lehet vezetni a kiindulóponthoz, Hódmezővásárhelyhez.',
+          ],
+        },
+        {
+          heading: 'Márki-Zay Péter: egy politikai pálya, amely Hódmezővásárhelyről indult és oda tért vissza',
+          paragraphs: [
+            'Márki-Zay Péter történetét nehéz egyetlen politikai szereppel azonosítani.',
+            '2018-ban még elsősorban egy helyi, független jelölt volt.',
+            '2019-ben már újraválasztott polgármester.',
+            '2021-ben országos ellenzéki előválasztási győztes.',
+            '2022-ben miniszterelnök-jelölt.',
+            '2022 után ismét hódmezővásárhelyi polgármester.',
+            '2024-ben pedig újabb helyi választási győztes.',
+            'A történetnek vannak sikerei, vereségei, stratégiai tévedései és újrakezdései is. Éppen ezért nem egyetlen választás vagy egyetlen politikai kampány alapján érdemes értelmezni.',
+            'A 2018-as „Van remény” a politikai áttörés pillanatát jelképezi.',
+            'A „Többen vagyunk, mi vagyunk többen” az összefogás üzenetét.',
+            'A 2021-es „Gyűlölettel nem lehet legyőzni a gyűlöletet, csak szeretettel” egy másfajta politikai kultúra igényét.',
+            'A 2022-es „Vagyis nem volt jó a modell” pedig azt, hogy egy választási vereség után saját korábbi stratégiájának újragondolását is vállalta.',
+            'És talán a legszemélyesebb mondat:',
+            '> „Nekem Magyarország a hazám.” | Márki-Zay Péter · 24.hu-interjú, 2022. április 8.',
+            'Márki-Zay Péter politikai történetének egyik legfontosabb sajátossága, hogy a nagy országos kitérők ellenére mindvégig visszatért ahhoz a városhoz, ahol a története elkezdődött.',
+            'Hódmezővásárhelyhez.',
+            '2018-ban ott vált országosan ismertté.',
+            '2019-ben ott erősítette meg a választói felhatalmazását.',
+            '2022-ben oda tért vissza az országos választási vereség után.',
+            '2024-ben pedig ott kapott újabb polgármesteri mandátumot, 55,10 százalékos eredménnyel.',
+            'A Dicsőségfal szempontjából éppen ez adja Márki-Zay Péter történetének sajátos ívét: egy helyi választási győzelemből országos politikai szerep lett, majd az országos politika után ismét a helyi közélethez tért vissza.',
+            'És ha egyetlen mondatban kellene összefoglalni azt a pillanatot, amikor az egész történet elkezdődött, akkor talán valóban az a két szó marad a legerősebb:',
+            '>> „Van remény.”',
+          ],
+        },
+      ],
+      sources: [
+        {
+          source: 'Hódmezővásárhely önkormányzata',
+          date: '2018. febr. 27.',
+          headline: 'Márki-Zay Péter nyerte a polgármester-választást',
+          url: 'https://hodmezovasarhely.hu/marki-zay-peter-nyerte-a-polgarmester-valasztast/',
+        },
+        {
+          source: 'Telex',
+          date: '2021. okt. 17.',
+          headline: 'Márki-Zay Péter 56,7%-os eredménnyel megnyerte az előválasztást',
+          url: 'https://telex.hu/belfold/2021/10/17/ellenzeki-elovalasztas-2021-marki-zay-peter-dobrev-klara',
+        },
+        {
+          source: '24.hu',
+          date: '2022. ápr. 8.',
+          headline: 'Márki-Zay Péter: Nincs meg Orbán száma, Kocsis Mátét kértem, küldje át, hogy felhívhassam a miniszterelnököt',
+          url: 'https://24.hu/belfold/2022/04/08/marki-zay-peter-interju-valasztas-2022-vereseg-orban-viktor/',
+        },
+        {
+          source: 'Telex',
+          date: '2022. ápr. 6.',
+          headline: 'Márki-Zay Péter nem veszi fel a mandátumát, nem ül be a parlamentbe',
+          url: 'https://telex.hu/valasztas-2022/2022/04/06/marki-zay-peter-nem-veszi-fel-a-mandatumat-nem-ul-be-a-parlamentbe',
+        },
+        {
+          source: 'Telex',
+          date: '2024. jún. 9.',
+          headline: 'Márki-Zay: Mögcsináltuk',
+          url: 'https://telex.hu/belfold/2024/06/09/marki-zay-peter-polgarmester-mogcsinaltuk-hodmezovasarhely-gyozelem',
+        },
+        {
+          source: 'Telex',
+          date: '2025. jún. 1.',
+          headline: 'Nem indul önállóan a 2026-os választáson Márki-Zay Péter pártja',
+          url: 'https://telex.hu/belfold/2025/06/01/nem-indul-onalloan-a-2026-os-valasztason-marki-zay-peter-partja-mindenki-magyarorszaga-neppart-tisza-part-magyar-peter',
+        },
       ],
     },
   },
