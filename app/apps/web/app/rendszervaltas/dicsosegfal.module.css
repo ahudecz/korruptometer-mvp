@@ -882,6 +882,26 @@ a.card:hover {
   hyphens: auto;
 }
 
+/* Kattintható idővonal-pont: a teljes sor link, a szöveg aláhúzva jelzi. */
+.timelineLink {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.timelineLink .timelineText {
+  text-decoration: underline;
+  text-decoration-color: var(--line, #c9c9c9);
+  text-underline-offset: 3px;
+}
+.timelineLink:hover .timelineText,
+.timelineLink:focus-visible .timelineText {
+  text-decoration-color: var(--accent, #e31937);
+}
+/* Az ugrás célja ne bújjon a ragadós fejléc alá. */
+.caseItem {
+  scroll-margin-top: 96px;
+}
+
 /* A lap záró mondata: ugyanez, csak nagyobb. */
 .pullQuote.pullQuoteBig .pullQuoteText {
   font-size: 44px;

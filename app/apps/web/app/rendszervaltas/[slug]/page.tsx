@@ -134,17 +134,56 @@ function renderPara(
 
 /** Függőleges, összekötött idővonal: bal oldalon vonal és pöttyök, mellettük
  *  az év és a mérföldkő. Mobilon ugyanez, csak szűkebb. */
-function Timeline({ items }: { items: { when: string; text: string }[] }) {
+function Timeline({ items }: { items: { when: string; text: string; href?: string }[] }) {
   return (
     <ol className={styles.timeline}>
-      {items.map((it) => (
-        <li className={styles.timelineItem} key={`${it.when}-${it.text}`}>
-          <span className={styles.timelineDot} aria-hidden="true" />
-          <span className={styles.timelineWhen}>{it.when}</span>
-          <span className={styles.timelineText}>{it.text}</span>
-        </li>
-      ))}
+      {items.map((it) => {
+        const inner = (
+          <>
+            <span className={styles.timelineWhen}>{it.when}</span>
+            <span className={styles.timelineText}>{it.text}</span>
+          </>
+        );
+        return (
+          <li className={styles.timelineItem} key={`${it.when}-${it.text}`}>
+            <span className={styles.timelineDot} aria-hidden="true" />
+            {it.href ? (
+              <a className={styles.timelineLink} href={it.href}>
+                {inner}
+              </a>
+            ) : (
+              inner
+            )}
+          </li>
+        );
+      })}
     </ol>
+  );
+}
+
+const HU_MONTH_STEMS = ['jan', 'febr', 'márc', 'ápr', 'máj', 'jún', 'júl', 'aug', 'szept', 'okt', 'nov', 'dec'];
+
+/** Rendezési kulcs egy emberi dátumhoz („2024. február 16.", „2018–2019",
+ *  „2020-tól"): az ELSŐ évszám és — ha rögtön utána áll — a hónap. Az
+ *  idővonalnak időrendben kell lennie akkor is, ha az ügylista nem az. */
+function whenSortKey(when: string): number {
+  const m = when.match(/(\d{4})(?:\.\s*([a-záéíóöőúüű]+))?/i);
+  if (!m) return Number.MAX_SAFE_INTEGER;
+  const month = m[2] ? HU_MONTH_STEMS.findIndex((s) => m[2]!.toLowerCase().startsWith(s)) + 1 : 0;
+  return Number(m[1]) * 100 + month;
+}
+
+/** Ügy-horgony az idővonal ugrásaihoz: „Polgári Ellenállás — civil…" →
+ *  „polgari-ellenallas". A rövid címből képződik, így stabil, amíg a cím. */
+function caseAnchor(title: string): string {
+  return (
+    'ugy-' +
+    splitTitle(title)[0]
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
   );
 }
 
@@ -416,11 +455,19 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
               <div className="ugy-block-text" id="ugyek">
                 <h2 className="ugy-block-heading">{d.cases.heading}</h2>
                 {d.cases.intro && <p>{withAutoLinks(d.cases.intro, undefined, linkedPersons, selfHref)}</p>}
+                {d.cases.timeline && (
+                  <Timeline
+                    items={d.cases.items
+                      .filter((c) => c.when)
+                      .sort((a, b) => whenSortKey(a.when!) - whenSortKey(b.when!))
+                      .map((c) => ({ when: c.when!, text: splitTitle(c.title)[0], href: `#${caseAnchor(c.title)}` }))}
+                  />
+                )}
                 <ol className={styles.caseList}>
                   {d.cases.items.map((c, ci) => {
                     const [short, rest] = splitTitle(c.title);
                     return (
-                    <li className={styles.caseItem} key={c.title}>
+                    <li className={styles.caseItem} key={c.title} id={caseAnchor(c.title)}>
                       <h3 className={styles.caseTitle}>
                         <span className={styles.caseNum} aria-hidden="true">{ci + 1}</span>
                         <span className={styles.caseShort}>{short}</span>

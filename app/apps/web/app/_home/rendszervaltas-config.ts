@@ -274,7 +274,15 @@ export type FeltaroDetail = {
   /** H1 alatti, önmagában is válaszoló bevezető (featured snippet cél). */
   lead?: string;
   /** „Mit tárt fel?" — a lap gerince. */
-  cases?: { heading: string; intro?: string; items: FeltaroCase[] };
+  cases?: {
+    heading: string;
+    intro?: string;
+    items: FeltaroCase[];
+    /** A lista ELEJÉN kattintható idővonal a pontok `when` + rövid címéből
+     *  (user, 2026-09-28: „ha rákattint, ugorjon oda"). Csak `when`-nel
+     *  rendelkező pontok kerülnek bele. */
+    timeline?: boolean;
+  };
   /** További, szabad szöveges szakaszok a konkrét ügyek UTÁN. */
   extra?: {
     heading: string;
@@ -1543,6 +1551,7 @@ export const FELTAROK: Feltaro[] = [
         'Jámbor András helye a Dicsőségfalon nem azért védhető, mert kormánykritikus politikus, és nem is azért, mert minden állításával vagy szervezeti döntésével egyet kellene érteni. A helye azért indokolható, mert több mint másfél évtizeden át ugyanazon a három területen dolgozott következetesen: a független nyilvánosság építésén, a lakhatási és szociális jogvédelem megszervezésén, és azon, hogy ezek az ügyek az utcáról bekerüljenek az intézményes politikába.',
       cases: {
         heading: 'A legfontosabb állomások és ügyek',
+        timeline: true,
         intro:
           'Ez más típusú teljesítmény, mint Panyi Szabolcs oknyomozó újságírása vagy Hadházy Ákos közpénzellenőrző munkája. Jámbor fő fegyvere nem a dokumentumokból kibontott korrupciós hálózat, hanem a közösségszervezés: embereket kapcsolt össze, ügyeket tett láthatóvá, és a politikai képviseletet megpróbálta visszakötni azokhoz, akikről a hatalom rendszeresen beszél, de akiket ritkán kérdez meg.',
         items: [
@@ -2671,6 +2680,7 @@ export const FELTAROK: Feltaro[] = [
         'Puzsér Róbert nem oknyomozó újságíró, nem korrupciós ügyek dokumentátora, és nem olyan politikus, aki egyetlen intézmény ellen vitt volna éveken át tartó kampányt. A Dicsőségfalon másért van: évek óta következetesen azt a kérdést állítja a középpontba, hogy egy kormányváltás önmagában rendszerváltás-e, és mi történik akkor, ha a politikai hatalom ellenőrzésének intézményi és társadalmi garanciái nem változnak meg.',
       cases: {
         heading: 'A legfontosabb állomások',
+        timeline: true,
         intro:
           'Ez más típusú teljesítmény, mint Panyi Szabolcs oknyomozó újságírása vagy Hadházy Ákos közpénzellenőrző munkája. Puzsér Róbert esetében nem egyetlen feltárt ügyet kell keresni: a hozzájárulása az, hogy a politikai hatalommal szembeni társadalmi kontroll szükségességét önálló témává tette — és ehhez konkrét civil-politikai kezdeményezéseket is épített.',
         items: [
@@ -4521,6 +4531,7 @@ export const FELTAROK: Feltaro[] = [
         'Pottyondy Edina a magyar közélet egyik legismertebb online véleményformálója: YouTuber, stand-up előadó és szerző. A Dicsőségfalon nem a követőszáma miatt van, hanem azért, mert a közéleti témákat olyan közönséghez is eljuttatja, amely nem a hagyományos híroldalakon keresztül követi a politikát — 2024-ben pedig ő volt az egyik szervezője annak a Hősök téri influenszertüntetésnek, amely több tízezer embert mozgatott meg.',
       cases: {
         heading: 'A legfontosabb állomások',
+        timeline: true,
         intro:
           'A tevékenysége négy területre bontható: közéleti videók, élő előadások, könyv, valamint közösségszervezés és közvetlen közéleti szerepvállalás. A közös pont, hogy ugyanaz a téma több formában is eljut ugyanahhoz a közönséghez — videóban, közösségi médiában, színpadon és könyvben is.',
         items: [
@@ -4962,6 +4973,7 @@ export const FELTAROK: Feltaro[] = [
         'Molnár Áron helye a Dicsőségfalon nem azért indokolható, mert színészként ismert, és nem is azért, mert minden közéleti megszólalásában igaza lenne. A szerepe más: 2018 óta a saját művészi ismertségét, a közösségi médiát, a zenét, a színházat és 2026-tól a politikai tartalomgyártást is társadalmi ügyek szolgálatába állította — az NKA-botrányban pedig egy belső forrástól kapott dokumentumokat hozott nyilvánosságra.',
       cases: {
         heading: 'A legfontosabb állomások és ügyek',
+        timeline: true,
         intro:
           'Ez más típusú teljesítmény, mint Panyi Szabolcs oknyomozó újságírása, Hadházy Ákos közpénzellenőrző munkája vagy Jámbor András lakhatási és parlamenti jogvédelme. Molnár Áron fő eszköze a kulturális mozgósítás és a nyilvánosság: 2018 után a noÁr Mozgalom, később a Loupe Színházi Társulás, 2026-ban pedig a napi politikai tartalomgyártás és az NKA-ügy dokumentumainak nyilvánosságra hozatala.',
         items: [
