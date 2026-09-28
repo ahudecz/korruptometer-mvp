@@ -101,6 +101,7 @@ function renderPara(
   links: InlineLink[] | undefined,
   linkedPersons: Set<string>,
   selfHref: string,
+  pClassName?: string,
 ): React.ReactNode {
   const q = parseQuote(para);
   if (q) {
@@ -125,7 +126,7 @@ function renderPara(
   return (
     <Fragment key={key}>
       {splitParas(para).map((sub, i) => (
-        <p key={i}>{withAutoLinks(sub, links, linkedPersons, selfHref)}</p>
+        <p key={i} className={pClassName}>{withAutoLinks(sub, links, linkedPersons, selfHref)}</p>
       ))}
     </Fragment>
   );
@@ -434,17 +435,15 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                           {i === 0 && c.promoPlacement === 'top' && c.promo && <CasePromo promo={c.promo} />}
                         </Fragment>
                       ))}
-                      {c.more?.flatMap((para) => splitParas(para)).map((para, i) => (
-                        <p className={styles.caseBody} key={`m${i}`}>{withAutoLinks(para, c.links, linkedPersons, selfHref)}</p>
-                      ))}
+                      {c.more?.map((para, i) =>
+                        renderPara(para, `m${i}`, c.links, linkedPersons, selfHref, styles.caseBody),
+                      )}
                       {c.sections?.map((sec) => (
                         <div className={styles.caseSection} key={sec.heading}>
                           <h4 className={styles.caseSectionHeading}>{sec.heading}</h4>
-                          {sec.paragraphs
-                            .flatMap((para) => splitParas(para))
-                            .map((para, i) => (
-                              <p className={styles.caseBody} key={i}>{withAutoLinks(para, sec.links, linkedPersons, selfHref)}</p>
-                            ))}
+                          {sec.paragraphs.map((para, i) =>
+                            renderPara(para, i, sec.links, linkedPersons, selfHref, styles.caseBody),
+                          )}
                           {sec.videos?.map((v) => (
                             <FeltaroVideo
                               key={v.id}
@@ -502,6 +501,8 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                               <p key={i}>{withAutoLinks(para, undefined, linkedPersons, selfHref)}</p>
                             ))}
                           </aside>
+                          {c.highlight.quote &&
+                            renderPara(c.highlight.quote, 'hq', undefined, linkedPersons, selfHref)}
                           {/* A felvétel a kiemelt doboz UTÁN áll, nem benne
                               (user, 2026-09-16): a piros doboz a tényállásé,
                               a videó önálló bizonyíték. */}

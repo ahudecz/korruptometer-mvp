@@ -249,6 +249,8 @@ export type FeltaroCase = {
   highlight?: {
     heading: string;
     body: string;
+    /** Kiemelt idézet a doboz UTÁN (`> „…” | forrás` alak, l. parseQuote). */
+    quote?: string;
     sources?: FeltaroLink[];
     /** A kiemelésben szereplő esemény felvétele — ott jelenik meg, ahol az
      *  eset le van írva, nem a lap alján (user, 2026-09-16). */
@@ -466,6 +468,7 @@ export const FELTAROK: Feltaro[] = [
       { label: 'Feljelentések nyilvántartása', href: '/adatbazis' },
       { label: 'Kiemelt ügyek', href: '/ugyek' },
     ],
+    updatedAt: '2026-09-28',
     live: true,
     detail: {
       seoTitle: 'Hadházy Ákos: Hatvanpuszta, Volvo-gate és a feljelentései',
@@ -502,6 +505,8 @@ export const FELTAROK: Feltaro[] = [
               heading: 'Amikor felborult a biztonsági őr autója — 2025. augusztus 19.',
               body:
                 'Úgy kezdődött, hogy Hadházy feltartóztatás nélkül besétált a hatvanpusztai birtokra — meg akart győződni róla, valóban műemlék áll-e ott —, de hamar kizavarták. Ezután vették üldözőbe. Éppen a birtok környéki nyilvános utakon autózott, amikor a birtok védelmét ellátó biztonsági szolgálat egyik terepjárós őre agresszívan üldözőbe vette a kocsiját, majd az üldözés során oldalról nekiütközött. Az ütközés erejétől a vagyonőr saját járműve elvesztette a stabilitását és felborult. Az esetet az anyósülésen utazó Gulyás Balázs, a Gulyáságyú Média újságírója az első másodperctől videóra vette — enélkül az ügy megmaradt volna a klasszikus „állítás állítással szemben" szintjén. A Bicskei Rendőrkapitányság közúti veszélyeztetés bűntettének alapos gyanúja miatt indított eljárást a sofőr ellen, akiről kiderült, hogy Mészáros Lőrinc biztonságtechnikai cégének alkalmazásában állt. A nyomozást 2025 novemberében megszüntették, arra hivatkozva, hogy az őr nem veszélyeztette a képviselő testi épségét; az ügyet átminősítették, és az őr végül szabálysértési eljárásban 80 ezer forint pénzbírságot és három hónap járművezetéstől eltiltást kapott.',
+              quote:
+                '> „Én a földúton jöttem, a biztonsági őr meg akart előzni, és rám húzta a kormányt.” | Hadházy Ákos a helyszínre érkező rendőröknek · 444, 2025. augusztus 19.',
               video: {
                 id: 'ahlzM1ub9IA',
                 label: 'Kontroll • Gulyáságyú · 2025. augusztus 25.',
@@ -659,6 +664,7 @@ export const FELTAROK: Feltaro[] = [
       },
     },
     related: [{ label: 'Videóriportok és podcastok', href: '/podcastok' }],
+    updatedAt: '2026-09-28',
     live: true,
     detail: {
       seoTitle: 'Partizán: a csatorna, ami médiatörténelmet írt',
@@ -786,6 +792,8 @@ export const FELTAROK: Feltaro[] = [
           paragraphs: [
             'A Partizánt Gulyás Márton alapította, és éveken át ő volt a műhely arca és főszerkesztője. 2026 augusztusában bejelentette, hogy lemond a főszerkesztői pozíciójáról — a csatorna viszont működik tovább, és a friss adások nézettsége azt mutatja, hogy a közönség nem egyetlen személyhez kötődött.',
             'Ez önmagában is fontos állítás egy ilyen műhelyről. Sok közösségi finanszírozású projekt lényegében egy ember köré épül, és vele együtt ér véget. Az intézményesülés próbája pontosan az, hogy az alapító távozása után is megy-e tovább a munka.',
+            '2026 szeptemberében Gulyás Márton tizenkét év után ült be újra a közmédia stúdiójába, a Kossuth Rádióba, ahol az átalakuló közmédiáról beszélt:',
+            '> „Ebben az intézményben ma is tucatjával vannak foglalkoztatva olyan emberek, akik az elmúlt 16 évben a magyar társadalom megvezetését szolgálták.” | Gulyás Márton a Kossuth Rádióban · 444, 2026. szeptember 17.',
           ],
         },
         {
@@ -828,6 +836,7 @@ export const FELTAROK: Feltaro[] = [
     tagline:
       'Közérdekű adatigénylések százait nyújtotta be, és ha elutasították, bíróságra vitte — több ügyben ez volt az egyetlen út, ahogy az iratok kikerültek.',
     targetKeyword: { phrase: 'átlátszó.hu', volume: 4400, kd: 50 },
+    updatedAt: '2026-09-28',
     live: true,
     related: [
       { label: 'Hatvanpuszta — a kiemelt ügy', href: '/ugyek/hatvanpuszta' },
@@ -1068,6 +1077,10 @@ export const FELTAROK: Feltaro[] = [
             when: '2026. március – május',
             body:
               'Az Átlátszó pert nyert a Szuverenitásvédelmi Hivatallal szemben, mire a hivatal fellebbezett — az érvelésük szerint a bíróságnak nincs hatásköre felettük. Másodfokon végül az eljárás megismétlését rendelték el. Ez a fajta elhúzódás önmagában is része a módszertannak: sokszor nem a per elvesztése a cél, hanem az idő.',
+            more: [
+              'Az Átlátszó és a Szuverenitásvédelmi Hivatal konfliktusa már 2024-ben elkezdődött. Bodoky Tamás főszerkesztő akkor egy interjúban így fogalmazott:',
+              '> „Nem akarunk emigráns újságírók lenni!” | Bodoky Tamás, az Átlátszó főszerkesztője · Media1, 2024. augusztus 6.',
+            ],
             sources: [
               { source: 'Átlátszó', date: '2026. márc. 19.', headline: 'Láncziék fellebbeztek az elmarasztaló ítélet ellen, szerintük a bíróságnak nincs hatalma felettük', url: 'https://atlatszo.hu/kozugy/2026/03/19/lancziek-fellebbeztek-az-elmarasztalo-itelet-ellen-szerintuk-a-birosagnak-nincs-hatalma-felettuk/' },
               { source: 'HVG', date: '2026. máj. 28.', headline: 'Csatát nyert a Szuverenitásvédelmi Hivatal, meg kell ismételni az eljárást az Átlátszó-perben', url: 'https://hvg.hu/itthon/20260528_szuverenitasvedelmi-hivatal-atlatszo-birosag-masodfoku-dontes-b' },
@@ -1292,6 +1305,7 @@ export const FELTAROK: Feltaro[] = [
         'Ez a lassúság nem hátrány, hanem a legnagyobb fegyverük: az így megszülető cikkek olyan bizonyítékrendszerre épülnek, amelyet sajtóperekkel vagy politikai tagadással sem lehet megtámadni. Egy olyan környezetben, ahol a tényekre az első válasz szisztematikusan a hitelesség megkérdőjelezése volt, a patikamérlegen kimért forrásolás vált a védekezés eszközévé.',
       ],
     },
+    updatedAt: '2026-09-28',
     live: true,
     detail: {
       seoTitle: 'Direkt36: az öt ügy, amivel a lassú oknyomozás bizonyított',
@@ -1382,6 +1396,8 @@ export const FELTAROK: Feltaro[] = [
             more: [
               'A szakértők laboratóriumi körülmények között vizsgálták át a célpontok telefonjait. Az ujjlenyomatok és naplófájlok elemzése során derült ki, hogy a kormány az izraeli NSO Group katonai szintű Pegasus kémszoftverét vetette be civilek ellen.',
               'A történet legsúlyosabb része, hogy a műhely vezető külpolitikai újságírója, Panyi Szabolcs az öt dokumentáltan megfigyelt magyar újságíró egyike volt. A szívós, nemzetközi visszhangot kiváltó cikksorozat kényszerítette ki, hogy öt hónap tagadás után a parlamenti szakbizottságban hivatalosan is elismerjék: a magyar állam megvásárolta és alkalmazta a szoftvert.',
+              'Pethő András, a Direkt36 egyik alapító szerkesztője a botrány után arról beszélt, mit jelent mindez a tényfeltáró újságírásnak és a forrásoknak:',
+              '> „Aki a közéletben részt vesz, az eddig is úgy élte az életét, hogy megfigyelik.” | Pethő András · Media1, 2021. augusztus 21.',
             ],
             links: [{ text: 'Panyi Szabolcs', href: '/rendszervaltas/panyi-szabolcs' }],
             sources: [
@@ -1418,6 +1434,7 @@ export const FELTAROK: Feltaro[] = [
             more: [
               'Elmondta, hogyan zajlott az ellenzéki párt informatikusai elleni eljárás, és hogyan próbált abba az Alkotmányvédelmi Hivatal ismételten és törvénytelenül beavatkozni: a hivatal megfelelő dokumentáció, engedélyek és jegyzőkönyvek nélkül vitt el fizikai adathordozókat és bizalmas adatokat a rendőrségtől. A következtetése az volt, hogy közvetlen, kézi irányítás alatt álló, speciális titkosszolgálati egység dolgozott a politikai ellenfél szisztematikus bedöntésén.',
               'Az interjú ára azonnal megmutatkozott: a cikk megjelenése után házkutatást tartottak a munkahelyén a Nemzeti Nyomozó Irodában, majd az otthonában is, ahol az adathordozóit lefoglalták. A belügyminiszter magyarázkodásra kényszerült.',
+              '> „A mai Direkt36-cikkünk talán a legsötétebb történet, amivel valaha foglalkoztam.” | Pethő András · szmo.hu, 2026. március 24.',
               'Ez az anyag volt a lavina elindítója: a dokumentált cikk után a nyomozó beült a Partizán élő adásába, amely másfél nap alatt elérte az egymilliós megtekintést, visszafordíthatatlanul megváltoztatva a kampány menetét.',
             ],
             videos: [
@@ -1516,6 +1533,7 @@ export const FELTAROK: Feltaro[] = [
       { label: 'Kiemelt ügyek', href: '/ugyek' },
       { label: 'Kapcsolódó ügyek az adatbázisban', href: '/adatbazis' },
     ],
+    updatedAt: '2026-09-28',
     live: true,
     detail: {
       seoTitle: 'Jámbor András: a Mércétől a végrehajtási törvényig',
@@ -1803,6 +1821,7 @@ export const FELTAROK: Feltaro[] = [
             body:
               '2025. június 19-én Jámbor bejelentette, hogy nem indul a 2026-os választáson abban a két kerületben, ahol 2022-ben megválasztották. Az indoklása szerint ha elindul, nagyobb eséllyel szerez egy mandátumot a Fidesznek, mint amekkora az esélye annak, hogy ő szerezzen egyet a kormányváltásért.',
             more: [
+              '> „Csináltunk a körzetemben egy közvélemény-kutatást is, amelyben az jött ki, hogyha indulok, nagyobb eséllyel segítem egy mandátumhoz a Fideszt, minthogy én tegyek hozzá egyet az Orbán-rendszer leváltáshoz. Ezt a helyzetet meg kellett értenem.” | Jámbor András · Telex, 2025. június 19.',
               'Ez a Dicsőségfalon azért kap külön pontot, mert a NER egyik legmegbízhatóbb szövetségese éppen az ellenzéki oldal széttagoltsága volt. Egy egyéni képviselői mandátum a magyar politikában nem apróság: státusz, nyilvánosság, apparátus és megélhetés. Aki ezt a saját számítása szerint a kormányváltás esélyéért adja fel, az pontosan azt teszi, amit a rendszer a legkevésbé tud kezelni.',
               'Nem ő volt az első visszalépő: Hajnal Miklós 2025 márciusában adta át a hegyvidéki körzetet Magyar Péternek, májusban Tóth Endre jelentette be, hogy nem indul újra, a Momentum küldöttgyűlése pedig június 7-én döntött úgy, hogy a párt egyáltalán nem indul. Az ő lépése abban különbözik ezektől, hogy nem pártdöntés hajtotta végre rajta: függetlenként, saját magának kellett kimondania, hogy a körzet, amelyet 2022-ben a Fidesztől vett el, nélküle ad jobb esélyt a kormányváltásra. A saját beszámolója szerint a rendszerváltás érdekében lépett vissza a Tisza javára.',
               'A döntés nem tette utólag helyessé az összes korábbi politikai állítását, és nem zárta le a vitákat a mozgalom szervezeti működéséről sem. De egy olyan évben, amikor sok szereplő a saját pozíciója megtartásával volt elfoglalva, ez a lépés mérhető és visszakereshető — nem szándéknyilatkozat, hanem visszalépés.',
@@ -1962,6 +1981,7 @@ export const FELTAROK: Feltaro[] = [
       { label: 'Videóriportok és podcastok', href: '/podcastok' },
       { label: 'Ki az a Zsolti bácsi?', href: '/ugyek/ki-az-a-zsolt-bacsi' },
     ],
+    updatedAt: '2026-09-28',
     live: true,
     detail: {
       seoTitle: 'Juhász Péter (Juhi): NER100, belvárosi ingatlanok, Zsolti bácsi',
@@ -2063,6 +2083,7 @@ export const FELTAROK: Feltaro[] = [
                 heading: 'A hatósági reakció',
                 paragraphs: [
                   'A hatósági reakció három napon belül megérkezett. 2025. október 2-án reggel a Központi Nyomozó Főügyészség nyomozói házkutatást tartottak Juhász Péter otthonában, és lefoglalták az adathordozóit — köztük azt a telefont is, amelyen éppen élőben nyilatkozott a sajtónak a házkutatás közben. Másnap tanúként hallgatták ki, több mint négy órán át.',
+                  '> „Itt vannak az ügyészségtől, házkutatást tartanak, mindent lefoglalnak, mindjárt elveszik a telefonomat is.” | Juhász Péter a házkutatás közben · HVG, 2025. október 2.',
                 ],
                 sources: [
                   {
@@ -2640,7 +2661,7 @@ export const FELTAROK: Feltaro[] = [
       { label: 'Dicsőségfal', href: '/rendszervaltas' },
       { label: 'Kiemelt ügyek', href: '/ugyek' },
     ],
-    updatedAt: '2026-09-23',
+    updatedAt: '2026-09-28',
     live: true,
     detail: {
       seoTitle: 'Puzsér Róbert: civil kontroll, Sétáló Budapest, Polgári Ellenállás',
@@ -2742,8 +2763,10 @@ export const FELTAROK: Feltaro[] = [
               'Puzsér Róbert 2025-ben indította el a Polgári Ellenállást. A kezdeményezés nem pártként jött létre, hanem civil társadalmi mozgalomként: a célja saját megfogalmazása szerint az volt, hogy a társadalom ne csak választóként jelenjen meg a politikában, hanem a hatalom gyakorlását folyamatosan ellenőrző és számon kérő közösségként is.',
             more: [
               'A mozgalom első nagy demonstrációját 2025. június 10-én tartották a Kossuth téren, részben az akkori nyilvánosságkorlátozó törvényjavaslat ellen. A Telexnek adott hosszú interjújában Puzsér Róbert úgy írta le a Polgári Ellenállást, mint amely nem alternatívája a Tisza Pártnak, hanem az a feltételrendszer, amely az új hatalmat kontrollálhatja.',
+              '> „A Polgári Ellenállás nem hitet kínál, hanem kételyt.” | Puzsér Róbert · Szabad Európa',
               'A 2025-ös nyilatkozataiban egyértelműen megkülönböztette a kormányváltást és a rendszerváltást: a Tisza Párt szerepét elsősorban az Orbán-rendszer leváltásának eszközeként értelmezte, miközben a civil mozgalom feladatának a politikai és társadalmi kontroll fenntartását tartotta.',
               'A modell lényege tehát nem az, hogy a civil társadalom kormányozzon egy új kormány helyett. Éppen ellenkezőleg: az a dolga, hogy a mindenkori kormányt ellenőrizze.',
+              '> „Nem kell újabb Messiás – elég lenne egy működő köztársaság.” | Puzsér Róbert · Szabad Európa',
             ],
             sources: [
               {
@@ -3592,7 +3615,7 @@ export const FELTAROK: Feltaro[] = [
       { label: 'Dicsőségfal', href: '/rendszervaltas' },
       { label: 'Kiemelt ügyek', href: '/ugyek' },
     ],
-    updatedAt: '2026-09-25',
+    updatedAt: '2026-09-28',
     live: true,
     detail: {
       seoTitle: 'Momentum: a NOlimpia és a 2026-os visszalépés — Dicsőségfal',
@@ -3782,7 +3805,8 @@ export const FELTAROK: Feltaro[] = [
             'A kezdeményezéshez szükséges aláírások összegyűjtése óriási szervezési feladat volt.',
             'A Momentum végül 266 151 aláírást adott le.',
             'A népszavazás kiírásához 138 ezer érvényes aláírásra lett volna szükség. Az RTL korabeli beszámolója szerint a Momentum tehát jelentősen túlteljesítette a szükséges mennyiséget.',
-            'Ez volt az a pillanat, amikor a Momentum országosan is megkerülhetetlen politikai szereplővé vált.',
+            'Ez volt az a pillanat, amikor a Momentum országosan is megkerülhetetlen politikai szereplővé vált. Néhány nappal később a kormány visszavonta a pályázatot. Fekete-Győr András a Kossuth téren így értékelte:',
+            '> „Egyik szemünk örül, a másik viszont sír.” | Fekete-Győr András az olimpiai pályázat visszavonása után · 2017. február',
             'A NOlimpia nélkül a Momentum valószínűleg teljesen más politikai pályán indult volna el.',
           ],
           links: [
@@ -3809,6 +3833,7 @@ export const FELTAROK: Feltaro[] = [
             'A szám önmagában is fontos.',
             '266 151.',
             'Ennyi aláírást gyűjtött össze a Momentum az olimpiai népszavazás kezdeményezéséhez.',
+            '> „Kiütöttük az első téglát a falból.” | Fekete-Győr András az aláírások átadásakor · 2017. február',
             'A párt akkor még nem rendelkezett a későbbi parlamenti infrastruktúrával, nem volt ismert, régi politikai szereplő, és nem volt mögötte évtizedes pártszervezet.',
             'A NOlimpia kampány viszont megmutatta, hogy egy új politikai közösség képes lehet rövid idő alatt jelentős társadalmi mobilizációra.',
             'Az RTL akkori beszámolója szerint a Momentum 266 ezer aláírást gyűjtött, miközben a népszavazáshoz 138 ezer érvényes aláírásra lett volna szükség.',
@@ -3933,6 +3958,7 @@ export const FELTAROK: Feltaro[] = [
       links: [{ text: 'a Direkt36', href: '/rendszervaltas/direkt36' }],
     },
     related: [{ label: 'Kapcsolódó ügyek az adatbázisban', href: '/adatbazis' }],
+    updatedAt: '2026-09-28',
     live: true,
     detail: {
       seoTitle: 'Panyi Szabolcs: a Pegasustól a Szijjártó–Lavrov-felvételekig',
@@ -3954,6 +3980,7 @@ export const FELTAROK: Feltaro[] = [
               'Panyi akkor egy rendkívül kényes, nemzetközi pénzintézettel kapcsolatos cikken dolgozott: a budapesti központú, orosz hátterű Nemzetközi Beruházási Bankról, amelyet a sajtó csak „kémbankként" emlegetett. A bevett szakmai szabályok szerint hivatalos kérdésekkel fordult az érintett minisztériumokhoz.',
               'A technikai elemzés ezután bizonyította be a lényeget: a telefonja elleni Pegasus-támadás pontosan egy nappal azután indult el, hogy elküldte ezeket a megkereséseket. A hatalom nem válaszolni akart, hanem azonnal látni akarta, kik a forrásai az államapparátuson belül.',
               'Amikor a Direkt36 és a nemzetközi sajtó kirobbantotta a botrányt, a kormányzati kommunikáció hetekig terelt és álhírnek nevezte a megfigyeléseket. Öt hónapig tartó küzdelembe telt, mire a parlament honvédelmi és rendészeti bizottságának ülésén kormánypárti politikusok kénytelenek voltak hivatalosan is elismerni: a magyar állam megvásárolta és használta az izraeli kémszoftvert.',
+              '> „Nagyon örülök, hogy csak megfigyeltek és nem börtönbe zártak vagy megkínoztak. Valóban szerencsésnek érzem magam, hogy magyar vagyok és Magyarország az Európai Unió tagja.” | Panyi Szabolcs · Átlátszó, 2021. július 19.',
             ],
             sources: [
               { source: 'Committee to Protect Journalists', headline: 'Hungary\u2019s Szabolcs Panyi on how Pegasus surveillance has hindered his reporting', url: 'https://cpj.org/2021/12/hungarys-szabolcs-panyi-on-how-pegasus-surveillance-has-hindered-his-reporting/' },
@@ -3970,6 +3997,7 @@ export const FELTAROK: Feltaro[] = [
                 heading: 'A kormányzati „elővágás" kísérlete',
                 paragraphs: [
                   'Amikor kormányzati körök fülest kaptak arról, hogy a cikk utolsó simításai zajlanak, ellenakcióba kezdtek. Egy kormányközeli oldalon 2026. március 23-án megjelent egy titokban rögzített hangfelvétel, amelyen maga az újságíró szerepelt.',
+                  '> „Szijjártó lehallgatásához nekem az égvilágon semmi közöm nem volt.” | Panyi Szabolcs · Telex, 2026. március 23.',
                   'Panyi azonnal reagált: közölte, hogy ez klasszikus lejárató célú elővágás, amivel a közeledő Lavrov-sztorit akarják eljelentékteleníteni. Leszögezte, hogy a külügyminiszter lehallgatásához neki az égvilágon semmi köze nem volt — ő újságíróként a forrásaitól kapott anyagot dolgozta fel. Még ugyanezen a napon közzétette az első teljes Szijjártó–Lavrov-hanganyagot.',
                 ],
                 sources: [
@@ -4150,6 +4178,7 @@ export const FELTAROK: Feltaro[] = [
       ],
     },
     related: [{ label: 'Videóriportok és podcastok', href: '/podcastok' }],
+    updatedAt: '2026-09-28',
     live: true,
     detail: {
       seoTitle: 'Gulyáságyú Média: a hatvanpusztai zebrák és ami utána jött',
@@ -4169,6 +4198,7 @@ export const FELTAROK: Feltaro[] = [
               'Olvasói tippre mentek ki Mészáros Lőrinc egyik cégének, a Talentis Group Zrt.-nek a Hatvanpuszta és Bicske közötti, alcsútdobozi külterületi telephelyére. Az eldugott, kerítéssel és mesterséges dombbal takart területen afrikai zebrákat, egzotikus ankole-watusi szarvú marhagulyát — és egy szamarat — videóztak.',
             more: [
               'A felvétel azért lett országos ügy, mert nem kellett hozzá magyarázat. Egy közpénzből felépült cégbirodalom mezőgazdasági telephelyén legelésző zebracsorda önmagában elmond mindent arról, mire megy el a pénz. Néhány napon belül már a parlamentben is kérdésként hangzott el az ügy.',
+              '> „A miniszterelnök édesapja kastélyának a »hátsó udvarában« legelnek ezek a szerencsétlen állatok.” | Gulyás Balázs · Klubrádió, 2025. március 24.',
             ],
             sources: [
               { source: 'Gulyáságyú Média', date: '2024. nov. 12.', headline: 'Zebrák Mészáros Lőrinc cégének telephelyén Hatvanpuszta és Bicske között (videó)', url: 'https://gulyasagyu.media/2024/11/12/meszaros-lorinc-zebrak-hatvanpuszta-bicske-alcsut/' },
@@ -4481,7 +4511,7 @@ export const FELTAROK: Feltaro[] = [
       { label: 'Videóriportok és podcastok', href: '/podcastok' },
       { label: 'Dicsőségfal', href: '/rendszervaltas' },
     ],
-    updatedAt: '2026-09-24',
+    updatedAt: '2026-09-28',
     live: true,
     detail: {
       seoTitle: 'Pottyondy Edina: videók, influenszertüntetés, könyv',
@@ -4577,6 +4607,7 @@ export const FELTAROK: Feltaro[] = [
               cta: 'Az ügy megnyitása',
             },
             more: [
+              '> „Odakint most szörnyek járnak. Szörnyek, akik gyerekeket bántottak. Szörnyek, akik gyerekek helyett a bántalmazókat segítették. Szörnyek, akik urambátyám alapon kegyelmet osztogatnak.” | Pottyondy Edina a Hősök terén · 2024. február 16.',
               'Ez más szerep volt, mint egy videó elkészítése: itt nem egy véleményt kellett megfogalmazni, hanem egy több tízezres nyilvános eseményt megszervezni. A tüntetés végén adománygyűjtés indult egy korábban bántalmazott, hajléktalanná vált fiatal megsegítésére; a szombat reggelig összegyűlt összeg már megközelítette a 60 millió forintot.',
               'A gyűjtés ennél jóval tovább jutott: 2024 májusában a Telex arról számolt be, hogy a tüntetésen indított kampányban összegyűlt 219 millió forintból tizenegy fiatalt támogatnak. Egy online közösségből tehát nemcsak fizikai tömeg lett, hanem konkrét, számon kérhető eredmény is.',
               'A Qubit elemzése szerint a demonstráció formája nemzetközi összevetésben is szokatlan volt: nem párt, nem szakszervezet és nem klasszikus civil szervezet hívta össze, hanem online tartalomkészítők, akiknek addig semmilyen politikai szervezeti hátterük nem volt. A tüntetés így egyszerre volt tiltakozás és annak bizonyítéka, hogy egy online közönség képes egyetlen ügy köré szervezetten felsorakozni.',
@@ -4921,7 +4952,7 @@ export const FELTAROK: Feltaro[] = [
       { label: 'NKA-botrány', href: '/ugyek/nka-botrany' },
       { label: 'Videóriportok és podcastok', href: '/podcastok' },
     ],
-    updatedAt: '2026-09-24',
+    updatedAt: '2026-09-28',
     live: true,
     detail: {
       seoTitle: 'Molnár Áron (noÁr): a Tanulni akaruntól az NKA-botrányig',
@@ -5136,6 +5167,8 @@ export const FELTAROK: Feltaro[] = [
             more: [
               'A forrás később személyesen is azonosította magát: Papp Gergely, az NKTK projektmenedzsere elmondta, hogy ő szolgáltatott információkat a támogatási keretről, amelyről állítása szerint az intézményen belül is sokan nem tudtak. A nyertesek listája ezt követően vált olyan formában elérhetővé, amelyből a kedvezményezettek és az összegek vizsgálhatók lettek.',
               'A feltárás nem egyszeri bejelentés volt: májusban Molnár Áron további dokumentumokat is bemutatott — köztük egy e-mailt, amely a 24.hu beszámolója szerint azt dokumentálta, hogy Mága Zoltán koncertsorozatához közel félmilliárd forintos állami támogatást próbáltak biztosítani, a kampányidőszakhoz kötött célokkal. Augusztusban újabb szervezeteket nevezett meg a kedvezményezettek közül, szeptemberben pedig mentelmi jogok felfüggesztését követelte az érintett politikusoknál.',
+              '2026 nyarán a Fidesz egy listát tett közzé, amely szerint Molnár Áron maga is támogatást kapott volna. Erre a műsorában így reagált:',
+              '> „Én az NKA-hoz életemben nem írtam pályázatot, soha. Hogy jön ki ez a 461 millió?” | Molnár Áron · Magyarország Kedvenc Reggeli Műsora, 2026. július',
               'Fontos a szerepek elkülönítése. Nem ő indította a NAV nyomozását, nem ő hozott bírósági döntéseket, és nem lehet minden későbbi hatósági eredményt neki tulajdonítani. A dokumentálható állítás ennél szűkebb: egy belső forrástól kapott információkat és dokumentumokat hozott nyilvánosságra, és ezzel hozzájárult ahhoz, hogy az NKA-botrányból országos közpénzügyi ügy legyen. A későbbi büntetőeljárásokban érintettek bűnösségét nem lehet előre kijelenteni.',
             ],
             sources: [
@@ -5319,6 +5352,7 @@ export const FELTAROK: Feltaro[] = [
         'A profil politikai gyökerei mélyre nyúlnak. Mint az később, a névtelenség feladása után kiderült, a szerző a rendszerváltás hajnalán először a Magyar Demokrata Fórum tagjaként politizált, majd a korai, még polgári korszakát élő Fideszhez csatlakozott. Innen nézve vált a rendszer egyik legveszélyesebb külső kritikusává: pontosan ismerte azt az értékrendet, amelyet a kormánypártok hivatalosan hirdettek, és azt a valóságot is, amelyet a jogi csűrcsavarásokkal eltakarni igyekeztek.',
       ],
     },
+    updatedAt: '2026-09-28',
     live: true,
     detail: {
       seoTitle: 'Vidéki Prókátor (dr. Fülöp Botond) — ki ő, és mit robbantott ki?',
@@ -5357,6 +5391,9 @@ export const FELTAROK: Feltaro[] = [
             when: '2026. szeptember 15.',
             body:
               'A rendszerváltást követő elszámoltatási hullám során kemény hangvételben reagált a volt miniszterelnök azon interjújára, amelyben az új Nemzeti Vagyonvisszaszerzési és Vagyonvédelmi Hivatalt támadta és ÁVH-t emlegetett. Szerinte a bukott rendszer politikusainak fenyegetőzése valójában a totális pánik jele, a jogállami elszámoltatást pedig már nem lehet megállítani.',
+            more: [
+              '> „Úgy tűnik, hogy a bukott maffiafőnök be van tojva. Ez jó jel. Remélem, meg is van rá minden oka. Hajrá NVVH! KATTANJON!” | Vidéki Prókátor · Facebook, 2026. szeptember',
+            ],
             sources: [
               { source: 'ATV', date: '2026. szept. 15.', headline: '„A maffiafőnök be van tojva” – Elszabadultak az indulatok az NVVH miatt', url: 'https://www.atv.hu/belfold/20260915/videki-prokator-fulop-botond-nvvh/' },
               { source: 'Szeretlek Magyarország', headline: 'Vidéki Prókátor: A bukott maffiafőnök be van tojva, ez jó jel', url: 'https://www.szeretlekmagyarorszag.hu/szempont/videki-prokator-a-bukott-maffiafonok-be-van-tojva/' },
