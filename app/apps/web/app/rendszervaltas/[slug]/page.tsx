@@ -561,12 +561,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                         />
                       ))}
                       {c.facebookPost && (
-                        <FbPostEmbed
-                          url={c.facebookPost.url}
-                          authorName={c.facebookPost.authorName}
-                          date={c.facebookPost.date}
-                          excerpt={c.facebookPost.excerpt}
-                        />
+                        <FbPostEmbed url={c.facebookPost.url} authorName={c.facebookPost.authorName} />
                       )}
                       {c.highlight && (
                         <>

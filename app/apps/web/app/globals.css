@@ -16074,12 +16074,12 @@ code {
 }
 
 /* ── Facebook szöveges poszt beágyazás (2026-09-30) ──────────────────────
-   Kattintásra töltődik be (fb-post-embed.tsx); addig saját kártya látszik.
-   A post.php a hosszú szöveget „See more"-ral levágja, így a magassága
-   szélességfüggő, de állandó: 390 px-en ~345, 500 px-en ~290 (mérve). A saját
-   keretét a Facebook rajzolja, ezért itt nincs border. */
+   Automatikusan (lazy) töltődik be (fb-post-embed.tsx). A post.php a hosszú
+   szöveget „See more"-ral levágja, így a magassága szélességfüggő, de
+   állandó: 390 px-en ~345, 500 px-en ~290 (mérve). A saját keretét a
+   Facebook rajzolja, ezért itt nincs border. Asztalin középre igazítva. */
 .fb-post {
-  margin: 18px 0 6px;
+  margin: 18px auto 6px;
   max-width: 500px;
 }
 
@@ -16097,70 +16097,11 @@ code {
   }
 }
 
-.fb-post-card {
-  border: 1px solid var(--line);
-  border-left: 3px solid #1877f2;
-  background: var(--surface);
-  padding: 16px 18px;
-}
-
-.fb-post-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 10px;
-}
-
-.fb-post-author {
-  font-weight: 800;
-  color: var(--ink);
-}
-
-.fb-post-date {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.fb-post-excerpt {
-  margin: 10px 0 14px;
-  font-size: 15px;
-  line-height: 1.55;
-  color: var(--ink);
-  overflow-wrap: break-word;
-}
-
-.fb-post-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 18px;
-}
-
-.fb-post-load {
-  padding: 9px 16px;
-  border: none;
-  background: var(--ink);
-  color: #fff;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.fb-post-load:hover,
-.fb-post-load:focus-visible {
-  background: #1877f2;
-}
-
 .fb-post-link {
+  display: inline-block;
+  margin-top: 8px;
   font-size: 14px;
   font-weight: 700;
   color: var(--ink);
   white-space: nowrap;
-}
-
-.fb-post-note {
-  margin: 12px 0 0;
-  font-size: 12px;
-  color: var(--muted);
 }

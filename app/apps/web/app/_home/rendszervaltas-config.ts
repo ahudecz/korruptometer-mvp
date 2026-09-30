@@ -252,10 +252,10 @@ export type FeltaroCase = {
   /** Az ÜGYHÖZ tartozó felvételek — a szöveg végén, még a kiemelés előtt.
    *  Ott a helyük, ahol az ügyről szó van, nem a lap alján (user, 2026-09-16). */
   videos?: FeltaroVideoRef[];
-  /** Beágyazott Facebook SZÖVEGES poszt (nem videó) — a videók után.
-   *  Kattintásra töltődik be (FbPostEmbed). User kérés, 2026-09-30: Majka
-   *  2025. július 27-i posztja. Az `excerpt` szó szerinti idézet a posztból. */
-  facebookPost?: { url: string; authorName: string; date?: string; excerpt?: string };
+  /** Beágyazott Facebook SZÖVEGES poszt (nem videó) — a videók után,
+   *  automatikusan betöltve (FbPostEmbed). User kérés, 2026-09-30: Majka
+   *  2025. július 27-i posztja. */
+  facebookPost?: { url: string; authorName: string };
   /** Keretes kiemelés AZ ÜGYÖN BELÜL: az az egy mozzanat, ami önmagában is
    *  megállítja az olvasót (pl. amikor nekimentek a kocsijának). */
   highlight?: {
@@ -3596,8 +3596,6 @@ export const FELTAROK: Feltaro[] = [
             facebookPost: {
               url: 'https://www.facebook.com/majkahivatalos/posts/pfbid02zXyJaPQWamjLnGaPSWXkixxT4YzqYfjaXs52DCj8UWznAJnHoKhregUX3L8fkEEdl',
               authorName: 'Majka',
-              date: '2025. július 27.',
-              excerpt: 'Inkább hallgattam volna észérveket azzal kapcsolatban, miért ér a pénzem minden év végén sokkal kevesebbet, vagy azt, miért van, hogy ennyire barátkozunk az orosz medvével, vagy hogy a vasút egy óra alatt miért késik ötöt, vagy hogy miért nincs előzetesben senki azért, mert eltűnt 500 milliárd forint a Magyar Nemzeti Bankból… Ennél én fontosabb lennék? Kétlem…',
             },
             sources: [
               {
