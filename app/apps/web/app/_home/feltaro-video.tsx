@@ -1,3 +1,4 @@
+import { FbReelEmbed } from './fb-reel-embed';
 import { PodcastVideoBox } from './podcast-video-box';
 
 /**
@@ -24,6 +25,7 @@ export function FeltaroVideo({
   note,
   vimeoId,
   poster,
+  facebookUrl,
 }: {
   videoId: string;
   title: string;
@@ -37,6 +39,8 @@ export function FeltaroVideo({
   /** Vimeo-videó a YouTube helyett — l. PodcastVideoBoxControlled. */
   vimeoId?: string;
   poster?: string;
+  /** Facebook-reel a YouTube helyett — l. FeltaroVideoRef.facebookUrl. */
+  facebookUrl?: string;
   /** 'wide': a szövegoszlop teljes szélességében, egyedülálló videóhoz. */
   variant?: 'wide';
   /** Egy egész sorozat egyetlen kereten belül (user kérés, 2026-09-17: a
@@ -45,14 +49,22 @@ export function FeltaroVideo({
 }) {
   return (
     <div className={`podcast-card feltaro-video${variant === 'wide' ? ' feltaro-video--wide' : ''}`}>
-      <PodcastVideoBox
-        videoId={videoId}
-        title={title}
-        wrapClassName="podcast-video-wrap"
-        playlistId={playlistId}
-        vimeoId={vimeoId}
-        poster={poster}
-      />
+      {facebookUrl ? (
+        // Álló (9:16) reel: a szövegoszlop teljes szélességében egy
+        // képernyőnyinél magasabb lenne, ezért keskenyebb keretbe kerül.
+        <div className="feltaro-video-reel">
+          <FbReelEmbed url={facebookUrl} posterUrl={poster} authorName={label} />
+        </div>
+      ) : (
+        <PodcastVideoBox
+          videoId={videoId}
+          title={title}
+          wrapClassName="podcast-video-wrap"
+          playlistId={playlistId}
+          vimeoId={vimeoId}
+          poster={poster}
+        />
+      )}
       {label && (
         <div className="podcast-meta">
           <span className="podcast-channel">{label}</span>

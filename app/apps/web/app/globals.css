@@ -16012,6 +16012,13 @@ code {
 .feltaro-video--wide .podcast-video-wrap {
   width: 100%;
 }
+/* Facebook-reel a Dicsőségfalon (2026-09-30): álló videó, ezért nem a
+   szövegoszlop teljes szélességében, hanem telefonnyi keretben. */
+.feltaro-video-reel {
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto 12px;
+}
 /* A forrás-blokk alá NEM kell külön lezáró vonal: minden sornak (az
    egyetlennek is) saját alsó vonala van, így a blokk szegélye közvetlenül
    alatta kettős csíkot rajzolt (user, 2026-09-25). */

@@ -121,6 +121,14 @@ export type FeltaroVideoRef = {
    */
   vimeoId?: string;
   poster?: string;
+  /**
+   * Facebook-videó/reel permalink a YouTube helyett (user kérés, 2026-09-30:
+   * a Carson Coma Pjotr és én-je és a választás utáni dala csak Facebookon
+   * van fent). A meglévő, kattintásra betöltődő FbReelEmbed játssza le; a
+   * `poster` ilyenkor a LETÖLTÖTT borítókép (az fbcdn-linkek lejárnak), az
+   * `id` csak React-kulcs.
+   */
+  facebookUrl?: string;
 };
 
 export type Feltaro = {
@@ -2983,14 +2991,715 @@ export const FELTAROK: Feltaro[] = [
     badge: 'SZÍNPADRÓL',
     photo: '/images/rendszervaltas/carson-coma.webp',
     tagline:
-      'Teltházas koncerteken mondták ki azt, amit a rádiós játszási listákért cserébe hallgatni illett volna — és vállalták a következményeit.',
+      'Dalokban, koncerteken és videókban reagáltak a magyar közélet aktuális ügyeire, 2023-tól évről évre — a Megafontól a gödi Samsung-gyáron át Szijjártó és Lavrov telefonjaiig.',
     targetKeyword: { phrase: 'carson coma', volume: 9900, kd: 46 },
+    // A végoldal szövege a user sajátja (2026-09-30), forrásokkal egyeztetve.
+    // SEO: a „Carson Coma" keresések gyakorlatilag teljes egészében zenei
+    // szándékúak (koncert, dalszövegek, tagok) — szerkesztői döntés alapján
+    // van itt, nem forgalomért. Idézetdobozba csak forrásban szó szerint
+    // megtalált szöveg került (dalszöveg-részleteknél a közlő cikk a forrás).
+    // Az user által említett HVG-cikket a Budapest Park-performanszról nem
+    // találtuk meg; helyette a 444, a Telex és a Magyar Hang beszámolója áll.
+    // A választás utáni dalt a HVG szerint Facebook-reelként tették közzé
+    // (nem Instagramon), ezért a szöveg „közösségi oldalát" írja.
     section: {
       heading: 'Carson Coma — amikor a színpadról is kimondták',
       paragraphs: [
-        'A magyar zenei életben évekig működött egy íratlan szabály: aki a nagy fesztiválokon és a közszolgálati rádióban is szeretne szerepelni, az a színpadról nem politizál. A Carson Coma ezt a szabályt szegte meg — a zenekar tagjai, köztük Fekete Giorgio, a koncertjeiken és a nyilvános szerepléseiken is beszéltek a sajtószabadság korlátozásáról.',
-        'A kiállásnak ára volt: játszási listák, fellépési lehetőségek és nyilvános támadások formájában. A zenekar 2026 tavaszán a Rendszerbontó Nagykoncerten is fellépett, majd bejelentették, hogy egy időre szünetet tartanak a politizálásban.',
-        'Ez a tétel szerkesztői döntés alapján került a Dicsőségfalra: SEO-szempontból a „Carson Coma" keresések gyakorlatilag teljes egészében zenei szándékúak (koncert, dalszövegek, tagok). Azért van itt, mert a közéleti kiállás egy olyan közönséghez jutott el, amelyet semmilyen oknyomozó cikk nem ért volna el.',
+        'A Carson Coma az elmúlt években a magyar alternatív zenei élet egyik legismertebb zenekarává vált: Budapest Park-koncertek, MVM Dome, Fonogram-díj és 2022-ben MTV EMA-díj. A Dicsőségfalra azonban nem a népszerűsége miatt került fel.',
+        'A zenekar — elsősorban Fekete Giorgio és Héra Barnabás — 2023-tól egymást követő dalokban, koncerteken és videókban reagált konkrét magyar közéleti ügyekre: a Feldobom a követ kormánykritikus szövegétől a független sajtó eltűnését bemutató Budapest Park-performanszon át a gödi Samsung-gyárról és Szijjártó Péter Lavrov-telefonjairól szóló 2026-os dalokig.',
+        'Ez nem egyetlen „politikai dal" története, hanem egy többéves sorozaté: hogyan vált egy sikeres magyar zenekar számára természetessé, hogy a közélet aktuális ügyeire a saját eszközeivel reagáljon — és milyen ára lett ennek.',
+      ],
+    },
+    related: [
+      { label: 'Majka és Bindzsisztán', href: '/rendszervaltas/majka' },
+    ],
+    updatedAt: '2026-09-30',
+    live: true,
+    detail: {
+      seoTitle: 'Carson Coma: Feldobom a követ, Pjotr és én, Petőfi Rádió',
+      seoDescription:
+        'Miért van a Carson Coma a Dicsőségfalon? A Feldobom a követ, a lemondott brüsszeli koncert, a független sajtó nélküli Budapest Park, a Petőfi Rádió-lista, a gödi Samsung-dal és a Pjotr és én — idézetekkel, videókkal, forrásokkal.',
+      lead:
+        'A hatfős budapesti zenekar 2018-ban alakult, a Lesz, ami lesz című 2020-as albummal lett országosan ismert. A Dicsőségfalon egy sorozat miatt szerepel: 2023 és 2026 között dalokkal, koncertperformanszokkal és videókkal reagált a magyar közélet konkrét ügyeire — és a tagjai szerint ennek ára is volt.',
+      cases: {
+        heading: 'A legfontosabb állomások',
+        timeline: true,
+        intro:
+          'Érdemes különválasztani két dolgot: azt, hogy egy zenekar közéleti témákat dolgoz fel, és azt, hogy egyes dalai vagy fellépései konkrét politikai szereplőkre, intézményekre vagy kormányzati intézkedésekre reagálnak. Az utóbbi a Carson Coma pályáján 2023-tól vált különösen látványossá.',
+        items: [
+          {
+            title: 'A Peti és én — a dal, amely később politikai szöveget kapott',
+            when: '2019. november',
+            body:
+              'A Peti és én eredetileg nem politikai dalnak készült. A 2019-ben megjelent szám játékos, ironikus módon mesél egy két fiú közötti különös kapcsolatról; a hivatalos videót a zenekar YouTube-csatornája 2019 novemberében tette közzé.',
+            more: [
+              'A dal jelentősége később éppen az lett, hogy a zenekar ugyanazt a zenei alapot teljesen más kontextusba tudta helyezni. 2026-ban a Peti és én már nem egyszerűen egy régi Carson Coma-sláger volt, hanem egy olyan dal, amelyhez egy aktuális politikai történet új szöveget kapott.',
+            ],
+            videos: [
+              {
+                id: 'tGfuNjKXwvc',
+                label: 'Carson Coma · 2019. november 22.',
+                title: 'Carson Coma — Peti és Én',
+                summary: 'Az eredeti: egy két fiú közötti barátság ironikus története. Hat és fél évvel később ebből lett a Pjotr és én.',
+                views: '1,3 millió megtekintés',
+              },
+            ],
+          },
+          {
+            title: 'Feldobom a követ: Megafon, Mandiner, nepotizmus',
+            when: '2023. május 15.',
+            body:
+              'A Feldobom a követ 2023 májusában jelent meg. A dal szövege több ponton használ olyan kifejezéseket, amelyek egyértelműen a magyar politikai nyilvánosságra utalnak: megjelenik benne a Megafon, a Mandiner, a „stróman", az „utcai harcos", a nepotizmus és a plakátokról visszanéző politikai világ.',
+            more: [
+              '> „Feldobom a követ, az ráesik a fejemre, New York-ban jut eszembe Ady Endre” | a Feldobom a követ nyitósorai',
+              'Nem elemző publicisztikáról van szó: a Carson Coma itt is elsősorban zenekarként beszél, csak a zenei eszköztárba beemeli a közéleti nyelvet. A videó és a dalszöveg az egész helyzetet ironikus, sokszor abszurd képekkel dolgozza fel.',
+              'Ez azért fontos, mert később ugyanez a módszer ismétlődött. A zenekar nem politikai programot kezdett írni, hanem aktuális ügyeket fordított át dalszöveggé, videóvá vagy koncertperformansszá. Fekete Giorgio egy hónappal később így fogalmazta meg a határt:',
+              '> „Nem leszünk ellenzéki zenekar” | Fekete Giorgio a 444-nek · 2023. június 19.',
+            ],
+            videos: [
+              {
+                id: 'R57gv7jjT-o',
+                label: 'Carson Coma · 2023. május 15.',
+                title: 'Carson Coma — FELDOBOM A KÖVET',
+                summary: 'Megafon, stróman, utcai harcos: a zenekar első dala, amely nyíltan a magyar politikai nyelvből építkezett.',
+                views: '3,4 millió megtekintés',
+              },
+            ],
+            sources: [
+              {
+                source: 'Telex',
+                date: '2023. máj. 15.',
+                headline: 'Megafonba üvöltött igazság, seggfejség, strómanvicc – fejbe vág a Carson Coma új klipjében a magyar valóság',
+                url: 'https://telex.hu/kult/2023/05/15/megafonba-uvoltott-igazsag-seggfejseg-stromanvicc-a-valosaggal-vag-fejbe-minket-a-carson-coma-uj-klipje',
+                lead: 'Mi a rohadt élet történik ebben az országban, Kelet-Európa felső polcán? – ezt a kérdést hagyja ott bennünk a dal.',
+              },
+              {
+                source: '444',
+                date: '2023. jún. 19.',
+                headline: 'Nem leszünk ellenzéki zenekar – Fekete Giorgio a 444-nek',
+                url: 'https://444.hu/2023/06/19/nem-leszunk-ellenzeki-zenekar-fekete-giorgio-a-444-nek',
+              },
+            ],
+          },
+          {
+            title: 'A brüsszeli koncert lemondása',
+            when: '2023. május 30.',
+            body:
+              'A zenekarnak 2023. május 30-án akusztikus koncertet kellett volna adnia a brüsszeli Liszt Ferenc Intézetben, az eseményt azonban egy héttel a fellépés előtt lemondták. A szervező intézet állami fenntartású kulturális intézmény volt.',
+            more: [
+              'A hivatalos magyarázat szerint másik programot szerveztek arra a napra. A Telex ugyanakkor arról írt, hogy az intézmény kommunikációja nem volt egyértelmű, és a törlés időben egybeesett a Feldobom a követ megjelenésével, valamint Fekete Giorgio kecskeméti koncerten elmondott, oktatási és közéleti ügyeket érintő beszédével. A koncert napján egy tábla fogadta a látogatókat az intézet bejáratán:',
+              '> „Technikai okokból a Carson Coma-koncert elmarad. Sajnáljuk!” | felirat a brüsszeli Liszt Intézet bejáratán, 2023. május 30.',
+              'A lemondás politikai okát nem lehet bizonyított tényként kijelenteni: az időzítés és az intézmény kommunikációja miatt merült fel a kérdés, az intézet más programra hivatkozott. Fekete Giorgio 2025 végén a Telexnek azt mondta, hogy a zenekar rengeteg mindent veszített a kiállásaival, és a brüsszeli koncertet is ezek között említette. Ez a zenekar saját értelmezése, nem egy hivatal által megállapított okozati összefüggés.',
+            ],
+            sources: [
+              {
+                source: 'Telex',
+                date: '2023. máj. 24.',
+                headline: 'Több kormánykritikus megnyilvánulás után váratlanul lemondták a Carson Coma brüsszeli koncertjét',
+                url: 'https://telex.hu/after/2023/05/24/tobb-kormanykritikus-megnyilvanulas-utan-varatlanul-lemondtak-a-carson-coma-brusszeli-koncertjet',
+              },
+              {
+                source: 'Telex',
+                date: '2023. máj. 26.',
+                headline: 'Zavarosan kommunikál a brüsszeli kultúrintézet a hirtelen lemondott Carson Coma-koncert ügyében',
+                url: 'https://telex.hu/belfold/2023/05/26/ossze-vissza-beszel-a-brusszeli-kulturintezet-a-semmibol-lemondott-carson-coma-koncert-ugyeben',
+              },
+              {
+                source: '444',
+                date: '2023. máj. 30.',
+                headline: '„Technikai okokból a Carson Coma-koncert elmarad. Sajnáljuk!”',
+                url: 'https://444.hu/2023/05/30/most-mar-technikai-okokra-fogjak-hogy-lemondtak-a-carson-coma-brusszeli-koncertjet',
+              },
+            ],
+          },
+          {
+            title: 'A Budapest Parkban eltűnt a független sajtó',
+            when: '2025. május 23.',
+            body:
+              'A Budapest Parkban adott koncerten a Feldobom a követ közben a „ki fogod sípolni, hogy Orbán Viktor" sor után elsötétült a színpad, majd a kivetítőn egy böngészőablak jelent meg. A képernyőn a Telex, a 444, a Partizán, a HVG és a 24.hu oldalát próbálták megnyitni — mindegyik helyén hibaüzenet jelent meg.',
+            more: [
+              'A performansz a kormány által a közélet átláthatóságáról szóló törvényjavaslatként kommunikált szabályozási tervre reagált, amelyről a független sajtó és civil szervezetek attól tartottak, hogy ellehetetlenítheti a működésüket. A Carson Coma nem jogi elemzést adott, hanem egy egyszerű színpadi képet: mi történik, ha a közönség egyszer csak nem tudja megnyitni azokat a lapokat, amelyeket addig olvasott.',
+              'A jelenet azért működött erősen, mert nem egy politikai rendezvényen hangzott el, hanem egy telt házas koncerten, ahol a közönség elsősorban zenét várt. A politikai témát a zenekar nem választotta le külön beszédként a zenéről, hanem a koncert részévé tette.',
+            ],
+            videos: [
+              {
+                id: '-ynI3X25lMI',
+                label: 'Festiguy · Budapest Park, 2025. május 23.',
+                title: 'Carson Coma — Feldobom a követ (Budapest Park, 2025)',
+                summary: 'Közönségfelvétel a koncertről, amelyen a kivetítőn a független lapok helyén hibaüzenet jelent meg.',
+                views: '3,7 ezer megtekintés',
+              },
+            ],
+            sources: [
+              {
+                source: '444',
+                date: '2025. máj. 24.',
+                headline: 'Elérhetetlen független sajtóval reagált koncertjén a Carson Coma a nagytakarítási törvényre',
+                url: 'https://444.hu/2025/05/24/elerhetetlen-fuggetlen-sajtoval-reagalt-a-carson-coma-a-nagytakaritasi-torvenyre',
+                lead: 'A pénteki, Budapest Parkban tartott koncertjén a Carson Coma is reagált a független sajtót és civil szervezeteket fenyegető átláthatóságinak nevezett nagytakarítási törvényjavaslatra.',
+              },
+              {
+                source: 'Telex',
+                date: '2025. máj. 24.',
+                headline: 'A Carson Coma olyan valóságot képzelt el a koncertjén, ahol már nincs Telex, 444, Partizán, Hvg.hu vagy 24.hu',
+                url: 'https://telex.hu/after/2025/05/24/carson-coma-kiallas-sajto-ellehetetlenitesi-torveny',
+              },
+              {
+                source: 'Magyar Hang',
+                headline: 'Megmutatta a Carson Coma, milyen lenne a világ független sajtó nélkül',
+                url: 'https://hang.hu/kultura/megmutatta-a-carson-coma-milyen-lenne-a-vilag-fuggetlen-sajto-nelkul-176631',
+              },
+            ],
+          },
+          {
+            title: 'A Petőfi Rádióból eltűntek',
+            when: '2025. július',
+            body:
+              'A zenekar korábban éppen a Petőfi Rádiónak köszönhetően jutott országos rádiós jelenléthez. Héra Barnabás 2025 decemberében a Telexnek arról beszélt, hogy a rádió új Carson Coma-dalokat már régóta nem játszott, a régebbiek közül is csak néhány került időnként műsorra.',
+            more: [
+              '> „Utoljára júliusban játszottak tőlünk dalt, én azt gondolom, azért, mert akkor ütötte fel a fejét a mocskosfideszezés” | Héra Barnabás a Telexnek · 2025. december 4.',
+              'Ez Héra Barnabás értelmezése volt az okokról, nem hivatalos rádiós indoklás. 2026 júniusában azonban az Index a Petőfi lejátszási adatait elemezve konkrét változást mutatott ki: a Carson Coma 2025 nyarán lekerült a lejátszási listáról, majd a 2026. április 12-i választás után három nappal ismét megszólalt a Petőfin.',
+              'A történethez hozzátartozik, hogy 2026-ban vita alakult ki arról is, létezett-e politikai alapon működő zenei tiltás a közmédiában. Demeter Szilárd, a Petőfi Kulturális Ügynökség korábbi vezetője arról beszélt, hogy volt ilyen lista és voltak ilyen utasítások; a közmédia és más érintettek az intézményesített tiltólista létezését vitatták.',
+              'Ezért nem pontos úgy fogalmazni, hogy „betiltották a Carson Comát". A dokumentálható tény az, hogy a zenekar 2025 nyarán kikerült a Petőfi lejátszási listájáról, egyik tagja ezt a közéleti megszólalásaikkal hozta összefüggésbe, 2026 áprilisában pedig visszatértek a rádióba.',
+            ],
+            sources: [
+              {
+                source: 'Telex',
+                date: '2025. dec. 4.',
+                headline: 'Dopeman a Petőfin, Krasznahorkait lenyomó Ákos, az alkohol mint kultúra – erős gondolatok a Carson Coma-interjúból',
+                url: 'https://telex.hu/after/2025/12/04/carson-coma-a-mocskos-fideszrol-petofi-radiorol-karos-maszkulinitasrol-euroviziorol',
+              },
+              {
+                source: 'Index',
+                date: '2026. jún. 14.',
+                headline: 'Dopeman eltűnt, Majka visszatért – látványosan megváltoztak a rádiós lejátszási listák',
+                url: 'https://index.hu/kultur/2026/06/14/zene-petofi-radio-lista-demeter-szilard-majka-carson-coma-welhello-edda-dopeman-toth-gabi/',
+              },
+              {
+                source: 'Most Szól',
+                headline: 'Petőfi Rádió — napi lejátszási lista',
+                url: 'https://www.mostszol.hu/radio/mr2/day',
+              },
+            ],
+          },
+          {
+            title: 'A gödi Samsung-gyárból dal lett',
+            when: '2026. február',
+            body:
+              'Fekete Giorgio 2026 februárjában egy külön videóban reagált a gödi Samsung-gyár körüli ügyre. A videó egy fiktív álláshirdetés formáját ölti: Giorgio egy szál gitárral, a Samsung nevében kínál munkát — szándékosan abszurd szöveggel, amely a gyár körül felmerült munkavédelmi, légszennyezési és környezetvédelmi problémákra reagál.',
+            more: [
+              '> „Nyolc óra munka, nyolc óra szórakozás, majd nyolc óra pihenés az onkológián” | Fekete Giorgio Samsung-dalából, 2026. február',
+              'A dal hátterében a Telex tényfeltárása állt, amely a gödi gyárban tapasztalt munkavédelmi és légszennyezési problémákról, egyes anyagok határérték feletti koncentrációjáról számolt be. Szijjártó Péter a botrányra reagálva vitatta a Telex állításait.',
+              'Giorgio itt sem politikai beszédet tartott: a tényfeltáró újságírásban megjelent állításokat egy fiktív álláshirdetés groteszk formájába ültette át. A humor ugyanakkor nem változtat azon, hogy a dal nagyon konkrét közéleti ügyre reagált.',
+            ],
+            sources: [
+              {
+                source: 'Eduline',
+                date: '2026. febr. 11.',
+                headline: '„Nyolc óra pihenés az onkológián” - Carson Coma dal született a gödi Samsung-gyár ügyéről',
+                url: 'https://eduline.hu/campus-life/20260211_carson-coma-zeneszam-god-samsung-gyar',
+                lead: 'Fekete Giorgio dalában fekete humorral, a zenekartól megszokott módon, éles társadalomkritikával illeti a gödi Samsung SDI-gyár körüli ügyét.',
+              },
+            ],
+          },
+          {
+            title: 'Pjotr és én: a Peti és én újra politikai dalt kapott',
+            when: '2026. március 31.',
+            body:
+              'Március 31-én a Carson Coma ismét elővette a Peti és én című dalt, ezúttal Pjotr és én címmel. A dal Szijjártó Péter és Szergej Lavrov telefonbeszélgetéseihez kapcsolódó sajtóhírekre reagált: a VSquare oknyomozó anyaga szerint Lavrov többek között egy orosz oligarcha hozzátartozójának szankciós listáról való levétele ügyében kereste a magyar külügyminisztert. Szijjártó nyilvánosan reagált, és vitatta az ügy bizonyos értelmezéseit.',
+            more: [
+              'A dal elején a kiszivárgott hangfelvétel egy részlete hallható, a régi kezdősor pedig új alakban tér vissza:',
+              '> „Pjotr és én barátok vagyunk, esténként hosszasan telózgatunk.” | a Pjotr és én nyitósora',
+              'A szövegben a Gundalf néven ismert informatikus ügyére is utalnak, a dal végén pedig az eredeti zárás hangzik el — ezúttal oroszul.',
+              '> „Ha Gundalfról mesél, mindig szomorú, csak miattam tanul Peti oroszul” | a Pjotr és én szövegéből',
+              'A videót a zenekar a Facebook-oldalán tette közzé. Nem új zenei formát találtak ki hozzá: egy közismert Carson Coma-számot alakítottak át úgy, hogy az aktuális politikai történet szövege ráilleszthető legyen. Ez a zenekarnál visszatérő módszer — egy ismert formátum, amely egy aktuális ügyet könnyen befogadhatóvá és megoszthatóvá tesz.',
+              'Az időzítés is számított: a dal tizenkét nappal a 2026. április 12-i választás előtt jelent meg, a kampány utolsó két hetében. Csak a Facebookon közel félmillió megtekintést ért el, és olyan fiatal szavazókhoz is eljutott, akik a Szijjártó–Lavrov-ügyről hírportálon talán soha nem olvastak volna. Hogy pontosan hány szavazatot mozdított el a Fidesztől, nem mérhető — de a külügyminiszter ügye így a kampányhajrában egy közismert sláger dallamán ment körbe.',
+            ],
+            videos: [
+              {
+                id: 'fb-787247997790321',
+                facebookUrl: 'https://www.facebook.com/reel/787247997790321',
+                poster: '/images/rendszervaltas/posts/carson-coma-pjotr-es-en.webp',
+                label: 'Carson Coma · 2026. március 31.',
+                title: 'Carson Coma — Pjotr és én',
+                summary: 'A Peti és én átirata Szijjártó Péter és Szergej Lavrov kiszivárgott telefonbeszélgetéseiről — a végén oroszul.',
+                views: 'közel félmillió megtekintés a Facebookon',
+              },
+            ],
+            links: [
+              {
+                text: 'a Facebook-oldalán tette közzé',
+                href: 'https://www.facebook.com/watch/?v=787247997790321',
+                external: true,
+              },
+            ],
+            sources: [
+              {
+                source: '444',
+                date: '2026. márc. 31.',
+                headline: 'A Carson Coma átírta a Peti és én című slágerét, hogy Szijjártóról és Lavrovról szóljon',
+                url: 'https://444.hu/2026/03/31/a-carson-coma-atirta-a-peti-es-en-cimu-salgeret-hogy-szijjartorol-es-lavrovrol-szoljon',
+              },
+              {
+                source: 'Eduline',
+                date: '2026. ápr. 2.',
+                headline: 'Ezúttal Szijjártó és Lavrov telefonbeszélgetéséről írt dalt a Carson Coma',
+                url: 'https://eduline.hu/campus-life/20260402_carson-coma-dal-politika-szijjarto-lavrov',
+              },
+            ],
+          },
+          {
+            title: 'A választás másnapján újabb dal született',
+            when: '2026. április 13.',
+            body:
+              'A 2026. április 12-i országgyűlési választás után Fekete Giorgio már másnap újabb dallal jelentkezett a zenekar közösségi oldalán. Az akusztikus számban egy olyan történetet írt meg, amelyben egy politikai rendszer szétesése és az ahhoz kötődő szereplők menekülése jelenik meg.',
+            more: [
+              'A HVG beszámolója szerint a dal a széthulló NER egykori kedvezményezettjeit állította a középpontba, akik a vagyonvisszaszerzési hivatal és a börtön kilátásától tartanak. A szövegben magángépek, légitársaságok, jogi irodák és költöztetők jelennek meg: egy fiktív meneküléstörténet a politikai változás másnapjára.',
+              'Ez már közvetlenül a választás eredményére adott művészi reakció volt — ebben az esetben sem pártprogram vagy politikai elemzés, hanem egy aktuális esemény dalszöveggé fordítva. Két héttel később, a Rendszerbontó Nagykoncert után Giorgio a Telexnek így foglalta össze a pillanatot:',
+              '> „Az én generációm most először érezheti azt, hogy holnap jobb lehet, mint ma” | Fekete Giorgio a Telexnek · 2026. április 29.',
+            ],
+            videos: [
+              {
+                id: 'fb-2595055497563212',
+                facebookUrl: 'https://www.facebook.com/reel/2595055497563212',
+                poster: '/images/rendszervaltas/posts/carson-coma-valasztas-utani-dal.webp',
+                label: 'Carson Coma · 2026. április 13.',
+                title: 'Fekete Giorgio — dal a választás másnapján',
+                summary: 'A választás másnapján: a széthulló NER szereplői magángéppel, ügyvédekkel és költöztetőkkel menekülnének.',
+              },
+            ],
+            links: [
+              {
+                text: 'a zenekar közösségi oldalán',
+                href: 'https://www.facebook.com/reel/2595055497563212',
+                external: true,
+              },
+            ],
+            sources: [
+              {
+                source: 'HVG',
+                date: '2026. ápr. 13.',
+                headline: 'Menekülő patkányokról és strómanokról énekel Fekete Giorgio',
+                url: 'https://hvg.hu/kultura/20260413_fekete-giorgio-carson-coma-dal-ner-menekules',
+                lead: 'A Carson Coma frontembere a vagyonvisszaszerzési hivatal és a börtön kilátásától nyomasztott NER-esek problémáiról írt egy könnyed dalocskát.',
+              },
+              {
+                source: 'Telex',
+                date: '2026. ápr. 29.',
+                headline: 'Fekete Giorgio: Az én generációm most először érezheti azt, hogy holnap jobb lehet, mint ma',
+                url: 'https://telex.hu/belfold/2026/04/29/carson-coma-fekete-giorgio-interju-rendszerbonto-nagykoncert-valasztas',
+              },
+            ],
+          },
+          {
+            title: 'Nem minden fellépést utasítottak vissza',
+            when: '2026. április',
+            body:
+              'A zenekar nem egyszerűen minden állami vagy kormányközeli kapcsolattal rendelkező rendezvényt utasított el. Fekete Giorgio ugyanabban a Telex-interjúban arról beszélt, hogy a Mészáros Lőrinchez szorosan kapcsolódó Vál-Völgyi Zsúron is felléptek — a vörös vonal náluk a pártpolitikai rendezvényeknél húzódott, és soha nem mentek bele abba, hogy valahol ne játsszanak el bizonyos számokat.',
+            more: [
+              'Ez azért lényeges, mert megmutatja: a Carson Coma saját beszámolója szerint nem egyetlen egyszerű szabály alapján dönt arról, hol lép fel. A kérdés számukra az, hogy a fellépés során megmarad-e a művészi önállóságuk.',
+              'Ez különbözik attól a helyzettől, amikor egy koncertet egy állami kulturális intézmény mond le, vagy amikor egy rádió lejátszási listájáról eltűnik egy zenekar. A három esetet nem érdemes összemosni: más szereplők, más döntési helyzetek és más bizonyítható tények tartoznak hozzájuk.',
+            ],
+          },
+          {
+            title: 'Az első felszabadult Carson Coma-koncert',
+            when: '2026. szeptember 4.',
+            body:
+              'A Feldobom a követ hivatalos YouTube-videójának leírása ma már a 2026. szeptember 4-i Budapest Park-koncertet hirdeti — „az első felszabadult Carson Coma koncert", a rendszerváltás megünneplése. A Kontroll beszámolója szerint a koncertet éppen a Feldobom a követ nyitotta.',
+            more: [
+              'Közben a Petőfi Rádióban is megváltozott a helyzet: 2026 augusztusában már több Carson Coma-dal szerepelt rendszeresen a lejátszási listákon, köztük a Libikóka, az Immunissá válunk, az Osztálytalálkozó és a Na mindegy. A közmédia saját közleménye is kiemelte, hogy a Petőfin „hosszú idő után újra hallható volt a Carson Coma".',
+              'A Carson Coma története tehát nem áll meg annál a kérdésnél, hogy mi történt 2025-ben: a 2026-os események azt is megmutatják, hogyan alakult át ugyanennek a zenekarnak a kulturális és médiabeli helyzete.',
+            ],
+            videos: [
+              {
+                id: 'XGK9TAQga9k',
+                label: 'Carson Coma · 2026. július 30.',
+                title: 'Carson Coma — Polaroid & Feldobom a követ (MTK Sportpark, 2026)',
+                summary: 'A dal 2026-ban: a Purgatórium-nagykoncert felvétele, a zenekar saját csatornáján.',
+                views: '10 ezer megtekintés',
+              },
+            ],
+            sources: [
+              {
+                source: 'Kontroll',
+                date: '2026. szept. 7.',
+                headline: 'Carson Coma: történelmi koncerttel robbantották fel a Budapest Parkot a kígyóvállú pesti bárdok',
+                url: 'https://kontroll.hu/cikk/kultura/2026/09/07/carson-coma-toertenelmi-koncerttel-robbantottak-fel-a-budapest-parkot-a-kigyovallu-pesti-bardok',
+                lead: 'Az első felszabadult Carson Coma koncert - a rendszerváltás megünneplése a Budapest Parkban.',
+              },
+              {
+                source: 'HVG',
+                date: '2026. szept. 5.',
+                headline: 'Ilyen volt az első felszabadult Carson Coma koncert a Budapest Parkban (fotók)',
+                url: 'https://hvg.hu/elet/20260905_elso-felszabadult-carson-coma-koncert-budapest-park-kolibri-fotok',
+              },
+              {
+                source: 'Index',
+                date: '2026. aug. 27.',
+                headline: 'Fordulat a közmédiában: Bródy, Majka és Beton.Hofi is helyet kapott a Duna és a Petőfi műsoraiban',
+                url: 'https://index.hu/kultur/2026/08/27/kozmedia-megujulas-brody-kern-carson-coma/',
+              },
+              {
+                source: 'Budapest Park',
+                headline: 'Carson Coma — a rendszerváltás megünneplése a Budapest Parkban, 2026. szeptember 4.',
+                url: 'https://www.budapestpark.hu/en/events/carson-coma-20260904',
+              },
+            ],
+          },
+        ],
+      },
+      extra: [
+        {
+          heading: 'A közéleti megszólalás ára',
+          paragraphs: [
+            'A zenekar tagjai maguk is többször beszéltek arról, hogy a közéleti szerepvállalásnak szerintük ára van. Fekete Giorgio 2025 végén a Telexnek azt mondta, hogy fél attól, milyen következményei lehetnek a megszólalásaiknak.',
+            '> „Rengeteg mindent veszítettünk azzal, hogy kiálltunk társadalmi és közéleti ügyek mellett” | Fekete Giorgio a Telexnek · 2025. december 4.',
+            'Ugyanebben az interjúban arról is beszélt, hogy nemcsak a brüsszeli koncert lemondását értette ez alatt, hanem azt is, hogy bizonyos helyekre szerinte már nem hívják őket. Héra Barnabás a Petőfi Rádió-listáról való lekerülést kötötte a 2025-ös fesztiválszezon közéleti konfliktusaihoz — ez az ő értelmezése, nem egy hivatalos rádiós döntés indoklása.',
+            'Ezért érdemes különválasztani a dokumentált eseményeket és az értelmezéseket. Dokumentált, hogy 2023-ban lemondták a brüsszeli koncertjüket, miközben az intézet más programot jelölt meg okként. Dokumentált, hogy 2025-ben a Budapest Parkban a független sajtó ellehetetlenítésére reagáló performanszt mutattak be. Dokumentált, hogy 2025 nyarán eltűntek a Petőfi Rádió lejátszási listájáról, majd 2026 áprilisában visszatértek. És dokumentált, hogy 2026-ban több aktuális ügyre saját dalokkal reagáltak.',
+            'Az már értelmezés, hogy a rádiós változás, a koncertlemondás vagy más lehetőségvesztés közvetlenül a politikai megszólalások következménye volt-e. Ezeket a kérdéseket a zenekar tagjai és egyes sajtóorgánumok felvetették, de nem minden esetben áll rendelkezésre olyan hivatalos bizonyíték, amely az ok-okozati kapcsolatot egyértelműen bizonyítaná.',
+          ],
+        },
+        {
+          heading: 'Miért szerepel a Carson Coma a Dicsőségfalon?',
+          paragraphs: [
+            'Nem egyetlen dal vagy egyetlen koncert miatt. Az elmúlt években egymás után jelentek meg azok a konkrét esetek, amelyekben a zenekar a saját közönsége előtt reagált a magyar közéletre.',
+            'A Feldobom a követ 2023-ban nyíltan használt kormánykritikus politikai utalásokat. A brüsszeli koncert lemondása nem bizonyítottan politikai döntés volt, de az időzítése miatt közéleti vitát váltott ki. 2025-ben a Budapest Parkban a független sajtó eltűnésének lehetőségét jelenítették meg, ugyanabban az évben pedig eltűntek a Petőfi Rádió lejátszási listájáról. 2026-ban rövid idő alatt több ügyre is reagáltak: a gödi Samsung-gyárra, Szijjártó Péter és Szergej Lavrov telefonjaira, majd a választás eredményére.',
+            'A Carson Coma ettől még elsősorban zenekar maradt. A közéleti megszólalások nem helyettesítették a zenét, hanem beépültek abba. Éppen ezért lett a Peti és én-ből Pjotr és én, a Feldobom a követ-ből koncertperformansz, egy gödi akkumulátorgyár körüli botrányból pedig egy gitáros közéleti dal.',
+            'Aki ezeket az eseményeket egymás mellé teszi, az nem egyetlen hangzatos gesztust lát, hanem egy többéves, jól dokumentálható sorozatot — dalokat, koncerteket, videókat és megszólalásokat, amelyekben a zenekar rendszeresen belépett a magyar közélet terepére, és a saját eszközeivel kommentálta azt.',
+          ],
+        },
+        {
+          heading: 'A Carson Coma röviden',
+          paragraphs: [
+            'Tagok: Bóna Zsombor, Fekete Giorgio, Gaál Péter, Héra Barnabás, Jónás Attila és Kun Bálint. Albumok többek között: Corduroy Club (2019), Lesz, ami lesz (2020), Purgatórium (2025).',
+          ],
+          timelineAfterParagraph: 0,
+          timeline: [
+            { when: '2018', text: 'gimnáziumi zenekarként megalakul Budapesten' },
+            { when: '2019', text: 'megjelenik a Corduroy Club és a Peti és én' },
+            { when: '2020', text: 'a Lesz, ami lesz hozza el az országos ismertséget' },
+            { when: '2022', text: 'MTV EMA-díj' },
+            { when: '2023', text: 'Feldobom a követ; lemondják a brüsszeli koncertet' },
+            { when: '2024', text: 'ötödik születésnapi koncert az MVM Dome-ban' },
+            { when: '2025', text: 'független sajtó nélküli Budapest Park; lekerülnek a Petőfi listájáról' },
+            { when: '2026', text: 'Samsung-dal, Pjotr és én, választás utáni dal; visszatérés a Petőfire' },
+          ],
+        },
+      ],
+      faq: [
+        {
+          q: 'Miért került a Carson Coma a Dicsőségfalra?',
+          a: 'Mert 2023 és 2026 között egymást követő dalokban, koncertperformanszokban és videókban reagált konkrét magyar közéleti ügyekre: a Feldobom a követ, a független sajtó nélküli Budapest Park-koncert, a gödi Samsung-dal, a Pjotr és én és a választás utáni dal ugyanannak a sorozatnak a részei.',
+        },
+        {
+          q: 'Betiltották a Carson Comát a Petőfi Rádióban?',
+          a: 'Ennyit a források nem támasztanak alá. Dokumentált, hogy a zenekar 2025 nyarán lekerült a Petőfi lejátszási listájáról, és a 2026. április 12-i választás után három nappal ismét megszólalt. Héra Barnabás a lekerülést a közéleti megszólalásaikkal hozta összefüggésbe — ez az ő értelmezése, hivatalos indoklás nincs.',
+        },
+        {
+          q: 'Miről szól a Pjotr és én?',
+          a: 'A Peti és én 2026. március 31-én megjelent átirata Szijjártó Péter és Szergej Lavrov kiszivárgott telefonbeszélgetéseire reagál; a szövegben a Gundalf-ügyre is utalnak, a dal pedig oroszul ér véget.',
+        },
+        {
+          q: 'Miért mondták le a Carson Coma brüsszeli koncertjét?',
+          a: 'A brüsszeli Liszt Ferenc Intézet hivatalosan más programra, majd „technikai okokra" hivatkozott. A lemondás időben egybeesett a Feldobom a követ megjelenésével és Fekete Giorgio kecskeméti beszédével, de politikai okát nem lehet bizonyított tényként kijelenteni.',
+        },
+      ],
+    },
+  },
+  {
+    id: 'majka',
+    name: 'Majka',
+    kind: 'person',
+    group: 'person',
+    role: 'rapper, előadó — Majoros Péter',
+    badge: 'BINDZSISZTÁN',
+    photo: '/images/rendszervaltas/majka.webp',
+    tagline:
+      'Egy kitalált ország miniszterelnökéről rappelt — 35 millió megtekintés, egy felbontott szponzori szerződés és egy hónapokig tartó Petőfi Rádió-csend lett belőle.',
+    // A végoldal szövege a user sajátja (2026-09-30), forrásokkal egyeztetve.
+    // Idézetdobozba csak forrásban szó szerint megtalált szöveg került. Az RTL
+    // „vihar a biliben" videóját nem találtuk meg nyilvánosan beágyazható
+    // formában — a mondatot a 444 és a Telex idézi, azok a források. A One-
+    // szerződés a Telex szerint 2024 októberében köttetett, kétéves időtartamra.
+    section: {
+      heading: 'Majka — Bindzsisztán miniszterelnöke',
+      paragraphs: [
+        'Majoros Péter, művésznevén Majka, a magyar könnyűzene egyik legismertebb előadója: televíziós médiaszemélyiségből lett olyan rapper, aki rendszeresen megtölti a legnagyobb hazai koncerthelyszíneket. 2025 januárjában megjelent Csurran, cseppen című dala a korábbiaknál jóval közvetlenebbül foglalkozott a magyar politikai és gazdasági rendszerrel.',
+        'A fiktív ország, Bindzsisztán miniszterelnökének történetén keresztül a korrupció, a közpénzek, a politikai kapcsolatok és a társadalmi egyenlőtlenségek kerültek a dal középpontjába. A videó 2026-ra 35 millió megtekintés fölé ért, a Bindzsisztán név pedig önállóan is bekerült a közéleti nyelvbe.',
+        'A Dicsőségfalon nem egyetlen dal miatt szerepel, hanem egy eseménysor miatt: a Csurran, cseppen, a Campus Fesztivál „fejbelövős" jelenete, a One Magyarország szerződésbontása, a Petőfi Rádió lejátszási listája és a 2026-os visszatérés együtt mutatja meg, hogyan kerülhet egy popkulturális produkció a magyar közélet középpontjába.',
+      ],
+    },
+    related: [
+      { label: 'Carson Coma', href: '/rendszervaltas/carson-coma' },
+    ],
+    updatedAt: '2026-09-30',
+    live: true,
+    detail: {
+      seoTitle: 'Majka: Csurran, cseppen, Bindzsisztán, Campus és a One-szerződés',
+      seoDescription:
+        'Miért van Majka a Dicsőségfalon? A Csurran, cseppen és Bindzsisztán, a Campus „fejbelövős" jelenete, a One Magyarország szerződésbontása, a Petőfi Rádió-lista és a 2026-os visszatérés — idézetekkel, videókkal, forrásokkal.',
+      lead:
+        'Majoros Péter, művésznevén Majka, 2025 januárjában egy kitalált ország, Bindzsisztán miniszterelnökéről írt dalt. A Csurran, cseppen instant sláger lett, de ennél is több történt vele: rövid idő alatt a rendszerkritika egyik fő jelképévé vált — és egy olyan eseménysort indított el, amelynek kézzelfogható következményei lettek.',
+      cases: {
+        heading: 'A legfontosabb állomások',
+        timeline: true,
+        intro:
+          'Az egyes események között nem minden esetben bizonyítható az ok-okozati kapcsolat. Ez különösen a rádiós szereplés és az üzleti együttműködés esetében fontos: vannak dokumentált döntések és időbeli egybeesések, miközben a politikai motivációra vonatkozó értelmezéseket az érintettek eltérően látják.',
+        items: [
+          {
+            title: 'A Csurran, cseppen és Bindzsisztán',
+            when: '2025. január 17.',
+            body:
+              'A dal középpontjában egy kitalált ország, Bindzsisztán áll, amelynek miniszterelnöke egy olyan politikai vezető, akinek történetén keresztül Majka a hatalom, a vagyonosodás, a közpénzek és a politikai kapcsolatok világát figurázza ki. A klipben a miniszterelnök italába igazságszérumot csepegtetnek, és élő adásban vallani kezd.',
+            more: [
+              '> „Lassan már 8 éve én vagyok az ország fasza! Csak annyit kellett kiabálni: »Ruszkik haza!«” | a Csurran, cseppen nyitósorai',
+              'A dal egyik legerősebb eszköze éppen az, hogy nem nevez meg mindenkit közvetlenül. A fiktív ország és vezetője lehetőséget adott arra, hogy a hallgató maga kapcsolja össze a motívumokat a magyar közélettel — a közönség jelentős része pedig már a megjelenés után egyértelmű politikai utalásként értelmezte a számot.',
+              'A videó két hét alatt tízmillió megtekintést ért el, a dalszövegre a Geniuson egy időben többen kerestek rá, mint Eminem vagy Billie Eilish számaira. A nézettség önmagában nem mondja meg, hány ember értett egyet az üzenettel, de azt jól mutatja, hogy a szám messze túllépett a hagyományos zenei közönségen.',
+              'Miközben olvasod ezt a történetet, hallgasd meg újra a számot.',
+            ],
+            videos: [
+              {
+                id: 'f2iQfEcO39A',
+                label: 'Majka official · 2025. január 17.',
+                title: 'Majka — Csurran, cseppen (official music video)',
+                summary: 'Bindzsisztán miniszterelnöke igazságszérumot kap, és élő adásban elmondja, hogyan vette át az országot.',
+                views: '35,6 millió megtekintés',
+              },
+            ],
+            sources: [
+              {
+                source: 'Telex',
+                date: '2025. jan. 29.',
+                headline: 'A Google Trends szerint még sosem volt ilyen népszerű Majka',
+                url: 'https://telex.hu/after/2025/01/29/majka-google-trends-bindzsisztan-tizmillio-megtekintes',
+              },
+              {
+                source: 'HVG',
+                date: '2025. jan. 20.',
+                headline: 'Majka új száma már a legnagyobb nemzetközi dalszövegoldalon is pörög, Eminemet és Billie Eilisht is előzi',
+                url: 'https://hvg.hu/elet/20250120_Majka-Csurran-cseppen-dalszoveg-Genius-felkapott',
+              },
+            ],
+          },
+          {
+            title: 'Bindzsisztánból közéleti fogalom lett',
+            when: '2025. január–február',
+            body:
+              'A Bindzsisztán név önálló hivatkozási ponttá vált: a sajtó rendszeresen használta a kifejezést, egy hódmezővásárhelyi cukrászda Bindzsi-szeletet kezdett árulni, a kormányoldalhoz kötődő szereplők pedig a számot és annak politikai értelmezését bírálták.',
+            more: [
+              'A vita nem egyszerűen arról szólt, hogy jó-e a dal, hanem arról is, mennyire válhat közéleti szereplővé egy nagy közönségű előadó, amikor egy politikai témájú dalát több tízmillióan nézik meg. Majka nem nevezte meg Orbán Viktort a fiktív szereplőként, a politikai nyilvánosság jelentős része azonban így értelmezte a karaktert.',
+              'Majka később azt mondta, a szám nem egy konkrét párt mellett vagy ellen készült, hanem egy olyan rendszerről szólt, amelyben a hatalomhoz közel álló szereplők aránytalanul sok erőforráshoz jutnak — és arról is, hogy tudta, mi következik.',
+              '> „Tudtam már a dal elkészültekor, hogy ebből nagy balhé lesz” | Majka · Háttér Story podcast, 2025. október',
+            ],
+            sources: [
+              {
+                source: 'Telex',
+                date: '2025. jan. 29.',
+                headline: 'Kipróbáltuk a Majka-klipből inspirálódó Bindzsi-szeletet, ami inkább politikai szimbólum, mint az új dubaji csoki',
+                url: 'https://telex.hu/belfold/2025/01/29/kiprobaltuk-hodmezovasarhely-cukraszda-bindzsi-szelet-politikai-szimbolum',
+              },
+              {
+                source: 'Telex',
+                date: '2025. okt. 8.',
+                headline: 'Majka a Csurran, cseppenről: Tudtam, hogy ebből nagy balhé lesz',
+                url: 'https://telex.hu/after/2025/10/08/majka-a-csurran-cseppen',
+              },
+            ],
+          },
+          {
+            title: 'A Campus és a „fejbelövős" jelenet',
+            when: '2025. július',
+            body:
+              'A debreceni Campus Fesztivál zárónapján Majka ismét előadta a Csurran, cseppent. A dal végén egy közreműködő egy fordítva tartott mikrofonnal úgy tett, mintha fejbe lőné Majkát, aki a történetben Bindzsisztán miniszterelnökét alakította.',
+            more: [
+              'A jelenetből rövid idő alatt országos politikai vita lett. A kormánysajtó egy része úgy értelmezte, hogy a produkció Orbán Viktor elleni erőszakra utal — a Hír TV például azzal a címmel számolt be róla, hogy Majka a miniszterelnök kivégzésére buzdított. A Campus szervezői elhatárolódtak, Orbán Balázs és Bayer Zsolt is reagált. Majka az RTL Híradójában „vihar a biliben"-nek nevezte az egészet.',
+              '> „Ezek a fickók nem értik, hogy hogy kell a fiatalok nyelvén beszélni” | Majka az RTL Híradójában, 2025. július',
+              'Két tényt érdemes egymástól elválasztani. Az egyik maga a színpadi esemény: egy fiktív ország fiktív miniszterelnökének karakterét játszó Majkát eljátszották, hogy fejbe lövik. A másik az a politikai értelmezés, amely ezt Orbán Viktorral azonosította — ez nem a jelenetből következik automatikusan, hanem a kormánysajtó és politikai szereplők értelmezése volt.',
+              'Majka versben válaszolt a támadásokra: nem fog visszalőni, mert azzal csak a másik félnek tenne szívességet.',
+              '> „Gyertek csak bátran! Ide lőjetek!!” | Majka · 2025. július 22.',
+            ],
+            videos: [
+              {
+                id: 'FD9Wc8S0zcU',
+                label: 'Debreceni Nap · 2025. július 20.',
+                title: 'Majka fricskája a Campus Fesztiválon',
+                summary: 'A jelenet, amelyből országos politikai vita lett: Bindzsisztán miniszterelnökét fejbe „lövik" egy fordítva tartott mikrofonnal.',
+                views: '102 ezer megtekintés',
+              },
+            ],
+            sources: [
+              {
+                source: 'Telex',
+                date: '2025. júl. 20.',
+                headline: 'A Campus Fesztivál Majka koncertje után elhatárolódott a politikai felhangoktól, a kommentelők között megjelent Magyar Péter is',
+                url: 'https://telex.hu/after/2025/07/20/campus-fesztival-majka-koncert-elhatarolodas',
+              },
+              {
+                source: 'Telex',
+                date: '2025. júl. 21.',
+                headline: 'Orbán Balázs is posztolt Majka Campus fesztiválos koncertjéről, a rapper nem nyilatkozik',
+                url: 'https://telex.hu/belfold/2025/07/21/orban-balazs-majka-campus-fesztival-csurran-cseppen-reakcio-rapper-nem-nyilatkozik',
+              },
+              {
+                source: '444',
+                date: '2025. júl. 22.',
+                headline: 'Majka: Gyertek csak bátran! Ide lőjetek!!',
+                url: 'https://444.hu/2025/07/22/majka-gyertek-csak-batran-ide-lojetek',
+                lead: 'Versben reagált Majka az őt ért kormánypárti támadásokra. Ebből kiderül, hogy ugyan heves támadások kereszttüzében áll, nem fog visszalőni, mert azzal csak a másik félnek tenne szívességet.',
+              },
+            ],
+          },
+          {
+            title: 'A One Magyarország lezárja az együttműködést',
+            when: '2025. július 24.',
+            body:
+              'Majka a Csurran, cseppen megjelenése után is a One Magyarország márkanagykövete maradt: a 4iG-csoporthoz tartozó cég 2024 októberében kötött vele kétéves szerződést, és a januári dal körüli politikai vita ellenére az együttműködés hónapokig fennmaradt. A fordulat a Campus után jött.',
+            more: [
+              '> „Az üzleti döntés hátterében az énekes-előadóművész Campus Fesztiválon bemutatott erőszakos színpadi produkciója, valamint az elmúlt időszakban tett közéleti megnyilvánulásai állnak.” | a One Magyarország közleménye · 2025. július 24.',
+              'A cég a politikai és világnézeti semlegességre, valamint a 4iG és a One értékrendjére hivatkozott, és közölte, hogy támogatja az alkotói szabadságot, de elutasít minden erőszakos vagy erőszakra buzdító magatartást. A felmondott szerződésből megmaradt 150 millió forintot később borsodi jótékonysági célokra fordította.',
+              'A döntés előtt a kormánypárti sajtó az OTP, a Hell és a One reakcióját is kereste. Az OTP és a Hell jelezte, hogy nem áll szerződésben Majkával; a One viszont tényleges márkanagyköveti kapcsolatban állt vele.',
+              'A szerződésbontást nem lehet úgy leírni, hogy „a kormány miatt kirúgták Majkát": közvetlen politikai utasításra vonatkozó bizonyítékot a nyilvánosságra került közlemény nem tartalmaz. A döntés ugyanakkor politikai környezetben született, néhány nappal azután, hogy a kormánysajtó Majkát egy országos botrány középpontjába állította. (Fontos pontosítás: a One-ról van szó, nem a Telekomról.)',
+            ],
+            sources: [
+              {
+                source: 'Telex',
+                date: '2025. júl. 24.',
+                headline: 'Megszünteti együttműködését Majkával a One Magyarország',
+                url: 'https://telex.hu/belfold/2025/07/24/one-magyarorszag-egyuttmukodes-megszuntetes-majka-campus-fesztival',
+              },
+              {
+                source: 'Telex',
+                date: '2025. júl. 23.',
+                headline: 'Az OTP és a Hell szerint nem igaz, amit a Magyar Nemzet írt róluk a majkás cikkében',
+                url: 'https://telex.hu/belfold/2025/07/23/majka-campus-fesztival-fellepes-otp-hell-one-szponzor-reakcio',
+              },
+              {
+                source: 'Telex',
+                date: '2025. júl. 31.',
+                headline: 'A One jótékony célra fordítja a Majka felmondott szerződéséből megmaradt pénzt',
+                url: 'https://telex.hu/belfold/2025/07/31/one-magyarorszag-majoros-peter-majka-egyuttmukodes',
+              },
+            ],
+          },
+          {
+            title: 'A legnépszerűbb magyar Facebook-poszt',
+            when: '2025. július 27.',
+            body:
+              'Majka a Campus és a One-döntés után egy Facebook-bejegyzésben válaszolt: szerinte az infláció, az orosz befolyás, a vasúti összeomlás és a jegybankból eltűnt 500 milliárd a fontos kérdés, nem ő. A Telex elemzése szerint a posztból egy nap alatt az elmúlt évek legnépszerűbb magyar Facebook-bejegyzése lett — Magyar Péter és Orbán Viktor rekordjait is megelőzve.',
+            more: [
+              'Ez nem bizonyítja, hogy a közönség egésze egyetértett Majkával. Azt viszont igen, hogy az ügy messze túlnőtt egy zenei eseményen: egy elsősorban szórakoztatóipari előadóból olyan popkulturális szereplő lett, akinek dalait és színpadi jeleneteit a politikai nyilvánosság is rendszeresen értelmezte.',
+            ],
+            sources: [
+              {
+                source: 'Telex',
+                date: '2025. júl. 28.',
+                headline: 'Majka vasárnap felkérdezte a NER-t, hétfőre ez lett az elmúlt évek legnépszerűbb magyar Facebook-posztja',
+                url: 'https://telex.hu/techtud/2025/07/28/elmult-evek-legnepszerubb-facebook-poszt-majka-felkerdezte-ner',
+              },
+              {
+                source: '444',
+                date: '2025. júl. 27.',
+                headline: 'Reagált Majka: szerinte az infláció, az orosz befolyás, a vasúti összeomlás, az MNB-ből eltűnt 500 milliárd a fontos, nem ő',
+                url: 'https://444.hu/2025/07/27/reagalt-majka-szerinte-az-inflacio-az-orosz-befolyas-a-vasuti-osszeomlas-az-mnb-bol-eltunt-500-milliard-a-fontos-nem-o',
+              },
+            ],
+          },
+          {
+            title: 'A Petőfi Rádióból eltűntek Majka dalai',
+            when: '2025 nyara',
+            body:
+              'A 2026 júniusában közölt adatok szerint a Petőfi Rádió a Campus-produkció után teljesen levette Majkát a lejátszási listáról. Ez nem azt jelenti, hogy minden magyar rádióból eltűnt — konkrétan a Petőfi műsorairól van szó, ahol a korábbi dalai addig rendszeresen szerepeltek.',
+            more: [
+              'A helyzet 2026 áprilisában változott meg: április 15-től ismét hallhatók lettek Majka dalai a Petőfin. A történetnek van egy különösen beszédes részlete: a korábbi dalok visszatértek, de a Csurran, cseppen nem került vissza a rotációba — az Index elemzése szerint a választás utáni időszakban egyszer sem szólt ezen a hullámhosszon.',
+              'Hogy az eltűnés közvetlenül politikai döntés volt-e, azt az érintettek eltérően értelmezik; Demeter Szilárd 2026-os nyilatkozatai újraindították a vitát a közmédia zenei szűréséről. Majka esetében azonban nem kell ennél tovább menni ahhoz, hogy a változás ténye dokumentálható legyen: a dalok 2025-ben eltűntek, 2026 áprilisában visszatértek, a Csurran, cseppen pedig kimaradt.',
+            ],
+            sources: [
+              {
+                source: 'Index',
+                date: '2026. jún. 14.',
+                headline: 'Dopeman eltűnt, Majka visszatért – látványosan megváltoztak a rádiós lejátszási listák',
+                url: 'https://index.hu/kultur/2026/06/14/zene-petofi-radio-lista-demeter-szilard-majka-carson-coma-welhello-edda-dopeman-toth-gabi/',
+              },
+              {
+                source: 'Most Szól',
+                headline: 'Petőfi Rádió — napi lejátszási lista',
+                url: 'https://www.mostszol.hu/radio/mr2/day',
+              },
+            ],
+          },
+          {
+            title: 'Egy évvel később: ugyanaz a dal, ugyanazon a színpadon',
+            when: '2026. július 23.',
+            body:
+              'Egy évvel a botrány után Majka ismét fellépett a Campus Fesztiválon, és ismét előadta a Csurran, cseppent. A tavalyi ügy maga is a műsor részévé vált: a záróbeszédében arról beszélt, hogy egy évvel korábban ő lett a bűnbak, mert lelőtte egy nem létező ország nem létező miniszterelnökét — és a 2026. április 12-i választásra is utalt.',
+            more: [
+              '> „Mérhetetlenül büszke vagyok arra, hogy Magyarország április 12-én megmutatta, hogy nem lehet ám velünk g*cizni!” | Majka a Campus Fesztiválon · 2026. július 23.',
+              'A környezet teljesen más volt. Egy évvel korábban a koncert után a Campus elhatárolódott, a One megszüntette a szerződést, és kormányoldali szereplők támadták a produkciót. Egy évvel később ugyanazon a fesztiválon ugyanaz a dal szólt — a beszéd pedig így zárult:',
+              '>> „Isten áldja Bindzsisztánt!”',
+            ],
+            videos: [
+              {
+                id: '6CEZFRXKwUc',
+                label: 'Debreceni Nap · 2026. július 24.',
+                title: 'Majka a Campuson: „Magyarország április 12-én megmutatta, hogy nem lehet velünk g.cizni!"',
+                summary: 'A záróbeszéd egy évvel a „fejbelövős" jelenet után, ugyanazon a színpadon.',
+                views: '7,7 ezer megtekintés',
+              },
+            ],
+            sources: [
+              {
+                source: 'Telex',
+                date: '2026. júl. 24.',
+                headline: 'Majka visszatért a Campus Fesztiválra: Mérhetetlenül büszke vagyok arra, hogy Magyarország április 12-én megmutatta, hogy nem lehet ám velünk g*cizni!',
+                url: 'https://telex.hu/after/2026/07/24/majka-campus-fesztival-visszater-bindzsisztan',
+              },
+              {
+                source: '444',
+                date: '2026. júl. 24.',
+                headline: 'Majka a Campus Fesztiválon: Azóta eltelt egy év, és ezek elhúztak a f*szba!',
+                url: 'https://444.hu/2026/07/24/majka-a-campus-fesztivalon-azota-eltelt-egy-ev-es-ezek-elhuztak-a-faszba',
+              },
+            ],
+          },
+        ],
+      },
+      extra: [
+        {
+          heading: 'Majka a Csurran, cseppen előtt',
+          paragraphs: [
+            'A dal jelentőségét akkor lehet igazán megérteni, ha nem választjuk le Majka korábbi pályájáról. Majoros Péter a Való Világ első szériája után vált országosan ismertté, majd a televíziós szereplések mellett fokozatosan építette fel zenei karrierjét. Az évek során több olyan slágert készített, amely nem politikai, hanem szórakoztató, párkapcsolati vagy életmóddal kapcsolatos témákat dolgozott fel.',
+            'Ez a háttér azért számít, mert Majka nem ellenzéki vagy alternatív előadóként lépett a közéletbe. A Csurran, cseppen egy hosszú ideje ismert mainstream előadó dala volt, a közönsége ezért eleve jóval szélesebb volt annál, mint amelyhez a hagyományosan politikai témájú magyar könnyűzene eljut.',
+            '> „Az a furcsa ebben az egészben, hogy innen 300 kilométerre nyugatra, Bécsben az nem kérdés, hogy egy olyan típusú csávó, mint én, folyamatosan éppen a regnáló kormány ellen ír dalokat” | Majka · 2025. október',
+          ],
+        },
+        {
+          heading: 'Miért van helye Majkának a Dicsőségfalon?',
+          paragraphs: [
+            'Majka pályájának közéleti szakaszát nem lehet egyetlen politikai állításra leegyszerűsíteni. A Csurran, cseppen szatirikus dal volt egy fiktív országról, amelyet a közönség és a politikai nyilvánosság nagyrészt a magyar rendszer kritikájaként értelmezett. A Campuson bemutatott jelenet közvetlenebb politikai vitát váltott ki, miközben Majka szerint színpadi poén volt.',
+            'A One Magyarország saját közleménye szerint a szerződés megszüntetésében a produkció és Majka közéleti megnyilvánulásai egyaránt szerepet játszottak. A Petőfi Rádiónál a lejátszási adatok alapján dokumentálható, hogy Majka dalai egy időre eltűntek, majd a régebbiek visszatértek, a Csurran, cseppen nélkül.',
+            'Ezekből nem kell olyan következtetést levonni, amelyet a források nem bizonyítanak. Az viszont jól látható, hogy egy rendszerkritikus dalnak és az azt követő koncertnek kézzelfogható következményei lettek a nyilvánosságban és egyes intézményi, illetve üzleti kapcsolatokban.',
+            'A történet egyik legfontosabb eleme maga a közönség mérete. Egy több tízmilliós nézettségű dalnál nem ugyanaz történik, mint egy szűk alternatív közegnek szóló politikai zenében: Majka a tömegközönségre épülő popzenei pozíciójából beszélt, ezért az üzenete olyanokhoz is eljutott, akik nem politikai tartalomként keresték a dalt.',
+            'Majka nem politikus lett, hanem olyan előadó, akinek politikai témájú művei és megszólalásai önmagukban is közéleti eseménnyé váltak. A Csurran, cseppen ezt a változást tette látványossá, a 2025-ös Campus megmutatta, milyen erős reakciókat válthat ki — a 2026-os Campus pedig már a történet következő fejezete volt: ugyanaz a dal, ugyanaz a Bindzsisztán, de egy olyan előadó szájából, aki pontosan tudta, hogy a dalhoz az elmúlt év teljes közéleti története is hozzátartozik.',
+          ],
+        },
+      ],
+      faq: [
+        {
+          q: 'Mi az a Bindzsisztán?',
+          a: 'Egy kitalált ország Majka 2025. január 17-én megjelent Csurran, cseppen című dalában és klipjében. Majka a fiktív ország miniszterelnökét alakítja, akinek a történetén keresztül a korrupciót, a közpénzeket és a hatalomhoz közeli vagyonosodást figurázza ki. A név azóta önállóan is bekerült a magyar közéleti nyelvbe.',
+        },
+        {
+          q: 'Mi történt Majkával a Campus Fesztiválon?',
+          a: 'A 2025-ös debreceni Campus zárónapján a Csurran, cseppen végén egy közreműködő egy fordított mikrofonnal eljátszotta, hogy fejbe lövi Bindzsisztán miniszterelnökét, akit Majka alakított. A kormánysajtó ezt Orbán Viktor elleni erőszakként értelmezte, Majka „vihar a biliben"-nek nevezte. Egy évvel később, 2026-ban ugyanott újra előadta a dalt.',
+        },
+        {
+          q: 'Miért bontott szerződést Majkával a One Magyarország?',
+          a: 'A cég 2025. július 24-i közleménye szerint a Campus Fesztiválon bemutatott „erőszakos színpadi produkció" és Majka közéleti megnyilvánulásai miatt, amelyeket a 4iG és a One értékeivel összeegyeztethetetlennek tartott. Közvetlen politikai utasításra vonatkozó bizonyíték nem került nyilvánosságra.',
+        },
+        {
+          q: 'Játssza-e a Petőfi Rádió Majka dalait?',
+          a: 'Az Index 2026. júniusi elemzése szerint a Petőfi a 2025-ös Campus után levette Majkát a lejátszási listáról, 2026. április 15-től a régebbi dalai ismét szólnak — a Csurran, cseppen azonban nem került vissza a rotációba.',
+        },
       ],
     },
   },

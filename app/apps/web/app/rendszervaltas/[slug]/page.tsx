@@ -26,6 +26,9 @@ export const revalidate = 86400;
 
 const SITE = 'https://www.kegyencjarat.hu';
 
+/** A „Hogyan tovább az oldalon" blokk mindig kiírt kártyái. */
+const FIXED_INTERNAL_HREFS = new Set(['/rendszervaltas', '/adatbazis']);
+
 // A kanonikus URL SZÁNDÉKOSAN pontos név-egyezés: /rendszervaltas/hadhazy-akos,
 // /rendszervaltas/marki-zay-peter. A szegmens maga a keresett kifejezés
 // ékezet nélküli, kötőjeles alakja — semmilyen toldalék („-profil”, „-ugyei”)
@@ -446,6 +449,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                 playlistId={f.section.video.list}
                 note={f.section.video.note}
                 vimeoId={f.section.video.vimeoId}
+                facebookUrl={f.section.video.facebookUrl}
                 poster={f.section.video.poster}
                 variant="wide"
               />
@@ -502,6 +506,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                               playlistId={v.list}
                               note={v.note}
                               vimeoId={v.vimeoId}
+                              facebookUrl={v.facebookUrl}
                               poster={v.poster}
                               variant="wide"
                             />
@@ -536,6 +541,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                           playlistId={v.list}
                           note={v.note}
                           vimeoId={v.vimeoId}
+                          facebookUrl={v.facebookUrl}
                           poster={v.poster}
                           variant="wide"
                         />
@@ -563,6 +569,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                               playlistId={c.highlight.video.list}
                               note={c.highlight.video.note}
                               vimeoId={c.highlight.video.vimeoId}
+                              facebookUrl={c.highlight.video.facebookUrl}
                               poster={c.highlight.video.poster}
                               variant="wide"
                             />
@@ -604,6 +611,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                             playlistId={v.list}
                             note={v.note}
                             vimeoId={v.vimeoId}
+                            facebookUrl={v.facebookUrl}
                             poster={v.poster}
                             variant={x.videos!.length > 1 ? undefined : 'wide'}
                           />
@@ -626,6 +634,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                         playlistId={v.list}
                         note={v.note}
                         vimeoId={v.vimeoId}
+                        facebookUrl={v.facebookUrl}
                         poster={v.poster}
                         variant={x.videos!.length > 1 ? undefined : 'wide'}
                       />
@@ -658,6 +667,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                       playlistId={v.list}
                       note={v.note}
                       vimeoId={v.vimeoId}
+                      facebookUrl={v.facebookUrl}
                       poster={v.poster}
                       variant={d.videoBlock!.items.length > 1 ? undefined : 'wide'}
                     />
@@ -836,6 +846,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                 playlistId={d.video.list}
                 note={d.video.note}
                 vimeoId={d.video.vimeoId}
+                facebookUrl={d.video.facebookUrl}
                 poster={d.video.poster}
                 variant="wide"
               />
@@ -883,7 +894,10 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
               </span>
               <span className="seo-internal-cta">Megnézem →</span>
             </Link>
-            {(f.related ?? []).map((r) => (
+            {/* A Dicsőségfal- és az Adatbázis-kártya fix, ezért a profil
+                `related` listájából ugyanezek kimaradnak — különben kétszer
+                szerepelne ugyanaz a link (user, 2026-09-30). */}
+            {(f.related ?? []).filter((r) => !FIXED_INTERNAL_HREFS.has(r.href)).map((r) => (
               <Link key={r.href} href={r.href} className="seo-internal-card">
                 <span className="seo-internal-title">{r.label}</span>
                 <span className="seo-internal-note">Kapcsolódó tartalom az oldalon.</span>
