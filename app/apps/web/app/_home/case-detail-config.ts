@@ -103,7 +103,7 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
   },
   {
     scandalKey: 'rezsibiznisz-energiaszolgaltatas',
-    title: 'Rezsibiznisz — ALTEO állami energiakedvezmények',
+    title: 'Tiborcz-érdekeltségek: az 525 milliárdos állami gáztender nyertesei között, tízmilliárdok a Baross Gábor Tőkeprogramból',
     institution: 'ALTEO Energiaszolgáltató Nyrt.',
     galeriaId: 'tiborcz-istvan',
     crimeTypes: ['Közpénzfelhasználás', 'Összeférhetetlenség'],
@@ -155,7 +155,7 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     // documented Elios közvilágítás-közbeszerzési botrány (Hódmezővásárhely
     // stb.), distinct from the ALTEO energy-contracts case above.
     scandalKey: 'tiborcz-elios-innovativ',
-    title: 'Az Elios-botrány',
+    title: 'Elios-ügy: az OLAF csalást állapított meg Tiborcz István volt cégének közvilágítási projektjeinél',
   },
   {
     // 2026-07-09 user report: the 1311 Mrd (state → private-equity funds)
@@ -322,36 +322,6 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     ],
   },
   {
-    // Full name-confusion mismatch (same pattern as Varga Judit): the
-    // generated text was entirely about "Szöllősi György" (sports
-    // journalists' association funding) — a different, unrelated person
-    // whose surname just sounds like "Szólláth". The DB person (Szólláth
-    // Tibor) and institution (Medop-General Kft.) are real and correctly
-    // documented by 2 separate linked articles, now used instead.
-    scandalKey: 'szolloesi-nemzeti-sport-kesma',
-    title: 'Szólláth Medop-mutyija',
-    descriptionBlocks: [
-      {
-        type: 'text',
-        content:
-          'Szólláth Tibor korábbi hajdúnánási fideszes vezető nevéhez köthető közbeszerzési visszaélés ügyében a polgármester a bírósági eljárás során azt nyilatkozta, hogy nem tudja, ki döntött arról, mely vállalkozókat hívják meg a tenderre — az elsőrendű vádlott cégvezetőt ugyanakkor a barátjának nevezte.',
-      },
-      {
-        type: 'text',
-        content:
-          'A hajdúnánási közbeszerzési ügyben egy helyi vállalkozó, a Medop-General Kft. mutyizhatta le, hogy az ő cége nyerje el egy ipari park kivitelezésére kiírt tendert — a büntetőeljárás jelenleg a végéhez közeledik.',
-      },
-      {
-        type: 'article-card',
-        source: 'K-Monitor',
-        headline: 'Az óvatlan cimbora kisvárosi mutyija',
-        date: '2025-06-01',
-        url: 'https://hang.hu/magyar-hang-plusz/hajdunanas-az-ovatlan-cimbora-kisvarosi-mutyija-179052',
-        lead: 'A végéhez közeledik a büntetőeljárás a hajdúnánási közbeszerzési ügyben, amelyben egy helyi vállalkozó mutyizhatta le, hogy az ő cége nyerje az ipari park kivitelezésére kiírt tendert.',
-      },
-    ],
-  },
-  {
     // Generated text centered on the wrong one of 3 real linked articles —
     // a different funding stream (Nimród Vadászújság / Semjén Zsolt) instead
     // of the one that actually matches the DB person+institution (Balásy
@@ -474,7 +444,7 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     // headline-jét örökölte tévesen, holott ennek a klaszternek a tényleges
     // tartalma (400 M Ft-os szervezeti támogatás) más téma.
     scandalKey: 'szolloesi-nemzeti-sport-kesma',
-    title: 'Szöllősi sportújságírói szervezetének 400 milliós támogatása',
+    title: 'Több mint 400 millió forint közpénzt kap a sportújságírók Szöllősi György vezette szervezete, ebből 240 milliót a HM fizet',
   },
   {
     scandalKey: 'familiabar-rogan-balasy-propagandapenz',
@@ -573,7 +543,7 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     scandalKey: 'lezsaksandor-lakiteleki-nepfoiskola',
     // 2026-07-11: bare "Népfőiskola ügy" olvashatatlan (két főnév kötőjel
     // nélkül) — lásd project-ascii-url-canonical memória, "bare ügy" audit.
-    title: 'Lezsák Sándor Lakiteleki Népfőiskola-ügy',
+    title: 'A választás után is megkapta a Lakiteleki Népfőiskola a 4,84 milliárdos állami támogatást',
     descriptionBlocks: [
       {
         type: 'article-card',
@@ -748,7 +718,7 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     // amounts here — excluded from Rogán's rollup rather than merged, since
     // this looks like a genuinely shared/multi-actor case, not a clean dup.
     scandalKey: 'garancsi-kazino',
-    title: 'Garancsi kaszinó pénzkivonás',
+    title: 'Garancsi és Habony kaszinócégei: 21,4 milliárd osztalék',
     institution: 'Garinvest Projekt Zrt.',
   },
 
@@ -790,13 +760,13 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     // 2026-07-09 title audit: name says "százmilliárd", source headline
     // says 50 milliárd — numeric mismatch.
     scandalKey: 'mnb-matolcsy-szazmilyardok',
-    title: 'MNB Matolcsy 50 milliárdos ügy',
+    title: 'Matolcsy Ádám közelébe került a Dry Real Estate 50 milliárdos részvénye',
   },
   {
     // 2026-07-09 title audit: raw sentence fragment, not a title (number
     // itself is consistent — "száz" ≈ 100 Mrd).
     scandalKey: 'matolcsy-mnb-szazmilyardok',
-    title: 'Matolcsy MNB-elnökségének százmilliárdos költségei',
+    title: 'MNB-székház: az 55 milliárdosra ígért felújítás 104,9 milliárdra drágult, a jegybank tőkehiánya közpénzbe kerülhet',
   },
   {
     // 2026-07-09 title audit: mid-word capitalization typo ("BudaPesT").
@@ -861,11 +831,11 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
   // hamis-pozitív tanulság).
   {
     scandalKey: 'orban-svabergi-ovoda-korrupcios',
-    title: 'Orbán svábhegyi óvodájának ügye',
+    title: 'Orbán Viktor gyülekezetének svábhegyi óvodája: 600 milliós állami telek ingyen',
   },
   {
     scandalKey: 'nemeth-szilard-mabort',
-    title: 'Németh Szilárd Mabort Bortemploma ügye',
+    title: 'Egyre nagyobb teret nyer Németh Szilárd alapítványa az állami pénzből felújított sátoraljaújhelyi Bortemplomban',
   },
   {
     scandalKey: 'nitrogenmuvek-peti-gyara',
@@ -873,7 +843,7 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
   },
   {
     scandalKey: 'simon-gabor-mszp-millios-szamlak',
-    title: 'Simon Gábor MSZP-számlái ügye',
+    title: 'Simon Gábor-ügy: felmentették a költségvetési csalás vádja alól, hamis magánokirat felhasználásáért pénzbüntetést kapott',
   },
   {
     scandalKey: 'barany-csaladi-vagyonkezelo-alapitvany',
@@ -967,6 +937,124 @@ export const RETIRED_REDIRECTS: Record<string, string> = {
   'budapest-korrupcios-halozat': '/adatbazis/kiss-laszlo-fogdahaz',
   'matolcsy-neumann-egyetem': '/adatbazis/matolcsy-mnb-gtc-ingatlan-adossag',
   'meszaros-mbh-befekteto': '/adatbazis/meszaros-mbh-bank-korrupcios',
+  'rogan-propaganda-korrupcios': 'orban-lounge-design-propaganda',
+  'volner-schadl-korrupcioper': 'schadl-gyorgy-vegrehajto-botrany',
+  'tiborcz-durer-park-adavetele': 'tiborcz-garancsi-durer-120mrd',
+  'schmidt-maria-kkettortenet-alapitvany': 'schmidt-marias-alapitvany-milliardos-szerz',
+  'rogan-diakhitel-kommunikacio': 'balasy-gyula-ugy',
+  'rogan-balasy-lounge-design': 'balasy-gyula-ugy',
+  'putnik-ujszentivan-csalas': 'putnik-lazar-ujszentivan',
+  'putnik-lazar-koltsegvetesi-csalas': 'putnik-lazar-ujszentivan',
+  'meszaros-tiborcz-status-kpria-eremu': 'meszaros-matrai-gazerőmu-elsewedy',
+  'meszaros-tigaz-met-energia': 'meszaros-matrai-gazerőmu-elsewedy',
+  'meszaros-autopalya-privatizacio-kormanyzati': 'meszaros-szijj-autopalya-koncesszio',
+  'meszaros-autopalya-koncesszio-mkif': 'meszaros-szijj-autopalya-koncesszio',
+  'meszaros-b-plus-n-szindikatus': 'tombor-andras-b-plus-n',
+  'lazar-janost-mohacsi-kikoto': 'lazar-mohacsi-kikoto',
+  'balasy-kommunikacio-tender': 'balasy-gyula-ugy',
+  'szerencsejatek-kapuzarasi-panik': 'szerencsejatek-szponzorpenz-osztas',
+  'varga-zoltan-central-24hu': 'varga-zoltan-nogradi-vegyipari',
+  'balasy-diakhitel-tularak': 'balasy-gyula-ugy',
+  'balasy-gyula-lounge-event': 'balasy-gyula-ugy',
+  'radics-bela-nka-tamogatas': 'nka-botrany',
+  'csaladparti-alapitvany-szerencsejatek': 'szerencsejatek-szponzorpenz-osztas',
+  'varga-judit-közép-európai-akadémia': 'orban-közép-európai-akadémia',
+  'lazar-tisza-kastely-felujitas': '4s-mtc-kozbeszerzes-ugy',
+  'uzsoki-korhaz-finanszirozas': 'papcsak-uzsoki-vip',
+  'barta-eke-delta-systems-korrupcios': 'barta-eke-ngm-25-milliardos-per',
+  'csaladparti-alapitvany-mcc-mol-szerzodes': 'schmidt-mol-alapitvany-penzosztas',
+  'banki-vagyonnyilatkozat': 'pecsi-buszper',
+  'karasz-istvan-versend-polgarmester': 'hargitai-janos-versend-csodbe',
+  'egy-a-ritmusunk-nka-pataky-attila': 'nka-botrany',
+  'meszaros-sandor-palota-autopark-szerviz': 'meszaros-flottakezelesi-tender',
+  'bereg-konstruktor-pontos-tender': 'kovacs-sandor-barát-tender',
+  'deák-bill-gyula-nka-fidesz-tamogatas': 'nka-botrany',
+  'gulyas-gergely-szolo-utca': 'szolo-utca-eredmenyes',
+  'kiss-laszlo-parkfenntartas-kartell': 'parkfenntartas-biznisz',
+  'fidesz-kampanyeventek-koztelen': 'event-stuff-fidesz-partrendez',
+  'tiborcz-waberers-gysev': 'tiborcz-gysev-vasuti',
+  'bayer-elohely-irokakadempia': 'nka-botrany',
+  'fuzik-pannon-park-ferrari': 'parkfenntartas-biznisz',
+  'tiborcz-kastely-sportpalya': 'tiborcz-csaladi-vezetoi-poziciok',
+  'pinter-civil-ertek-volanbus': 'pinter-civil-biztonsagi-szervezet',
+  'joob-marton-bunopertargyalas': 'joob-marton-muszorkalauz',
+  'simonka-magyar-termes-teszk': 'simonka-gyorgy-polgarmeister-eljarus',
+  'simonka-gyorgy-tamogatasi-per': 'simonka-gyorgy-polgarmeister-eljarus',
+  'dpk-nagygyules-milliardugy': 'meszaros-vasutepito-dpk-tamogatas',
+  'ujbuda-tasnadi-kartell': 'parkfenntartas-biznisz',
+  'varga-zoltan-central-media': 'varga-zoltan-nogradi-vegyipari',
+  'valton-erzsebetter-froccs': 'bessenyei-erzsebet-ter-buszpalya',
+  'tiborcz-honved-buszbeszerzesi-ugy': 'tiborcz-lazar-lounge-design',
+  'szijjarto-takacs-peter-kozbeszerzesi-ugy': 'lelegeztetogep',
+  'szerencsejatek-inani-football-production-leanyceges-millios': 'szerencsejatek-szponzorpenz-osztas',
+  'rogan-schadl-volner-iratok': 'schadl-gyorgy-vegrehajto-botrany',
+  'rákosrendező-eagle-hills-tiborcz': 'ner-allami-ingatlan-eladasok',
+  'rogan-fcm-jets-helikopter-ceghalo': 'rogan-fly-coop-helikopter',
+  'sarka-kata-puskas-film-szerencsejatek': 'szerencsejatek-szponzorpenz-osztas',
+  'nemeth-szilard-nka': 'nka-botrany',
+  'meszaros-közútkezelő-szerviz-kartell': 'meszaros-flottakezelesi-tender',
+  'magyar-levente-opni-elitiskola-keo': 'lipotmezo-ner-ellitiskola',
+  'matolcsy-marczibanyitermeletes': 'matolcsy-ii-kerulet-sportcentrum',
+  'huth-elhetorozsadombért': 'fidesz-alcivil-halozat',
+  'habony-cato-egyiptomi-vonat': 'lazar-dunakeszi-jarmujavito',
+  '4sales-system-vegreh-szerz': 'schadl-gyorgy-vegrehajto-botrany',
+  'bayerne-ovasz-plasma': 'ovszer-pcr-test-ellatas',
+  'tiborcz-mfds-ct-mr-keszkulek': 'paar-attila-okfo-kozbeszerzesi',
+  'szerencsejatek-lounge-design': 'szerencsejatek-szponzorpenz-osztas',
+  'palkovics-kontron-hungary-kozbeszerzesi': 'palkovics-sda-dms-szoftver-kozbeszerzes',
+  'magyar-levente-keeöma-szlovákiai': 'szijjarto-keeöma-támogatás',
+  'szolo-utcai-eredmenyes': 'szolo-utca-eredmenyes',
+  'hun-ren-piliscsabai-kutatasi-kozpont': 'ppke-campus-piliscsaba-alapitvany',
+  'rogan-szuverenitasvedelem-balasy-kommunikacio': 'balasy-gyula-ugy',
+  'gulyasministrium-kommunikacio': 'balasy-gyula-ugy',
+  'balasy-szijjarto-propagandapenz-rendezveny': 'balasy-gyula-ugy',
+  'rogan-v-kerulet-cegvasarlas': 'rogan-letelepedesi-biznisz',
+  'nemeth-szilard-bortemplom': 'nemeth-szilard-mabort',
+  'tiborcz-testvere-microsoft-biralo': 'microsoft-beszerzesi-csalas',
+  'fekete-david-gyor-penzeltunese': 'borkai-gyor-szol-ugy',
+  'meszaros-dunakeszi-jarmujavito-tamogatas': 'lazar-dunakeszi-jarmujavito',
+  'schmidt-maria-onkologia-kommunikacio': 'balasy-schmidt-kkettortenet-alapitvany-kommunikacio',
+  'simonka-per-birasag-visszalepes': 'simonka-gyorgy-polgarmeister-eljarus',
+  'balasy-szuverenitasvedelem-kolteseg': 'balasy-gyula-ugy',
+  'nagy-istvan-agrartarca-ugyvedi-hutle-kezeles': 'nagy-janos-agrarminiszterium',
+  'alstom-kettos-standardok': 'demszky-metro-4-ketes-ugy',
+  'rogan-valton-városligeti-megbizas': 'bessenyei-valton-prime-multi',
+  'ner-mav-ingatlanszerzodes': 'schmidt-bif-irodaberlet',
+  'csizmadia-egyetemi-alapitvany-befektetes': 'matolcsy-mnb-gtc-ingatlan-adossag',
+  'varhegyi-attila-agrarminiszterium-ugyved': 'nagy-janos-agrarminiszterium',
+  'tiborcz-titkosszolgalat-belharc-eu-nyomozok': 'tiborcz-elios-innovativ',
+  'tiborcz-mnb-alapitvany-equilor': 'mnb-botrany',
+  'tiborcz-bar-co-adozas': 'tiborcz-csaladi-vezetoi-poziciok',
+  'tasnadi-diakvados-pinter': 'pinter-biztonsag-kartell',
+  'simonka-birosagi-fuggetlen': 'simonka-gyorgy-polgarmeister-eljarus',
+  'takacs-peter-lelegeztetogep-muty': 'lelegeztetogep',
+  'szentkiralyi-fudan-esg': 'fudan-egyetem-alapitvany-foldre-szerzodes',
+  'schmidt-terror-haza-muzeum': 'schmidt-marias-alapitvany-milliardos-szerz',
+  'szeged-csanadi-egyhaz-stadion': 'fejervar-focis-kozbeszerzesi-ugy',
+  'schmidt-mtu-alapitvany-szerencsejatek': 'szerencsejatek-szponzorpenz-osztas',
+  'pinter-civil-biztonsagi-mav-penztarak': 'pinter-civil-biztonsagi-szervezet',
+  'rogan-feltalalotar-milliardsag': 'rogan-mobilsign-szabadalom',
+  'rogan-tiborcz-265-megbizas-ugy': 'rogan-hydra-ops-penzcapja',
+  'rogan-hungexpo-propagandacelok': 'balasy-gyula-ugy',
+  'rogan-dignitas-vagyonkezelo': 'rogan-letelepedesi-biznisz',
+  'polt-peteroroszorszag-kasszaemleites': 'emmi-hid-munka-vilaga',
+  'portik-pert': 'barta-eke-ngm-25-milliardos-per',
+  'nemeth-szilard-varosi-civil-alap': 'fidesz-alcivil-halozat',
+  'mini-dubaj-eagle-hills-habony': 'mini-dubaj-alabbar',
+  'nagy-marton-kravtex-korrupcios': 'nagy-marton-csaladi-alapok',
+  'nagy-marton-iparkamara-szekhazbeszerzese': 'nagy-marton-csaladi-alapok',
+  'ner-palotavisszaszerzese': 'ner-allami-ingatlan-eladasok',
+  'mnb-matolcsy-alapkezelo': 'matolcsy-mnb-gtc-ingatlan-adossag',
+  'meszaros-valton-konzulatusvedelem': 'bessenyei-valton-prime-multi',
+  'meszaros-ced-tender': 'meszaros-flottakezelesi-tender',
+  'meszaros-hungarocontrol-legiforgalom': 'meszaros-flottakezelesi-tender',
+  'meszaros-szuverenitaskezpont-plakat': 'balasy-gyula-ugy',
+  'meszaros-testveri-tender-korrupcios': 'meszaros-janost-herceghalom-interat',
+  'lazar-whb-magyar-radio-bontasa': 'tiborcz-pazmany-radi-bontas',
+  'matolcsy-mnb-frank-digital': 'balasy-gyula-ugy',
+  'matolcsy-raw-development-szekhazbontasa': 'matolcsy-mnb-szazmilyardok',
+  'matolcsy-mind-invest-klinika': 'mnb-botrany',
+  'matolcsy-dubaj-luxusingatlan': 'matolcsy-adam-luxusingatlan',
   'varga-zoltan-avogadro-projekt': '/adatbazis/varga-zoltan-nogradi-vegyipari',
   'marki-zay-usaid-penzmentes': '/adatbazis/marki-zay-mmmm-penzek',
   'agrarminstierium-korrupcios-halozat': '/adatbazis/nagy-janos-agrarminiszterium',
@@ -980,10 +1068,25 @@ export const RETIRED_REDIRECTS: Record<string, string> = {
   'hernadi-mcc-osztalek': '/adatbazis/mcc-mol-osztalek',
   'szestol-csepeli-birokzo-alapitvany': '/adatbazis/nemeth-szilard-alcivil',
   'matolcsy-adam-padme': '/adatbazis/matolcsy-mnb-gtc-ingatlan-adossag',
-  'orban-dohanygyar-trafik': '/adatbazis/santa-dohanybiznisz',
   'zugloi-parkolasi-ugy': '/adatbazis/horvath-csaba-parkolasi-botrany',
   'simonka-békés-korrupcios-ugy': '/adatbazis/simonka-gyorgy-polgarmeister-eljarus',
   'simonka-bekes-korrupcios-ugy': '/adatbazis/simonka-gyorgy-polgarmeister-eljarus',
+  'meszaros-matrai-gazermu-koltsegvetesi': '/adatbazis/meszaros-matrai-gazerőmu-elsewedy',
+  'balasy-augusztus-20-nkh': '/adatbazis/balasy-gyula-ugy',
+  'balasy-voks-2025-konzultacio': '/adatbazis/balasy-gyula-ugy',
+  'balasy-rendezveny-kozbeszerzesi': '/adatbazis/balasy-gyula-ugy',
+  'garancsi-stockton-mini-dubaj-ugy': '/adatbazis/rákosrendező-ecequity-garancsi-habony',
+  'szijjarto-comitatus-energia': '/adatbazis/szijjarto-keeöma-támogatás',
+  'alabbar-bm-epulet': '/adatbazis/ner-allami-ingatlan-eladasok',
+  'balasy-hm-hadipark-kalandpark': '/adatbazis/balasy-gyula-ugy',
+  'allami-palota-vetelek': '/adatbazis/ner-allami-ingatlan-eladasok',
+  'barta-eke-ifka-korrupcios-orias-per': '/adatbazis/barta-eke-ngm-25-milliardos-per',
+  'fulco-deák-egyesulet-penza-osztasa': '/adatbazis/fidesz-alcivil-halozat',
+  'fulco-deak-egyesulet-penza-osztasa': '/adatbazis/fidesz-alcivil-halozat',
+  'fideszes-alcivileti-tamogatas': '/adatbazis/fidesz-alcivil-halozat',
+  'huth-hanko-levatarak-munkacsarnoki-penzek': '/adatbazis/nka-botrany',
+  'kecskemet-neumann-egyetem-alapitvany': '/adatbazis/matolcsy-mnb-gtc-ingatlan-adossag',
+  'hanko-balazs-kulturalis-tamogatas-diskriminacio': '/adatbazis/nka-botrany',
   'ner-milliardok': '/adatbazis/meszaros-lorinc-osszes-ugye',
   'meszaros-szvj-autopalya-koncesszio': '/adatbazis/meszaros-szijj-autopalya-koncesszio',
   // Gattyán NAV/Docler adóügy — same case, same 19,4 Mrd figure, two scandalKeys.

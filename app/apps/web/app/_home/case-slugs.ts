@@ -17,6 +17,7 @@
  * scripts/generate-case-slugs.mts állít elő a ténylegesen megjelenő címből.
  */
 import overrides from './case-slug-overrides.generated.json';
+import supersededGenerated from './case-slug-superseded.generated.json';
 
 const OVERRIDES = overrides as Record<string, string>;
 const REVERSE: Record<string, string> = Object.fromEntries(
@@ -38,9 +39,35 @@ export function caseHref(id: string): string {
   return `/adatbazis/${encodeURIComponent(caseSlug(id))}`;
 }
 
+/**
+ * Korábban élő, azóta lecserélt slugok → id (a 308 miatt a régi link sem törik).
+ * Akkor kell ide sor, ha egy slugot tartalmi hiba miatt kézzel átírunk a táblában.
+ */
+const SUPERSEDED: Record<string, string> = {
+  // 2026-09-30: a „30 milliárdos adókedvezmény" a 24.hu pontosítása szerint téves volt.
+  'tiborcz-istvan-bdpst-csoportja-30-milliardos-adokedvezmeny-botrany': 'tiborcz-csaladi-vezetoi-poziciok',
+  // 2026-09-30: az „1,7 milliárd" vesszőnél elvágva értelmetlen „…-szerint-1-…" slug lett.
+  'gyor-szol-polgarmester-szerint-1-botrany': 'borkai-gyor-szol-ugy',
+  // 2026-09-30: az összeg tizedesvesszőnél elvágva csonka „…-1-botrany" típusú slugok.
+  'oroshazi-kezilabdaklub-osszeomlasa-1-3-botrany': 'oroszhaza-kezilabda-botrany',
+  'somlai-balint-matolcsy-adam-baratja-csaladja-85-botrany': 'somlai-budavar-lakasok',
+  'tasnadi-laszlo-bortontelefon-verseny-nelkul-kapta-5-botrany': 'tasnadiborotelefonugye',
+  'tiborcz-istvan-kozeli-alap-vette-meg-1-botrany': 'tiborcz-fovam-ter',
+  // 2026-09-30: a régi slug rágalmazó/hamis személynevet tartalmazott.
+  'mager-andrea-penzmosas': 'mager-penzmotas',
+  'forro-krisztian-sk-kampany-botrany': 'forró-krisztián-sk-kampanya',
+};
+
+/**
+ * A forrás-ellenőrzés után elavult (a javított címben már nem szereplő
+ * személynevet tartalmazó) slugok → id. Generálja:
+ * scripts/refresh-audited-slugs.mts.
+ */
+const SUPERSEDED_GENERATED = supersededGenerated as Record<string, string>;
+
 /** Egy átnevezett slugból visszaadja az ügy id-jét; más slugra null. */
 export function caseIdFromSlug(slug: string): string | null {
-  return REVERSE[slug] ?? null;
+  return REVERSE[slug] ?? SUPERSEDED[slug] ?? SUPERSEDED_GENERATED[slug] ?? null;
 }
 
 // ── Generáláshoz (scripts/generate-case-slugs.mts + teszt) ─────────────────
