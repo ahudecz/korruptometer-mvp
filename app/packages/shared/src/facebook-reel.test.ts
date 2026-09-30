@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { facebookEmbedUrl, isFacebookVideoUrl } from './facebook-reel';
+import { facebookEmbedUrl, facebookPostEmbedUrl, isFacebookPostUrl, isFacebookVideoUrl } from './facebook-reel';
 
 // A 2026-09-15-i kézi teszt alanya (Molnár Áron reelje) — ezen mértük, hogy
 // a plugin-lejátszó bejelentkezés nélkül betöltődik és játszik.
@@ -52,5 +52,35 @@ describe('facebookEmbedUrl', () => {
   it('nem videós URL-re null', () => {
     expect(facebookEmbedUrl('https://www.facebook.com/atlatszo/posts/1')).toBeNull();
     expect(facebookEmbedUrl('nem-url')).toBeNull();
+  });
+});
+
+describe('facebook post embed', () => {
+  const POST = 'https://www.facebook.com/majkahivatalos/posts/pfbid02zXyJaPQWamjLnGaPSWXkixxT4YzqYfjaXs52DCj8UWznAJnHoKhregUX3L8fkEEdl';
+
+  it('recognises a /<page>/posts/<id> permalink', () => {
+    expect(isFacebookPostUrl(POST)).toBe(true);
+    expect(isFacebookPostUrl('https://m.facebook.com/majkahivatalos/posts/123/')).toBe(true);
+  });
+
+  it('recognises permalink.php with story_fbid and id', () => {
+    expect(isFacebookPostUrl('https://www.facebook.com/permalink.php?story_fbid=1&id=2')).toBe(true);
+    expect(isFacebookPostUrl('https://www.facebook.com/permalink.php?story_fbid=1')).toBe(false);
+  });
+
+  it('rejects videos, reels and foreign hosts', () => {
+    expect(isFacebookPostUrl('https://www.facebook.com/reel/123')).toBe(false);
+    expect(isFacebookPostUrl('https://www.facebook.com/page/videos/123')).toBe(false);
+    expect(isFacebookPostUrl('https://evil.example/majkahivatalos/posts/1')).toBe(false);
+    expect(isFacebookPostUrl('not a url')).toBe(false);
+  });
+
+  it('builds a www post.php URL with the post as encoded href', () => {
+    const embed = facebookPostEmbedUrl(POST.replace('www.', 'm.'))!;
+    const u = new URL(embed);
+    expect(u.origin + u.pathname).toBe('https://www.facebook.com/plugins/post.php');
+    expect(u.searchParams.get('href')).toBe(POST);
+    expect(u.searchParams.get('show_text')).toBe('true');
+    expect(facebookPostEmbedUrl('https://www.facebook.com/reel/1')).toBeNull();
   });
 });

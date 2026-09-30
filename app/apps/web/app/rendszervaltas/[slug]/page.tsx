@@ -16,6 +16,7 @@ import {
 } from '../../_home/rendszervaltas-config';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak, CrossErdekesUgyek } from '../../_home/cross-promo';
 import { FeltaroVideo } from '../../_home/feltaro-video';
+import { FbPostEmbed } from '../../_home/fb-post-embed';
 import { withAutoLinks } from '../../_home/auto-link-text';
 import { PodcastVideoBox } from '../../_home/podcast-video-box';
 import styles from '../dicsosegfal.module.css';
@@ -166,13 +167,26 @@ function Timeline({ items }: { items: { when: string; text: string; href?: strin
 
 const HU_MONTH_STEMS = ['jan', 'febr', 'márc', 'ápr', 'máj', 'jún', 'júl', 'aug', 'szept', 'okt', 'nov', 'dec'];
 
+// Évszak / évrész → a hozzá tartozó hónap. 2026-09-30: Majkánál a „2025 nyara"
+// (Petőfi Rádió) hónap nélkül 0-s kulcsot kapott, és a januári Bindzsisztán
+// ELÉ került. Azonos hónapon belül a rendezés stabil, a config sorrendje marad.
+const HU_PERIOD_MONTHS: [string, number][] = [
+  ['tavasz', 4], ['nyár', 7], ['nyar', 7], ['ősz', 10], ['tél', 12], ['tel', 12],
+  ['elej', 1], ['közep', 6], ['vég', 12],
+];
+
 /** Rendezési kulcs egy emberi dátumhoz („2024. február 16.", „2018–2019",
- *  „2020-tól"): az ELSŐ évszám és — ha rögtön utána áll — a hónap. Az
- *  idővonalnak időrendben kell lennie akkor is, ha az ügylista nem az. */
+ *  „2020-tól", „2025 nyara"): az ELSŐ évszám és — ha rögtön utána áll — a
+ *  hónap vagy évszak. Az idővonalnak időrendben kell lennie akkor is, ha az
+ *  ügylista nem az. */
 function whenSortKey(when: string): number {
-  const m = when.match(/(\d{4})(?:\.\s*([a-záéíóöőúüű]+))?/i);
+  const m = when.match(/(\d{4})(?:\.?\s+([a-záéíóöőúüű]+))?/i);
   if (!m) return Number.MAX_SAFE_INTEGER;
-  const month = m[2] ? HU_MONTH_STEMS.findIndex((s) => m[2]!.toLowerCase().startsWith(s)) + 1 : 0;
+  const word = m[2]?.toLowerCase();
+  const month = word
+    ? HU_MONTH_STEMS.findIndex((s) => word.startsWith(s)) + 1
+      || (HU_PERIOD_MONTHS.find(([s]) => word.startsWith(s))?.[1] ?? 0)
+    : 0;
   return Number(m[1]) * 100 + month;
 }
 
@@ -546,6 +560,14 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
                           variant="wide"
                         />
                       ))}
+                      {c.facebookPost && (
+                        <FbPostEmbed
+                          url={c.facebookPost.url}
+                          authorName={c.facebookPost.authorName}
+                          date={c.facebookPost.date}
+                          excerpt={c.facebookPost.excerpt}
+                        />
+                      )}
                       {c.highlight && (
                         <>
                           <aside className={styles.caseHighlight}>

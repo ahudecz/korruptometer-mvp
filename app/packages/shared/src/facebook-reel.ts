@@ -85,3 +85,32 @@ function parseFbUrl(url: string): URL | null {
   if (!FB_HOSTS.has(u.hostname.toLowerCase())) return null;
   return u;
 }
+
+/**
+ * Igaz, ha az URL egy Facebook SZÖVEGES poszt permalinkje, amit a
+ * `plugins/post.php` meg tud jeleníteni: `facebook.com/<oldal>/posts/<id>`
+ * vagy `facebook.com/permalink.php?story_fbid=…&id=…`.
+ *
+ * user kérés, 2026-09-30: Majka 2025. július 27-i posztja (az elmúlt évek
+ * legnépszerűbb magyar Facebook-posztja) legyen beágyazva a profilján.
+ * Mérve aznap: a post.php publikus posztra bejelentkezés nélkül betölti a
+ * teljes szöveget.
+ */
+export function isFacebookPostUrl(url: string): boolean {
+  const u = parseFbUrl(url);
+  if (!u || u.hostname === 'fb.watch') return false;
+  const path = u.pathname.replace(/\/+$/, '');
+  if (/^\/[^/]+\/posts\/[^/]+$/.test(path)) return true;
+  if (path === '/permalink.php' && u.searchParams.get('story_fbid') && u.searchParams.get('id')) return true;
+  return false;
+}
+
+/** A poszt-beágyazó URL-je, vagy null, ha a bemenet nem szöveges poszt. */
+export function facebookPostEmbedUrl(url: string): string | null {
+  if (!isFacebookPostUrl(url)) return null;
+  const u = parseFbUrl(url)!;
+  u.hostname = 'www.facebook.com';
+  u.protocol = 'https:';
+  const params = new URLSearchParams({ href: u.toString(), show_text: 'true', width: '500' });
+  return `https://www.facebook.com/plugins/post.php?${params.toString()}`;
+}
