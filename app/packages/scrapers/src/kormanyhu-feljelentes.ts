@@ -22,10 +22,10 @@ import { httpGet } from './http';
 export type KormanyHuComplaint = {
   name: string;
   ministry: string;
-  /** Ft-ban, egész szám. */
-  amountFt: bigint;
-  /** Az oldal saját megjelenítési formátuma, pl. "640 milliárd Ft", "825 millió Ft". */
-  amountLabel: string;
+  /** Ft-ban, egész szám; null, ha az oldal nem közöl összeget. */
+  amountFt: bigint | null;
+  /** Az oldal saját megjelenítési formátuma, pl. "640 milliárd Ft", "825 millió Ft"; null, ha nincs összeg. */
+  amountLabel: string | null;
   /** ISO (YYYY-MM-DD), vagy null, ha az oldal "nincs adat"-ot ír. */
   filedDateIso: string | null;
   crimeTypes: string | null;
@@ -58,9 +58,25 @@ function parseFiledDate(raw: string): string | null {
   return `${y}-${mo!.padStart(2, '0')}-${d!.padStart(2, '0')}`;
 }
 
-export function parseKormanyHuFeljelentesPage(html: string): KormanyHuComplaint[] {
+/** Egy sor, amit nem tudtunk feldolgozni — sosem dobjuk el csendben, a sync Telegramon jelzi. */
+export type KormanyHuSkippedRow = { name: string; reason: string };
+
+export type KormanyHuFeljelentesPage = {
+  items: KormanyHuComplaint[];
+  skipped: KormanyHuSkippedRow[];
+  /** Az oldal fejlécében közölt ügyszám ("... 37 ügyben tettek feljelentést"), vagy null, ha nem találjuk. */
+  declaredTotal: number | null;
+};
+
+// 2026-09-30: a Kovács Katalin Kajak-Kenu Akadémia sorát (nincs összeg, mert
+// "a vagyoni hátrány még közelítőleg sem állapítható meg") az összeg-kötelező
+// feltétel csendben eldobta, így nálunk 31 ügy volt a kormany.hu 32 sora
+// helyett. Összeg nélküli sor érvényes (a feljelentés-táblában 16 ilyen van);
+// ami tényleg feldolgozhatatlan, az a `skipped` listába kerül, nem tűnik el.
+export function parseKormanyHuFeljelentesPageWithMeta(html: string): KormanyHuFeljelentesPage {
   const $ = cheerio.load(html);
   const out: KormanyHuComplaint[] = [];
+  const skipped: KormanyHuSkippedRow[] = [];
 
   $('.row[data-n]').each((_, el) => {
     const $el = $(el);
@@ -68,7 +84,11 @@ export function parseKormanyHuFeljelentesPage(html: string): KormanyHuComplaint[
     const ministry = $el.attr('data-m')?.trim();
     const rawValue = $el.attr('data-v')?.trim();
     const unit = $el.attr('data-unit')?.trim();
-    if (!name || !ministry || !rawValue || !unit) return;
+    if (!name || !ministry) {
+      skipped.push({ name: name || '(név nélkül)', reason: !name ? 'hiányzik a név' : 'hiányzik a minisztérium' });
+      return;
+    }
+    const hasAmount = Boolean(rawValue && unit);
 
     const description = $el.attr('data-x')?.trim() || name;
     const crimeTypes = $el.attr('data-g')?.trim() || null;
@@ -80,8 +100,8 @@ export function parseKormanyHuFeljelentesPage(html: string): KormanyHuComplaint[
     out.push({
       name,
       ministry,
-      amountFt: parseAmountFt(rawValue, unit),
-      amountLabel: formatAmountLabel(rawValue, unit),
+      amountFt: hasAmount ? parseAmountFt(rawValue!, unit!) : null,
+      amountLabel: hasAmount ? formatAmountLabel(rawValue!, unit!) : null,
       filedDateIso: parseFiledDate(filedDateRaw),
       crimeTypes,
       status,
@@ -90,10 +110,22 @@ export function parseKormanyHuFeljelentesPage(html: string): KormanyHuComplaint[
     });
   });
 
-  return out;
+  const text = $('body').text().replace(/\s+/g, ' ');
+  const total = text.match(/(\d+)\s+ügyben tettek feljelentést/);
+  const declaredTotal = total ? Number(total[1]) : null;
+
+  return { items: out, skipped, declaredTotal };
+}
+
+export function parseKormanyHuFeljelentesPage(html: string): KormanyHuComplaint[] {
+  return parseKormanyHuFeljelentesPageWithMeta(html).items;
+}
+
+export async function fetchKormanyHuFeljelentesPage(): Promise<KormanyHuFeljelentesPage> {
+  const html = await httpGet(ATLATHATO_URL);
+  return parseKormanyHuFeljelentesPageWithMeta(html);
 }
 
 export async function fetchKormanyHuComplaints(): Promise<KormanyHuComplaint[]> {
-  const html = await httpGet(ATLATHATO_URL);
-  return parseKormanyHuFeljelentesPage(html);
+  return (await fetchKormanyHuFeljelentesPage()).items;
 }

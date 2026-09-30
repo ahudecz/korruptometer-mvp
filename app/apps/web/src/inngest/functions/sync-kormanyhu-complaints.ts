@@ -1,7 +1,7 @@
 import 'server-only';
 import { eq } from 'drizzle-orm';
 
-import { fetchKormanyHuComplaints, type KormanyHuComplaint } from '@korr/scrapers/kormanyhu-feljelentes';
+import { fetchKormanyHuFeljelentesPage, type KormanyHuComplaint } from '@korr/scrapers/kormanyhu-feljelentes';
 import { looksGovernmentFiled, mapOfficialStatus, matchStrength } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
 import { sendTelegramMessage } from '@/lib/telegram';
@@ -71,9 +71,39 @@ export async function runKormanyHuSyncCore({
 }) {
   const db = getDb();
 
-  const official = await step.run('fetch-kormanyhu', () => fetchKormanyHuComplaints());
+  const page = await step.run('fetch-kormanyhu', () => fetchKormanyHuFeljelentesPage());
+  const official = page.items;
+
+  // 2026-09-30: egy összeg nélküli sort a parser csendben eldobott, és ezt
+  // senki nem vette észre (nálunk 31, a kormany.hu-n 32 sor + 37-es fejléc).
+  // Szabály: ami kimarad, vagy ahol a számok nem egyeznek, arról MINDIG
+  // Telegram-jelzés megy — sosem csendes kihagyás.
+  const countWarnings: string[] = [];
+  if (page.skipped.length > 0) {
+    countWarnings.push(
+      `Feldolgozhatatlan sor a kormany.hu-n (${page.skipped.length}) — nálunk NEM került be:\n${page.skipped.map((r) => `• ${r.name} (${r.reason})`).join('\n')}`,
+    );
+  }
+  const tableRows = official.length + page.skipped.length;
+  if (page.declaredTotal === null) {
+    countWarnings.push('A kormany.hu fejlécében nem találom az ügyszámot („N ügyben tettek feljelentést”) — lehet, hogy megváltozott az oldal.');
+  } else if (page.declaredTotal !== tableRows) {
+    countWarnings.push(
+      `A kormany.hu fejléce ${page.declaredTotal} ügyet ír, de a táblázatában csak ${tableRows} sor van — a különbséget (${page.declaredTotal - tableRows}) az oldal nem sorolja fel, így nem tudjuk átvenni.`,
+    );
+  }
+
   if (official.length === 0) {
     logger?.warn?.('sync-kormanyhu: 0 sort talált — valószínűleg megváltozott az oldal szerkezete, kihagyva.');
+    await step.run('notify-kormanyhu-empty', () =>
+      sendTelegramMessage(
+        [
+          '📋 Kormany.hu napi egyeztetés',
+          '\n⚠️ 0 feljelentés-sort találtam az oldalon — valószínűleg megváltozott a szerkezete, a szinkron kimaradt.',
+          ...countWarnings.map((w) => `\n⚠️ ${w}`),
+        ].join('\n'),
+      ),
+    );
     return { added: 0, updated: 0, flagged: 0 };
   }
 
@@ -100,7 +130,7 @@ export async function runKormanyHuSyncCore({
     if (match) {
       matchedIds.add(match.id);
       const changes: string[] = [];
-      if (match.amountLabel !== item.amountLabel) changes.push(`összeg: "${match.amountLabel ?? '–'}" → "${item.amountLabel}"`);
+      if (match.amountLabel !== item.amountLabel) changes.push(`összeg: "${match.amountLabel ?? '–'}" → "${item.amountLabel ?? '–'}"`);
       const mappedStatus = mapOfficialStatus(item.status);
       if (match.status !== mappedStatus) changes.push(`státusz: "${match.status}" → "${mappedStatus}"`);
 
@@ -174,7 +204,7 @@ export async function runKormanyHuSyncCore({
         reviewStatus: 'approved',
       }),
     );
-    addedLines.push(`• ${item.name} (${item.ministry}, ${item.amountLabel})`);
+    addedLines.push(`• ${item.name} (${item.ministry}, ${item.amountLabel ?? 'nincs összeg'})`);
   }
 
   // Kormányzati bejelentőjű sorunk, amit ma egyetlen hivatalos tétel sem
@@ -182,7 +212,7 @@ export async function runKormanyHuSyncCore({
   const unmatchedGovRows = ourRows.filter((r) => !matchedIds.has(r.id) && looksGovernmentFiled(r.filerName));
   const flaggedLines = unmatchedGovRows.map((r) => `• ${r.targetName} (bejelentő: ${r.filerName}, ${r.amountLabel ?? 'nincs összeg'})`);
 
-  if (addedLines.length > 0 || updatedLines.length > 0 || flaggedLines.length > 0) {
+  if (addedLines.length > 0 || updatedLines.length > 0 || flaggedLines.length > 0 || countWarnings.length > 0) {
     await step.run('notify-kormanyhu-sync', async () => {
       const parts: string[] = ['📋 Kormany.hu napi egyeztetés'];
       if (addedLines.length > 0) parts.push(`\n➕ Új tétel (${addedLines.length}):\n${addedLines.join('\n')}`);
@@ -192,6 +222,7 @@ export async function runKormanyHuSyncCore({
           `\n⚠️ Nálunk kormányzati bejelentőjű, de ma nem talált hivatalos párja (${flaggedLines.length}) — lehet, hogy csak a szöveges egyeztetés hibázott (l. kormanyhu-match.ts), nézd át kézzel:\n${flaggedLines.join('\n')}`,
         );
       }
+      for (const w of countWarnings) parts.push(`\n⚠️ ${w}`);
       await sendTelegramMessage(parts.join('\n'));
     });
   }

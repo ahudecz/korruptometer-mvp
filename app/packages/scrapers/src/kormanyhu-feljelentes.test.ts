@@ -1,14 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { parseKormanyHuFeljelentesPage } from './kormanyhu-feljelentes';
+import { parseKormanyHuFeljelentesPage, parseKormanyHuFeljelentesPageWithMeta } from './kormanyhu-feljelentes';
 
 const FIXTURE = readFileSync(join(__dirname, '..', '__fixtures__', 'kormanyhu-feljelentes.html'), 'utf8');
 
 describe('parseKormanyHuFeljelentesPage', () => {
   it('parses all rows in the fixture', () => {
     const rows = parseKormanyHuFeljelentesPage(FIXTURE);
-    expect(rows).toHaveLength(4);
+    expect(rows).toHaveLength(5);
   });
 
   it('parses a normal Mrd row with a real case-link', () => {
@@ -52,5 +52,29 @@ describe('parseKormanyHuFeljelentesPage', () => {
     const rows = parseKormanyHuFeljelentesPage(FIXTURE);
     const row = rows.find((r) => r.name.startsWith('Kárpát'));
     expect(row!.sourceUrl).toBe('https://kormany.hu/atlathato/feljelentes');
+  });
+
+  // 2026-09-30: az összeg nélküli sort (Kajak-Kenu Akadémia) eddig csendben eldobtuk.
+  it('keeps a row without an amount, with null amount fields', () => {
+    const rows = parseKormanyHuFeljelentesPage(FIXTURE);
+    const row = rows.find((r) => r.name.startsWith('Kovács Katalin'));
+    expect(row).toBeDefined();
+    expect(row!.amountFt).toBeNull();
+    expect(row!.amountLabel).toBeNull();
+    expect(row!.ministry).toBe('Belügyminisztérium');
+    expect(row!.filedDateIso).toBe('2026-09-18');
+  });
+
+  it('reports unparseable rows in skipped instead of dropping them silently', () => {
+    const page = parseKormanyHuFeljelentesPageWithMeta(FIXTURE);
+    expect(page.skipped).toEqual([{ name: 'Név nélküli minisztérium', reason: 'hiányzik a minisztérium' }]);
+  });
+
+  it('reads the declared total from the page header', () => {
+    expect(parseKormanyHuFeljelentesPageWithMeta(FIXTURE).declaredTotal).toBe(37);
+  });
+
+  it('returns null declaredTotal when the header sentence is missing', () => {
+    expect(parseKormanyHuFeljelentesPageWithMeta('<html><body></body></html>').declaredTotal).toBeNull();
   });
 });

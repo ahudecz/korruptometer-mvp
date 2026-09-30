@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('server-only', () => ({}));
-vi.mock('@/lib/telegram', () => ({ sendTelegramMessage: vi.fn(async () => undefined) }));
+const telegramMessages: string[] = [];
+vi.mock('@/lib/telegram', () => ({ sendTelegramMessage: vi.fn(async (m: string) => { telegramMessages.push(m); }) }));
 
 const officialItems = [
   {
@@ -17,7 +18,11 @@ const officialItems = [
 ];
 
 vi.mock('@korr/scrapers/kormanyhu-feljelentes', () => ({
-  fetchKormanyHuComplaints: vi.fn(async () => officialItems),
+  fetchKormanyHuFeljelentesPage: vi.fn(async () => ({
+    items: officialItems,
+    skipped: [{ name: 'Hibás sor', reason: 'hiányzik a minisztérium' }],
+    declaredTotal: 5,
+  })),
 }));
 
 const updates: Array<Record<string, unknown>> = [];
@@ -72,5 +77,14 @@ describe('sync-kormanyhu: a hivatalos szöveg felülírja a sajtóból kinyertet
       'https://kormany.hu/atlathato/feljelentes',
     ]);
     expect(patch.sourceNames).toEqual(['444.hu', 'kormany.hu (hivatalos)']);
+  });
+
+  // 2026-09-30: a kihagyott sor és a fejléc-ügyszám eltérése sosem lehet csendes.
+  it('Telegramon jelzi a kihagyott sort és a fejléc-ügyszám eltérését', async () => {
+    telegramMessages.length = 0;
+    await runKormanyHuSyncCore({ step });
+    const msg = telegramMessages.join('\n');
+    expect(msg).toContain('Hibás sor (hiányzik a minisztérium)');
+    expect(msg).toContain('5 ügyet ír, de a táblázatában csak 2 sor van');
   });
 });
