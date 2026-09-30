@@ -14,7 +14,7 @@ import {
   type FeltaroLink,
   type InlineLink,
 } from '../../_home/rendszervaltas-config';
-import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../_home/cross-promo';
+import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak, CrossErdekesUgyek } from '../../_home/cross-promo';
 import { FeltaroVideo } from '../../_home/feltaro-video';
 import { withAutoLinks } from '../../_home/auto-link-text';
 import { PodcastVideoBox } from '../../_home/podcast-video-box';
@@ -920,6 +920,7 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
 
       <div className="cross-promo-below-more">
         <div className="cross-promo-below-more-inner">
+          <CrossErdekesUgyek pageKey={`/rendszervaltas/${slug}`} />
           <CrossLemondosok />
           <CrossGaleria />
           <CrossMegszunt />

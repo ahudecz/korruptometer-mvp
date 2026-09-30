@@ -10,6 +10,7 @@ import { PollBanner } from './_home/poll-banner';
 import { ResignationsSection } from './_home/resignations-section';
 import { MediaClosuresSection } from './_home/media-closures-section';
 import { DicsosegfalTeaser } from './_home/dicsosegfal-teaser';
+import { CrossErdekesUgyek } from './_home/cross-promo';
 import { MiniClosureCard } from './_home/closure-card';
 import { SubmissionCTA } from './_home/submission-cta';
 import { NewsletterCta } from './_home/newsletter-cta';
@@ -22,7 +23,7 @@ import { BigCasesSection, type BigCaseConfig } from './_home/big-cases-section';
 import { BreakingBanner } from './_home/breaking-banner';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './_home/galeria-config';
 import { UGYEK } from './_home/ugyek-config';
-import { autoDisplayTitle, getCaseDisplayTitle, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS, toAsciiId } from './_home/case-detail-config';
+import { autoDisplayTitle, getCaseDisplayTitle, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS } from './_home/case-detail-config';
 import { NewsCardImage } from './hirek/news-card-image';
 import { PodcastVideoCard } from './_home/podcast-video-card';
 import { FeljelentesTeaserCard } from './_home/feljelentes-teaser-card';
@@ -30,6 +31,7 @@ import { computeComplaintBarMax } from './birosagi-iteletek/complaint-stats';
 import { PodcastSpotlight } from './_home/podcast-spotlight';
 import { cleanSpotlightDescription } from '@/lib/podcast-description';
 import { pickBreakingArticle } from '@/lib/breaking-pick';
+import { caseHref } from './_home/case-slugs';
 
 // force-dynamic. ISR (revalidate) was tried instead on 2026-07-08, on the
 // mistaken assumption that per-visit query volume was blowing through the
@@ -43,6 +45,11 @@ import { pickBreakingArticle } from '@/lib/breaking-pick';
 // dynamic pages skip build-time pre-render entirely. Reverted for now.
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
+
+// A layout nem adhat canonical-t (minden aloldal a nyitóra mutatna), ezért
+// oldalanként állítjuk — a ?utm_… és egyéb paraméteres változatok így mind
+// a tiszta URL-re kanonizálódnak.
+export const metadata = { alternates: { canonical: '/' } };
 
 // Date-mentes lekérdezések cache-elve — nincs serialization probléma, warm kérésnél 0ms
 type ScandalRow = { id: string; name: string; person: string | null; institution: string | null; article_count: number; investigation_count: number; damage_huf: string; is_open: boolean };
@@ -1302,10 +1309,10 @@ export default async function HomePage() {
           </thead>
           <tbody>
             {recentScandals.map((c) => (
-              <CaseRow key={c.id} href={`/adatbazis/${encodeURIComponent(toAsciiId(c.id))}`}>
+              <CaseRow key={c.id} href={caseHref(c.id)}>
                 <td data-label="Ügy">
-                  <Link href={`/adatbazis/${encodeURIComponent(toAsciiId(c.id))}`} className="case-name">
-                    {autoDisplayTitle(c.name ?? '', c.person ?? null, getCaseDisplayTitle(c.id))}
+                  <Link href={caseHref(c.id)} className="case-name">
+                    {autoDisplayTitle(c.name ?? '', c.person ?? null, getCaseDisplayTitle(c.id), c.id)}
                   </Link>
                   {c.investigation_count > 1 && (
                     <div className="case-id">{fmtNumber(c.investigation_count)} kapcsolódó ügy</div>
@@ -1341,6 +1348,12 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
+
+      {/* SEO belső linkek: hetente változó ügyek az adatbázisból
+          (case-recommendations.ts). Cache-elt lekérdezés — a nyitóoldal
+          render-útjába nem kerülhet cache nélküli DB-hívás. Az asSection a sötét
+          keretet is a blokkal együtt rajzolja ki (üres ajánlónál semmit). */}
+      <CrossErdekesUgyek pageKey="/" count={10} asSection />
 
       {/* ───── NEWS ───── */}
       <div className="news-section-wrap">

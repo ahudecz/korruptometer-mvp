@@ -9,6 +9,7 @@ import { computeRecoveryTotal } from './recovery-stats';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
+  alternates: { canonical: '/visszaszerzett-vagyon' },
   title: { absolute: 'Visszaszerzett és visszakövetelt vagyon' },
   description: 'Nyomon követjük, mennyi NER-korszakban eltűnt közpénz és vagyon térült meg eddig, illetve mekkora összeget követelnek még vissza. Kattints, és nézd meg, hol áll a mutató!',
 };

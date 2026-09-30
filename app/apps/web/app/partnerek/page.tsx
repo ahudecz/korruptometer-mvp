@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
+  alternates: { canonical: '/partnerek' },
   title: 'Partnerek',
   description: 'A Kegyencjárat partneri szervezetei és együttműködései.',
 };

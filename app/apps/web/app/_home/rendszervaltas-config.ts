@@ -848,7 +848,7 @@ export const FELTAROK: Feltaro[] = [
     live: true,
     related: [
       { label: 'Hatvanpuszta — a kiemelt ügy', href: '/ugyek/hatvanpuszta' },
-      { label: 'Szijjártó adriai jachtozása', href: '/adatbazis/szijjarto-adriai-jacht' },
+      { label: 'Szijjártó adriai jachtozása', href: '/adatbazis/szijjarto-peter-adriai-jachtozasi-botrany' },
     ],
     section: {
       heading: 'Átlátszó — aki perre vitte az elhallgatott iratokat',
@@ -990,7 +990,7 @@ export const FELTAROK: Feltaro[] = [
               },
             ],
             promo: {
-              href: '/adatbazis/szijjarto-adriai-jacht',
+              href: '/adatbazis/szijjarto-peter-adriai-jachtozasi-botrany',
               eyebrow: 'Az adatbázisban',
               title: 'Szijjártó adriai jachtozása',
               lead:
@@ -2070,7 +2070,7 @@ export const FELTAROK: Feltaro[] = [
                   'A sorozat ötödik része a Tiborcz Istvánhoz köthető Elios-ügyet dolgozta fel. Az alapanyag egy uniós csalás elleni vizsgálat jelentése volt: olyan műfaj, amelyet sokan idéznek, de kevesen olvasnak végig. Az epizód ebből építette fel lépésről lépésre, hogy miként nyert sorozatban közvilágítási pályázatokat egy cég, és hol keletkezett a kár.',
                   'Ez a Juhász-módszer tiszta esete: az adat megvolt korábban is, a különbség az, hogy tíz perc alatt, képekkel és összegekkel végig lehetett követni. Az ügy önálló feldolgozása a Kegyencjárat adatbázisában is megvan.',
                 ],
-                links: [{ text: 'a Kegyencjárat adatbázisában', href: '/adatbazis/tiborcz-elios-zrt' }],
+                links: [{ text: 'a Kegyencjárat adatbázisában', href: '/adatbazis/tiborcz-elios-innovativ' }],
               },
             ],
             promo: {

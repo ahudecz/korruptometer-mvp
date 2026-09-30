@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { desc, ilike, like, or, and, eq, type SQL } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
@@ -8,7 +8,7 @@ import { UGYEK, UGYEK_REDIRECTS, type DescriptionBlock, type BreakingGroupArticl
 import { getSubpagesForUgy } from '../../_home/ugyek-subpages';
 import { GALERIA } from '../../_home/galeria-config';
 import { WATCH_LIST } from '../../_home/watchlist-config';
-import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../_home/cross-promo';
+import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak, CrossErdekesUgyek } from '../../_home/cross-promo';
 import { getRelatedComplaintsForUgy } from '@/lib/related-complaints';
 import { RelatedComplaintCard } from '../../_home/related-complaint-card';
 import { withAutoLinks } from '../../_home/auto-link-text';
@@ -54,6 +54,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return {
     title: { absolute: entry.title },
     description: `${base} ${UGY_CTA}`,
+    alternates: { canonical: `/ugyek/${id}` },
   };
 }
 
@@ -292,7 +293,7 @@ export async function generateStaticParams() {
 
 export default async function UgyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (UGYEK_REDIRECTS[id]) redirect(`/ugyek/${UGYEK_REDIRECTS[id]}`);
+  if (UGYEK_REDIRECTS[id]) permanentRedirect(`/ugyek/${UGYEK_REDIRECTS[id]}`);
   const entry = UGYEK.find((e) => e.id === id);
   if (!entry) notFound();
 
@@ -787,6 +788,7 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
       </div>
       <div className="cross-promo-below-more">
         <div className="cross-promo-below-more-inner">
+          <CrossErdekesUgyek pageKey={`/ugyek/${id}`} />
           <CrossLemondosok />
           <CrossGaleria />
           <CrossMegszunt />

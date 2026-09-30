@@ -1,12 +1,12 @@
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { sql } from 'drizzle-orm';
 
 import { fmtNumber } from '@korr/shared/format';
 import { FtValue } from '../../_home/ft-value';
 import { GALERIA } from '../../_home/galeria-config';
 import { WATCH_LIST } from '../../_home/watchlist-config';
-import { getCaseOverride, cleanTitle, autoDisplayTitle, PERSON_PHOTOS, RETIRED_REDIRECTS, RETIRED_SCANDAL_IDS, toAsciiId } from '../../_home/case-detail-config';
+import { getCaseOverride, cleanTitle, autoDisplayTitle, PERSON_PHOTOS, RETIRED_REDIRECTS, RETIRED_SCANDAL_IDS } from '../../_home/case-detail-config';
 import { getCaseVideo } from '../../_home/case-video-registry';
 import { fetchYouTubeMeta } from '@/lib/youtube-meta';
 import { DamageFigure } from '../_components/damage-figure';
@@ -18,35 +18,38 @@ import { getDb } from '@/lib/db';
 import { withCta, ctaForCase } from '../../_home/seo';
 import { PERSON_ROLLUPS } from '../../_home/person-rollup-config';
 import { getPersonStats } from '../../_home/featured-persons';
-import { PersonGaleriaPromo, CrossAdatbazisSzemelyek, CrossUgyek, CrossBirosag } from '../../_home/cross-promo';
+import { PersonGaleriaPromo, CrossAdatbazisSzemelyek, CrossUgyek, CrossBirosag, CrossErdekesUgyek } from '../../_home/cross-promo';
 import { isNerOutlet } from '../../_home/media-config';
+import { caseHref, caseIdFromSlug, caseSlug } from '../../_home/case-slugs';
 
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id: rawId } = await params;
-  const id = (() => { try { return decodeURIComponent(rawId).normalize('NFC'); } catch { return rawId; } })();
+  const requested = (() => { try { return decodeURIComponent(rawId).normalize('NFC'); } catch { return rawId; } })();
+  // Átnevezett URL → az ügy valódi id-je (case-slugs.ts).
+  const id = caseIdFromSlug(requested) ?? requested;
   const db = getDb();
   const override = getCaseOverride(id);
   const gen = (generatedContent as Record<string, { title?: string }>)[id];
   const rows = (await db.execute(sql`
-    SELECT sc.name, sc.person, sc.institution, sc.is_open, sc.summary FROM "ScandalCatalog" sc WHERE sc.id = ${id} LIMIT 1
-  `)) as unknown as Array<{ name: string; person: string | null; institution: string | null; is_open: boolean; summary: string | null }>;
+    SELECT sc.id, sc.name, sc.person, sc.institution, sc.is_open, sc.summary FROM "ScandalCatalog" sc WHERE sc.id = ${id} LIMIT 1
+  `)) as unknown as Array<{ id: string; name: string; person: string | null; institution: string | null; is_open: boolean; summary: string | null }>;
   let scandal = rows[0];
   if (!scandal) {
     // DB id may carry accents the (canonical, ascii) URL doesn't — see the
     // matching fallback in the page body below.
     try {
       const fallbackRows = (await db.execute(sql`
-        SELECT sc.name, sc.person, sc.institution, sc.is_open, sc.summary FROM "ScandalCatalog" sc WHERE unaccent(sc.id) = unaccent(${id}) LIMIT 1
-      `)) as unknown as Array<{ name: string; person: string | null; institution: string | null; is_open: boolean; summary: string | null }>;
+        SELECT sc.id, sc.name, sc.person, sc.institution, sc.is_open, sc.summary FROM "ScandalCatalog" sc WHERE unaccent(sc.id) = unaccent(${id}) LIMIT 1
+      `)) as unknown as Array<{ id: string; name: string; person: string | null; institution: string | null; is_open: boolean; summary: string | null }>;
       scandal = fallbackRows[0];
     } catch {
       // unaccent() unavailable — fall through to {} below like a genuine miss.
     }
   }
   if (!scandal) return {};
-  const title = autoDisplayTitle(scandal.name, scandal.person, override?.title ?? gen?.title);
+  const title = autoDisplayTitle(scandal.name, scandal.person, override?.title ?? gen?.title, scandal.id);
   // Base fact ends up in front, the CTA at the end — withCta() trims the
   // base (not the CTA) so ~939 auto-generated pages each get a distinct,
   // click-worthy description instead of a duplicate boilerplate line.
@@ -62,6 +65,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return {
     title: { absolute: title },
     description,
+    alternates: { canonical: caseHref(scandal.id) },
   };
 }
 
@@ -141,15 +145,17 @@ type KmdbRow = { news_id: number; title: string; source_url: string; kmdb_url: s
 
 export default async function ScandalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: rawId } = await params;
-  const id = (() => { try { return decodeURIComponent(rawId).normalize('NFC'); } catch { return rawId; } })();
-  if (RETIRED_REDIRECTS[id]) redirect(RETIRED_REDIRECTS[id]);
+  const requested = (() => { try { return decodeURIComponent(rawId).normalize('NFC'); } catch { return rawId; } })();
+  // Átnevezett URL → az ügy valódi id-je (case-slugs.ts); minden más URL
+  // maga az id (vagy annak ékezet nélküli alakja).
+  const lookupId = caseIdFromSlug(requested) ?? requested;
+  const retiredTarget = RETIRED_REDIRECTS[lookupId];
+  if (retiredTarget) {
+    // A cél-ügy URL-je maga is átnevezett lehet — egy lépésben oda megyünk.
+    const targetId = retiredTarget.startsWith('/adatbazis/') ? retiredTarget.slice('/adatbazis/'.length) : null;
+    permanentRedirect(targetId && !targetId.includes('/') ? caseHref(targetId) : retiredTarget);
+  }
   const db = getDb();
-  const override = getCaseOverride(id);
-  type GenEntry = { title?: string; filesKey?: string; blocks: DescriptionBlock[]; relatedNews?: { source: string; headline: string; date: string; url: string }[]; attribution?: string };
-  const gen = (generatedContent as Record<string, GenEntry>)[id];
-  // Editorial override wins; otherwise the LLM-generated (K-Monitor sourced) blocks.
-  const richBlocks: DescriptionBlock[] | undefined = override?.descriptionBlocks ?? gen?.blocks;
-  // Injektált article-card — feltöltve a DB-lekérdezések után (ld. displayBlocks).
 
   const headSelect = sql`
     SELECT sc.id, sc.name, sc.person, sc.institution, sc.summary, sc.article_count,
@@ -157,7 +163,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
            (SELECT string_agg(o."labelHu", ', ' ORDER BY o."sortOrder")
             FROM "OffenceTypeRef" o WHERE o.code = ANY(sc.offence_codes)) AS offence_labels
     FROM "ScandalCatalog" sc`;
-  const headRes = (await db.execute(sql`${headSelect} WHERE sc.id = ${id} LIMIT 1`)) as unknown as ScandalHeader[];
+  const headRes = (await db.execute(sql`${headSelect} WHERE sc.id = ${lookupId} LIMIT 1`)) as unknown as ScandalHeader[];
   let scandal = headRes[0];
   if (!scandal) {
     // No exact match — Investigation.scandalKey (the ScandalCatalog id) can
@@ -167,7 +173,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
     // ascii canonical URL, so no further redirect is needed for this case.
     try {
       const fallbackRes = (await db.execute(
-        sql`${headSelect} WHERE unaccent(sc.id) = unaccent(${id}) LIMIT 1`,
+        sql`${headSelect} WHERE unaccent(sc.id) = unaccent(${lookupId}) LIMIT 1`,
       )) as unknown as ScandalHeader[];
       scandal = fallbackRes[0];
     } catch {
@@ -176,12 +182,21 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
     if (!scandal) notFound();
   }
 
-  // Ascii is canonical for every /adatbazis/ URL — if what's currently in
-  // the address bar carries accents (an old external link, or someone
-  // pasting the DB's own accented scandalKey), redirect to the ascii form
-  // so an accented URL never stays live on-site.
-  const asciiId = toAsciiId(id);
-  if (asciiId !== id) redirect(`/adatbazis/${encodeURIComponent(asciiId)}`);
+  // Egyetlen kanonikus URL ügyenként: caseSlug(id) — az átnevezési tábla
+  // szerinti új slug, különben az id ékezet nélküli alakja. Minden más alak
+  // (ékezetes id, régi elgépelt slug) 308-cal ide megy, így a régi linkek és
+  // a Google-találatok sem törnek el.
+  if (caseSlug(scandal.id) !== requested) permanentRedirect(caseHref(scandal.id));
+
+  // Innentől a valódi DB-id: az ékezetes scandalKey-ű ügyeknél korábban az
+  // ékezet nélküli URL-lel kérdeztünk, és a cikkek/ügyrészek elmaradtak.
+  const id = scandal.id;
+  const override = getCaseOverride(id);
+  type GenEntry = { title?: string; filesKey?: string; blocks: DescriptionBlock[]; relatedNews?: { source: string; headline: string; date: string; url: string }[]; attribution?: string };
+  const gen = (generatedContent as Record<string, GenEntry>)[id];
+  // Editorial override wins; otherwise the LLM-generated (K-Monitor sourced) blocks.
+  const richBlocks: DescriptionBlock[] | undefined = override?.descriptionBlocks ?? gen?.blocks;
+  // Injektált article-card — feltöltve a DB-lekérdezések után (ld. displayBlocks).
 
   const [damageRows, procRows, members, crossRefs, articles, kmdbArticles, linkedKmdbArticles] = await Promise.all([
     db.execute(sql`
@@ -297,7 +312,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
   const basisText = override?.damageText ?? (basis ? BASIS_LABEL[basis] : null);
 
   // ── Hero ──
-  const title = autoDisplayTitle(scandal.name, scandal.person, override?.title ?? gen?.title);
+  const title = autoDisplayTitle(scandal.name, scandal.person, override?.title ?? gen?.title, scandal.id);
   const galeriaEntry = override?.hidePhoto
     ? null
     : override?.galeriaId
@@ -629,7 +644,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
                 <div key={r.id} className="person-case-card">
                   <div className="person-case-num">/ {String(i + 1).padStart(2, '0')}</div>
                   <div className="person-case-body">
-                    <Link href={`/adatbazis/${encodeURIComponent(toAsciiId(r.id))}`} className="person-case-title">{cleanTitle(r.name)}</Link>
+                    <Link href={caseHref(r.id)} className="person-case-title">{cleanTitle(r.name, r.id)}</Link>
                     {(r.person || r.institution) && (
                       <p className="person-case-desc">
                         {[r.person, r.institution].filter(Boolean).join(' · ')}
@@ -647,7 +662,7 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
                           {tags.map((t) => <span key={t} className="tag">{t}</span>)}
                         </div>
                       )}
-                      <Link href={`/adatbazis/${encodeURIComponent(toAsciiId(r.id))}`} className="person-case-source">
+                      <Link href={caseHref(r.id)} className="person-case-source">
                         Részletek →
                       </Link>
                     </div>
@@ -815,6 +830,11 @@ export default async function ScandalPage({ params }: { params: Promise<{ id: st
               photoUrl={photoUrl}
             />
           )}
+          <CrossErdekesUgyek
+            pageKey={caseHref(id)}
+            currentId={scandal.id}
+            excludeIds={orderedCrossRefs.map((r) => r.id)}
+          />
           <CrossAdatbazisSzemelyek />
           <CrossUgyek />
           <CrossBirosag />

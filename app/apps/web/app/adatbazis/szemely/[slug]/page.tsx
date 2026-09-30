@@ -1,18 +1,19 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { sql } from 'drizzle-orm';
 
 import { fmtNumber, fmtFt } from '@korr/shared/format';
 import { FtValue } from '../../../_home/ft-value';
 import { GALERIA } from '../../../_home/galeria-config';
 import { WATCH_LIST } from '../../../_home/watchlist-config';
-import { PERSON_PHOTOS, cleanTitle, toAsciiId } from '../../../_home/case-detail-config';
-import { getPersonRollup } from '../../../_home/person-rollup-config';
+import { PERSON_PHOTOS, cleanTitle } from '../../../_home/case-detail-config';
+import { getPersonRollup, rollupHref, ROLLUP_HREF_OVERRIDES } from '../../../_home/person-rollup-config';
 import { DescBlock } from '../../_components/desc-block';
 import { withCta, ctaPerson } from '../../../_home/seo';
-import { PersonGaleriaPromo, CrossAdatbazisSzemelyek, CrossUgyek, CrossBirosag } from '../../../_home/cross-promo';
+import { PersonGaleriaPromo, CrossAdatbazisSzemelyek, CrossUgyek, CrossBirosag, CrossErdekesUgyek } from '../../../_home/cross-promo';
 
 import { getDb } from '@/lib/db';
+import { caseHref } from '../../../_home/case-slugs';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,6 +40,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       `${config.personName} ${fmtNumber(rows.length)} dokumentált ügye, összesen ${fmtFt(total)} érintett közpénzzel`,
       ctaPerson(),
     ),
+    alternates: { canonical: rollupHref(slug) },
   };
 }
 
@@ -63,6 +65,7 @@ function imgSrc(url: string): string {
 
 export default async function PersonRollupPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  if (ROLLUP_HREF_OVERRIDES[slug]) permanentRedirect(ROLLUP_HREF_OVERRIDES[slug]);
   const config = getPersonRollup(slug);
   if (!config) notFound();
 
@@ -149,8 +152,8 @@ export default async function PersonRollupPage({ params }: { params: Promise<{ s
               <div key={r.id} className="person-case-card">
                 <div className="person-case-num">/ {String(i + 1).padStart(2, '0')}</div>
                 <div className="person-case-body">
-                  <Link href={`/adatbazis/${encodeURIComponent(toAsciiId(r.id))}`} className="person-case-title">
-                    {cleanTitle(r.name)}
+                  <Link href={caseHref(r.id)} className="person-case-title">
+                    {cleanTitle(r.name, r.id)}
                   </Link>
                   {r.institution && <p className="person-case-desc">{r.institution}</p>}
 
@@ -165,7 +168,7 @@ export default async function PersonRollupPage({ params }: { params: Promise<{ s
                       <span className="person-case-dmg-lbl">Érintett közpénz</span>
                       <span className="person-case-dmg-val"><FtValue n={dmg} /></span>
                     </div>
-                    <Link href={`/adatbazis/${encodeURIComponent(toAsciiId(r.id))}`} className="person-case-source">
+                    <Link href={caseHref(r.id)} className="person-case-source">
                       Részletek →
                     </Link>
                   </div>
@@ -185,11 +188,11 @@ export default async function PersonRollupPage({ params }: { params: Promise<{ s
               {rest.map((r) => {
                 const dmg = BigInt(r.damage_huf ?? 0);
                 return (
-                  <Link key={r.id} href={`/adatbazis/${encodeURIComponent(toAsciiId(r.id))}`} className="ugyek-more-card">
+                  <Link key={r.id} href={caseHref(r.id)} className="ugyek-more-card">
                     <div className="ugyek-more-eyebrow">
                       {dmg > 0n ? <FtValue n={dmg} /> : `${fmtNumber(r.article_count)} cikk`}
                     </div>
-                    <div className="ugyek-more-title">{cleanTitle(r.name)}</div>
+                    <div className="ugyek-more-title">{cleanTitle(r.name, r.id)}</div>
                     {r.institution && <div className="ugyek-more-sub">{r.institution}</div>}
                   </Link>
                 );
@@ -215,6 +218,7 @@ export default async function PersonRollupPage({ params }: { params: Promise<{ s
               photoUrl={photoUrl}
             />
           )}
+          <CrossErdekesUgyek pageKey={`/adatbazis/szemely/${slug}`} excludeIds={rows.map((r) => r.id)} />
           <CrossAdatbazisSzemelyek />
           <CrossUgyek />
           <CrossBirosag />

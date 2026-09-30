@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
+  alternates: { canonical: '/csapat' },
   title: 'Csapat',
   description: 'A Kegyencjárat mögötti emberek és szerkesztési elvek.',
 };

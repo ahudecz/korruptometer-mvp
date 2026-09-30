@@ -84,6 +84,23 @@ const nextConfig = {
         destination: '/adatbazis/varkonyi-andrea-csongradi-fold-vasarlas',
         permanent: true,
       },
+      // A régi korruptometer.vercel.app is kiszolgálta az egész oldalt, és a
+      // Google néhol azt választotta kanonikusnak (2026-09-29 Search
+      // Console). Minden oldal véglegesen a saját domainre megy — az /api/
+      // kivétel, mert webhookok/cronok még a régi címre is hívhatnak, és egy
+      // POST-ot nem szabad átirányítással elrontani.
+      {
+        source: '/',
+        has: [{ type: 'host', value: 'korruptometer.vercel.app' }],
+        destination: 'https://www.kegyencjarat.hu/',
+        permanent: true,
+      },
+      {
+        source: '/:path((?!api/).+)',
+        has: [{ type: 'host', value: 'korruptometer.vercel.app' }],
+        destination: 'https://www.kegyencjarat.hu/:path',
+        permanent: true,
+      },
     ];
   },
   async headers() {

@@ -1,4 +1,4 @@
-import { PERSON_ROLLUPS } from './person-rollup-config';
+import { PERSON_ROLLUPS, rollupHref } from './person-rollup-config';
 import { liveFeltarok } from './rendszervaltas-config';
 
 /**
@@ -66,7 +66,7 @@ function namePattern(name: string): RegExp {
 /** NER-szereplők → a saját „összes ügye" rollup oldaluk. */
 const ROLLUP_LINKS: PersonLink[] = PERSON_ROLLUPS.map((p) => ({
   name: p.personName,
-  href: `/adatbazis/szemely/${p.slug}`,
+  href: rollupHref(p.slug),
   pattern: namePattern(p.personName),
 }));
 

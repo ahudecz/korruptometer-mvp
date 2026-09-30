@@ -13,7 +13,7 @@ import { computeNextMilestone, formatMilliardLabel } from '@/lib/social-mileston
 import { UGYEK } from '@app/_home/ugyek-config';
 import { liveFeltarok } from '@app/_home/rendszervaltas-config';
 import { DICSOSEGFAL_KICKER, buildDicsosegfalCopy, nextDicsosegfalProfile } from '@/lib/social-dicsosegfal';
-import { toAsciiId, autoDisplayTitle, RETIRED_SCANDAL_IDS } from '@app/_home/case-detail-config';
+import { autoDisplayTitle, RETIRED_SCANDAL_IDS } from '@app/_home/case-detail-config';
 import { listPolls, getPollWithResults } from '@/lib/poll-queries';
 import {
   complaintWhatHappened,
@@ -46,6 +46,7 @@ import {
   type FallbackKind,
 } from '@/lib/social-post-policy';
 import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
+import { caseHref } from '@app/_home/case-slugs';
 
 /**
  * check.social-triggers — óránként (GitHub Actions,
@@ -843,7 +844,7 @@ async function buildGalleryHighlightTrigger(db: ReturnType<typeof getDb>): Promi
     triggerRefId: pick.id,
     milestoneValueFt: null,
     headline,
-    caption: breakingCaption(kicker, headline, trimmedDetail, `/adatbazis/${toAsciiId(pick.id)}`, undefined, undefined),
+    caption: breakingCaption(kicker, headline, trimmedDetail, caseHref(pick.id), undefined, undefined),
     imagePng: image,
     imageText: imageDetail ?? '',
     kicker,

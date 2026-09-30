@@ -2,15 +2,16 @@ import { desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 
 export const metadata = {
+  alternates: { canonical: '/birosagi-iteletek' },
   title: { absolute: 'Börtönben van-e?' },
   description: 'NER-hez kapcsolható eljárások — előzetes letartóztatástól a jogerős ítéletig. Kattints, és nézd meg az eseteket!',
 };
 import { UGYEK } from '../_home/ugyek-config';
-import { toAsciiId } from '../_home/case-detail-config';
 import { GALERIA } from '../_home/galeria-config';
 import { VerdictList, type SerializedVerdict } from './VerdictList';
 import type { SerializedComplaint } from './ComplaintList';
-import { CrossLemondosok, CrossUgyek, CrossGaleria, CrossMegszunt } from '../_home/cross-promo';
+import { CrossLemondosok, CrossUgyek, CrossGaleria, CrossMegszunt, CrossErdekesUgyek } from '../_home/cross-promo';
+import { caseHref } from '../_home/case-slugs';
 
 export const revalidate = 120;
 
@@ -72,7 +73,7 @@ export default async function BirosagPage({
     sourceNames: c.sourceNames,
     sourceHeadlines: c.sourceHeadlines,
     sourceDates: c.sourceDates,
-    relatedCaseHrefs: c.relatedCaseIds.map((id) => `/adatbazis/${encodeURIComponent(toAsciiId(id))}`),
+    relatedCaseHrefs: c.relatedCaseIds.map((id) => caseHref(id)),
     relatedCaseLabels: c.relatedCaseLabels,
   }));
 
@@ -142,6 +143,7 @@ export default async function BirosagPage({
 
       <div className="cross-promo-section">
         <div className="cross-promo-section-inner">
+          <CrossErdekesUgyek pageKey="/birosagi-iteletek" />
           <CrossLemondosok />
           <CrossMegszunt />
           <CrossUgyek />

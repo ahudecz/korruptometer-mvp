@@ -7,8 +7,9 @@ import { visibleSubpages } from './_home/ugyek-subpages';
 import { liveFeltarok } from './_home/rendszervaltas-config';
 import { GALERIA } from './_home/galeria-config';
 import { WATCH_LIST } from './_home/watchlist-config';
-import { PERSON_ROLLUPS } from './_home/person-rollup-config';
-import { RETIRED_SCANDAL_IDS, toAsciiId } from './_home/case-detail-config';
+import { PERSON_ROLLUPS, rollupHref } from './_home/person-rollup-config';
+import { RETIRED_SCANDAL_IDS } from './_home/case-detail-config';
+import { caseHref } from './_home/case-slugs';
 
 // 2026-09-15 — az oldalnak addig nem volt sitemap-je. A legtöbb érték nem a
 // nyitóoldalon van, hanem az ezernyi /adatbazis/<ügy> végoldalon, amikre alig
@@ -51,8 +52,6 @@ const STATIC_PAGES: { path: string; priority: number; changeFrequency: Entry['ch
   { path: '/visszaszerzett-vagyon', priority: 0.7, changeFrequency: 'weekly' },
   { path: '/podcastok', priority: 0.6, changeFrequency: 'daily' },
   { path: '/legfontosabb-hangok', priority: 0.6, changeFrequency: 'weekly' },
-  { path: '/szavazas', priority: 0.6, changeFrequency: 'weekly' },
-  { path: '/kviz', priority: 0.6, changeFrequency: 'weekly' },
   { path: '/volvo-gate', priority: 0.6, changeFrequency: 'weekly' },
   { path: '/adatok', priority: 0.5, changeFrequency: 'weekly' },
   { path: '/modszertan', priority: 0.5, changeFrequency: 'monthly' },
@@ -121,7 +120,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
   for (const p of PERSON_ROLLUPS) {
     entries.push({
-      url: `${appUrl}/adatbazis/szemely/${p.slug}`,
+      url: `${appUrl}${rollupHref(p.slug)}`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.7,
@@ -145,7 +144,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     `)) as unknown as { id: string }[];
     for (const r of rows) {
       entries.push({
-        url: `${appUrl}/adatbazis/${encodeURIComponent(toAsciiId(r.id))}`,
+        url: `${appUrl}${caseHref(r.id)}`,
         lastModified: now,
         changeFrequency: 'monthly',
         priority: 0.6,

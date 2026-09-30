@@ -7,12 +7,13 @@ import { ResignationList, type SerializedResignation } from './resignation-list'
 import { computeResignationStats } from './resignation-stats';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/lemondasok' },
   title: { absolute: 'Lemondott-e már?' },
   description: 'Magyar Péter 8 NER-közeli tisztségviselőt szólított fel lemondásra. Kattints, és nézd meg, ki adta már be a lemondását!',
   openGraph: { title: 'Lemondott-e már? — Kegyencjárat', description: 'Ki mondott le, és ki húzza még mindig.' },
 };
 import { WatchlistGrid } from '../_home/watchlist-grid';
-import { CrossMegszunt, CrossUgyek, CrossGaleria } from '../_home/cross-promo';
+import { CrossMegszunt, CrossUgyek, CrossGaleria, CrossErdekesUgyek } from '../_home/cross-promo';
 
 export const revalidate = 120;
 
@@ -332,6 +333,7 @@ export default async function LemondasokPage({ searchParams }: { searchParams: S
 
       <div className="cross-promo-section">
         <div className="cross-promo-section-inner">
+          <CrossErdekesUgyek pageKey="/lemondasok" />
           <CrossMegszunt />
           <CrossUgyek />
           <CrossGaleria />

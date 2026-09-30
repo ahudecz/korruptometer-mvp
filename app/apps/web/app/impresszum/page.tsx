@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
+  alternates: { canonical: '/impresszum' },
   title: 'Impresszum',
   description: 'A Kegyencjárat oldal szolgáltatói adatai.',
 };

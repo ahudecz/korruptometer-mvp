@@ -3,6 +3,7 @@ import { NEWSLETTER_PAUSED } from '@/lib/newsletter-paused';
 import { TelegramChannelCard, hasTelegramChannel } from '@app/_home/telegram-channel-card';
 
 export const metadata = {
+  alternates: { canonical: '/hirlevel' },
   title: 'Értesítések',
   description: 'Kérj értesítést a lemondásokról, ítéletekről és megszűnt médiumokról.',
 };

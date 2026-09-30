@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
+  alternates: { canonical: '/adatok' },
   title: 'Adatok letöltése',
   description: 'Az adatbázis CSV formátumban letölthető, és API hozzáférés is tervezett. Kattints, és töltsd le a teljes adatbázist!',
 };

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
+  alternates: { canonical: '/forrashivatkozasok' },
   title: 'Forráshivatkozások',
   description: 'Az adatbázisban felhasznált partneri adatbázisok, sajtóforrások és hatósági dokumentumok teljes listája. Kattints, és nézd át a forrásokat!',
 };

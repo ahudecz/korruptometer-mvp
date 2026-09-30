@@ -1,13 +1,18 @@
 import Link from 'next/link';
 import { unstable_cache } from 'next/cache';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { resolveWatchListPersons } from '@/lib/watchlist-status';
 import { UGYEK } from './ugyek-config';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './galeria-config';
 import { getFeaturedPeople, getTotalDamage } from './featured-persons';
+import { rollupHref } from './person-rollup-config';
+import { autoDisplayTitle, getCaseDisplayTitle, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS } from './case-detail-config';
+import { isoWeekKey, isRecommendable, pickRecommendations, type RecCase } from './case-recommendations';
+import { isAuditApproved } from './case-audit';
 import { FtValue } from './ft-value';
 import { Mugshot } from '@korr/ui/mugshot';
+import { caseHref } from './case-slugs';
 
 /**
  * A cross-promo blokkok lekérdezései MINDEN oldal alján lefutnak, és ez a
@@ -433,7 +438,7 @@ export async function CrossAdatbazisSzemelyek() {
       </p>
       <div className="person-more-grid cross-featured-grid">
         {people.map(p => (
-          <Link key={p.slug} href={`/adatbazis/szemely/${p.slug}`} className="person-more-card">
+          <Link key={p.slug} href={rollupHref(p.slug)} className="person-more-card">
             <div className="person-more-mug r-loose">
               {p.photoUrl ? (
                 <img
@@ -497,6 +502,101 @@ export function CrossGaleria() {
         ))}
       </div>
       <Link href="/galeria" className="cross-promo-cta">Teljes galéria →</Link>
+    </div>
+  );
+}
+
+// ── CrossErdekesUgyek ────────────────────────────────────────────────────────
+//
+// SEO belső linkek az ~1000 /adatbazis/<ügy> végoldalhoz (2026-09-29
+// Search Console-audit: 594 nem indexelt ügyoldal). A kiválasztás logikája és
+// a garanciák: case-recommendations.ts (+ teszt).
+
+const loadRecommendationPool = unstable_cache(
+  async (): Promise<RecCase[]> => {
+    const rows = (await getDb().execute(sql`
+      SELECT id, name, person, institution, damage_huf::text AS damage_huf, article_count
+      FROM "ScandalCatalog"
+      WHERE id NOT IN (${sql.join([...RETIRED_SCANDAL_IDS, ...HIDDEN_DAMAGE_IDS].map((v) => sql`${v}`), sql`, `)})
+    `)) as unknown as Array<{ id: string; name: string; person: string | null; institution: string | null; damage_huf: string | null; article_count: number | null }>;
+    return rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      person: r.person,
+      institution: r.institution,
+      damageHuf: r.damage_huf ?? '0',
+      articleCount: Number(r.article_count ?? 0),
+    }));
+  },
+  ['cross-promo', 'recommendation-pool'],
+  { revalidate: 3600 },
+);
+
+export async function CrossErdekesUgyek({
+  pageKey,
+  currentId,
+  excludeIds,
+  count = 5,
+  asSection = false,
+}: {
+  pageKey: string;
+  currentId?: string;
+  excludeIds?: string[];
+  count?: number;
+  /** A nyitóoldalon a blokk maga hozza a sötét keretet — így ha nincs
+   *  ajánlható ügy, üres csík sem marad utána. */
+  asSection?: boolean;
+}) {
+  // Az ajánló sosem döntheti el az oldalt — adatbázis-hiba esetén egyszerűen
+  // nem jelenik meg.
+  // Csak kézzel ellenőrzött (case-audit.ts) ügy kerülhet az ajánlóba — az
+  // ellenőrizetlen, gépi leírású ügyek rendszeresen valótlant állítottak.
+  const pool = (await loadRecommendationPool().catch(() => [] as RecCase[]))
+    .filter(isRecommendable)
+    .filter((r) => isAuditApproved(r.id));
+  const recs = pickRecommendations(pool, {
+    pageKey,
+    currentId,
+    excludeIds,
+    count,
+    rotation: isoWeekKey(new Date()),
+  });
+  if (recs.length === 0) return null;
+
+  const block = (
+    <div className="cross-promo">
+      <h2 className="cross-promo-title">Ezeket az ügyeket is érdemes elolvasni</h2>
+      <p className="cross-promo-deck">
+        Kevésbé ismert, de sajtóban dokumentált ügyek az adatbázisunkból — kattints, és olvasd el, mi történt.
+      </p>
+      <div className="ugyek-more-grid">
+        {recs.map((r) => {
+          const dmg = BigInt(r.damageHuf);
+          const title = autoDisplayTitle(r.name, null, getCaseDisplayTitle(r.id), r.id);
+          // A `person` mező néha a feltárót (pl. Hadházy Ákos) vagy más
+          // szereplőt tartalmaz — csak akkor írjuk ki, ha a cím is említi
+          // (ugyanaz a szabály, mint az URL-nél, l. case-slugs.ts slugPerson).
+          const surname = r.person?.split(' ')[0]?.toLowerCase();
+          const person = surname && title.toLowerCase().includes(surname) ? r.person : null;
+          const sub = [person, r.institution].filter(Boolean).join(' · ');
+          return (
+            <Link key={r.id} href={caseHref(r.id)} className="ugyek-more-card">
+              <div className="ugyek-more-eyebrow">
+                {dmg > 0n && r.articleCount >= 3 ? <FtValue n={dmg} /> : 'Ügy az adatbázisból'}
+              </div>
+              <div className="ugyek-more-title">{title}</div>
+              {sub && <div className="ugyek-more-sub">{sub}</div>}
+            </Link>
+          );
+        })}
+      </div>
+      <Link href="/adatbazis" className="cross-promo-cta">Teljes adatbázis →</Link>
+    </div>
+  );
+  if (!asSection) return block;
+  return (
+    <div className="cross-promo-section">
+      <div className="cross-promo-section-inner">{block}</div>
     </div>
   );
 }

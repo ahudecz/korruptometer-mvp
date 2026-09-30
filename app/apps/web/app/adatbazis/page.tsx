@@ -4,22 +4,36 @@ import { sql } from 'drizzle-orm';
 import { fmtNumber } from '@korr/shared/format';
 import { FtValue } from '../_home/ft-value';
 import { CaseRow } from './_components/case-row';
-import { autoDisplayTitle, getCaseDisplayTitle, getCaseOverride, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS, toAsciiId } from '../_home/case-detail-config';
+import { autoDisplayTitle, getCaseDisplayTitle, getCaseOverride, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS } from '../_home/case-detail-config';
 import { getFeaturedPeople, getTotalDamage } from '../_home/featured-persons';
-import { CrossUgyek, CrossLemondosok, CrossGaleria, CrossMegszunt, CrossFelszolitottak } from '../_home/cross-promo';
+import { rollupHref } from '../_home/person-rollup-config';
+import { CrossUgyek, CrossLemondosok, CrossGaleria, CrossMegszunt, CrossFelszolitottak, CrossErdekesUgyek } from '../_home/cross-promo';
 
 import { getDb } from '@/lib/db';
 
 import { CaseFilters, type ScandalFilterState } from './case-filters';
+import { caseHref } from '../_home/case-slugs';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: 'Adatbázis',
-  description: 'Kereshető, szűrhető adatbázis a dokumentált magyar korrupciós ügyekről — érintettek, összegek és intézmények szerint. Kattints, és keress rá egy ügyre!',
-};
-
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+// Kanonikus: a keresés/rendezés/szűrés (?q=, ?sort=, …) változatai a tiszta
+// /adatbazis-ra mutatnak, a lapozás (?off=N) viszont önmagára — különben a
+// Google a mélyebb lapokon át nem jutna el az ~1000 ügy-végoldalhoz
+// (2026-09-29 Search Console-audit: ezek 95%-a nincs indexelve).
+export async function generateMetadata({ searchParams }: { searchParams: SearchParams }) {
+  const sp = await searchParams;
+  const rawOff = Array.isArray(sp.off) ? sp.off[0] : sp.off;
+  const off = Number.parseInt(rawOff ?? '', 10);
+  const onlyPaging = Object.keys(sp).every((k) => k === 'off');
+  const canonical = onlyPaging && Number.isFinite(off) && off > 0 ? `/adatbazis?off=${off}` : '/adatbazis';
+  return {
+    alternates: { canonical },
+    title: 'Adatbázis',
+    description: 'Kereshető, szűrhető adatbázis a dokumentált magyar korrupciós ügyekről — érintettek, összegek és intézmények szerint. Kattints, és keress rá egy ügyre!',
+  };
+}
 
 const PAGE_SIZE = 50;
 const SORTS = ['damage_desc', 'damage_asc', 'recent', 'name'] as const;
@@ -185,7 +199,7 @@ export default async function AdatbazisPage({
           </p>
           <div className="featured-persons-grid">
             {featuredPeople.map((p) => (
-              <Link key={p.slug} href={`/adatbazis/szemely/${p.slug}`} className="featured-person-card">
+              <Link key={p.slug} href={rollupHref(p.slug)} className="featured-person-card">
                 <div className="featured-person-photo">
                   {p.photoUrl ? (
                     <img src={p.photoUrl} alt={p.name} className="featured-person-img" />
@@ -262,10 +276,10 @@ export default async function AdatbazisPage({
           </thead>
           <tbody>
             {page.map((c) => (
-              <CaseRow key={c.id} href={`/adatbazis/${encodeURIComponent(toAsciiId(c.id))}`}>
+              <CaseRow key={c.id} href={caseHref(c.id)}>
                 <td data-label="Ügy">
-                  <Link href={`/adatbazis/${encodeURIComponent(toAsciiId(c.id))}`} className="case-name">
-                    {autoDisplayTitle(c.name, c.person ?? null, getCaseDisplayTitle(c.id))}
+                  <Link href={caseHref(c.id)} className="case-name">
+                    {autoDisplayTitle(c.name, c.person ?? null, getCaseDisplayTitle(c.id), c.id)}
                   </Link>
                   {c.investigation_count > 1 && (
                     <div className="case-id">{fmtNumber(c.investigation_count)} kapcsolódó ügy</div>
@@ -341,6 +355,7 @@ export default async function AdatbazisPage({
 
       <div className="cross-promo-section">
         <div className="cross-promo-section-inner">
+          <CrossErdekesUgyek pageKey="/adatbazis" />
           <CrossUgyek />
           <CrossLemondosok />
           <CrossGaleria />

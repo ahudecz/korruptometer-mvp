@@ -12,7 +12,7 @@ import {
   type InlineLink,
   contentUpdatedAt,
 } from '../_home/rendszervaltas-config';
-import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../_home/cross-promo';
+import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak, CrossErdekesUgyek } from '../_home/cross-promo';
 import { FeltaroVideo } from '../_home/feltaro-video';
 import { withAutoLinks } from '../_home/auto-link-text';
 import styles from './dicsosegfal.module.css';
@@ -389,6 +389,7 @@ export default function RendszervaltasPage() {
 
       <div className="cross-promo-below-more">
         <div className="cross-promo-below-more-inner">
+          <CrossErdekesUgyek pageKey="/rendszervaltas" />
           <CrossLemondosok />
           <CrossGaleria />
           <CrossMegszunt />

@@ -8,8 +8,8 @@ import { getDb, schema } from '@/lib/db';
 import { Mugshot } from '@korr/ui/mugshot';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from '../../_home/galeria-config';
 import { UGYEK } from '../../_home/ugyek-config';
-import { getPersonRollup } from '../../_home/person-rollup-config';
-import { CrossLemondosok, CrossMegszunt } from '../../_home/cross-promo';
+import { getPersonRollup, rollupHref } from '../../_home/person-rollup-config';
+import { CrossLemondosok, CrossMegszunt, CrossErdekesUgyek } from '../../_home/cross-promo';
 import { getRelatedComplaintsForGaleria } from '@/lib/related-complaints';
 import { RelatedComplaintCard } from '../../_home/related-complaint-card';
 
@@ -40,14 +40,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return {
     title: { absolute: entry.name },
     description: `${base} ${GALERIA_CTA}`,
+    alternates: { canonical: `/galeria/${id}` },
   };
 }
-
-// The one rollup page still living at its own historic slug rather than
-// /adatbazis/szemely/[slug] — see meszaros-lorinc-osszes-ugye/page.tsx.
-const ROLLUP_HREF_OVERRIDES: Record<string, string> = {
-  'meszaros-lorinc': '/adatbazis/meszaros-lorinc-osszes-ugye',
-};
 
 const HU_MONTHS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
 
@@ -82,7 +77,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     const row = rollupRows[0];
     if (row && row.n > 0) {
       rollup = {
-        href: ROLLUP_HREF_OVERRIDES[rollupConfig.slug] ?? `/adatbazis/szemely/${rollupConfig.slug}`,
+        href: rollupHref(rollupConfig.slug),
         caseCount: row.n,
         total: BigInt(row.total),
       };
@@ -480,6 +475,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       </div>
       <div className="cross-promo-below-more">
         <div className="cross-promo-below-more-inner">
+          <CrossErdekesUgyek pageKey={`/galeria/${id}`} />
           <CrossLemondosok />
           <CrossMegszunt />
         </div>

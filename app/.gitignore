@@ -1,2 +1,5 @@
 .vercel
 .env*.local
+
+# Google Search Console szolgáltatásfiók-kulcs (titkos)
+kegyencjarat-gsc-*.json

@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import { desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
-import { CrossLemondosok, CrossUgyek, CrossGaleria, CrossFelszolitottak } from '../_home/cross-promo';
+import { CrossLemondosok, CrossUgyek, CrossGaleria, CrossFelszolitottak, CrossErdekesUgyek } from '../_home/cross-promo';
 import { computeMediaClosureStats } from './media-closure-stats';
 
 export const revalidate = 120;
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/megszunt' },
   title: { absolute: 'Megszűnt-e már?' },
   description: '75 NER-közeli médiumot követünk nyomon — melyik szűnt meg, melyik él túl mindent. Kattints, és nézd meg a listát!',
   openGraph: { title: 'Megszűnt-e már? — Kegyencjárat', description: 'A NER propagandamédiumainak felszámolása nyomon követve.' },
@@ -138,6 +139,7 @@ export default async function MegszuntPage() {
 
       <div className="cross-promo-section">
         <div className="cross-promo-section-inner">
+          <CrossErdekesUgyek pageKey="/megszunt" />
           <CrossLemondosok />
           <CrossFelszolitottak />
           <CrossUgyek />

@@ -195,8 +195,6 @@ export const PERSON_ROLLUPS: PersonRollupConfig[] = [
   {
     slug: 'leisztinger-tamas',
     personName: 'Leisztinger Tamás',
-    // leisztinger-honved: headline figure actually belongs to Szijjártó Péter.
-    excludeIds: ['leisztinger-honved'],
   },
   {
     slug: 'balazs-attila',
@@ -260,4 +258,17 @@ export const PERSON_ROLLUPS: PersonRollupConfig[] = [
 
 export function getPersonRollup(slug: string): PersonRollupConfig | null {
   return PERSON_ROLLUPS.find((p) => p.slug === slug) ?? null;
+}
+
+/** The one rollup page still living at its own historic slug rather than
+ *  /adatbazis/szemely/[slug] — see meszaros-lorinc-osszes-ugye/page.tsx.
+ *  The /adatbazis/szemely/ twin permanently redirects there (2026-09-29:
+ *  Search Console flagged the pair as duplicates). */
+export const ROLLUP_HREF_OVERRIDES: Record<string, string> = {
+  'meszaros-lorinc': '/adatbazis/meszaros-lorinc-osszes-ugye',
+};
+
+/** The canonical URL of a person rollup page — use this for every link. */
+export function rollupHref(slug: string): string {
+  return ROLLUP_HREF_OVERRIDES[slug] ?? `/adatbazis/szemely/${slug}`;
 }

@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { UGYEK } from '../../../_home/ugyek-config';
 import { visibleSubpages, getSubpage, getSubpagesForUgy, type InlineLink, type SubpageBlock, type TableCell, type UgySubpage } from '../../../_home/ugyek-subpages';
-import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak } from '../../../_home/cross-promo';
+import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak, CrossErdekesUgyek } from '../../../_home/cross-promo';
 import { loadCaseDetentions, isStillDetained, type CaseDetentionRow } from '@/lib/case-detentions';
 import { withAutoLinks } from '../../../_home/auto-link-text';
 
@@ -526,6 +526,7 @@ export default async function UgySubPage({ params }: { params: Promise<{ id: str
       </div>
       <div className="cross-promo-below-more">
         <div className="cross-promo-below-more-inner">
+          <CrossErdekesUgyek pageKey={`/ugyek/${id}/${topic}`} />
           <CrossLemondosok />
           <CrossGaleria />
           <CrossMegszunt />

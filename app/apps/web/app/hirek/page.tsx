@@ -6,6 +6,7 @@ import { getDb, schema } from '@/lib/db';
 import { NewsFilters } from './news-filters';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/hirek' },
   title: { absolute: 'Hírek' },
   description: 'Percről percre frissülő hírfolyam a dokumentált korrupciós ügyekről — szerkesztői válogatás nélkül. Kattints, és olvasd el a legfrissebbeket!',
   openGraph: { title: 'Hírek — Kegyencjárat', description: 'Releváns hírek a dokumentált korrupciós ügyekről.' },

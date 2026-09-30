@@ -14,6 +14,7 @@ const PER_AUTHOR = 2;
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
+  alternates: { canonical: '/legfontosabb-hangok' },
   title: { absolute: 'A legfontosabb hangok' },
   description: 'Független oknyomozók és kritikus közösségi oldalak, akiknek szerepe volt a NER lebontásában. Összegyűjtve, egy helyen.',
 };

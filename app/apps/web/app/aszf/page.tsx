@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
+  alternates: { canonical: '/aszf' },
   title: 'ÁSZF',
   description: 'A Kegyencjárat weboldal használatának általános szerződési feltételei.',
 };

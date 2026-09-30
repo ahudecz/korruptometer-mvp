@@ -1,4 +1,5 @@
 import type { DescriptionBlock, BigCaseVideo, BigCaseRef } from './ugyek-config';
+import { CASE_AUDIT } from './case-audit';
 
 /**
  * Editorial override layer for ADATBÁZIS detail pages, keyed by `scandalKey`.
@@ -66,6 +67,17 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     title: 'KESMA sajtótámogatási botrány',
     crimeTypes: ['Médiakorrupció', 'Közpénzfelhasználás'],
     hideAutoDamage: false,
+    // 2026-09-29 forrás-ellenőrzés: a korábbi AI-leírás a forrásban nem szereplő
+    // állításokat tartalmazott. Ez a szöveg kizárólag a forráscikkek címéből,
+    // leadjéből és elolvasott bekezdéseiből áll.
+    hideVideo: true,
+    summary: 'A Magyar Hang Európai Bizottsághoz benyújtott panasza szerint a kormány és az állami cégek szinte kizárólag kormánybarát médiumokban hirdettek; a panaszhoz készült számítás 2018–2023-ra 828 millió euró (kb. 335 milliárd Ft) visszafizetendő tiltott állami támogatással számol.',
+    descriptionBlocks: [
+      { type: 'text', content: 'A HVG360 2025. áprilisi cikke a Magyar Hang Európai Bizottsághoz benyújtott panaszát ismerteti. A panasz szerint semmilyen piaci logika nem indokolja, hogy a magyar kormány és az állami cégek szinte kizárólag kormánybarát médiumokban hirdetnek, ez pedig tiltott állami támogatásnak minősülhet.' },
+      { type: 'text', content: 'A panaszhoz készült számítás szerint a 2018–2023 közötti időszakban a visszafizetendő összeg kamatok nélkül a nyomtatott sajtónál 261 millió, az online médiánál (konzervatív becsléssel) 212 millió, a tévécsatornáknál 354 millió euró, összesen 828 millió euró, azaz kb. 335 milliárd forint. A cikk szerint a hirdetések elhelyezését szinte kizárólag Balásy Gyula reklámügynökségei intézhették, a Rogán Antal fennhatósága alatt működő Nemzeti Kommunikációs Hivatal kiválasztása nyomán.' },
+      { type: 'text', content: 'A cikk megjelenésekor az Európai Bizottság még nem döntött a panaszról. A 335 milliárd forint a panaszban szereplő becslés, nem hatósági megállapítás.' },
+      { type: 'article-card', source: 'HVG360', date: '2025-04-29', headline: 'Így tapsolt el a kormány 335 milliárd forintot a baráti médiumokon keresztül', url: 'https://hvg.hu/360/20250429_propaganda-media-335-milliard-kormany-hirdetes-magyar-hang-panasz-europai-bizottsag-reagal' },
+    ],
   },
   {
     // CORRECTION (2026-07-05): a previous override here mislabeled this as
@@ -401,6 +413,49 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     damageText: 'A lombkoronasétányra ténylegesen elköltött, dokumentált összeg 112 millió Ft — az 5 Mrd-os figura egy tágabb, a teljes vidékfejlesztési programot érintő OLAF-vizsgálat száma, nem erre a projektre vonatkozik.',
   },
   {
+    // 2026-09-29 forrás-ellenőrzés: a 250 Mrd a Quaestor károsult
+    // befektetőinek követelése (magánpénz), nem közpénz; az ügy maga a
+    // felszámolás alatti iratkezelésről szól. A kulcs a valódi, ékezetes
+    // DB-id — az [id] oldal már a feloldott scandal.id-vel keres.
+    scandalKey: 'quaestor-dalkot-adatbiztonság',
+    hideAutoDamage: true,
+    damageText: 'A cikkben szereplő 250 milliárd Ft a Quaestor-csoport hitelezőinek (károsult befektetőinek) követelése, nem közpénz.',
+  },
+  {
+    // 2026-09-29 forrás-ellenőrzés: a korábbi AI-leírás a forrásokban nem
+    // igazolt állításokat tartalmazott (pénzmosás-gyanú, Trump-szál, rossz
+    // forrásnevek). Ez a szöveg kizárólag az elolvasott cikkekből áll.
+    scandalKey: 'mini-dubaj-alabbar',
+    summary: 'A kormány a rákosrendezői „Mini-Dubaj” projekthez mintegy 800 millió euró (kb. 300 milliárd Ft) állami infrastruktúra-fejlesztést vállalt; a terület végül a fővárosé lett, amely élt elővásárlási jogával.',
+    damageText: 'A 300 milliárd forint a kormány által vállalt infrastruktúra-fejlesztés összege, nem kárösszeg.',
+    descriptionBlocks: [
+      { type: 'text', content: 'A kormány 2024 januárjában közzétette a rákosrendezői „Mini-Dubaj” projekt tervezetét: a hvg.hu szerint az állam vállalta, hogy megvalósítja a projekthez szükséges infrastrukturális fejlesztéseket (felüljárók, vasúti pálya fejlesztése és befedése, az M1-es metró meghosszabbítása, kerékpár- és gyalogutak), mintegy 800 millió euró, kb. 303 milliárd forint értékben. A lap szerint a beruházó nagy valószínűséggel Mohamed Alabbar üzletember lesz, akinek magyarországi cégét Garancsi István egyik fontos embere irányítja.' },
+      { type: 'text', content: 'A Válasz Online értesülését idéző hvg.hu szerint egy Habony Árpádhoz köthető magántőkealap mellett Garancsi István is tulajdonos lett a Stockton Zrt.-ben, amely a Mini-Dubaj-projekt egyik területének résztulajdonosa, és elővásárlási joggal bír.' },
+      { type: 'text', content: 'A főváros élt elővásárlási jogával. A 444 szerint az állam 50,9 milliárd forintért adta el Rákosrendezőt az arab befektetőnek, és ugyanennyit kell fizetnie érte a fővárosnak is, három részletben, az utolsót 2039-ig. Karácsony Gergely főpolgármester szerint „Mini-Dubaj helyett győzött Budapest érdeke”.' },
+      { type: 'article-card', source: 'HVG', date: '2024-01-11', headline: 'Mini-Dubaj: a kormány közzétette a tervezetet, 300 milliárdos infrastruktúra-fejlesztést vállalt', url: 'https://hvg.hu/itthon/20240111_MiniDubaj_a_kormany_300_milliardos_infrastrukturafejlesztest_vallalt' },
+      { type: 'article-card', source: 'HVG', date: '2025-01-22', headline: 'Válasz: Garancsi István is tulajdonos lett a Mini-Dubaj területére elővásárlási joggal bíró cégben', url: 'https://hvg.hu/kkv/20250122_mini-dubaj-rakosrendezo-habony-arpad-garancsi-istvan-stockton-zrt' },
+      { type: 'article-card', source: '444', date: '2025-02-06', headline: 'Karácsony Gergely: Mini-Dubaj helyett győzött Budapest érdeke', url: 'https://444.hu/2025/02/06/karacsony-gergely-mini-dubaj-helyett-gyozott-budapest-erdeke' },
+    ],
+  },
+  {
+    // 2026-09-29 forrás-ellenőrzés: a 250 Mrd-os összeg egyik forráscikkben
+    // sem szerepel (24.hu: 800 millió eurós Eximbank-hitel; Népszava: 45 év
+    // alatt sem térül meg).
+    scandalKey: 'budapest-airport-ter-utalmeneti',
+    hideAutoDamage: true,
+    // 2026-09-29 forrás-ellenőrzés: a korábbi AI-leírás a forrásban nem szereplő
+    // állításokat tartalmazott. Ez a szöveg kizárólag a forráscikkek címéből,
+    // leadjéből és elolvasott bekezdéseiből áll.
+    summary: 'A Budapest Airport állami megvásárlásához a 24.hu szerint legalább 800 millió euró Eximbank-hitel kellett; a Népszava szerint a vásárlás még 45 év alatt sem térül meg.',
+    descriptionBlocks: [
+      { type: 'text', content: 'A 24.hu 2024. júliusi cikke szerint a K-Monitor „ezermilliárdos titkot” perelt ki az állami nagybevásárlásokat intéző Corvinus Nemzetközi Befektetési Zrt.-től. A lap szerint a reptérvásárláshoz az államnak legalább 800 millió euró hitelt kellett felvennie az Eximbanktól.' },
+      { type: 'text', content: 'A Népszava elemzése szerint a Budapest Airport megvásárlása még 45 év alatt sem térül meg, és szó sincs százmilliárdos eredményről.' },
+      { type: 'article-card', source: '24.hu', date: '2024-07-25', headline: 'Reptérvásárlás: legalább 800 millió euró hitel kellett az államnak az Eximbanktól', url: 'https://24.hu/fn/gazdasag/2024/07/25/repuloter-per-adatigenyles-budapest-airport-eximbank-hitel-k-monitor/' },
+      { type: 'article-card', source: 'Népszava', headline: 'A Budapest Airport megvásárlása még 45 év alatt sem térül meg, szó sincs százmilliárdos eredményről', url: 'https://nepszava.hu/3286088_budapest-airport-repter-milliardok' },
+    ],
+    damageText: 'A reptérvásárláshoz az állam legalább 800 millió euró Eximbank-hitelt vett fel (24.hu); a Népszava szerint a vásárlás 45 év alatt sem térül meg. Konkrét kárösszeg nincs forrásolva.',
+  },
+  {
     // 2026-07-09: user fact-check — a valós sztori Szita Károly kaposvári
     // polgármester és a Versenyképes Járások program pénzeinek elterelése,
     // nem a nyers cikk-mondat mint "cím". Ld. kapost.hu forrás.
@@ -571,16 +626,6 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
       'A hivatkozott 240 Mrd Ft a Mol teljes osztalékfizetési döntése, nem az MCC-hez került összeg — az ügyön belüli konkrétabb adat szerint az MCC-hez köthető rész kb. 25 Mrd Ft. Ellenőrzés alatt.',
   },
   {
-    // The 49 Mrd headline investigation inside this scandalKey is actually
-    // about Szijjártó Péter (a state subsidy to the Honvéd's sponsor company),
-    // not Leisztinger — his own documented cases (Honvéd purchase, mine co.,
-    // land) total roughly 16,8 Mrd. Person/damage mismatch found 2026-07-05 audit.
-    scandalKey: 'leisztinger-honved',
-    hideAutoDamage: true,
-    damageText:
-      'A hivatkozott 49 Mrd Ft egy Szijjártó Péterhez köthető állami támogatásról szól, nem Leisztinger Tamás ügyéről — az ő dokumentált ügyei ennél jóval kisebbek. Ellenőrzés alatt.',
-  },
-  {
     // The 30 Mrd headline investigation inside this scandalKey is attributed
     // to Mészáros Lőrinc ("Mészáros Bayer építőipari nyereség"), not Balázs
     // Attila — his own specific Bosnyák téri investigation is ~5,5 Mrd.
@@ -718,7 +763,20 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
   { scandalKey: 'matolcsy-raw-development-szekhazbontasa', hideVideo: true },
   { scandalKey: 'matolcsy-mnb-frank-digital', hideVideo: true },
   { scandalKey: 'matolcsy-neumann-egyetem', video: { id: 'I7-rw1so1p0' } },
-  { scandalKey: 'tiborcz-nagy-marton-lakhatasi-alap', hideVideo: true },
+  {
+    scandalKey: 'tiborcz-nagy-marton-lakhatasi-alap',
+    hideVideo: true,
+    // 2026-09-29 forrás-ellenőrzés: a korábbi AI-leírás a forrásban nem szereplő
+    // állításokat tartalmazott. Ez a szöveg kizárólag a forráscikkek címéből,
+    // leadjéből és elolvasott bekezdéseiből áll.
+    summary: 'A HVG360 szerint Tiborcz István és Nagy Márton neve is felbukkan a Nemzeti Tőkeholding 300 milliárd forintos, hat évre szóló állami lakhatási tőkeprogramjában, amelyet a lap aggályos összefonódásokat tartalmazónak nevez.',
+    damageText: 'A 300 milliárd forint a lakhatási tőkeprogram teljes kerete, nem kárösszeg.',
+    descriptionBlocks: [
+      { type: 'text', content: 'A HVG360 2025. októberi cikke szerint a kormány 300 milliárd forintból indított, hat évre szóló lakhatási tőkeprogramja körül feltűnő a csend, pedig a program gazdája a Nemzeti Tőkeholding (NTH). A lap szerint a program aggályos összefonódásokat tartalmaz, és Tiborcz István, valamint Nagy Márton neve is felbukkan benne.' },
+      { type: 'text', content: 'A cikk szerint az Orbán-kormány több tízezer megfizethető otthont várt a programtól, amely a lap értékelése szerint részben ismét egy privilegizált üzleti kör gazdagodását biztosította be a választások utáni évekre. A 300 milliárd forint a program teljes kerete; a cikk nem állítja, hogy ekkora összeget eltérítettek volna.' },
+      { type: 'article-card', source: 'HVG360', date: '2025-10-13', headline: 'Tiborcz és Nagy Márton neve is felbukkan az aggályos összefonódásokat tartalmazó 300 milliárd forintos állami lakhatási tőkeprogramban', url: 'https://hvg.hu/360/20251013_hvg-lakhatasi-tokeprogram-tiborcz-nagy-marton-nemzeti-tokeholding-lakasepites' },
+    ],
+  },
   { scandalKey: 'tiborcz-konfector-szlovak-korhaz', hideVideo: true },
   { scandalKey: 'tiborcz-durer-park-adavetele', hideVideo: true },
   {
@@ -739,12 +797,6 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
     // itself is consistent — "száz" ≈ 100 Mrd).
     scandalKey: 'matolcsy-mnb-szazmilyardok',
     title: 'Matolcsy MNB-elnökségének százmilliárdos költségei',
-  },
-  {
-    // 2026-07-09 title audit: "Balaton Bútor" is a real company name but
-    // reads as a garbled fragment without context.
-    scandalKey: 'matolcsy-adam-balaton-butor',
-    title: 'Matolcsy Ádám és a Balaton Bútor cégügy',
   },
   {
     // 2026-07-09 title audit: mid-word capitalization typo ("BudaPesT").
@@ -769,7 +821,6 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
   { scandalKey: 'kehi-kormany-alapitvany', hideVideo: true },
   // Rogán Antal's video is specifically about the residency-bond program,
   // which isn't in his own top10 either.
-  { scandalKey: 'rogan-kesma-335-milliard', hideVideo: true },
   { scandalKey: 'rogan-szendrei-cecilia-ugy', hideVideo: true },
   { scandalKey: 'rogan-balasy-lounge-design', hideVideo: true },
   { scandalKey: 'rogan-magyar-posta-korrupcio', hideVideo: true },
@@ -869,7 +920,13 @@ export const CASE_OVERRIDES: CaseDetailOverride[] = [
 // felszín (pl. az /adatbazis tábla alap-rendezése, a nyitóoldal top-8-as
 // blokkja) ezt kell figyelembe vegye, különben ezek a torz számok
 // visszakerülnek a lista tetejére.
-export const HIDDEN_DAMAGE_IDS = CASE_OVERRIDES.filter((o) => o.hideAutoDamage).map((o) => o.scandalKey);
+export const HIDDEN_DAMAGE_IDS = [
+  ...CASE_OVERRIDES.filter((o) => o.hideAutoDamage).map((o) => o.scandalKey),
+  // 2026-09-29 forrás-ellenőrzés: az auditban nem igazolt összegek is rejtve.
+  ...Object.entries(CASE_AUDIT)
+    .filter(([, a]) => a.hideAutoDamage)
+    .map(([id]) => id),
+];
 
 // Retired case ids — each is a confirmed duplicate of another scandalKey
 // (same underlying story/claim, split by a slug or classification quirk) and
@@ -879,6 +936,54 @@ export const HIDDEN_DAMAGE_IDS = CASE_OVERRIDES.filter((o) => o.hideAutoDamage).
 // on these, and any other damage_huf-sorted surface (the /adatbazis table's
 // default listing, the homepage top-8) must exclude them the same way.
 export const RETIRED_REDIRECTS: Record<string, string> = {
+  // 2026-09-29 forrás-ellenőrzés (case-audit.ts): duplikátumok és hamis
+  // hozzárendelések — a kanonikus, ellenőrzött ügyre irányítunk. Az ékezetes
+  // id mellett az ASCII alakot is felvesszük, mert a régi linkek azzal is élnek.
+  'palkovics-korrupcios-nagyper': '/adatbazis/barta-eke-ngm-25-milliardos-per',
+  'rákosrendező-eagle-hills': '/adatbazis/mini-dubaj-alabbar',
+  'rakosrendezo-eagle-hills': '/adatbazis/mini-dubaj-alabbar',
+  'tiborcz-elios-zrt': '/adatbazis/tiborcz-elios-innovativ',
+  'meszaros-elios-innovativ': '/adatbazis/tiborcz-elios-innovativ',
+  'pataky-közösségi-misszió-pünkösdi-csalás': '/adatbazis/pataky-albert-punkosdiek-csalasugye',
+  'pataky-kozossegi-misszio-punkosdi-csalas': '/adatbazis/pataky-albert-punkosdiek-csalasugye',
+  'balasy-gyula-lounge-communications': '/adatbazis/balasy-gyula-ugy',
+  'fidesz-kampanyarc-tamogatas': '/adatbazis/nka-botrany',
+  'lazar-magyar-vagon-mentes': '/adatbazis/lazar-dunakeszi-jarmujavito',
+  'homlok-vasuti-kartell': '/adatbazis/homlok-meszaros-kartell-ugy',
+  'orban-rahel-foldvasarlas': '/adatbazis/orban-rahel-foldvasarlas-ugy',
+  'tiborcz-napeleempark-mvm': '/adatbazis/tiborcz-allami-szerzodesek',
+  'habony-cato-investments': '/adatbazis/lazar-dunakeszi-jarmujavito',
+  'rakosrendezett-beruházas-mak': '/adatbazis/mini-dubaj-alabbar',
+  'rakosrendezett-beruhazas-mak': '/adatbazis/mini-dubaj-alabbar',
+  'meszaros-beatrix-fejer-bal-osztalek': '/adatbazis/meszaros-fejer-bal-osztalek',
+  'ivanyiekklezia-gazdasag-onodi': '/adatbazis/ivanyi-gabor-penzmillio',
+  'rakay-petofi-film-esztalvan': '/adatbazis/rakay-petofi-film-koltsegvetesi-tulkezeles',
+  'kammerer-dunakanyar-samsung-ado': '/adatbazis/kammerer-godi-samsung-gyar',
+  'garancsi-varesei-villa-influentia': '/adatbazis/habony-kelenfold-eromu',
+  'tiszolczi-italiana-luxushaz-influentia': '/adatbazis/habony-kelenfold-eromu',
+  'habony-lombardiai-orban-villa-influentia': '/adatbazis/habony-kelenfold-eromu',
+  'rogan-erzsebet-taborok-zalaszabar': '/adatbazis/bahart-ingatlan-korrupcios-halozat',
+  'bolla-szamlagepuzem': '/adatbazis/jellinek-szamlagyar-botrany',
+  'budapest-korrupcios-halozat': '/adatbazis/kiss-laszlo-fogdahaz',
+  'matolcsy-neumann-egyetem': '/adatbazis/matolcsy-mnb-gtc-ingatlan-adossag',
+  'meszaros-mbh-befekteto': '/adatbazis/meszaros-mbh-bank-korrupcios',
+  'varga-zoltan-avogadro-projekt': '/adatbazis/varga-zoltan-nogradi-vegyipari',
+  'marki-zay-usaid-penzmentes': '/adatbazis/marki-zay-mmmm-penzek',
+  'agrarminstierium-korrupcios-halozat': '/adatbazis/nagy-janos-agrarminiszterium',
+  'meszaros-budapest-bank': '/adatbazis/meszaros-mbh-bank-korrupcios',
+  'orban-balazs-mcc-osztalek': '/adatbazis/mcc-mol-osztalek',
+  'schadl-volner-botrany': '/adatbazis/schadl-gyorgy-vegrehajto-botrany',
+  'meszaros-mvm-okosmerok': '/adatbazis/meszaros-matrai-gazerőmu-elsewedy',
+  'simonka-nagy-ertek-buncselekmeny': '/adatbazis/simonka-gyorgy-polgarmeister-eljarus',
+  'rogan-lounge-event': '/adatbazis/balasy-gyula-ugy',
+  'oroshaza-tao-kezilabda-bukta': '/adatbazis/oroszhaza-kezilabda-botrany',
+  'hernadi-mcc-osztalek': '/adatbazis/mcc-mol-osztalek',
+  'szestol-csepeli-birokzo-alapitvany': '/adatbazis/nemeth-szilard-alcivil',
+  'matolcsy-adam-padme': '/adatbazis/matolcsy-mnb-gtc-ingatlan-adossag',
+  'orban-dohanygyar-trafik': '/adatbazis/santa-dohanybiznisz',
+  'zugloi-parkolasi-ugy': '/adatbazis/horvath-csaba-parkolasi-botrany',
+  'simonka-békés-korrupcios-ugy': '/adatbazis/simonka-gyorgy-polgarmeister-eljarus',
+  'simonka-bekes-korrupcios-ugy': '/adatbazis/simonka-gyorgy-polgarmeister-eljarus',
   'ner-milliardok': '/adatbazis/meszaros-lorinc-osszes-ugye',
   'meszaros-szvj-autopalya-koncesszio': '/adatbazis/meszaros-szijj-autopalya-koncesszio',
   // Gattyán NAV/Docler adóügy — same case, same 19,4 Mrd figure, two scandalKeys.
@@ -966,7 +1071,22 @@ export const PERSON_PHOTOS: Record<string, { photoUrl: string; photoCredit?: str
 };
 
 export function getCaseOverride(scandalKey: string): CaseDetailOverride | null {
-  return CASE_OVERRIDES.find((o) => o.scandalKey === scandalKey) ?? null;
+  const base = CASE_OVERRIDES.find((o) => o.scandalKey === scandalKey) ?? null;
+  // A forrás-ellenőrzés (case-audit.ts) eredménye felülírja a régebbi,
+  // ellenőrizetlen override-mezőket; ami ott nincs megadva, marad.
+  const audit = CASE_AUDIT[scandalKey];
+  if (!audit) return base;
+  const { checked: _c, verdict: _v, note: _n, ...fields } = audit;
+  const defined = Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined));
+  // Ellenőrzött ügynél a generált bűncselekmény-címkék nem jelennek meg:
+  // csak az audit által kifejezetten megadott (forrással igazolt) címkék.
+  return { ...(base ?? { scandalKey }), crimeTypes: [], ...defined } as CaseDetailOverride;
+}
+
+/** Ellenőrzött (nem törölt) ügy: a DB-cím az audit által írt végleges cím. */
+function isAuditedTitle(scandalKey: string): boolean {
+  const a = CASE_AUDIT[scandalKey];
+  return !!a && a.verdict !== 'removed';
 }
 
 /** Kézzel felülírt megjelenítési cím. null = nincs override, auto-logikából kell dolgozni. */
@@ -978,8 +1098,11 @@ export function getCaseDisplayTitle(scandalKey: string): string | null {
 
 /** Levágja a "335 milliárd forint" típusú összegeket (pipeline artefakt a névből).
  *  (?!\w) helyett \b — mert \b JS-ben ASCII-alapú és ékezetes végű szavaknál (millió, milliárd) nem megbízható. */
-export function cleanTitle(name: string | null | undefined): string {
+export function cleanTitle(name: string | null | undefined, scandalKey?: string | null): string {
   if (!name) return '';
+  // Kézzel ellenőrzött ügy címét az audit írta forrás alapján (összeggel,
+  // névvel együtt) — azt nem vágjuk meg.
+  if (scandalKey && isAuditedTitle(scandalKey)) return name.trim();
   const c = name
     // "ügyelete(k)" a névadó LLM visszatérő nyelvtani hibája — "ügyelet"
     // (készenlét/felügyelet) helyett "ügye" (birtokos "ügy") kellett volna.
@@ -1062,8 +1185,10 @@ export function autoDisplayTitle(
   name: string | null | undefined,
   person: string | null,
   overrideTitle?: string | null,
+  scandalKey?: string | null,
 ): string {
   if (overrideTitle) return overrideTitle;
+  if (scandalKey && name && isAuditedTitle(scandalKey)) return name.trim();
   const base = cleanTitle(name);
   return stripLeadingPerson(base, person);
 }

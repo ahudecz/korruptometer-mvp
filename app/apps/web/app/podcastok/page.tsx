@@ -13,6 +13,7 @@ import { REEL_AUTHORS } from '../_home/reels-config';
 import { pickReels } from '../_home/reels-select';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/podcastok' },
   title: { absolute: 'Podcastok' },
   description: 'NER-kritikus YouTube-videók és podcastok gyűjteménye — a Juhi NER100-tól Tompos Márton Orbánék-sorozatáig. Kattints, és nézd meg a legfrissebbeket!',
   openGraph: { title: 'Podcastok — Kegyencjárat', description: 'A témába vágó YouTube-videók és podcastok gyűjteménye.' },

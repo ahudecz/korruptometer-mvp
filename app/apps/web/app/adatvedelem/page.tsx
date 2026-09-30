@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { RevokeConsentButton } from './revoke-button';
 
 export const metadata = {
+  alternates: { canonical: '/adatvedelem' },
   title: 'Adatvédelmi tájékoztató',
   description: 'A Kegyencjárat adatkezelési és cookie-tájékoztatója.',
 };

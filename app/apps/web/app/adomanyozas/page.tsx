@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
+  alternates: { canonical: '/adomanyozas' },
   title: 'Adományozás',
   description: 'Támogasd a Kegyencjárat független tényfeltáró munkáját.',
 };

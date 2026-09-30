@@ -5,7 +5,7 @@ import { desc, ilike, or, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { WATCH_LIST, type WatchPerson } from '../../_home/watchlist-config';
 import { WATCHLIST_DETAIL, type WatchlistBreakingBlock } from '../../_home/watchlist-detail-config';
-import { CrossGaleria, CrossUgyek, CrossLemondosok } from '../../_home/cross-promo';
+import { CrossGaleria, CrossUgyek, CrossLemondosok, CrossErdekesUgyek } from '../../_home/cross-promo';
 export const dynamic = 'force-dynamic';
 
 // Kézzel írt, a személyre szabott — nem a bio/nerRole gépi levágásából
@@ -35,6 +35,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     // Google-találatban úgyis ott a domain, felesleges duplikáció (user kérés).
     title: { absolute: `Lemondott-e már ${person.name}?` },
     description: `${base} ${RESIGNATION_CTA}`,
+    alternates: { canonical: `/lemondasok/${id}` },
   };
 }
 
@@ -395,6 +396,7 @@ export default async function WatchlistPersonPage({ params }: { params: Promise<
       {/* Cross-promo */}
       <div className="cross-promo-below-more">
         <div className="cross-promo-below-more-inner">
+          <CrossErdekesUgyek pageKey={`/lemondasok/${id}`} />
           <CrossGaleria />
           <CrossUgyek />
           <CrossLemondosok />
