@@ -767,6 +767,11 @@ export const UGY_SUBPAGES: UgySubpage[] = [
       'A 444 2026. október 1-jén arról számolt be, hogy Orbán Áron, Orbán Viktor öccse március 26-án egy Grazban élő magyar üzletembert keresett meg azzal, hogy Ausztriában is fel lehetne-e tartóztatni egy ukrán pénzszállítmányt. Az üzenetváltás néhány héttel azután történt, hogy a TEK március 5-én az M0-son megállított egy Ausztriából Ukrajna felé tartó szállítmányt, amely az ukrán Oschadbank mintegy 27 milliárd forint értékű aranyát és valutáját vitte.',
     publishedAt: '2026-10-01',
     updatedAt: '2026-10-01',
+    heroImage: {
+      src: '/images/persons/orban.webp',
+      alt: 'Orbán Viktor volt miniszterelnök, akinek öccse, Orbán Áron az osztrák üzenetváltás szereplője',
+      credit: 'Eredeti fotó: Orbán Viktor Facebook oldala',
+    },
     promo: {
       eyebrow: 'Új fejlemény · osztrák szál',
       title: 'Orbán Áron Ausztriában is megkérdezte: el lehetne-e kapni egy ukrán szállítmányt?',

@@ -56,6 +56,12 @@ describe('Hatvanpuszta-ügyoldal (2026-10-01: bővített, forrásolt tartalom)',
     expect(JSON.stringify(hp)).not.toContain('utm_source');
   });
 
+  it('az idővonal rendes idővonal-blokk (nem egy bekezdésbe sűrített szöveg)', () => {
+    const tl = blocks.find((b) => b.type === 'timeline');
+    expect(tl && tl.type === 'timeline' && tl.items.length).toBeGreaterThanOrEqual(8);
+    expect(blocks.some((b) => b.type === 'text' && b.content.startsWith('2011:'))).toBe(false);
+  });
+
   it('a hibás „Vas megye” helyszín eltűnt', () => {
     expect(JSON.stringify(hp)).not.toContain('Vas megye');
   });

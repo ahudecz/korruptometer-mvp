@@ -72,6 +72,8 @@ export type DescriptionBlock =
   | { type: 'pdf-link'; url: string; label: string; note?: string }
   | { type: 'image-pair'; src1: string; alt1?: string; src2: string; alt2?: string; caption?: string }
   | { type: 'audio-link'; url: string; title: string; source: string; duration?: string }
+  /** 2026-10-01: függőleges, összekötött idővonal (a Dicsőségfal idővonalának mintájára). */
+  | { type: 'timeline'; heading?: string; items: { when: string; text: string }[] }
   /** 2026-10-01: egyetlen kép felirattal és forrásmegjelöléssel. */
   | { type: 'image'; src: string; alt: string; caption?: string; credit?: string }
   /** 2026-10-01: „szolgáltatások”-rács ikonokkal (Booking-minta), l. desc-extra-blocks.tsx.
@@ -1367,9 +1369,20 @@ Ez az ügy nemcsak a közvetlen anyagi kár miatt kerül a legdurvább ügyek k�
         url: 'https://telex.hu/belfold/2026/08/29/polgarorauto-kamu-masolat-rendorseg-eljaras-hatvanpuszta',
       },
       {
-        type: 'text',
+        type: 'timeline',
         heading: 'Mi történt Hatvanpusztán? — az idővonal',
-        content: '2011: egy cégen keresztül Orbán Viktor apjáé lesz a történelmi majorság. 2019: Orbán Győző a saját nevére veszi a birtokot, nagyszabású építkezés indul. 2019–2022: elkészülnek a később nyilvánosságra került tervdokumentumok. 2025 augusztusa: Hadházy Ákos energetikai tanúsítványokat mutat be, Orbán Győző interjút ad a Borsnak. 2025 szeptembere: Hadházy alaprajzokat és a műhelylak terveit hozza nyilvánosságra. 2025. október 2.: a Direkt36 ismerteti a Mészáros-cég fedezetvállalásáról szóló dokumentumot. 2025 decembere: a HVG közli az eredeti tervek teljes listáját. 2026 májusa: az Építész Kamara egy évre felfüggeszti a tervező tagságát (nem jogerős), és új légifelvételek mutatják a nagyrészt elkészült Hatvanpusztát. 2026 augusztusa: a kormányhivatal 5,7 millió forintos műemlékvédelmi bírságot szab ki, és feltűnik a „polgárőrautó”. 2026 szeptembere: kiderül a negyedik zebra pusztulásának oka, a tervező pedig a majorság megnyitásáról beszél.',
+        items: [
+          { when: '2011', text: 'Egy cégen keresztül Orbán Viktor apjáé lesz a történelmi majorság.' },
+          { when: '2019', text: 'Orbán Győző a saját nevére veszi a birtokot, nagyszabású építkezés indul.' },
+          { when: '2019–2022', text: 'Elkészülnek a később nyilvánosságra került tervdokumentumok.' },
+          { when: '2025. augusztus', text: 'Hadházy Ákos energetikai tanúsítványokat mutat be, Orbán Győző interjút ad a Borsnak.' },
+          { when: '2025. szeptember', text: 'Hadházy alaprajzokat és a műhelylak terveit hozza nyilvánosságra.' },
+          { when: '2025. október 2.', text: 'A Direkt36 ismerteti a Mészáros-cég fedezetvállalásáról szóló dokumentumot.' },
+          { when: '2025. december', text: 'A HVG közli az eredeti tervek teljes listáját.' },
+          { when: '2026. május', text: 'Az Építész Kamara egy évre felfüggeszti a tervező tagságát (nem jogerős); új légifelvételek mutatják a nagyrészt elkészült Hatvanpusztát.' },
+          { when: '2026. augusztus', text: 'A kormányhivatal 5,7 millió forintos műemlékvédelmi bírságot szab ki, és feltűnik a „polgárőrautó”.' },
+          { when: '2026. szeptember', text: 'Kiderül a negyedik zebra pusztulásának oka, a tervező pedig a majorság megnyitásáról beszél.' },
+        ],
       },
       {
         type: 'text',

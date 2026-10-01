@@ -12,7 +12,7 @@ import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak, Cros
 import { getRelatedComplaintsForUgy } from '@/lib/related-complaints';
 import { RelatedComplaintCard } from '../../_home/related-complaint-card';
 import { BreakingUpdateBox } from '../../_home/breaking-update-box';
-import { DescImage, FacilitiesGrid } from '../../_home/desc-extra-blocks';
+import { DescImage, DescTimeline, FacilitiesGrid } from '../../_home/desc-extra-blocks';
 import { PodcastVideoBox } from '../../_home/podcast-video-box';
 import { fillStatusItems, loadDetentionCounts } from '@/lib/detention-counts';
 import { withAutoLinks } from '../../_home/auto-link-text';
@@ -234,6 +234,8 @@ function DescBlock({
       return <DescImage block={block} />;
     case 'facilities':
       return <FacilitiesGrid block={block} />;
+    case 'timeline':
+      return <DescTimeline block={block} />;
     case 'image-pair':
       return (
         <div className="ugy-block-image-pair">

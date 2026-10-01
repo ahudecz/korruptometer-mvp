@@ -77,13 +77,16 @@ export function BreakingUpdateBox({ update }: { update: BreakingUpdate }) {
         </a>
       ))}
       {update.video && (
-        <div className="ugy-extra-video ugy-breaking-update-video">
-          <div className="ugy-extra-video-meta">
-            <span className="ugy-extra-video-label">{update.video.label}</span>
-            <span className="ugy-extra-video-title">{update.video.title}</span>
-            <p className="ugy-extra-video-summary">{update.video.summary}</p>
+        // 2026-10-01: a szokásos videóblokk-design (mint a leírásblokkokban:
+        // csatorna · dátum, cím, összefoglaló, teljes szélességű 16:9 lejátszó),
+        // belső margóval a breaking kereten belül — user kérés.
+        <div className="ugy-block-video ugy-breaking-update-video">
+          <div className="ugy-block-video-meta">
+            <span className="ugy-block-video-label">{update.video.label}</span>
+            <span className="ugy-block-video-title">{update.video.title}</span>
           </div>
-          <PodcastVideoBox videoId={update.video.id} title={update.video.title} wrapClassName="ugy-extra-video-wrap" />
+          <p className="ugy-block-video-summary">{update.video.summary}</p>
+          <PodcastVideoBox videoId={update.video.id} title={update.video.title} wrapClassName="ugy-block-video-wrap" />
         </div>
       )}
       {update.companiesNote && <p className="ugy-breaking-update-footnote">{update.companiesNote}</p>}

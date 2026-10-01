@@ -16207,3 +16207,94 @@ code {
 .ugy-block-image-img { display: block; width: 100%; max-width: 640px; height: auto; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
 .ugy-block-image-caption { margin-top: 8px; font-size: 13px; color: var(--muted); line-height: 1.55; }
 .ugy-block-image-credit { display: block; margin-top: 2px; font-size: 11px; }
+
+/* ── 2026-10-01 (2. kör) — a user szerint az első szűkítés kevés volt:
+   egységesen szorosabb ritmus az ügy- és aloldalak leírásában. Szakaszok
+   között 20px, kártyák/idézet/videó körül 10–16px, bekezdés-sorköz 1.65. */
+.ugy-description-body .ugy-block-text { margin: 0 0 18px; }
+.ugy-description-body .ugy-block-text p { line-height: 1.65; }
+.ugy-description-body .ugy-block-heading { margin: 0 0 6px; }
+.ugy-description-body .ugy-block-text:has(+ .ugy-block-article-card),
+.ugy-description-body .ugy-block-text:has(+ .ugy-block-quote),
+.ugy-description-body .ugy-block-text:has(+ .ugy-facilities) { margin-bottom: 10px; }
+.ugy-description-body .ugy-block-article-card { margin: 8px 0; padding: 14px 16px; }
+.ugy-description-body .ugy-block-article-card + .ugy-block-text,
+.ugy-description-body .ugy-block-quote + .ugy-block-text,
+.ugy-description-body .ugy-block-video + .ugy-block-text { margin-top: 20px; }
+.ugy-description-body .ugy-block-article-meta { margin-bottom: 6px; }
+.ugy-description-body .ugy-block-article-headline { margin-bottom: 4px; }
+.ugy-description-body .ugy-block-article-lead { margin: 0 0 6px; }
+.ugy-description-body .ugy-block-quote { margin: 12px 0; padding: 16px 20px; }
+.ugy-description-body .ugy-block-video { margin: 20px 0 16px; padding-top: 16px; }
+.ugy-description-body .ugy-subpage-promo { margin: 16px 0 24px; }
+.ugy-description-body .ugy-block-image,
+.ugy-description-body .ugy-facilities { margin-bottom: 18px; }
+
+/* ── 2026-10-01 — a „szolgáltatások”-rács alatti megjegyzés ne tapadjon a
+   rácshoz (user). */
+.ugy-description-body .ugy-facilities-note { margin-top: 20px; }
+
+/* ── 2026-10-01 — ügyoldali idővonal (DescTimeline), a Dicsőségfal
+   idővonalának mintájára (rendszervaltas/dicsosegfal.module.css .timeline). */
+.ugy-timeline-block { margin: 8px 0 22px; }
+.ugy-timeline { position: relative; list-style: none; margin: 14px 0 0; padding: 0 0 0 34px; }
+.ugy-timeline-item { position: relative; margin: 0; padding: 0 0 20px; list-style: none; }
+.ugy-timeline-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: -25px;
+  top: 11px;
+  bottom: -11px;
+  width: 2px;
+  background: var(--line, #e6e6e6);
+}
+.ugy-timeline-item:last-child { padding-bottom: 0; }
+.ugy-timeline-dot {
+  position: absolute;
+  left: -32px;
+  top: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--accent, #e31937);
+  box-sizing: border-box;
+  z-index: 1;
+}
+.ugy-timeline-item:last-child .ugy-timeline-dot { background: var(--accent, #e31937); }
+.ugy-timeline-when {
+  display: block;
+  font-family: 'Archivo', sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--accent, #e31937);
+}
+.ugy-timeline-text {
+  display: block;
+  margin-top: 3px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink, #171a20);
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* ── 2026-10-01 (3. kör) — a breaking-dobozban a videó a szokásos
+   videóblokk-designt kapja (user: „nem a szokásos design szerint”), a
+   korábbi kétoszlopos kártya helyett; a keret széléhez nem ér. */
+.ugy-breaking-update .ugy-block-video.ugy-breaking-update-video {
+  display: block;
+  margin: 0;
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--line);
+  background: #fff;
+}
+.ugy-breaking-update .ugy-breaking-update-video .ugy-block-video-wrap { order: initial; }
+.ugy-description-body .ugy-breaking-update .ugy-block-video-summary { margin: 0 0 12px; }
+@media (max-width: 640px) {
+  .ugy-breaking-update .ugy-block-video.ugy-breaking-update-video { padding: 14px 16px 16px; }
+}
+@media (max-width: 640px) {
+  .ugy-breaking-update-video .ugy-block-video-meta { flex-direction: column; align-items: flex-start; gap: 2px; }
+}
