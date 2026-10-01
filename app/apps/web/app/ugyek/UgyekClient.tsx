@@ -5,13 +5,14 @@ import Link from 'next/link';
 
 import { UGYEK } from '../_home/ugyek-config';
 import { GALERIA } from '../_home/galeria-config';
+import { fillStatusItems, type DetentionCounts } from '@/lib/detention-count-text';
 
 function imgSrc(url: string): string {
   if (url.startsWith('/') || url.includes('wikimedia.org')) return url;
   return `/api/img-proxy?url=${encodeURIComponent(url)}`;
 }
 
-function UgyekDetail({ entry }: { entry: typeof UGYEK[number] }) {
+function UgyekDetail({ entry, counts }: { entry: typeof UGYEK[number]; counts: DetentionCounts | null }) {
   const galeriaEntry = entry.responsibleGaleriaId
     ? GALERIA.find(e => e.id === entry.responsibleGaleriaId)
     : null;
@@ -73,7 +74,7 @@ function UgyekDetail({ entry }: { entry: typeof UGYEK[number] }) {
         <p className="gal-detail-desc">{entry.summary}</p>
 
         <div className="ugyek-status-rows">
-          {entry.statusItems.map((s, i) => (
+          {(fillStatusItems(entry.statusItems, entry.id, counts) ?? []).map((s, i) => (
             <div key={i} className="ugyek-status-row">
               <span className="ugyek-status-icon">{s.icon}</span>
               <span className="ugyek-status-label">{s.label}</span>
@@ -90,8 +91,11 @@ function UgyekDetail({ entry }: { entry: typeof UGYEK[number] }) {
   );
 }
 
-export default function UgyekClient() {
+/** detentionCounts: ügyenkénti előzetesben-szám a szerverről (l. detention-counts.ts),
+ *  sima objektumként, mert Map nem adható át kliens-komponensnek. */
+export default function UgyekClient({ detentionCounts }: { detentionCounts: Record<string, number> | null }) {
   const [selected, setSelected] = useState(0);
+  const counts: DetentionCounts | null = detentionCounts ? new Map(Object.entries(detentionCounts)) : null;
   const active = UGYEK[selected];
 
   if (!active) return null;
@@ -120,13 +124,13 @@ export default function UgyekClient() {
                 <span className="ugyek-nav-dot" />
                 <div className="gal-nav-text">
                   <div className="gal-nav-name">{entry.title}</div>
-                  <div className="gal-nav-sub">{entry.responsible ?? entry.eyebrow}</div>
+                  <div className="gal-nav-sub">{entry.responsible ?? (entry.eyebrow.split('·')[0] ?? '').trim()}</div>
                 </div>
               </button>
             ))}
           </nav>
           <div className="gal-detail">
-            <UgyekDetail entry={active} />
+            <UgyekDetail entry={active} counts={counts} />
           </div>
         </div>
 
@@ -134,7 +138,7 @@ export default function UgyekClient() {
         <div className="gal-mobile-only">
           {UGYEK.map(entry => (
             <div key={entry.id} className="ugyek-mobile-entry">
-              <UgyekDetail entry={entry} />
+              <UgyekDetail entry={entry} counts={counts} />
             </div>
           ))}
         </div>

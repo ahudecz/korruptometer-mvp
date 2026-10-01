@@ -12,6 +12,7 @@ import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak, Cros
 import { getRelatedComplaintsForUgy } from '@/lib/related-complaints';
 import { RelatedComplaintCard } from '../../_home/related-complaint-card';
 import { BreakingUpdateBox } from '../../_home/breaking-update-box';
+import { fillStatusItems, loadDetentionCounts } from '@/lib/detention-counts';
 import { withAutoLinks } from '../../_home/auto-link-text';
 import { namesInTexts } from '../../_home/person-links';
 
@@ -341,6 +342,8 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
   // (fentebb már a hír-lekérdezéshez is felhasznált lista) újrahasznosítja,
   // nincs külön karbantartandó kulcsszólista.
   const relatedComplaints = await getRelatedComplaintsForUgy(entry.articleKeywords ?? []);
+  // 2026-10-01: a státuszsorok „{elozetesben}” száma a CourtVerdict táblából.
+  const statusItems = fillStatusItems(entry.statusItems, entry.id, await loadDetentionCounts());
   // SEO hub & spoke: az ügyhöz tartozó mély aloldalak (l. ugyek-subpages.ts).
   // A belső link innen kötelező — enélkül a Google nem találja meg őket.
   const subpages = getSubpagesForUgy(entry.id);
@@ -581,9 +584,9 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
             }
           </div>
 
-          {entry.statusItems && entry.statusItems.length > 0 && (
+          {statusItems && statusItems.length > 0 && (
             <div className="ugy-status-summary">
-              {entry.statusItems.map((s, i) => (
+              {statusItems.map((s, i) => (
                 <div key={i} className="ugy-status-summary-row">
                   <span className="ugy-status-summary-icon">{s.icon}</span>
                   <div className="ugy-status-summary-body">

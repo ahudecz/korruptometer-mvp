@@ -1,4 +1,5 @@
 import 'server-only';
+import { fillEyebrow, loadDetentionCounts } from '@/lib/detention-counts';
 import { and, desc, eq, gt, sql } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
@@ -750,7 +751,8 @@ async function buildCatalogHighlightTrigger(db: ReturnType<typeof getDb>): Promi
   // előzetesben"), NEM az összefoglaló eleje: 90 karakterbe egy valódi
   // mondat úgysem fér bele, a levágott mondat pedig pontosan az a hiba,
   // amit a user kifogásolt. A teljes összefoglaló a caption-ben marad.
-  const imageDetail = fitCompleteSentences(pick.eyebrow, IMAGE_DETAIL_MAX_CHARS);
+  // 2026-10-01: az eyebrow „{elozetesben}” tokenje a CourtVerdict-számmal töltődik.
+  const imageDetail = fitCompleteSentences(fillEyebrow(pick.eyebrow, pick.id, await loadDetentionCounts()), IMAGE_DETAIL_MAX_CHARS);
 
   const image = await renderBreakingImage({ kicker, headline, detail: imageDetail });
   return {

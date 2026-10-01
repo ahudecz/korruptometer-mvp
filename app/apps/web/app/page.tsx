@@ -32,6 +32,7 @@ import { PodcastSpotlight } from './_home/podcast-spotlight';
 import { cleanSpotlightDescription } from '@/lib/podcast-description';
 import { pickBreakingArticle } from '@/lib/breaking-pick';
 import { caseHref } from './_home/case-slugs';
+import { fillEyebrow, fillStatusItems } from '@/lib/detention-counts';
 
 // force-dynamic. ISR (revalidate) was tried instead on 2026-07-08, on the
 // mistaken assumption that per-visit query volume was blowing through the
@@ -1123,19 +1124,20 @@ export default async function HomePage() {
           // frissítésnél MINDKETTŐT nézd meg (l. feedback-ugyek-config-duplicated-in-page-tsx).
           {
             id: 'volanbusz-ugy',
-            eyebrow: 'Aktív · 3 személy őrizetben',
+            eyebrow: 'Aktív · {elozetesben} személy letartóztatva',
             title: 'Volánbusz-ügy',
             responsible: 'Jellinek Dániel és Szivek Norbert',
             summary: 'A Volán-társaságok 2015 és 2018 között súlyosan túlárazott használt autóbuszokat vásároltak és béreltek — a nyomozás szerint mintegy 10 milliárd forintos vagyoni hátrányt okozva. 2026. szeptember 11-én nyolc embert gyanúsítottak meg, négy nappal később a Központi Nyomozó Főügyészség összehangolt akciójában három személyt őrizetbe vettek.',
+            // 2026-10-01: ugyanaz a breaking, mint az ügyoldalon (ugyek-config breakingUpdate).
             breakingAlert: {
-              source: 'Ügyészség.hu',
-              headline: 'Bűnügyi akció a Volánbuszt érintő korrupciós ügyben',
-              lead: 'A Központi Nyomozó Főügyészség közel 40 hivatalos személy részvételével összehangolt nyomozási cselekményeket hajtott végre: több helyszínen kutattak és foglaltak le, négy gyanúsítotti kihallgatás indult, közülük három személyt őrizetbe vettek.',
-              url: 'https://ugyeszseg.hu/bunugyi-akcio-a-volanbuszt-erinto-korrupcios-ugyben/',
+              source: '24.hu',
+              headline: 'Letartóztatták Seszták Miklós volt minisztert a Volánbusz-ügyben',
+              lead: 'A Budai Központi Kerületi Bíróság nyomozási bírája 30 napra elrendelte Seszták Miklós volt nemzeti fejlesztési miniszter letartóztatását. A gyanú szerint több mint 12 milliárd forintnyi jogtalan előnyt vett át, amit ő tagad.',
+              url: 'https://24.hu/belfold/2026/09/30/sesztak-miklos-letartoztatas-korrupcio-volanbusz/',
             },
             videoId: '3zF9ozF8bzA',
             statusItems: [
-              { icon: '🔴', label: 'Kényszerintézkedés', value: '3 személy őrizetben (szept. 15.) — a főügyészség nevet nem közölt; a miniszterelnök a parlamentben Jellinek Dánielt és Szivek Norbertet nevezte meg előállítottként' },
+              { icon: '🔴', label: 'Letartóztatás', value: '{elozetesben} személy letartóztatva — Seszták Miklós volt miniszter (szept. 30.), Jellinek Dániel és Szivek Norbert (szept. 17.)' },
               { icon: '👥', label: 'Gyanúsítottak', value: '8 fő (szept. 11., NNI) — a szóvivő szerint mentelmi joggal rendelkező személy is érintett lehet' },
               { icon: '⚖️', label: 'Eljárás', value: 'Központi Nyomozó Főügyészség — bűnszövetségben, üzletszerűen elkövetett vesztegetés elfogadása; az NNI-ágon hűtlen kezelés és pénzmosás' },
               { icon: '💰', label: 'Becsült vagyoni hátrány', value: '~10 milliárd Ft (2015–2018, Volán-társaságok)' },
@@ -1145,15 +1147,16 @@ export default async function HomePage() {
           },
           {
             id: 'nka-botrany',
-            eyebrow: 'Aktív · 7 személy előzetesben',
+            eyebrow: 'Aktív · {elozetesben} személy előzetesben',
             title: 'NKA botrány',
             responsible: 'Hankó Balázs',
             summary: 'Hankó Balázs volt kulturális miniszter a 2026-os választások előtt szabálytalanul osztott ki milliárdos NKA-támogatásokat. A NAV hűtlen kezelés bűntett gyanújával nyomoz — az ügy 17+ milliárd Ft-ot érint. Tarr Zoltán a kifizetések visszavizsgálását rendelte el.',
+            // 2026-10-01: ugyanaz a breaking, mint az ügyoldalon (ugyek-config breakingUpdate).
             breakingAlert: {
-              source: 'Telex',
-              headline: 'Kiderült a hetedik gyanúsított kiléte: Konczos Nóra, Hankó Balázs egykori kabinetfőnöke',
-              lead: 'A bíróság előzetes letartóztatásba helyezte Konczos Nórát, Hankó Balázs volt kulturális miniszter egykori kabinetfőnökét — ő az NKA-botrány hetedik gyanúsítottja, aki e-mailben kérte a Mága Zoltán-pályázat 500 millió forintos finanszírozását.',
-              url: 'https://telex.hu/belfold/2026/07/23/nka-letartoztatas-hanko-kabinetfonok',
+              source: '444',
+              headline: 'Letartóztatták Hankó Balázst és volt államtitkárát, Varga-Bajusz Veronikát',
+              lead: 'A Kecskeméti Járásbíróság 2026. október 1-jén elrendelte Hankó Balázs volt kulturális és innovációs miniszter letartóztatását az NKA-ügyben; néhány órával később egykori államtitkárát, Varga-Bajusz Veronikát is letartóztatták.',
+              url: 'https://444.hu/2026/10/01/hanko-balazs-fideszes-orszaggyulesi-kepviselot-korabbi-kulturalis-es-innovacios-minisztert-letartoztattak',
             },
             // 2026-08-24 — user report: a korábbi (Molnár Áron, NRA-QuItdUA)
             // videó private-re állt, nem játszható le. L. ugyek-config.ts
@@ -1162,7 +1165,7 @@ export default async function HomePage() {
             // duplicated-in-page-tsx memória), MINDKETTŐT frissíteni kell.
             videoId: 'df2GNzmh7pY',
             statusItems: [
-              { icon: '🔴', label: 'Őrizetbe vétel', value: '7 személy előzetesben — köztük Bús Balázs (óbudai) és Ughy Attila (XVIII. ker.) volt polgármesterek, valamint Konczos Nóra, Hankó Balázs egykori kabinetfőnöke (júl. 23.)' },
+              { icon: '🔴', label: 'Előzetes letartóztatás', value: '{elozetesben} személy előzetesben — köztük Hankó Balázs volt kulturális miniszter (okt. 1.) és Bús Balázs volt óbudai polgármester' },
               { icon: '⚖️', label: 'Nyomozás', value: 'NAV — hűtlen kezelés bűntett, 17+ milliárd Ft érintett összeg' },
               { icon: '💰', label: 'Visszaszerzett vagyon', value: '~2,1 milliárd Ft visszaadva + 22 milliárd Ft visszakövetelve (Élvonal)' },
               { icon: '👤', label: 'Felelős', value: 'Hankó Balázs — volt kulturális miniszter' },
@@ -1270,7 +1273,17 @@ export default async function HomePage() {
             articles: volvoArticles.map(a => ({ ...a })),
           },
         ];
-        return <BigCasesSection cases={bigCases} />;
+        // 2026-10-01: a „{elozetesben}” szám a CourtVerdict táblából (pretrialByUgy).
+        const detentionCounts = new Map(pretrialByUgy.flatMap(({ ugyId, n }) => (ugyId ? [[ugyId, Number(n)] as const] : [])));
+        return (
+          <BigCasesSection
+            cases={bigCases.map((c) => ({
+              ...c,
+              eyebrow: fillEyebrow(c.eyebrow, c.id, detentionCounts),
+              statusItems: fillStatusItems(c.statusItems, c.id, detentionCounts),
+            }))}
+          />
+        );
       })()}
 
       <div className="block-divider" />

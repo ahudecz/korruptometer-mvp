@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import UgyekClient from './UgyekClient';
+import { loadDetentionCounts } from '@/lib/detention-counts';
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak, CrossErdekesUgyek } from '../_home/cross-promo';
 
 export const dynamic = 'force-dynamic';
@@ -11,10 +12,11 @@ export const metadata: Metadata = {
   openGraph: { title: 'Kiemelt ügyek — Kegyencjárat', description: 'A legdurvább, folyamatosan frissülő korrupciós ügyek szerkesztőségi válogatása.' },
 };
 
-export default function UgyekPage() {
+export default async function UgyekPage() {
+  const counts = await loadDetentionCounts();
   return (
     <>
-      <UgyekClient />
+      <UgyekClient detentionCounts={counts ? Object.fromEntries(counts) : null} />
       <div className="cross-promo-section">
         <div className="cross-promo-section-inner">
           <CrossErdekesUgyek pageKey="/ugyek" />

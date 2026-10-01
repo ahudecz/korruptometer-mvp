@@ -147,7 +147,8 @@ export const UGYEK_REDIRECTS: Record<string, string> = {
 export const UGYEK: UgyekConfig[] = [
   {
     id: 'volanbusz-ugy',
-    eyebrow: 'Aktív · 3 személy letartóztatva',
+    // 2026-10-01: a szám a CourtVerdict táblából töltődik (src/lib/detention-counts.ts).
+    eyebrow: 'Aktív · {elozetesben} személy letartóztatva',
     title: 'Volánbusz-ügy',
     responsible: 'Jellinek Dániel és Szivek Norbert',
     photo: '/images/persons/jellinek-daniel-ahang.webp',
@@ -311,7 +312,8 @@ export const UGYEK: UgyekConfig[] = [
   },
   {
     id: 'nka-botrany',
-    eyebrow: 'Aktív · 7 személy előzetesben',
+    // 2026-10-01: a szám a CourtVerdict táblából töltődik (src/lib/detention-counts.ts).
+    eyebrow: 'Aktív · {elozetesben} személy előzetesben',
     title: 'NKA botrány',
     responsible: 'Hankó Balázs',
     responsibleGaleriaId: undefined,
@@ -411,8 +413,9 @@ export const UGYEK: UgyekConfig[] = [
       },
     },
     statusItems: [
-      { icon: '🔴', label: 'Őrizetbe vétel', value: '6 személy előzetesben — köztük Bús Balázs volt óbudai polgármester (jún. 23.)' },
-      { icon: '🆕', label: '7. gyanúsított', value: 'Konczos Nóra, Hankó Balázs egykori kabinetfőnöke — a bíróság előzetes letartóztatásba helyezte (júl. 23.)' },
+      { icon: '🔴', label: 'Előzetes letartóztatás', value: '{elozetesben} személy előzetesben — köztük Hankó Balázs volt kulturális miniszter (okt. 1.) és Bús Balázs volt óbudai polgármester' },
+      { icon: '🗓️', label: 'Első hullám', value: '6 személy őrizetben — köztük Bús Balázs volt óbudai polgármester (jún. 23.)' },
+      { icon: '🟡', label: 'Kiengedve', value: 'Konczos Nóra, Hankó Balázs egykori kabinetfőnöke — júl. 23-án letartóztatták, aug. 19-én bűnügyi felügyelet alá helyezték' },
       { icon: '⚖️', label: 'Nyomozás', value: 'NAV — hűtlen kezelés bűntett gyanúja, 17+ milliárd Ft érintett összeg' },
       { icon: '💰', label: 'Visszaszerzett vagyon', value: '~2,56 milliárd Ft — 2,16 Mrd visszautalt + ~400 M visszatartott (Tarr Zoltán)' },
       { icon: '👤', label: 'Felelős', value: 'Hankó Balázs — volt kulturális miniszter' },
