@@ -1147,7 +1147,7 @@ export default async function HomePage() {
           },
           {
             id: 'nka-botrany',
-            eyebrow: 'Aktív · {elozetesben} személy előzetesben',
+            eyebrow: 'Aktív · {elozetesben} személy letartóztatva vagy bűnügyi felügyelet alatt',
             title: 'NKA botrány',
             responsible: 'Hankó Balázs',
             summary: 'Hankó Balázs volt kulturális miniszter a 2026-os választások előtt szabálytalanul osztott ki milliárdos NKA-támogatásokat. A NAV hűtlen kezelés bűntett gyanújával nyomoz — az ügy 17+ milliárd Ft-ot érint. Tarr Zoltán a kifizetések visszavizsgálását rendelte el.',
@@ -1165,7 +1165,7 @@ export default async function HomePage() {
             // duplicated-in-page-tsx memória), MINDKETTŐT frissíteni kell.
             videoId: 'df2GNzmh7pY',
             statusItems: [
-              { icon: '🔴', label: 'Előzetes letartóztatás', value: '{elozetesben} személy előzetesben — köztük Hankó Balázs volt kulturális miniszter (okt. 1.) és Bús Balázs volt óbudai polgármester' },
+              { icon: '🔴', label: 'Kényszerintézkedés', value: '{elozetesben} személy letartóztatva vagy bűnügyi felügyelet alatt — köztük Hankó Balázs volt kulturális miniszter (okt. 1.) és Bús Balázs volt óbudai polgármester' },
               { icon: '⚖️', label: 'Nyomozás', value: 'NAV — hűtlen kezelés bűntett, 17+ milliárd Ft érintett összeg' },
               { icon: '💰', label: 'Visszaszerzett vagyon', value: '~2,1 milliárd Ft visszaadva + 22 milliárd Ft visszakövetelve (Élvonal)' },
               { icon: '👤', label: 'Felelős', value: 'Hankó Balázs — volt kulturális miniszter' },

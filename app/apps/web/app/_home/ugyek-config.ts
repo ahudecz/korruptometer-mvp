@@ -327,7 +327,7 @@ export const UGYEK: UgyekConfig[] = [
   {
     id: 'nka-botrany',
     // 2026-10-01: a szám a CourtVerdict táblából töltődik (src/lib/detention-counts.ts).
-    eyebrow: 'Aktív · {elozetesben} személy előzetesben',
+    eyebrow: 'Aktív · {elozetesben} személy letartóztatva vagy bűnügyi felügyelet alatt',
     title: 'NKA botrány',
     responsible: 'Hankó Balázs',
     responsibleGaleriaId: undefined,
@@ -427,7 +427,7 @@ export const UGYEK: UgyekConfig[] = [
       },
     },
     statusItems: [
-      { icon: '🔴', label: 'Előzetes letartóztatás', value: '{elozetesben} személy előzetesben — köztük Hankó Balázs volt kulturális miniszter (okt. 1.) és Bús Balázs volt óbudai polgármester' },
+      { icon: '🔴', label: 'Kényszerintézkedés', value: '{elozetesben} személy letartóztatva vagy bűnügyi felügyelet alatt — köztük Hankó Balázs volt kulturális miniszter (okt. 1.) és Bús Balázs volt óbudai polgármester' },
       { icon: '🗓️', label: 'Első hullám', value: '6 személy őrizetben — köztük Bús Balázs volt óbudai polgármester (jún. 23.)' },
       { icon: '🟡', label: 'Kiengedve', value: 'Konczos Nóra, Hankó Balázs egykori kabinetfőnöke — júl. 23-án letartóztatták, aug. 19-én bűnügyi felügyelet alá helyezték' },
       { icon: '⚖️', label: 'Nyomozás', value: 'NAV — hűtlen kezelés bűntett gyanúja, 17+ milliárd Ft érintett összeg' },
