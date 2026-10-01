@@ -7,6 +7,7 @@ import { visibleSubpages, getSubpage, getSubpagesForUgy, type InlineLink, type S
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak, CrossErdekesUgyek } from '../../../_home/cross-promo';
 import { loadCaseDetentions, isStillDetained, type CaseDetentionRow } from '@/lib/case-detentions';
 import { withAutoLinks } from '../../../_home/auto-link-text';
+import { BreakingUpdateBox } from '../../../_home/breaking-update-box';
 
 // SEO-szempontból a lényeg, hogy a Googlebot azonnal kiszolgált HTML-t
 // kapjon, ezért ISR-rel dolgozunk. 10 perc: a letartóztatás-táblázat élő
@@ -276,6 +277,8 @@ function Block({
           {block.caption && <figcaption className="seo-figure-caption">{block.caption}</figcaption>}
         </figure>
       );
+    case 'breaking':
+      return <BreakingUpdateBox update={block.update} />;
     case 'article-card':
       return (
         <a href={block.url} target="_blank" rel="noopener noreferrer" className="ugy-block-article-card">

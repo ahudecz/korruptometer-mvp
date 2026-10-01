@@ -1,3 +1,4 @@
+import { UGYEK, type BreakingUpdate } from './ugyek-config';
 // ─────────────────────────────────────────────────────────────────────────────
 // SEO-aloldalak a kiemelt ügyek alá (/ugyek/<ügy>/<téma>)
 //
@@ -67,7 +68,10 @@ export type SubpageBlock =
    *  mindkét helyen megjelenjen. */
   | { type: 'detention-table'; heading: string; id?: string; intro?: string; ugyId: string; acronym?: string; note?: string }
   | { type: 'article-card'; source: string; headline: string; lead: string; url: string; date?: string }
-  | { type: 'video'; id: string; label?: string; title: string; summary?: string };
+  | { type: 'video'; id: string; label?: string; title: string; summary?: string }
+  /** 2026-10-01: ugyanaz a BREAKING doboz, mint az ügyoldal tetején
+   *  (BreakingUpdateBox) — l. ugyek-config.ts BreakingUpdate. */
+  | { type: 'breaking'; update: BreakingUpdate };
 
 export type SubpageFaq = { q: string; a: string };
 
@@ -109,6 +113,14 @@ export type UgySubpage = {
    *  megjelenne a promók között, a sitemapben vagy a keresőben. */
   draft?: boolean;
 };
+
+// Az ügyoldal tetején ülő BREAKING frissítés, egy az egyben az aloldalon is
+// (2026-10-01, user kérés: Hankó letartóztatása az nka-letartoztatas
+// aloldalon is) — nem másolat, hogy a kettő sose csússzon szét.
+function parentBreaking(ugyId: string): SubpageBlock[] {
+  const update = UGYEK.find((u) => u.id === ugyId)?.breakingUpdate;
+  return update ? [{ type: 'breaking', update }] : [];
+}
 
 export const UGY_SUBPAGES: UgySubpage[] = [
   {
@@ -421,11 +433,11 @@ export const UGY_SUBPAGES: UgySubpage[] = [
     lead:
       'Az első NKA letartóztatás 2026. június 23-án történt, amikor a NAV hat embert vett őrizetbe. Azóta az NKA-botrányban hét ember került előzetes letartóztatásba, közülük kettőt már szabadlábra helyeztek. Az alábbi lista az adatbázisunkból frissül: amint egy újabb NKA letartóztatás nyilvánossá válik, automatikusan megjelenik itt is.',
     publishedAt: '2026-09-15',
-    updatedAt: '2026-09-15',
+    updatedAt: '2026-10-01',
     heroImage: {
-      src: '/images/persons/bus-balazs.webp',
-      alt: 'Bús Balázs, az NKA volt alelnöke, az NKA-botrány egyik letartóztatottja',
-      credit: 'Eredeti fotó: obuda.hu',
+      src: '/images/persons/hanko-balazs.webp',
+      alt: 'Hankó Balázs volt kulturális és innovációs miniszter, akit 2026. október 1-jén letartóztattak az NKA-ügyben',
+      credit: 'Eredeti fotó: kultura.hu',
     },
     promo: {
       eyebrow: 'Háttér · NKA-letartóztatások',
@@ -435,6 +447,7 @@ export const UGY_SUBPAGES: UgySubpage[] = [
       cta: 'Megnézem a letartóztatottakat',
     },
     blocks: [
+      ...parentBreaking('nka-botrany'),
       {
         type: 'detention-table',
         id: 'lista',

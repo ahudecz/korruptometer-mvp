@@ -50,6 +50,9 @@ export function collectStaticVideoIds(): VideoRef[] {
     for (const [i, v] of (u.additionalVideos ?? []).entries()) {
       refs.push({ videoId: v.id, label: `ÜGY: ${u.id} → additionalVideos[${i}] "${v.title}"` });
     }
+    if (u.breakingUpdate?.video) {
+      refs.push({ videoId: u.breakingUpdate.video.id, label: `ÜGY: ${u.id} → breakingUpdate.video "${u.breakingUpdate.video.title}"` });
+    }
     for (const [i, b] of (u.descriptionBlocks ?? []).entries()) {
       if (b.type === 'video') refs.push({ videoId: b.id, label: `ÜGY: ${u.id} → descriptionBlocks[${i}] "${b.title ?? b.id}"` });
     }

@@ -56,6 +56,10 @@ export interface BreakingUpdate {
   companiesNote?: string;
   sourceUrl?: string;
   sourceLabel?: string;
+  /** 2026-10-01: beágyazott videó a hírkártyák után (facade, kattintásra
+   *  tölt). A `label` 'Csatorna · dátum' alakú, mérve — l.
+   *  feedback-youtube-embed-rules. */
+  video?: { id: string; label: string; title: string; summary: string };
 }
 
 export type DescriptionBlock =
@@ -143,7 +147,7 @@ export const UGYEK_REDIRECTS: Record<string, string> = {
 export const UGYEK: UgyekConfig[] = [
   {
     id: 'volanbusz-ugy',
-    eyebrow: 'Aktív · 3 személy őrizetben',
+    eyebrow: 'Aktív · 3 személy letartóztatva',
     title: 'Volánbusz-ügy',
     responsible: 'Jellinek Dániel és Szivek Norbert',
     photo: '/images/persons/jellinek-daniel-ahang.webp',
@@ -168,43 +172,28 @@ export const UGYEK: UgyekConfig[] = [
       { id: 'kyqa2wkH228', label: 'ATV Magyarország', title: '10 milliárdos Volán-mutyi: Nyolc embert gyanúsítottak meg, köztük az MNV korábbi vezetőjét' },
     ],
     breakingUpdate: {
-      dateLabel: '2026. szeptember 15.',
-      headline: 'Három embert őrizetbe vett az ügyészség a Volánbusz-ügyben',
-      lead: 'A Központi Nyomozó Főügyészség közel 40 hivatalos személy részvételével összehangolt nyomozási cselekményeket hajtott végre a Volánbusz-ügyben: több helyszínen kutattak és foglaltak le, négy gyanúsítotti kihallgatás indult, közülük három személyt őrizetbe vettek. A főügyészség sem a gyanúsítottak nevét, sem további részletet nem közölt.',
+      dateLabel: '2026. szeptember 30.',
+      headline: 'Letartóztatták Seszták Miklós volt minisztert',
+      lead: 'A Budai Központi Kerületi Bíróság nyomozási bírája 2026. szeptember 30-án 30 napra elrendelte Seszták Miklós volt nemzeti fejlesztési miniszter, KDNP-s országgyűlési képviselő letartóztatását. A gyanú szerint több mint 12 milliárd forintnyi jogtalan előnyt vett át, amit ő tagad. A bíróság szerint fennáll a veszélye, hogy tanúkat befolyásolna, illetve bizonyítékokat rejtene el vagy semmisítene meg; a szökés veszélyét nem látta megalapozottnak. A nyomozás a 2014 és 2018 közötti miniszteri időszakát vizsgálja: tárcája felügyelte az MNV-t, az MNV pedig a Volánbusz tulajdonosi jogait gyakorolta. Védője fellebbezett.',
       companies: [],
       articles: [
         {
-          source: 'Ügyészség.hu',
-          headline: 'Bűnügyi akció a Volánbuszt érintő korrupciós ügyben',
-          lead: 'A Központi Nyomozó Főügyészség közleménye: bűnszövetségben és üzletszerűen elkövetett vesztegetés elfogadása és más korrupciós bűncselekmények miatt folyó nyomozásban közel 40 hivatalos személy vett részt az akcióban, a Nemzeti Védelmi Szolgálat, az NNI Vagyonvisszaszerzési Hivatala és a Készenléti Rendőrség közreműködésével. Négy gyanúsítotti kihallgatás van folyamatban, közülük hármat őrizetbe vettek.',
-          date: '2026. szeptember 15.',
-          url: 'https://ugyeszseg.hu/bunugyi-akcio-a-volanbuszt-erinto-korrupcios-ugyben/',
-        },
-        {
-          source: 'HVG',
-          headline: 'Három embert őrizetbe vett az ügyészség a túlárazott Volán-buszok ügyében',
-          lead: 'Az ügyészség nem árulta el a gyanúsítottak nevét. A miniszterelnök a parlamentben aznap délelőtt arról beszélt, hogy előállították Jellinek Dánielt és Szivek Norbertet, az MNV egykori vezérigazgatóját.',
-          date: '2026. szeptember 15.',
-          url: 'https://hvg.hu/itthon/20260915_orizetbe-vetel-ugyeszseg-volanbusz-korrupcio',
-        },
-        {
-          source: '444',
-          headline: 'Mentelmi joggal rendelkező személy is érintett a Volánbusz-ügyben, állítja az NNI szóvivője',
-          lead: 'Kész-Varga Mónika, a Nemzeti Nyomozó Iroda szóvivője szerint további személyek meggyanúsítása is megtörténhet, köztük mentelmi joggal rendelkezőké is. A nyomozás szerint a Volán-társaságoknál 2015 és 2018 között közel 10 milliárd forintos vagyoni hátrány keletkezett.',
-          date: '2026. szeptember 11.',
-          url: 'https://444.hu/2026/09/11/mentelmi-joggal-rendelkezo-szemely-is-erintett-a-volanbusz-ugyben-allitja-az-nni-szovivoje',
-        },
-        {
-          source: 'Portfolio',
-          headline: 'Nyolc gyanúsítottja van a Volánbuszhoz köthető, tízmilliárdos korrupciós ügynek',
-          lead: 'A Nemzeti Nyomozó Iroda nyolc embert gyanúsított meg korrupciós és pénzmosási ügyben. A vizsgált ügyletek között 85 lízingelt autóbusz, egy 2 milliárd forintos karbantartási megbízás, 250 használt busz bérlete és egy kecskeméti ingatlan két hónap alatti, 700 millióról 1,3 milliárd forintra ugró továbbadása szerepel.',
-          date: '2026. szeptember 11.',
-          url: 'https://www.portfolio.hu/gazdasag/20260911/nyolc-gyanusitottja-van-a-volanbuszhoz-kotheto-tizmilliardos-korrupcios-ugynek-861974',
+          source: '24.hu',
+          headline: 'Letartóztatták Seszták Miklós volt minisztert a Volánbusz-ügyben',
+          lead: 'A bíróság a letartóztatás három indítványozott okából kettőt elutasított: szerinte a bizonyítás veszélyeztetése indokolja a letartóztatást. Seszták ügyvédje szerint a nyomozók a volt minisztert és őt magát is megfigyelték még a mentelmi jog felfüggesztése előtt.',
+          date: '2026. szeptember 30.',
+          url: 'https://24.hu/belfold/2026/09/30/sesztak-miklos-letartoztatas-korrupcio-volanbusz/',
         },
       ],
+      video: {
+        id: 'eyW5JiEtSVM',
+        label: 'ATV Magyarország · 2026. okt. 1.',
+        title: 'Eldőlt Seszták Miklós sorsa, 30 napra börtönbe került a volt miniszter',
+        summary: 'Az ATV Start beszélgetése Seszták Miklós letartóztatásáról, a stúdió vendége dr. Bátki Pál ügyvéd, büntetőjogász.',
+      },
     },
     statusItems: [
-      { icon: '🔴', label: 'Kényszerintézkedés', value: '3 személy őrizetben (2026. szept. 15.) — a főügyészség nevet nem közölt; a miniszterelnök a parlamentben Jellinek Dánielt és Szivek Norbertet nevezte meg előállítottként' },
+      { icon: '🔴', label: 'Letartóztatás', value: 'Seszták Miklós volt miniszter (2026. szept. 30., 30 napra), Jellinek Dániel és Szivek Norbert (2026. szept. 17.)' },
       { icon: '👥', label: 'Gyanúsítottak', value: '8 fő (2026. szept. 11., NNI) — a szóvivő szerint mentelmi joggal rendelkező személy is érintett lehet' },
       { icon: '⚖️', label: 'Eljárás', value: 'Központi Nyomozó Főügyészség — bűnszövetségben, üzletszerűen elkövetett vesztegetés elfogadása; az NNI-ágon hűtlen kezelés és pénzmosás' },
       { icon: '💰', label: 'Becsült vagyoni hátrány', value: '~10 milliárd Ft (2015–2018, Volán-társaságok)' },
@@ -212,6 +201,45 @@ export const UGYEK: UgyekConfig[] = [
     sourceRefs: [],
     description: `A Volánbusz-ügy öt éve húzódik: a feljelentés 2021 őszén érkezett meg a Nemzeti Nyomozó Irodához, érdemi előrelépés éveken át nem történt. 2026 szeptemberében aztán egy héten belül nyolc embert gyanúsítottak meg, majd hármat őrizetbe vettek.`,
     descriptionBlocks: [
+      // 2026-10-01: a 09-15-i breaking frissítés, sima szürke kártyákként —
+      // a lap tetején azóta Seszták letartóztatása áll.
+      {
+        type: 'text',
+        heading: '2026. szeptember 15. — Három embert őrizetbe vett az ügyészség',
+        content: 'A Központi Nyomozó Főügyészség közel 40 hivatalos személy részvételével összehangolt nyomozási cselekményeket hajtott végre a Volánbusz-ügyben: több helyszínen kutattak és foglaltak le, négy gyanúsítotti kihallgatás indult, közülük három személyt őrizetbe vettek. A főügyészség sem a gyanúsítottak nevét, sem további részletet nem közölt.',
+      },
+      {
+        type: 'article-card',
+        source: 'Ügyészség.hu',
+        headline: 'Bűnügyi akció a Volánbuszt érintő korrupciós ügyben',
+        lead: 'A Központi Nyomozó Főügyészség közleménye: bűnszövetségben és üzletszerűen elkövetett vesztegetés elfogadása és más korrupciós bűncselekmények miatt folyó nyomozásban közel 40 hivatalos személy vett részt az akcióban, a Nemzeti Védelmi Szolgálat, az NNI Vagyonvisszaszerzési Hivatala és a Készenléti Rendőrség közreműködésével. Négy gyanúsítotti kihallgatás van folyamatban, közülük hármat őrizetbe vettek.',
+        date: '2026. szeptember 15.',
+        url: 'https://ugyeszseg.hu/bunugyi-akcio-a-volanbuszt-erinto-korrupcios-ugyben/',
+      },
+      {
+        type: 'article-card',
+        source: 'HVG',
+        headline: 'Három embert őrizetbe vett az ügyészség a túlárazott Volán-buszok ügyében',
+        lead: 'Az ügyészség nem árulta el a gyanúsítottak nevét. A miniszterelnök a parlamentben aznap délelőtt arról beszélt, hogy előállították Jellinek Dánielt és Szivek Norbertet, az MNV egykori vezérigazgatóját.',
+        date: '2026. szeptember 15.',
+        url: 'https://hvg.hu/itthon/20260915_orizetbe-vetel-ugyeszseg-volanbusz-korrupcio',
+      },
+      {
+        type: 'article-card',
+        source: '444',
+        headline: 'Mentelmi joggal rendelkező személy is érintett a Volánbusz-ügyben, állítja az NNI szóvivője',
+        lead: 'Kész-Varga Mónika, a Nemzeti Nyomozó Iroda szóvivője szerint további személyek meggyanúsítása is megtörténhet, köztük mentelmi joggal rendelkezőké is. A nyomozás szerint a Volán-társaságoknál 2015 és 2018 között közel 10 milliárd forintos vagyoni hátrány keletkezett.',
+        date: '2026. szeptember 11.',
+        url: 'https://444.hu/2026/09/11/mentelmi-joggal-rendelkezo-szemely-is-erintett-a-volanbusz-ugyben-allitja-az-nni-szovivoje',
+      },
+      {
+        type: 'article-card',
+        source: 'Portfolio',
+        headline: 'Nyolc gyanúsítottja van a Volánbuszhoz köthető, tízmilliárdos korrupciós ügynek',
+        lead: 'A Nemzeti Nyomozó Iroda nyolc embert gyanúsított meg korrupciós és pénzmosási ügyben. A vizsgált ügyletek között 85 lízingelt autóbusz, egy 2 milliárd forintos karbantartási megbízás, 250 használt busz bérlete és egy kecskeméti ingatlan két hónap alatti, 700 millióról 1,3 milliárd forintra ugró továbbadása szerepel.',
+        date: '2026. szeptember 11.',
+        url: 'https://www.portfolio.hu/gazdasag/20260911/nyolc-gyanusitottja-van-a-volanbuszhoz-kotheto-tizmilliardos-korrupcios-ugynek-861974',
+      },
       {
         type: 'text',
         content: 'A Volánbusz-ügy Magyarország egyik legrégebb óta húzódó állami korrupciós nyomozása: a feljelentés 2021 őszén érkezett meg a Nemzeti Nyomozó Irodához hűtlen kezelés és pénzmosás gyanújával, érdemi előrelépés azonban éveken át nem történt. A Volánbusz-ügy 2026 februárjában került vissza a nyilvánosságba, amikor Tordai Bence országgyűlési képviselő bírósági végzéseket és nyomozati iratokat hozott nyilvánosságra a dossziéból. A nyomozás a legfőbb ügyész lemondása után gyorsult fel látványosan, és 2026 szeptemberében egyetlen héten belül nyolc embert gyanúsítottak meg, majd három személyt őrizetbe vettek.',
@@ -354,6 +382,34 @@ export const UGYEK: UgyekConfig[] = [
         summary: 'Az ATV Fásy Ádámot kereste meg azzal a felvetéssel, hogy lánya, Fásy Zsüliett cége összesen 101 millió forintnyi NKA-támogatást kapott — a kifizetés így az NKA-botrány egyre bővülő érintetti listájára került.',
       },
     ],
+    breakingUpdate: {
+      dateLabel: '2026. október 1.',
+      headline: 'Letartóztatták Hankó Balázst és volt államtitkárát, Varga-Bajusz Veronikát',
+      lead: 'A Kecskeméti Járásbíróság 2026. október 1-jén elrendelte Hankó Balázs volt kulturális és innovációs miniszter letartóztatását az NKA-ügyben. A gyanú különösen jelentős vagyoni hátrányt okozó, bűnszövetségben elkövetett hűtlen kezelés. Az ügyészség szerint a fideszes képviselőt sok év szabadságvesztés fenyegeti, és kiterjedt kapcsolatrendszere miatt fennáll a szökés és az eljárás befolyásolásának veszélye. Hankót szeptember 28-án este vették őrizetbe, miután a parlament felfüggesztette a mentelmi jogát. Néhány órával később egykori államtitkárát, Varga-Bajusz Veronikát is letartóztatták; a döntés ellen ő és védője fellebbezett.',
+      companies: [],
+      articles: [
+        {
+          source: '444',
+          headline: 'Hankó Balázs fideszes országgyűlési képviselőt, korábbi kulturális és innovációs minisztert letartóztatták',
+          lead: 'Hankót reggel rendőri kísérettel, bilincsben vezették be a Kecskeméti Járásbíróságra, ahol órákig várta a döntést. A letartóztatást az ügyészség kezdeményezte, szerinte fennáll a szökés, az elrejtőzés és az eljárás befolyásolásának veszélye.',
+          date: '2026. október 1.',
+          url: 'https://444.hu/2026/10/01/hanko-balazs-fideszes-orszaggyulesi-kepviselot-korabbi-kulturalis-es-innovacios-minisztert-letartoztattak',
+        },
+        {
+          source: '444',
+          headline: 'Letartóztatták Hankó Balázs egykori államtitkárát, Varga-Bajusz Veronikát',
+          lead: 'Az MTI tudósítója is látta, ahogy Varga-Bajusz Veronikát vezetőszáron kísérték a Kecskeméti Járásbíróságon. A döntés ellen ő és védője fellebbezett, erről a Kecskeméti Törvényszék dönt.',
+          date: '2026. október 1.',
+          url: 'https://444.hu/2026/10/01/letartoztattak-hanko-balazs-egykori-allamtitkarat-varga-bajusz-veronikat',
+        },
+      ],
+      video: {
+        id: 'IlOcx7LPvHQ',
+        label: 'Kecskeméti Televízió · 2026. szept. 29.',
+        title: 'Hankó Balázs letartóztatása',
+        summary: 'A Kecskeméti Televízió felvétele arról, ahogy Hankó Balázst hétfő éjszaka, a budapesti őrizetbe vétele után Kecskemétre szállítják.',
+      },
+    },
     statusItems: [
       { icon: '🔴', label: 'Őrizetbe vétel', value: '6 személy előzetesben — köztük Bús Balázs volt óbudai polgármester (jún. 23.)' },
       { icon: '🆕', label: '7. gyanúsított', value: 'Konczos Nóra, Hankó Balázs egykori kabinetfőnöke — a bíróság előzetes letartóztatásba helyezte (júl. 23.)' },
