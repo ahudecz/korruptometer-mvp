@@ -181,6 +181,19 @@ function Block({
           <p>{withAutoLinks(block.content, block.links, linkedPersons)}</p>
         </div>
       );
+    case 'quote':
+      return (
+        <blockquote className="ugy-block-quote">
+          <p>„{block.text}”</p>
+          {block.author && <cite>{block.author}</cite>}
+          {block.note && <span className="ugy-block-quote-note">{block.note}</span>}
+          {block.url && (
+            <a href={block.url} target="_blank" rel="noopener noreferrer" className="ugy-block-quote-source-link">
+              Forrás →
+            </a>
+          )}
+        </blockquote>
+      );
     case 'callout':
       return (
         <aside className="seo-callout">

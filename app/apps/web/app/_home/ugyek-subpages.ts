@@ -71,7 +71,10 @@ export type SubpageBlock =
   | { type: 'video'; id: string; label?: string; title: string; summary?: string }
   /** 2026-10-01: ugyanaz a BREAKING doboz, mint az ügyoldal tetején
    *  (BreakingUpdateBox) — l. ugyek-config.ts BreakingUpdate. */
-  | { type: 'breaking'; update: BreakingUpdate };
+  | { type: 'breaking'; update: BreakingUpdate }
+  /** 2026-10-01: kiemelt idézet (az ügyoldal 'quote' blokkjának mintájára,
+   *  .ugy-block-quote). A `text` idézőjelek NÉLKÜL, a renderer teszi köré. */
+  | { type: 'quote'; text: string; author?: string; note?: string; url?: string };
 
 export type SubpageFaq = { q: string; a: string };
 
@@ -398,7 +401,7 @@ export const UGY_SUBPAGES: UgySubpage[] = [
       },
       {
         q: 'Ki a felelős az NKA-botrányban?',
-        a: 'Felelősséget jogerős bírósági ítélet állapíthat meg, ilyen eddig nem született. A NAV hűtlen kezelés bűntettének gyanújával nyomoz, az ügyben hét embert helyeztek letartóztatásba, a vitatott kifizetések pedig Hankó Balázs volt kulturális miniszter keretéből indultak.',
+        a: 'Felelősséget jogerős bírósági ítélet állapíthat meg, ilyen eddig nem született. A NAV hűtlen kezelés bűntettének gyanújával nyomoz, az ügyben tizenegy embert helyeztek letartóztatásba — 2026. október 1-jén Hankó Balázs volt kulturális minisztert is, akinek a keretéből a vitatott kifizetések indultak.',
       },
     ],
     sources: [
@@ -431,7 +434,7 @@ export const UGY_SUBPAGES: UgySubpage[] = [
     h1: 'NKA letartóztatás: kit tartóztattak le eddig az NKA-botrányban?',
     eyebrow: 'NKA-botrány · letartóztatások',
     lead:
-      'Az első NKA letartóztatás 2026. június 23-án történt, amikor a NAV hat embert vett őrizetbe. Azóta az NKA-botrányban hét ember került előzetes letartóztatásba, közülük kettőt már szabadlábra helyeztek. Az alábbi lista az adatbázisunkból frissül: amint egy újabb NKA letartóztatás nyilvánossá válik, automatikusan megjelenik itt is.',
+      'Az első NKA letartóztatás 2026. június 23-án történt, amikor a NAV hat embert vett őrizetbe. Azóta az NKA-botrányban tizenegy ember került előzetes letartóztatásba — 2026. október 1-jén Hankó Balázs volt kulturális miniszter és egykori államtitkára, Varga-Bajusz Veronika is —, közülük kettőt már szabadlábra helyeztek. Az alábbi lista az adatbázisunkból frissül: amint egy újabb NKA letartóztatás nyilvánossá válik, automatikusan megjelenik itt is.',
     publishedAt: '2026-09-15',
     updatedAt: '2026-10-01',
     heroImage: {
@@ -531,7 +534,7 @@ export const UGY_SUBPAGES: UgySubpage[] = [
         id: 'hol-tart',
         heading: 'Hol tart most az ügy, és várható-e újabb NKA letartóztatás?',
         content:
-          'A nyomozás 2026 őszén is zajlik, és földrajzilag is terjed: Budapest mellett Győrben is eljárás indult, ahol négy helyi kulturális szervezet kapott aránytalanul nagy összegeket úgy, hogy érdemi tevékenységet nem folytattak, és a bejegyzési dátumuk is közös volt. A gyanúsítotti kör kilenc fő fölé bővült, a vizsgált kifizetések összege pedig meghaladja a 17 milliárd forintot. Mivel az ügy a támogatások végső felhasználói felé halad — ezt mutatja a szeptemberi, dokumentumfilmes szál —, további NKA letartóztatás reálisan várható. A politikai felelősség kérdése külön szálon fut: Hankó Balázs volt kulturális miniszter ellen nem folyik eljárás, miközben a vitatott kifizetések az ő miniszteri keretéből indultak, és a mentelmi jogának kikérését többen is sürgetik. Ez az oldal a hatósági közleményeket és a dokumentált sajtóértesüléseket követi, és minden újabb kényszerintézkedéssel frissül.',
+          'A nyomozás 2026 őszén is zajlik, és földrajzilag is terjed: Budapest mellett Győrben is eljárás indult, ahol négy helyi kulturális szervezet kapott aránytalanul nagy összegeket úgy, hogy érdemi tevékenységet nem folytattak, és a bejegyzési dátumuk is közös volt. A gyanúsítotti kör kilenc fő fölé bővült, a vizsgált kifizetések összege pedig meghaladja a 17 milliárd forintot. Mivel az ügy a támogatások végső felhasználói felé halad — ezt mutatja a szeptemberi, dokumentumfilmes szál —, további NKA letartóztatás reálisan várható. Az eljárás a politikai vezetést is elérte: a parlament felfüggesztette Hankó Balázs volt kulturális miniszter mentelmi jogát, akinek miniszteri keretéből a vitatott kifizetések indultak; 2026. szeptember 28-án őrizetbe vették, október 1-jén a Kecskeméti Járásbíróság letartóztatta, ugyanaznap egykori államtitkárát, Varga-Bajusz Veronikát is. Ez az oldal a hatósági közleményeket és a dokumentált sajtóértesüléseket követi, és minden újabb kényszerintézkedéssel frissül.',
       },
       {
         type: 'video',
@@ -545,7 +548,7 @@ export const UGY_SUBPAGES: UgySubpage[] = [
     faq: [
       {
         q: 'Hány embert tartóztattak le az NKA-botrányban?',
-        a: 'Eddig hét embert helyeztek előzetes letartóztatásba: hatot a 2026. június 23-i NAV-akció után, egyet júliusban. Közülük kettő már szabadlábon van, a többiek ellen az eljárás folyamatban van. A fenti lista mindig a friss állapotot mutatja.',
+        a: 'Eddig tizenegy embert helyeztek előzetes letartóztatásba: hatot a 2026. június 23-i NAV-akció után, egyet júliusban, kettőt szeptemberben (Fásyné Gurzó Máriát és Szabó Sándort), kettőt pedig október 1-jén (Hankó Balázst és Varga-Bajusz Veronikát). Közülük kettő már szabadlábon van, a többiek ellen az eljárás folyamatban van. A fenti lista mindig a friss állapotot mutatja.',
       },
       {
         q: 'Ki volt az első letartóztatott az NKA-ügyben?',
@@ -564,8 +567,8 @@ export const UGY_SUBPAGES: UgySubpage[] = [
         a: 'Konczos Nórát, Hankó Balázs egykori kabinetfőnökét 2026. augusztus 19-én bűnügyi felügyelet alá helyezték, megszüntetve az előzetes letartóztatását. Egy héttel később egy másik, a sajtó által nem nevesített gyanúsított is kikerült az előzetesből.',
       },
       {
-        q: 'Miért nem tartóztatták le Hankó Balázst?',
-        a: 'Hankó Balázs volt kulturális miniszter ellen tudomásunk szerint nem indult eljárás, noha a vitatott kifizetések jelentős része az ő 447-es miniszteri keretéből indult. A mentelmi jogának kikérését többen nyilvánosan is sürgették.',
+        q: 'Letartóztatták Hankó Balázst?',
+        a: 'Igen. A parlament felfüggesztette a mentelmi jogát, 2026. szeptember 28-án őrizetbe vették, október 1-jén pedig a Kecskeméti Járásbíróság letartóztatta. A gyanú különösen jelentős vagyoni hátrányt okozó, bűnszövetségben elkövetett hűtlen kezelés; a vitatott kifizetések jelentős része az ő 447-es miniszteri keretéből indult.',
       },
     ],
     sources: [
@@ -668,7 +671,7 @@ export const UGY_SUBPAGES: UgySubpage[] = [
         id: 'foszereplok',
         heading: 'Kik a főszereplők?',
         content:
-          'A hivatali oldalon Hankó Balázs volt kulturális miniszter áll, akinek keretéből a vitatott pénzek indultak, de aki ellen nem folyik eljárás. Az ügy legismertebb letartóztatottja Bús Balázs, az NKA korábbi alelnöke, Óbuda volt fideszes polgármestere. A pénz felhasználói oldalán a legtöbbet emlegetett szál a Fásy családhoz köthető dokumentumfilm: a Kéz, szív, lélek című sorozatra 172,45 millió forint ment el, az elszámolás határidejére mégsem készült el, az elkészültét pedig a gyanú szerint fiktív számlákkal igazolták. Itt fontos pontosítani, mert sokan félreértik: Fásy Ádám ellen nem folyik eljárás, a feleségét és egy vele szerződő cég vezetőjét helyezte letartóztatásba a bíróság.',
+          'A hivatali oldalon Hankó Balázs volt kulturális miniszter áll, akinek keretéből a vitatott pénzek indultak; 2026. október 1-jén őt is letartóztatták. Az ügy legismertebb letartóztatottja korábban Bús Balázs volt, az NKA korábbi alelnöke, Óbuda volt fideszes polgármestere. A pénz felhasználói oldalán a legtöbbet emlegetett szál a Fásy családhoz köthető dokumentumfilm: a Kéz, szív, lélek című sorozatra 172,45 millió forint ment el, az elszámolás határidejére mégsem készült el, az elkészültét pedig a gyanú szerint fiktív számlákkal igazolták. Itt fontos pontosítani, mert sokan félreértik: Fásy Ádám ellen nem folyik eljárás, a feleségét és egy vele szerződő cég vezetőjét helyezte letartóztatásba a bíróság.',
       },
       {
         type: 'video',
@@ -726,7 +729,7 @@ export const UGY_SUBPAGES: UgySubpage[] = [
       },
       {
         q: 'Hány embert tartóztattak le?',
-        a: 'Eddig hét embert helyeztek előzetes letartóztatásba, közülük kettő már szabadlábon van. A friss listát az NKA-letartóztatásokról szóló oldalunkon vezetjük.',
+        a: 'Eddig tizenegy embert helyeztek előzetes letartóztatásba, köztük 2026. október 1-jén Hankó Balázs volt kulturális minisztert; közülük kettő már szabadlábon van. A friss listát az NKA-letartóztatásokról szóló oldalunkon vezetjük.',
       },
       {
         q: 'Letartóztatták Fásy Ádámot?',
@@ -750,6 +753,179 @@ export const UGY_SUBPAGES: UgySubpage[] = [
       { label: 'NKA botrány — a teljes ügy idővonala', href: '/ugyek/nka-botrany', note: 'Hatósági közlemények, videók, napi frissítéssel.' },
       { label: 'Korrupciós adatbázis', href: '/adatbazis', note: 'Ügyenként dokumentált közpénz-érintettség és források.' },
       { label: 'Börtönben van-e már?', href: '/birosagi-iteletek', note: 'Minden NER-hez kapcsolható eljárás egy helyen.' },
+    ],
+  },
+  {
+    id: 'orban-aron-ausztria',
+    parentId: 'aranykonvoj',
+    seoTitle: 'Orbán Áron és az aranykonvoj: „El tudjátok kapni?” — az osztrák szál',
+    seoDescription:
+      'Orbán Áron márciusban azt kérdezte egy grazi üzletembertől, Ausztriában is el lehetne-e kapni egy ukrán pénzszállítmányt. Az aranykonvoj osztrák szála.',
+    h1: 'Orbán Áron és az osztrák aranykonvoj: újabb ukrán pénzszállítmányt próbálhatott feltartóztatni Ausztriában',
+    eyebrow: 'Aranykonvoj-ügy · osztrák szál',
+    lead:
+      'A 444 2026. október 1-jén arról számolt be, hogy Orbán Áron, Orbán Viktor öccse március 26-án egy Grazban élő magyar üzletembert keresett meg azzal, hogy Ausztriában is fel lehetne-e tartóztatni egy ukrán pénzszállítmányt. Az üzenetváltás néhány héttel azután történt, hogy a TEK március 5-én az M0-son megállított egy Ausztriából Ukrajna felé tartó szállítmányt, amely az ukrán Oschadbank mintegy 27 milliárd forint értékű aranyát és valutáját vitte.',
+    publishedAt: '2026-10-01',
+    updatedAt: '2026-10-01',
+    promo: {
+      eyebrow: 'Új fejlemény · osztrák szál',
+      title: 'Orbán Áron Ausztriában is megkérdezte: el lehetne-e kapni egy ukrán szállítmányt?',
+      lead:
+        'A 444 megszerezte Orbán Áron márciusi üzenetváltását egy grazi üzletemberrel. Mit kérdezett, mit válaszolt a megkeresett üzletember, és mi köze mindennek a március 5-i TEK-akcióhoz.',
+      cta: 'Elolvasom az osztrák szálat',
+    },
+    blocks: [
+      {
+        type: 'text',
+        id: 'mit-ir-a-444',
+        heading: 'Mit ír a 444 Orbán Áron márciusi üzenetváltásáról?',
+        content:
+          'A történet kulcsszereplője Lászlóvári-Thoma Csongor, Grazban élő, főleg vagyonkezeléssel foglalkozó magyar üzletember, akit Orbán Áron 2026. március 26-án, bő két héttel a magyarországi választások előtt keresett meg üzenetben. A 444 által ismertetett beszélgetés szerint Orbán Áron először arról érdeklődött, foglalkozik-e még politikával, majd azt kérdezte, mekkora befolyása van Ausztriában. Lászlóvári-Thoma 2021-ben az Osztrák Néppárt (ÖVP) listáján indult a grazi önkormányzati választáson, de mandátumot nem szerzett, és azt válaszolta, hogy az idei választáson már lemondott a jelölésről. Orbán Áron ezután egy, a magyarországi aranykonvoj-ügyről szóló ATV-videó linkjét küldte el, majd egy újabb ukrán szállítmányra utalt.',
+      },
+      {
+        type: 'quote',
+        text: 'Rajtatok keresztül megy egy szállitmány. El tudjatok kapni?',
+        author: 'Orbán Áron üzenete Lászlóvári-Thoma Csongornak, 2026. március 26.',
+        note: 'Az üzenet szövege a 444 közlése szerint, eredeti helyesírással.',
+        url: 'https://444.hu/2026/10/01/rajtatok-keresztul-megy-egy-szallitmany-el-tudjatok-kapni-orban-aron-megprobalta-megszervezni-hogy-ausztriaban-is-kapjanak-el-egy-ukran-aranykonvojt',
+      },
+      {
+        type: 'text',
+        content:
+          'A Telex összefoglalója szerint Orbán Áron azt is állította, hogy információi vannak arról, mikor érkezik az újabb szállítmány. A megkeresett üzletember hárította a felvetést, a beszélgetés egy ponton megszakadt. A 444 forrásai szerint kizárt, hogy Orbán Áronnak valós információi lehettek az ukrán pénzszállítások menetrendjéről.',
+      },
+      {
+        type: 'article-card',
+        source: '444',
+        date: '2026. október 1.',
+        headline: '„Rajtatok keresztül megy egy szállitmány. El tudjatok kapni?” – Orbán Áron megpróbálta megszervezni, hogy Ausztriában is kapjanak el egy ukrán aranykonvojt',
+        lead: 'Március 26-án, bő két héttel a választások előtt Lászlóvári-Thoma Csongor grazi üzletember nem várt üzenetet kapott a miniszterelnök öccsétől. A 444 lépésről lépésre közli a beszélgetést.',
+        url: 'https://444.hu/2026/10/01/rajtatok-keresztul-megy-egy-szallitmany-el-tudjatok-kapni-orban-aron-megprobalta-megszervezni-hogy-ausztriaban-is-kapjanak-el-egy-ukran-aranykonvojt',
+      },
+      {
+        type: 'text',
+        id: 'ki-az-uzletember',
+        heading: 'Ki az a grazi üzletember, akit Orbán Áron megkeresett?',
+        content:
+          'A 444 szerint Lászlóvári-Thoma Csongort hat évvel korábban egy közös ismerős mutatta be Orbán Áronnak, amikor az üzletember új projektbe kezdett, Orbán Áron pedig érdeklődött az általa forgalmazott termékek iránt. Üzlet végül sem akkor, sem később nem lett belőle, a kapcsolatuk pedig évekre megszakadt. A Telex szerint érdemi politikai befolyása nem volt Ausztriában: politikai kapcsolatai a 2021-es, sikertelen grazi ÖVP-s jelöltségben merültek ki. Orbán Áronról a 444-nek azt mondta, hogy „eléggé naiv illető”, aki „egyfajta sétáló névjegyként kerül felhasználásra bizonyos érdekcsoportok által”. A megkeresést jelezte az osztrák titkosszolgálatoknak és a koalíciós kormányt vezető Néppártnak is — a pártnak azért, mert Orbán Áron a politikai kapcsolataira hivatkozva kereste meg.',
+      },
+      {
+        type: 'article-card',
+        source: 'Telex',
+        date: '2026. október 1.',
+        headline: 'Orbán öccse ráírt egy Ausztriában élő magyar üzletemberre, hogy el tudnának-e fogni egy újabb ukrán szállítmányt',
+        lead: 'Az üzletember hárította a felvetést, majd az osztrák titkosszolgálatoknak és a Néppártnak is jelezte a megkeresést.',
+        url: 'https://telex.hu/belfold/2026/10/01/orban-aron-aranykonvoj-ugy-ausztria',
+      },
+      {
+        type: 'article-card',
+        source: 'Portfolio',
+        date: '2026. október 1.',
+        headline: '„El tudjatok kapni?” – Orbán Áron állítólag Ausztriában is feltartóztatott volna egy ukrán konvojt',
+        lead: 'A Portfolio összefoglalója a 444 által közölt üzenetváltásról.',
+        url: 'https://www.portfolio.hu/gazdasag/20261001/el-tudjatok-kapni-orban-aron-allitolag-ausztriaban-is-feltartoztatott-volna-egy-ukran-konvojt-866562',
+      },
+      {
+        type: 'text',
+        id: 'marcius-5',
+        heading: 'Mi köze ennek a március 5-i aranykonvoj-akcióhoz?',
+        content:
+          'Az előzmény a 2026. március 5-i rajtaütés: a TEK az M0-son megállított két pénzszállító autót, amelyek Bécsből Magyarországon át Ukrajnába vitték az ukrán Oschadbank mintegy 27 milliárd forint értékű aranyát és készpénzét. A hét ukrán pénzszállítót a TEK épületében kihallgatták, másnap kiutasították az országból, a vagyont lefoglalták. A hatóságok pénzmosás gyanújára hivatkoztak. Az ukrán felet képviselő jogászok mindvégig azt állították, hogy a szállítmány törvényes volt, minden szükséges dokumentummal rendelkezett, és Ausztriából, a Raiffeisen Banktól indult. A lefoglalt arany és készpénz két hónappal később, 2026. május 6-án Záhonyon át elhagyta az országot, a vagyont visszakapta az ukrán fél.',
+      },
+      {
+        type: 'text',
+        content:
+          'A 444 később megszerezte a pénzszállítók tanúvallomásait is: ezekben részletesen leírták, mi történt velük, mit kérdeztek tőlük, és hogyan bántak velük a magyar hatóságok.',
+      },
+      {
+        type: 'article-card',
+        source: 'Telex',
+        date: '2026. július 22.',
+        headline: '„Leguggolt mellém valaki, és a fejemre térdelt” – a 444 megszerezte az aranykonvoj-ügy ukrán tanúvallomásait',
+        lead: 'Az elfogott ukrán pénzszállítók vallomásai a március 5-i akcióról és a velük szembeni bánásmódról.',
+        url: 'https://telex.hu/belfold/2026/07/22/aranykonvoj-ugy-ukran-penzszallito-kihallgatas-jegyzokonyv-orban-kormany-tek',
+      },
+      {
+        type: 'text',
+        id: 'nyomozas',
+        heading: 'Mit tudunk az aranykonvoj-ügy nyomozásáról?',
+        content:
+          'Fürcht Pál, a Központi Nyomozó Főügyészség júniusban lemondott vezetője az ügyvédje által nyilvánosságra hozott levelében azt írja: a nyomozás akkori állása szerint 2026. március 3-án maga Orbán Viktor miniszterelnök adta ki a feladatot a titkosszolgálatnak, hogy március 5-én fogják el az ukrán pénzszállítókat, és erről 2026 májusában a nyomozó ügyészektől értesült. Ez Fürcht Pál állítása, nem bírósági ténymegállapítás. Az állításai nyomán született feljelentések a Szegedi Regionális Nyomozó Ügyészséghez kerültek. Júniusban a 444 egy állítólagos ügyészségi dokumentumról is beszámolt, amely Orbán Viktort a lényegi döntéseket és utasításokat hozó személyek között nevezi meg; az ügyészség a nyomozásra hivatkozva érdemben nem válaszolt, de azt sem állította, hogy a dokumentum nem valódi.',
+      },
+      {
+        type: 'video',
+        id: 'O2KXCQMDqr0',
+        label: 'Juhász Péter | Juhi · 2026. jún. 4.',
+        title: 'ORBÁN rendelte meg az ARANYKONVOJ lerohanását?',
+        summary:
+          'Juhász Péter a Telex júniusi cikke alapján veszi végig, ki adhatott utasítást a konvoj lerohanására, miért a TEK vett részt az akcióban, és lehetett-e személyes szerepe Orbán Viktornak az elrendelésében. A videót eddig több mint 71 ezren nézték meg.',
+      },
+      {
+        type: 'callout',
+        heading: 'Mi dokumentált, és mi állítás?',
+        content:
+          'A március 5-i magyarországi akció megtörtént, dokumentált esemény. Az osztrák szál ezzel szemben egy újabb szállítmány feltartóztatásának felvetéséről szól, amelyet a 444 által bemutatott üzenetváltásból és Lászlóvári-Thoma Csongor beszámolójából ismerünk. Ausztriában végrehajtott hatósági akcióról nincs információ, a megkeresett üzletember nem vállalta a közreműködést.',
+      },
+      {
+        type: 'text',
+        id: 'vizumbiznisz',
+        heading: 'Orbán Áron neve más ügyben is előkerült',
+        content:
+          'A Telex szerint Orbán Áronnak valószínűleg semmi szerepe nem volt az aranykonvoj-ügyben, egy másik ügyben viszont igen. A Nemzeti Vagyonvisszaszerzési és Vagyonvédelmi Hivatal (NVVH) 2026. szeptember 28-án jelentette be, hogy az ügyészségtől magához vonja az Orbán Áronék vízumbizniszével kapcsolatos nyomozást, amelyet a Telex 2025 májusában tárt fel. Az NVVH összefoglalója szerint a gyanú az, hogy „vezető politikai szereplőkhöz szorosan köthető csoport anyagi ellenszolgáltatásért cserében azt vállalta, hogy akik rajtuk keresztül intézik a munkavállalási célú tartózkodási engedélyek kiváltását, mindenképp megkapják a szükséges vízumokat”. Az ügyben a Fidesz bukása után letartóztattak két férfit, Orbán Áron üzleti társait; Orbán Áront a Telex szerint az eljárás eddig nem érintette.',
+      },
+      {
+        type: 'article-card',
+        source: 'Telex',
+        date: '2026. szeptember 28.',
+        headline: 'Orbán Áronék vízumbiznisze az első, amit az NVVH az ügyészségtől magához rendelt',
+        lead: 'Az új vagyonvisszaszerzési hivatal első ügyei között szerepel a munkavállalási vízumok közvetítése, amelyet a Telex tárt fel 2025-ben.',
+        url: 'https://telex.hu/belfold/2026/09/28/orban-aronek-vizumbizniszne-az-elso-amit-az-nvvh-az-ugyeszsegtol-magahoz-rendelt',
+      },
+      {
+        type: 'text',
+        id: 'nyitott-kerdesek',
+        heading: 'Mire nem ad választ az üzenetváltás?',
+        content:
+          'Hogy Orbán Áron pontosan milyen információ alapján kereste meg Lászlóvári-Thoma Csongort, honnan származhatott az állítólagos újabb szállítmányról szóló értesülése, és volt-e bármilyen valós lehetőség az osztrák hatóságok befolyásolására, arra a nyilvánosságra került üzenetek önmagukban nem válaszolnak. Dokumentált viszont, hogy az üzenetváltás megtörtént, és hogy a megkeresett üzletember később az osztrák titkosszolgálatoknak is jelezte a történteket.',
+      },
+    ],
+    faq: [
+      {
+        q: 'Mit kérdezett Orbán Áron az osztrák üzletembertől?',
+        a: 'A 444 szerint 2026. március 26-án először azt, mekkora befolyása van Ausztriában, majd ezt írta: „Rajtatok keresztül megy egy szállitmány. El tudjatok kapni?” — vagyis hogy Ausztriában is fel lehetne-e tartóztatni egy újabb ukrán pénzszállítmányt.',
+      },
+      {
+        q: 'Ki az a Lászlóvári-Thoma Csongor?',
+        a: 'Grazban élő, főleg vagyonkezeléssel foglalkozó magyar üzletember, aki 2021-ben az Osztrák Néppárt listáján indult a grazi önkormányzati választáson, de mandátumot nem szerzett. Orbán Áronnak hat évvel korábban egy közös ismerős mutatta be.',
+      },
+      {
+        q: 'Feltartóztattak Ausztriában ukrán pénzszállítmányt?',
+        a: 'Erről nincs információ. A megkeresett üzletember nem vállalta a közreműködést, a beszélgetés megszakadt, a megkeresést pedig jelezte az osztrák titkosszolgálatoknak és az Osztrák Néppártnak.',
+      },
+      {
+        q: 'Mi lett a március 5-én lefoglalt 27 milliárdos szállítmánnyal?',
+        a: 'A lefoglalt arany és készpénz 2026. május 6-án Záhonyon át elhagyta az országot, a vagyont visszakapta az ukrán fél.',
+      },
+      {
+        q: 'Ki adta ki az utasítást az aranykonvoj elfogására?',
+        a: 'Fürcht Pál volt főügyész levele szerint a nyomozás akkori állása alapján Orbán Viktor adta ki a feladatot a titkosszolgálatnak 2026. március 3-án. Ez állítás, nem bírósági ténymegállapítás; a nyomán született feljelentések a Szegedi Regionális Nyomozó Ügyészséghez kerültek.',
+      },
+    ],
+    sources: [
+      { label: '444: „Rajtatok keresztül megy egy szállitmány. El tudjatok kapni?” (okt. 1.)', url: 'https://444.hu/2026/10/01/rajtatok-keresztul-megy-egy-szallitmany-el-tudjatok-kapni-orban-aron-megprobalta-megszervezni-hogy-ausztriaban-is-kapjanak-el-egy-ukran-aranykonvojt' },
+      { label: 'Telex: Orbán öccse ráírt egy Ausztriában élő magyar üzletemberre (okt. 1.)', url: 'https://telex.hu/belfold/2026/10/01/orban-aron-aranykonvoj-ugy-ausztria' },
+      { label: 'Portfolio: Orbán Áron állítólag Ausztriában is feltartóztatott volna egy ukrán konvojt (okt. 1.)', url: 'https://www.portfolio.hu/gazdasag/20261001/el-tudjatok-kapni-orban-aron-allitolag-ausztriaban-is-feltartoztatott-volna-egy-ukran-konvojt-866562' },
+      { label: '444: Videón, ahogy 27 milliárd forintnyi arany és bankjegyek elhagyják az országot (máj. 6.)', url: 'https://444.hu/2026/05/06/videon-ahogy-27-milliard-forintnyi-arany-es-bankjegyek-elhagyjak-az-orszagot' },
+      { label: 'Telex: A 444 megszerezte az aranykonvoj-ügy ukrán tanúvallomásait (júl. 22.)', url: 'https://telex.hu/belfold/2026/07/22/aranykonvoj-ugy-ukran-penzszallito-kihallgatas-jegyzokonyv-orban-kormany-tek' },
+      { label: 'Telex: Döntéshozóként nevezi meg Orbán Viktort egy állítólagos ügyészségi dokumentum (jún. 25.)', url: 'https://telex.hu/belfold/2026/06/25/aranykonvoj-444-orban-viktor-ugyeszsegi-dokumentum' },
+      { label: '444: A Fürcht Pál állításai alapján született feljelentések Szegedre kerültek (szept. 28.)', url: 'https://444.hu/2026/09/28/a-furcht-pal-volt-fougyesz-allitasai-alapjan-szuletett-feljelentesek-a-szegedi-regionalis-nyomozo-ugyeszseghez-kerultek' },
+      { label: 'Telex: Fürcht Pál szerint Orbán Viktor adta ki az utasítást az ukrán pénzszállítók elfogására (szept. 29.)', url: 'https://telex.hu/belfold/2026/09/29/furcht-pal-aranykonvoj-ugy-orban-viktor-utasitas-fidesz-reakcio' },
+      { label: 'Telex: Orbán Áronék vízumbiznisze az első, amit az NVVH magához rendelt (szept. 28.)', url: 'https://telex.hu/belfold/2026/09/28/orban-aronek-vizumbizniszne-az-elso-amit-az-nvvh-az-ugyeszsegtol-magahoz-rendelt' },
+    ],
+    internalLinks: [
+      { label: 'Aranykonvoj-ügy — a teljes ügy', href: '/ugyek/aranykonvoj', note: 'A március 5-i akció, a nyomozás és a hatósági közlemények egy helyen.' },
+      { label: 'Juhász Péter a Dicsőségfalon', href: '/rendszervaltas/juhasz-peter', note: 'A NER100 sorozat készítője, akinek a videója fent is szerepel.' },
+      { label: 'Kiemelt ügyek', href: '/ugyek', note: 'A Kegyencjárat összes kiemelt ügye.' },
     ],
   },
 ];

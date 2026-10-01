@@ -41,3 +41,36 @@ describe('BreakingUpdateBox (2026-10-01: Hankó és Seszták letartóztatása)',
     expect(sub.heroImage?.src).toBe('/images/persons/hanko-balazs.webp');
   });
 });
+
+describe('aranykonvoj/orban-aron-ausztria aloldal (2026-10-01)', () => {
+  const sub = getSubpage('aranykonvoj', 'orban-aron-ausztria')!;
+
+  it('létezik, és a szülő ügyhöz tartozik', () => {
+    expect(sub).toBeDefined();
+    expect(UGYEK.some((u) => u.id === sub.parentId)).toBe(true);
+  });
+
+  it('az „El tudjatok kapni?” kiemelt idézet, a Juhász Péter-videó a nyomozásról szóló rész után áll', () => {
+    const quote = sub.blocks.find((b) => b.type === 'quote');
+    expect(quote && quote.type === 'quote' && quote.text).toContain('El tudjatok kapni?');
+    const nyomozas = sub.blocks.findIndex((b) => b.type === 'text' && b.id === 'nyomozas');
+    const video = sub.blocks[nyomozas + 1];
+    expect(video).toMatchObject({ type: 'video', id: 'O2KXCQMDqr0' });
+  });
+
+  it('egyik link sem visz ChatGPT-s követőkódot vagy a 444.dpb.hu tükrét', () => {
+    const json = JSON.stringify(sub);
+    expect(json).not.toContain('utm_source');
+    expect(json).not.toContain('dpb.hu');
+  });
+});
+
+describe('NKA-aloldalak: Hankó letartóztatása után nincs ellentmondó állítás', () => {
+  it('egyik NKA-aloldal sem állítja, hogy Hankó ellen nem folyik eljárás', () => {
+    for (const id of ['nka-palyazatok', 'nka-letartoztatas', 'nka-palyazatok-2']) {
+      const json = JSON.stringify(getSubpage('nka-botrany', id) ?? {});
+      expect(json, id).not.toMatch(/Hankó[^"]{0,120}(nem folyik eljárás|nem indult eljárás)/);
+      expect(json, id).not.toContain('Miért nem tartóztatták le Hankó');
+    }
+  });
+});
