@@ -847,6 +847,14 @@ export const UGY_SUBPAGES: UgySubpage[] = [
       },
       {
         type: 'text',
+        id: 'most-derult-ki',
+        heading: 'Két nappal korábban Fürcht Pál levele is nyilvánosságra került',
+        content:
+          'Az osztrák szál nem az egyetlen friss fejlemény: két nappal korábban, 2026. szeptember 29-én nyilvánosságra került Fürcht Pál volt főügyész nyílt levele, amely szerint a nyomozás akkori állása alapján 2026. március 3-án Orbán Viktor adta ki a feladatot a titkosszolgálatnak az ukrán pénzszállítók elfogására.',
+        links: [{ text: 'Fürcht Pál volt főügyész nyílt levele', href: '/ugyek/aranykonvoj/furcht-pal' }],
+      },
+      {
+        type: 'text',
         id: 'nyomozas',
         heading: 'Mit tudunk az aranykonvoj-ügy nyomozásáról?',
         content:
@@ -922,9 +930,211 @@ export const UGY_SUBPAGES: UgySubpage[] = [
       { label: 'Telex: Fürcht Pál szerint Orbán Viktor adta ki az utasítást az ukrán pénzszállítók elfogására (szept. 29.)', url: 'https://telex.hu/belfold/2026/09/29/furcht-pal-aranykonvoj-ugy-orban-viktor-utasitas-fidesz-reakcio' },
       { label: 'Telex: Orbán Áronék vízumbiznisze az első, amit az NVVH magához rendelt (szept. 28.)', url: 'https://telex.hu/belfold/2026/09/28/orban-aronek-vizumbizniszne-az-elso-amit-az-nvvh-az-ugyeszsegtol-magahoz-rendelt' },
     ],
+    crossPromoAfterBlockId: 'most-derult-ki',
     internalLinks: [
       { label: 'Aranykonvoj-ügy — a teljes ügy', href: '/ugyek/aranykonvoj', note: 'A március 5-i akció, a nyomozás és a hatósági közlemények egy helyen.' },
+      { label: 'Fürcht Pál levele: Orbán Viktor rendelte el az elfogást', href: '/ugyek/aranykonvoj/furcht-pal', note: 'Két nappal korábban derült ki: a volt főügyész név szerint nevezte meg a volt miniszterelnököt.' },
       { label: 'Juhász Péter a Dicsőségfalon', href: '/rendszervaltas/juhasz-peter', note: 'A NER100 sorozat készítője, akinek a videója fent is szerepel.' },
+      { label: 'Kiemelt ügyek', href: '/ugyek', note: 'A Kegyencjárat összes kiemelt ügye.' },
+    ],
+  },
+  {
+    id: 'furcht-pal',
+    parentId: 'aranykonvoj',
+    seoTitle: 'Fürcht Pál: Orbán Viktor rendelte el az aranykonvoj elfogását',
+    seoDescription:
+      'Fürcht Pál volt főügyész nyílt levele szerint 2026. március 3-án Orbán Viktor adta ki a feladatot a titkosszolgálatnak az ukrán pénzszállítók elfogására.',
+    h1: 'Fürcht Pál szerint Orbán Viktor rendelte el az aranykonvoj elfogását',
+    eyebrow: 'Aranykonvoj-ügy · Fürcht Pál levele',
+    lead:
+      'Fürcht Pál, a Központi Nyomozó Főügyészség júniusban lemondott vezetője 2026. szeptember 29-én nyilvánosságra hozott nyílt levelében azt írta: a nyomozás akkori állása szerint március 3-án Orbán Viktor miniszterelnök adta ki a feladatot a titkosszolgálatnak, hogy két nappal később fogják el az Ukrajnába tartó ukrán pénzszállítókat. Ez Fürcht Pál állítása, nem bírósági ténymegállapítás; a nyomán született feljelentések a Szegedi Regionális Nyomozó Ügyészséghez kerültek.',
+    publishedAt: '2026-10-01',
+    updatedAt: '2026-10-01',
+    heroImage: {
+      src: '/images/persons/orban.webp',
+      alt: 'Orbán Viktor volt miniszterelnök, akit Fürcht Pál volt főügyész nyílt levele az aranykonvoj elfogásának elrendelőjeként nevez meg',
+      credit: 'Eredeti fotó: Orbán Viktor Facebook oldala',
+    },
+    promo: {
+      eyebrow: 'Új fejlemény · Fürcht Pál levele',
+      title: 'Fürcht Pál: március 3-án Orbán Viktor adta ki a feladatot az aranykonvoj elfogására',
+      lead:
+        'A Központi Nyomozó Főügyészség volt vezetője nyílt levelében név szerint nevezte meg a volt miniszterelnököt. Mit állít pontosan, mi dokumentált belőle, és hol tart a feljelentések sorsa.',
+      cta: 'Elolvasom Fürcht Pál állításait',
+    },
+    blocks: [
+      {
+        type: 'text',
+        id: 'mit-allit',
+        heading: 'Mit írt Fürcht Pál a nyílt levelében?',
+        content:
+          'A levelet Fürcht Pál ügyvédje, Horváth Lóránt hozta nyilvánosságra 2026. szeptember 29-én; Horváth az ukrán pénzszállítókat is képviseli, és Fürchtöt a vele szemben szeptember elején indult fegyelmi eljárásban. A levél szerint a Fővárosi Nyomozó Ügyészség tapasztalt ügyészei 2026 májusában az addig beszerzett bizonyítékok alapján arra a következtetésre jutottak, hogy az aranykonvoj-ügy „egy politika által kreált ügy”. Fürcht ezt főügyészként jelentette az akkori legfőbb ügyésznek, a legfőbb ügyész helyettesének és két legfőbb ügyészségi főosztályvezetőnek. A levél a nyomozás akkori állására hivatkozik, a mögötte lévő bizonyítékokat nem közli.',
+      },
+      {
+        type: 'quote',
+        text: 'A nyomozás akkori állása szerint látható volt, hogy 2026. március 3. napján maga Orbán Viktor miniszterelnök adta ki a feladatot a titkosszolgálatnak, hogy 2026. március 5. napján az ukrán pénzszállítókat fogják el.',
+        author: 'Fürcht Pál, a Központi Nyomozó Főügyészség volt vezetője, nyílt levél, 2026. szeptember 29.',
+        url: 'https://telex.hu/belfold/2026/09/29/furcht-pal-aranykonvoj-ugy-orban-viktor-utasitas-fidesz-reakcio',
+      },
+      {
+        type: 'text',
+        id: 'dontesi-lanc',
+        heading: 'Március 3., 4., 5. — Fürcht szerint így követte egymást a döntési lánc',
+        content:
+          'Fürcht levele szerint március 3-án Orbán Viktor kiadta a feladatot a titkosszolgálatnak. Március 4-én a titkosszolgálat „a politika által meghatározott feladatot végezve” egyeztetett egy legfőbb ügyészségi főosztályvezetővel és magával a legfőbb ügyésszel is. Március 5-én a titkosszolgálat feljelentése — a legfőbb ügyész, a helyettese és egy másik főosztályvezető ügyész közreműködésével — a törvényben biztosított három nap helyett mintegy négy-öt órán belül ott volt a nyomozó hatóságnál, azzal az ügyészi utasítással, hogy a nyomozást el kell rendelni. Fürcht szerint az átirat még így is majdnem elkésett, mert az akció akkor már javában zajlott: ha a Legfőbb Ügyészség vezetése csak fél nappal később küldi meg az utasítást, az ukrán pénzszállítók hazaérhettek volna.',
+      },
+      {
+        type: 'article-card',
+        source: 'Telex',
+        date: '2026. szeptember 29.',
+        headline: 'Fürcht Pál szerint májusban értesült a nyomozóktól, hogy Orbán Viktor adta ki az utasítást az ukrán pénzszállítók elfogására, a Fidesz is reagált az ügyre',
+        lead: 'A volt főügyész nyílt levele a márciusi döntési láncról, a májusi következtetésről és a legfőbbügyész-jelölésről.',
+        url: 'https://telex.hu/belfold/2026/09/29/furcht-pal-aranykonvoj-ugy-orban-viktor-utasitas-fidesz-reakcio',
+      },
+      {
+        type: 'video',
+        id: 'l5bYqtM7WyE',
+        label: 'ATV Magyarország · 2026. szept. 30.',
+        title: 'Fürcht: Orbán adott utasítást | Rogán szerint ártatlanok az exminiszterek | PROVOKATŐR',
+        summary:
+          'Az ATV Provokatőr című műsorában Boros Tamás, Dévényi István és Fekete-Győr András beszél Fürcht Pál nyílt leveléről, amely név szerint nevezi meg Orbán Viktort az akció elrendelőjeként.',
+      },
+      {
+        type: 'text',
+        id: 'reakciok',
+        heading: 'Mit mondanak az érintettek?',
+        content:
+          'A Fidesz közleményben reagált a levélre: szerintük „az ukrán maffia gátlástalanul és óriási mennyiségben szállította a pénzeit Magyarországon keresztül”, és a hatóságok az Orbán-kormány idején ennek vetettek véget, ezért „elismerést érdemelnek, és nem vádaskodást”. A Legfőbb Ügyészség Fürcht korábbi, a lemondásában tett állításairól azt közölte, hogy azok tényszerűen valótlanok, és a volt főügyész saját, a tényektől független meggyőződését próbálta érvényesíteni. Fürcht az ATV-ben azt mondta, ezt akkor tudná elfogadni, ha az általa jelzett körülményeket előzőleg kivizsgálták volna. Azt is hangsúlyozta, hogy közvetlen politikai nyomásgyakorlást nem állított: megfogalmazása szerint „a politikának volt egy elvárása”, amelyet egy szervezet közvetített az ügyészség felé.',
+      },
+      {
+        type: 'text',
+        id: 'marcius-5',
+        heading: 'Mi történt az aranykonvojjal március 5-én?',
+        content:
+          'Március 5-én egy rendőrautó az M0-s autóút alacskai pihenőhelyénél félreállította az ukrán Oschadbank két, Ausztriából, a Raiffeisen Banktól Ukrajna felé tartó pénzszállító furgonját, ahol már a TEK kommandósai várták őket. A furgonokban talált, több mint 27 milliárd forintnyi készpénzt és befektetési aranyat a NAV lefoglalta, a hét ukrán pénzszállítót órákkal később elengedték és kiutasították az országból. A Telex júniusi feltárása szerint a rajtaütés előtti napon az Alkotmányvédelmi Hivatal tett feljelentést, ezt az AH a lap megkeresésére el is ismerte, és azt is megerősítette, hogy a feljelentést az Információs Hivatal által gyűjtött adatokra alapozta. Az ukrán fél, az Oschadbank és a pénzt küldő Raiffeisen szerint a szállítmány a megfelelő engedélyek birtokában tartott Ausztriából Ukrajnába. Augusztusban a NAV bűncselekmény hiányában megszüntette az ukrán pénzszállítók elleni nyomozást.',
+      },
+      {
+        type: 'text',
+        id: 'telex-junius',
+        heading: 'Nem ez volt az első forrás, amely Orbán Viktor döntéséről írt',
+        content:
+          'A Telex már 2026. június 3-án arról számolt be, hogy a kormányzat, azon belül is Orbán Viktor döntött arról, hogy március 5-én le kell csapni az ukrán pénzszállítókra, és még a rajtaütés időpontja is a kormányzattól jött. A lap ezt az ügyre rálátó vagy abban érintett forrásokkal folytatott háttérbeszélgetésekre alapozta. A szeptember 29-i levélben ehhez képest egy volt vezető ügyész nevezi meg név szerint Orbán Viktort, a nyomozás akkori állására hivatkozva.',
+      },
+      {
+        type: 'article-card',
+        source: 'Telex',
+        date: '2026. június 3.',
+        headline: 'Orbán döntött arról, hogy le kell csapni az ukrán „aranykonvojra”, még a rajtaütés időpontja is a kormányzattól jött',
+        lead: 'Háttérbeszélgetések alapján: a rajtaütést szakmailag semmi sem indokolta, a feljelentést az Alkotmányvédelmi Hivatal tette az Információs Hivatal adataira építve.',
+        url: 'https://telex.hu/belfold/2026/06/03/aranykonvoj-ukrajna-nav-titkosszolgalat-orban-kormany-tek',
+      },
+      {
+        type: 'text',
+        id: 'most-derult-ki',
+        heading: 'Ugyanezen a héten az osztrák szál is kiderült',
+        content:
+          'Két nappal Fürcht levele után, október 1-jén egy másik új részlet is nyilvánosságra került: a 444 szerint Orbán Áron, Orbán Viktor öccse 2026. március 26-án egy grazi üzletembert kérdezett meg arról, Ausztriában is el lehetne-e kapni egy újabb ukrán pénzszállítmányt.',
+        links: [{ text: 'Orbán Áron, Orbán Viktor öccse 2026. március 26-án egy grazi üzletembert kérdezett meg', href: '/ugyek/aranykonvoj/orban-aron-ausztria' }],
+      },
+      {
+        type: 'text',
+        id: 'majus-8',
+        heading: 'Fürcht szerint már májusban felmerült, hogy kreált ügyről lehet szó',
+        content:
+          'Fürcht Pál szeptember 21-én az ATV Egyenes beszéd című műsorában beszélt arról, hogy május 8-án egyik kollégája egy közérdeklődésre számot tartó ügyben olyan körülményeket észlelt, amelyek alapján felmerült, hogy „kreált ügyről” lehet szó. Fürcht nem a nyilvánossághoz fordult, hanem a szolgálati utat követve jelentést tett a Legfőbb Ügyészség vezetésének. Elmondása szerint ezután felrendelték, és egy vezető ügyész közölte vele, „ki ellen lehet nyomozni”, kiket nem lehet kihallgatni, és milyen irányban kell folytatni a nyomozást; az érintett vezetőt nem nevezte meg. Azt is elmondta, hogy egy legfőbb ügyészségi vezető írásos nyom nélküli „instrukciókat” adott — ezt az állítását, saját bevallása szerint, nem tudja bizonyítani. Az interjúban még nem nevezte meg Orbán Viktort; ezt a szeptember 29-i levélben tette meg.',
+      },
+      {
+        type: 'article-card',
+        source: 'ATV',
+        date: '2026. szeptember 21.',
+        headline: '„Egy vezető ügyész megmondta, ki ellen lehet nyomozni és kit nem lehet kihallgatni” – Megszólalt Fürcht Pál az Egyenes beszédben',
+        lead: 'A lemondott főügyész távozásának körülményeiről, a május 8-i jelzésről és a vele szemben indult fegyelmi eljárásról.',
+        url: 'https://www.atv.hu/belfold/20260921/vezeto-ugyesz-megmondta/',
+      },
+      {
+        type: 'text',
+        id: 'lemondas',
+        heading: 'Fürcht Pál júniusban lemondott a KNYF vezetéséről',
+        content:
+          'Fürcht Pál 2026. június 8-án mondott le a Központi Nyomozó Főügyészség vezetéséről. Hétoldalas lemondó levelében azt állította, hogy a Legfőbb Ügyészség több politikailag érzékeny ügy — köztük az aranykonvoj- és a Gundalf-ügy — nyomozását befolyásolta, a lemondását pedig elsősorban az aranykonvoj-ügyben a felügyeletet ellátó legfőbb ügyészségi szakfőosztállyal kialakult szakmai nézetkülönbségekkel indokolta. Szeptember elején fegyelmi eljárás indult ellene.',
+      },
+      {
+        type: 'text',
+        id: 'feljelentesek',
+        heading: 'Feljelentések is születtek Fürcht állításai nyomán',
+        content:
+          'Szeptemberben az ukrán pénzszállítókat képviselő Horváth Lóránt ügyvédi irodája ismeretlen tettes ellen feljelentést tett hatóság félrevezetése, hamis vád és bűnpártolás minősített esete miatt. A feljelentés alapja Fürcht ATV-nyilatkozata és a fegyelmi eljárásban tett írásos vallomása volt; az iroda Fürcht tanúkénti meghallgatását is indítványozta. Szeptember 28-án derült ki, hogy az aranykonvoj- és a Gundalf-ügyben tett, illetve a Fürcht állításaira alapított feljelentések a Szegedi Regionális Nyomozó Ügyészséghez kerültek.',
+      },
+      {
+        type: 'article-card',
+        source: '444',
+        date: '2026. szeptember 28.',
+        headline: 'A Fürcht Pál volt főügyész állításai alapján született feljelentések a Szegedi Regionális Nyomozó Ügyészséghez kerültek',
+        lead: 'Az aranykonvoj- és a Gundalf-ügyben tett, valamint a Fürcht állításaira alapított feljelentéseket Szegeden bírálják el.',
+        url: 'https://444.hu/2026/09/28/a-furcht-pal-volt-fougyesz-allitasai-alapjan-szuletett-feljelentesek-a-szegedi-regionalis-nyomozo-ugyeszseghez-kerultek',
+      },
+      {
+        type: 'text',
+        id: 'majusi-bizonyitekok',
+        heading: 'Mit állít Fürcht a májusi bizonyítékokról?',
+        content:
+          'Fürcht levele szerint a Fővárosi Nyomozó Ügyészség munkatársai májusra annyi bizonyítékot gyűjtöttek össze, hogy arra jutottak: az aranykonvoj-ügyet politikai célból hozták létre. Fürcht ezt jelentette a Legfőbb Ügyészség vezetőinek. Az ATV-ben azt is elmondta, hogy az ügyben tanúként akarták kihallgatni, de ezt szerinte nem engedélyezték a Fővárosi Nyomozó Ügyészség számára. A konkrét bizonyítékok jelentős része nem nyilvános.',
+      },
+      {
+        type: 'video',
+        id: 'LB6ULRRg86Q',
+        label: 'ATV Magyarország · 2026. szept. 29.',
+        title: 'Súlyos állítások Aranykonvoj-ügyben: „Az ügyészség már májusba látta, hogy Orbán Viktor érintett”',
+        summary:
+          'Az Egyenes Beszédben Rónai Egon Fürcht Pál védőjét, Horváth Lóránt ügyvédet kérdezi arról, mire jutottak a Fővárosi Nyomozó Ügyészség munkatársai 2026 májusában. A videót eddig közel 140 ezren nézték meg.',
+      },
+      {
+        type: 'callout',
+        heading: 'Mi dokumentált, és mi állítás?',
+        content:
+          'Dokumentált esemény, hogy március 5-én a magyar hatóságok feltartóztatták az ukrán pénzszállítókat, és lefoglalták a szállítmányt. Arról, hogy ki döntött az akcióról, Fürcht Pál azt állítja, hogy Orbán Viktor adott utasítást március 3-án; korábban a Telex is arról írt, hogy a döntés kormányzati szintről érkezett. Orbán Viktor büntetőjogi felelősségéről nincs bírósági döntés, és Fürcht állításának bizonyítékai nem kerültek teljes körűen nyilvánosságra.',
+      },
+      {
+        type: 'text',
+        id: 'hol-tart',
+        heading: 'Hol tart most az ügy?',
+        content:
+          'A Fürcht Pál állításai alapján tett feljelentéseket a Szegedi Regionális Nyomozó Ügyészség bírálja el. A következő lényeges kérdés, hogy a volt főügyész által hivatkozott bizonyítékok és információk megismerhetők, ellenőrizhetők és büntetőeljárásban is felhasználhatók-e — ehhez kapcsolódik Fürcht tanúkénti meghallgatásának indítványa is.',
+      },
+    ],
+    faq: [
+      {
+        q: 'Mit állít Fürcht Pál az aranykonvoj-ügyről?',
+        a: 'A 2026. szeptember 29-én nyilvánosságra hozott levele szerint a nyomozás akkori állása alapján 2026. március 3-án Orbán Viktor adta ki a feladatot a titkosszolgálatnak, hogy március 5-én fogják el az ukrán pénzszállítókat. Ez az ő állítása, nem bírósági ténymegállapítás.',
+      },
+      {
+        q: 'Ki az a Fürcht Pál?',
+        a: 'A Központi Nyomozó Főügyészség vezetője volt 2026. június 8-i lemondásáig. Lemondását elsősorban az aranykonvoj-ügyben a Legfőbb Ügyészséggel kialakult szakmai nézetkülönbségekkel indokolta; szeptember elején fegyelmi eljárás indult ellene.',
+      },
+      {
+        q: 'Mit válaszolt a Legfőbb Ügyészség?',
+        a: 'Fürcht lemondásban tett állításairól azt közölte, hogy azok tényszerűen valótlanok. A Fidesz a szeptember 29-i levélre közleményben reagált, szerintük a hatóságok az akcióért „elismerést érdemelnek, és nem vádaskodást”.',
+      },
+      {
+        q: 'Hol tartanak a Fürcht állításai alapján tett feljelentések?',
+        a: '2026. szeptember 28-án derült ki, hogy a Szegedi Regionális Nyomozó Ügyészséghez kerültek. Az ukrán pénzszállítók ügyvédje Fürcht tanúkénti meghallgatását is indítványozta.',
+      },
+      {
+        q: 'Mi történt március 5-én?',
+        a: 'Az M0-s alacskai pihenőhelyénél a TEK feltartóztatta az ukrán Oschadbank két, Ausztriából Ukrajnába tartó pénzszállító furgonját, és a hatóságok lefoglalták a bennük lévő, több mint 27 milliárd forintnyi készpénzt és aranyat. A vagyon 2026. május 6-án hagyta el az országot.',
+      },
+    ],
+    sources: [
+      { label: 'Telex: Fürcht Pál szerint Orbán Viktor adta ki az utasítást az ukrán pénzszállítók elfogására (szept. 29.)', url: 'https://telex.hu/belfold/2026/09/29/furcht-pal-aranykonvoj-ugy-orban-viktor-utasitas-fidesz-reakcio' },
+      { label: 'ATV: Megszólalt Fürcht Pál az Egyenes beszédben (szept. 21.)', url: 'https://www.atv.hu/belfold/20260921/vezeto-ugyesz-megmondta/' },
+      { label: '444: A Fürcht Pál állításai alapján született feljelentések Szegedre kerültek (szept. 28.)', url: 'https://444.hu/2026/09/28/a-furcht-pal-volt-fougyesz-allitasai-alapjan-szuletett-feljelentesek-a-szegedi-regionalis-nyomozo-ugyeszseghez-kerultek' },
+      { label: 'Telex: Orbán döntött arról, hogy le kell csapni az ukrán „aranykonvojra” (jún. 3.)', url: 'https://telex.hu/belfold/2026/06/03/aranykonvoj-ukrajna-nav-titkosszolgalat-orban-kormany-tek' },
+      { label: 'Telex: Döntéshozóként nevezi meg Orbán Viktort egy állítólagos ügyészségi dokumentum (jún. 25.)', url: 'https://telex.hu/belfold/2026/06/25/aranykonvoj-444-orban-viktor-ugyeszsegi-dokumentum' },
+    ],
+    crossPromoAfterBlockId: 'most-derult-ki',
+    internalLinks: [
+      { label: 'Aranykonvoj-ügy — a teljes ügy', href: '/ugyek/aranykonvoj', note: 'A március 5-i akció, a nyomozás és a hatósági közlemények egy helyen.' },
+      { label: 'Orbán Áron és az osztrák szál', href: '/ugyek/aranykonvoj/orban-aron-ausztria', note: 'Ugyanezen a héten derült ki: Ausztriában is felmerült egy ukrán szállítmány elfogása.' },
       { label: 'Kiemelt ügyek', href: '/ugyek', note: 'A Kegyencjárat összes kiemelt ügye.' },
     ],
   },

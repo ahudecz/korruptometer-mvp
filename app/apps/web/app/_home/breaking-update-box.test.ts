@@ -9,7 +9,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import { BreakingUpdateBox } from './breaking-update-box';
 import { UGYEK } from './ugyek-config';
-import { getSubpage } from './ugyek-subpages';
+import { getSubpage, getSubpagesForUgy } from './ugyek-subpages';
 
 const ugy = (id: string) => UGYEK.find((u) => u.id === id)!;
 
@@ -72,5 +72,35 @@ describe('NKA-aloldalak: Hankó letartóztatása után nincs ellentmondó állí
       expect(json, id).not.toMatch(/Hankó[^"]{0,120}(nem folyik eljárás|nem indult eljárás)/);
       expect(json, id).not.toContain('Miért nem tartóztatták le Hankó');
     }
+  });
+});
+
+describe('aranykonvoj/furcht-pal aloldal és a két aranykonvoj-aloldal kölcsönös hivatkozása (2026-10-01)', () => {
+  const furcht = getSubpage('aranykonvoj', 'furcht-pal')!;
+  const aron = getSubpage('aranykonvoj', 'orban-aron-ausztria')!;
+
+  it('a Fürcht-aloldalon a levél kulcsmondata kiemelt idézet, és mindkét ATV-videó szerepel', () => {
+    const quote = furcht.blocks.find((b) => b.type === 'quote');
+    expect(quote && quote.type === 'quote' && quote.text).toContain('maga Orbán Viktor miniszterelnök adta ki a feladatot');
+    const videoIds = furcht.blocks.flatMap((b) => (b.type === 'video' ? [b.id] : []));
+    expect(videoIds.sort()).toEqual(['LB6ULRRg86Q', 'l5bYqtM7WyE']);
+  });
+
+  it('a két aloldal szövegben is hivatkozik egymásra („most derült ki"), és a keretes ajánló horgonya létezik', () => {
+    const link = (sub: typeof furcht, href: string) =>
+      sub.blocks.some((b) => b.type === 'text' && b.id === 'most-derult-ki' && (b.links ?? []).some((l) => l.href === href && b.content.includes(l.text)));
+    expect(link(furcht, '/ugyek/aranykonvoj/orban-aron-ausztria')).toBe(true);
+    expect(link(aron, '/ugyek/aranykonvoj/furcht-pal')).toBe(true);
+    for (const sub of [furcht, aron]) {
+      expect(sub.blocks.some((b) => 'id' in b && b.id === sub.crossPromoAfterBlockId), sub.id).toBe(true);
+    }
+  });
+
+  it('a szülő aranykonvoj-ügyoldal mindkét aloldalt ajánlja', () => {
+    expect(getSubpagesForUgy('aranykonvoj').map((s) => s.id).sort()).toEqual(['furcht-pal', 'orban-aron-ausztria']);
+  });
+
+  it('a Fürcht-aloldal sem visz követőkódos linket', () => {
+    expect(JSON.stringify(furcht)).not.toContain('utm_source');
   });
 });
