@@ -9,6 +9,7 @@ node_modules/
 
 # Next.js / Turborepo / Vite caches
 .next/
+.next-*/
 .turbo/
 dist/
 out/

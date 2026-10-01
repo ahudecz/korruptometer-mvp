@@ -425,7 +425,7 @@ export default async function UgySubPage({ params }: { params: Promise<{ id: str
       />
 
       <div className="person-hero">
-        <div className="person-hero-inner">
+        <div className={`person-hero-inner${sub.heroImage ? '' : ' person-hero-inner--no-photo'}`}>
           {sub.heroImage && (
             <div className="person-hero-photo">
               <img src={sub.heroImage.src} alt={sub.heroImage.alt} className="person-photo-img" />
@@ -462,7 +462,7 @@ export default async function UgySubPage({ params }: { params: Promise<{ id: str
 
         <div className="ugy-description">
           <p className="person-section-note">
-            Nyilvános hatósági közlemények, az NKA saját tájékoztatói és sajtóértesülések alapján.
+            Nyilvános hatósági közlemények és sajtóértesülések alapján, forrásmegjelöléssel.
             Jogerős ítélet hiányában minden érintett ártatlannak tekintendő.
           </p>
           <div className="ugy-description-body">

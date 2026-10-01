@@ -16105,3 +16105,43 @@ code {
   color: var(--ink);
   white-space: nowrap;
 }
+
+/* ── 2026-10-01 — ügyoldali/aloldali blokkok sorköze (user: „a keretesek
+   előtt, között, mögött túl nagy a sorköz"). Az általános
+   `.ugy-description-body p { margin-bottom: 18px }` nagyobb specificitással
+   felülírta a kártyán belüli leírás 8 px-ét — innen jött a nagy rés a
+   „Cikk olvasása →" előtt. A kártyák egymás után és a szöveg után is
+   szorosabban jönnek, egy új szakasz előtt marad a levegő. */
+.ugy-description-body .ugy-block-article-lead { margin: 0 0 8px; }
+.ugy-description-body .ugy-block-video-summary { margin: 0 0 12px; }
+.ugy-description-body .ugy-block-article-card { margin: 12px 0; }
+.ugy-description-body .ugy-block-text:has(+ .ugy-block-article-card) { margin-bottom: 14px; }
+.ugy-description-body .ugy-block-article-card + .ugy-block-text { margin-top: 28px; }
+.ugy-description-body .ugy-breaking-update p { margin-bottom: 0; }
+.ugy-description-body .ugy-breaking-update .ugy-block-article-lead { margin: 0 0 8px; }
+
+/* ── 2026-10-01 — videó a BREAKING dobozban (user: „a breaking keretben a yt
+   embed designja szar"): kártya, asztalin a lejátszó balra (max. 340 px, így
+   a borítókép nem mosódik el), mellette a csatorna/cím/leírás; mobilon egymás
+   alatt. */
+.ugy-breaking-update-video {
+  display: grid;
+  grid-template-columns: minmax(0, 340px) 1fr;
+  gap: 18px;
+  align-items: center;
+  padding: 16px 18px;
+  border-top: 1px solid var(--line);
+  background: #fff;
+}
+.ugy-breaking-update-video .ugy-extra-video-wrap { order: -1; margin-top: 0; }
+.ugy-breaking-update-video .ugy-extra-video-meta { margin-bottom: 0; }
+.ugy-breaking-update-video .ugy-extra-video-summary { margin: 6px 0 0; font-size: 13px; }
+@media (max-width: 640px) {
+  .ugy-breaking-update-video { grid-template-columns: 1fr; gap: 12px; padding: 14px 16px; }
+}
+
+/* ── 2026-10-01 — aloldal fejléce fotó nélkül: a 200 px-es fotóoszlop
+   nélkül a szöveg a teljes szélességet kapja (eddig a fotó oszlopába
+   tördelődött a cím és a bevezető). */
+.person-hero-inner--no-photo { grid-template-columns: 1fr; }
+.person-hero-inner--no-photo .person-hero-text { max-width: 880px; }

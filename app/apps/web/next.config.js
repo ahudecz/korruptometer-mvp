@@ -65,6 +65,12 @@ const securityHeaders = [
 ];
 
 const nextConfig = {
+  // 2026-10-01: külön build-mappa környezeti változóval (alapértelmezés:
+  // .next, tehát élesben/Vercelen semmi nem változik). Ugyanebből a
+  // könyvtárból több munkamenet is futtat `next start`/`next dev`-et, és a
+  // közös .next-et egymás alól írták felül (a 3107-es szerver CSS-e 400-at
+  // adott). Helyi ellenőrzéshez: NEXT_DIST_DIR=.next-<név> next build/start.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   reactStrictMode: true,
   poweredByHeader: false,
   typedRoutes: false,
