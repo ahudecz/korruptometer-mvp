@@ -71,7 +71,21 @@ export type DescriptionBlock =
   | { type: 'quote'; text: string; author?: string; note?: string; url?: string }
   | { type: 'pdf-link'; url: string; label: string; note?: string }
   | { type: 'image-pair'; src1: string; alt1?: string; src2: string; alt2?: string; caption?: string }
-  | { type: 'audio-link'; url: string; title: string; source: string; duration?: string };
+  | { type: 'audio-link'; url: string; title: string; source: string; duration?: string }
+  /** 2026-10-01: egyetlen kép felirattal és forrásmegjelöléssel. */
+  | { type: 'image'; src: string; alt: string; caption?: string; credit?: string }
+  /** 2026-10-01: „szolgáltatások”-rács ikonokkal (Booking-minta), l. desc-extra-blocks.tsx.
+   *  `planned`: csak a tervekben szerepelt, nem bizonyított, hogy elkészült. */
+  | {
+      type: 'facilities';
+      id?: string;
+      heading?: string;
+      intro?: string;
+      items: { icon: string; label: string; detail?: string; planned?: boolean }[];
+      note?: string;
+      sourceLabel?: string;
+      sourceUrl?: string;
+    };
 
 export interface UgyekConfig {
   id: string;
@@ -1070,28 +1084,299 @@ Ez az ügy nemcsak a közvetlen anyagi kár miatt kerül a legdurvább ügyek k�
     videoChannel: '444.hu',
     videoTitle: 'Hatvanpuszta — Orbán titkos majorja',
     videoSummary: 'Drónfelvételek, helyszíni riport és korábbi képek összehasonlítása mutatja meg, hogyan fejlődött az elmúlt években az a major, amelynek valódi tulajdonosa és finanszírozási forrása máig ismeretlen — és amelynek értéke összeegyeztethetetlen Orbán nyilvánosan bejelentett vagyonával.',
+    // 2026-10-01: a tartalmi részhez kötődő videók a descriptionBlocks-ba
+    // költöztek, a megfelelő szakasz mellé (user kérés); itt csak az marad,
+    // ami egyik szakaszhoz sem tartozik.
     additionalVideos: [
-      { id: 'aJwSuQ6jXQU', label: 'Hadházy Ákos', title: 'Mit rejt Hatvanpuszta? – Belső felvételek, amiket látni kell' },
       { id: '1AMXLof1-rY', label: '24.hu', title: 'Hatvanpuszta az Orbán család kegyelmi ügye?' },
-      { id: '0-bgf65aqGc', label: 'Kontroll', title: 'A hatvanpusztai zebráknak nem volt választásuk // Drónfelvételek Orbán és Mészáros birtokairól' },
-      { id: 'JHsdnuogC7o', label: 'Gulyáságyú Média', title: 'Zebrák Mészáros Lőrincéknél Hatvanpuszta és Bicske között' },
-      { id: 'GvEyTRl2NTM', label: 'Kalapacs', title: 'Építész reagál a HATVANPUSZTAI BIRTOKRA' },
     ],
     statusItems: [
-      { icon: '🏡', label: 'Becsült érték', value: '~20 milliárd Ft · 250 hektár · Vas megye' },
+      { icon: '🏡', label: 'Becsült érték', value: '~20 milliárd Ft · Alcsútdoboz, Fejér vármegye' },
       { icon: '❓', label: 'Forrás', value: 'Ismeretlen — összeegyeztethetetlen a vagyonnyilatkozattal' },
       { icon: '⚖️', label: 'Státusz', value: 'Nincs ismert büntetőeljárás' },
+      { icon: '🏛️', label: 'Műemlékvédelem', value: '5,7 millió Ft bírság (2026. aug.) · a tervező egy évre felfüggesztve a kamarából, nem jogerős' },
     ],
-    sourceRefs: [],
-    description: `Hatvanpuszta Orbán Viktor 250 hektáros majorsága Vas megyében. Az ingatlan — amelynek becsült értéke 15–20 milliárd forint körül van — nem szerepelt soha teljes értéken Orbán kötelező vagyonnyilatkozatában. A valódi tulajdonosi struktúra, az ingatlan eredeti megszerzési ára és a finanszírozás forrása máig nem nyilvános.
-
-A kérdés egyszerű: egy miniszterelnök, akinek hivatalos jövedelme a köztisztviselői fizetésből áll, hogyan tarthat fenn egy 250 hektáros, tízmilliárdos értékű ingatlant? A sajtóban feltárt adatok szerint a hatvanpusztai major épületei, a gazdasági infrastruktúra és a telek nagysága messze meghaladja azt, amit bármely fővárosi politikus bejelentett jövedelmeiből fenn lehetne tartani.
-
-Az ingatlan tényleges tulajdonosi köre sem tisztázott. A formalitások szintjén különböző cégek és alapítványok jelennek meg tulajdonosként, de ezek valódi haszonélvezője és az indulótőke forrása ismeretlen. A K-Monitor adatbázisában és az investigatív sajtóban (Direkt36, 444, Átlátszó) megjelent elemzések rámutattak, hogy a látható tulajdonosi struktúra jellemzően nem kapcsolható Orbán közvetlen nevéhez — ez az anonimitás nem véletlenszerű.
-
-A hatvanpusztai ügy politikailag különösen kényes, mert közvetlen bizonyítékot adhat Orbán személyes vagyongyarapodásáról — szemben a NER többi tagjával, akiknél az érintett vagyonelemek más személyek nevén futnak. Ha Hatvanpuszta valóban Orbán tényleges vagyonaként kezelendő, az vagyonnyilatkozati visszaélést, adócsalást és ismeretlen forrású vagyon megszerzését is felvetné egyszerre.
-
-Intézményes vizsgálat mindeddig nem volt. A 2026-os kormányváltás után elméletileg megnyílik az út, hogy az Állami Számvevőszék, a NAV és az ügyészség is megvizsgálja Orbán vagyonnyilatkozatainak valóságtartalmát.`,
+    sourceRefs: [
+      { label: 'Telex: Hadházy Ákos szerint így néz ki a hatvanpusztai birtok tervrajza (2025. szept. 1.)', url: 'https://telex.hu/belfold/2025/09/01/hatvanpuszta-birtok-tervrajzok-hadhazy-akos-orban-viktor' },
+      { label: 'Telex: Lakóépületre is kértek engedélyt Hatvanpusztán egy energetikai tanúsítvány szerint (2025. aug. 7.)', url: 'https://telex.hu/belfold/2025/08/07/energetikai-tanusitvany-lakoepulet-hatvanpuszta-hadhazy-akos' },
+      { label: 'HVG: Lekvárfőző konyha, kocsiszín, főkertészi iroda (2025. szept. 4.)', url: 'https://hvg.hu/kkv/20250904_hadhazy-akos-hatvanpuszta-tervrajzok-lekvarfozo-kocsiszin-orban-viktor' },
+      { label: 'Válasz Online: Hatvanpuszta összes titka egy helyen (2025. szept. 11.)', url: 'https://www.valaszonline.hu/2025/09/11/hatvanpuszta-majorsag-hadhazy-akos-alaprajzok-fenykepek-epitkezes/' },
+      { label: 'Telex / Direkt36: Erős bizonyíték arra, hogy Mészáros Lőrinc áll Orbán apjának építkezése mögött (2025. okt. 2.)', url: 'https://telex.hu/direkt36/2025/10/02/itt-egy-eros-bizonyitek-arra-hogy-meszaros-lorinc-all-orban-apjanak-milliardos-epitkezese-mogott-1' },
+      { label: 'HVG360: Az eredeti hatvanpusztai tervek teljes listája (2025. dec. 18.)', url: 'https://hvg.hu/360/20251218_orban-csalad-hatvanpuszta-projektleiras-titkos-lepcso' },
+      { label: 'Telex: Légifotók Orbánék felcsúti és hatvanpusztai birodalmáról (2026. máj. 26.)', url: 'https://telex.hu/foto/2026/05/26/hatvanpuszta-felcsut-orban-viktor-meszaros-lorinc-tiborcz-istvan-1' },
+      { label: '24.hu: Kiszámoltuk, mennyibe kerülhet évente Hatvanpuszta fenntartása (2026. máj. 28.)', url: 'https://24.hu/belfold/2026/05/28/hatvanpuszta-kastely-orban-csalad-fenntartas/' },
+      { label: 'Telex: Hatvanpuszta építésze fellebbez az őt eltiltó döntés ellen (2026. máj. 29.)', url: 'https://telex.hu/belfold/2026/05/29/taraczky-daniel-hatvanpuszta-epitesz-kamara-fellebbezes' },
+      { label: '24.hu: Közel hatmilliós bírság műemlékrombolás miatt (2026. aug. 11.)', url: 'https://24.hu/belfold/2026/08/11/birsag-hatvanpuszta-engedely-nelkul-epitkeztek/' },
+      { label: 'Telex: Kamu polgárőrautó felügyeli a hatvanpusztai birtokot (2026. aug. 29.)', url: 'https://telex.hu/belfold/2026/08/29/polgarorauto-kamu-masolat-rendorseg-eljaras-hatvanpuszta' },
+      { label: 'Telex: Kiderült, miért pusztult el a negyedik zebra Hatvanpusztán (2026. szept. 1.)', url: 'https://telex.hu/belfold/2026/09/01/hatvanpuszta-negyedik-zebra-elpusztult-birsag-rendorsegi-eljaras' },
+      { label: 'Telex: Hatvanpuszta tervezője szeretné, ha egyszer megnyílna a közönség előtt a majorság (2026. szept. 4.)', url: 'https://telex.hu/belfold/2026/09/04/hatvanpuszta-taraczky-daniel-orban-viktor' },
+    ],
+    description: `Hatvanpuszta az Alcsútdobozhoz tartozó egykori Habsburg-major Fejér vármegyében, amely 2011-ben került Orbán Viktor édesapjának érdekeltségébe, 2019-től pedig nagyszabású átépítés zajlott rajta. A hivatalos magyarázat szerint Orbán Győző mezőgazdasági üzemet és családi gazdaságot alakított ki, a nyilvánosságra került tervek, energetikai tanúsítványok és fotók ennél összetettebb épületegyüttest mutatnak.`,
+    // 2026-10-01: a teljes szöveges rész átírva (user kérés: ~300 szó helyett
+    // részletes, forrásolt tartalom). Minden állítás a sourceRefs-ben és a
+    // keretes kártyákon szereplő cikkekkel ellenőrizve.
+    descriptionBlocks: [
+      {
+        type: 'text',
+        content: 'Hatvanpuszta az elmúlt évek egyik legtöbbet vitatott magyarországi magánépítkezése. A Fejér vármegyei Alcsútdobozhoz tartozó egykori Habsburg-major 2011-ben került Orbán Viktor édesapjának érdekeltségébe, 2019-től pedig nagyszabású átépítés indult a területen. A hivatalos magyarázat szerint Orbán Győző mezőgazdasági üzemet és családi gazdaságot alakított ki a birtokon. A nyilvánosságra került tervek, légifelvételek, belső fotók és más dokumentumok ugyanakkor ennél jóval összetettebb épületegyüttest mutatnak. Hadházy Ákos alaprajzokat hozott nyilvánosságra, a HVG megszerezte az eredeti tervdokumentáció jelentős részét, energetikai tanúsítványok lakófunkcióra utaltak, 2026-ban pedig a kormányhivatal 5,7 millió forintos műemlékvédelmi bírságot szabott ki. A birtok tervezője, Taraczky Dániel közben azt mondta, a projekt „száz százalékig” Orbán Győzőé, és önellátó majorságnak készült.',
+      },
+      {
+        type: 'text',
+        heading: 'Mi Hatvanpuszta?',
+        content: 'Hatvanpuszta az Alcsútdobozhoz tartozó egykori majorság, amelyet a 19. században József nádor gazdasági központként alakított ki. A történelmi épületegyütteshez juhaklok, tiszti lak, cselédlak, ökör- és lóistálló, valamint víztorony is tartozott. Az épületek évtizedekig leromlott állapotban álltak, és így voltak akkor is, amikor 2011-ben Orbán Viktor apja egy cégen keresztül megvásárolta őket. 2019-ben Orbán Győző a saját nevére vette a birtokot, és nagyszabású építkezés kezdődött. A Telex 2026 májusában közzétett légifelvételei szerint a korábban romos műemléki környezet helyén új épületek, parkosított területek, utak és reprezentatív kertek jelentek meg — és a vita azóta is arról szól, pontosan milyen célra épült a komplexum.',
+      },
+      {
+        type: 'image',
+        src: '/images/cases/hatvanpuszta-19-szazadi-terv.webp',
+        alt: 'A hatvanpusztai majorság 19. századi helyszínrajza a juhaklokkal, a tiszti és a cselédlakkal, az ökör- és lóistállóval',
+        caption: 'A majorság 19. századi helyszínrajza: a jelmagyarázat szerint juhaklok (e, f), tiszti lak (i), cselédlak (k), ökör- és lóistálló (o). A mai épületek egy része ezek helyén áll.',
+        credit: 'Forrás: Wikimedia Commons, közkincs',
+      },
+      {
+        type: 'article-card',
+        source: 'Telex',
+        date: '2026. május 26.',
+        headline: 'Légifotókon mutatjuk meg, mivé változott 16 év alatt Orbánék felcsúti és hatvanpusztai birodalma',
+        lead: 'Légi felvételek arról, hogyan alakult át 16 kormányzati év alatt a felcsúti és hatvanpusztai környezet, a romos majorságtól az elkészült épületekig.',
+        url: 'https://telex.hu/foto/2026/05/26/hatvanpuszta-felcsut-orban-viktor-meszaros-lorinc-tiborcz-istvan-1',
+      },
+      {
+        type: 'text',
+        heading: 'Orbán Viktor magyarázata: az apja félkész gazdasága',
+        content: 'Orbán Viktor a Hatvanpusztával kapcsolatos kérdésekre következetesen azzal válaszolt, hogy a birtok nem az övé, hanem az édesapjáé, és ott mezőgazdasági tevékenység folyik — a kormányzati kommunikációban „félkész mezőgazdasági üzemként” szerepelt. A Harcosok Órája című műsorban így fogalmazott:',
+      },
+      {
+        type: 'quote',
+        text: 'Édesapámnak egy építés alatt álló gazdasága van Hatvanpusztán.',
+        author: 'Orbán Viktor, Harcosok Órája',
+        note: 'A Szabad Európa idézete szerint.',
+        url: 'https://www.szabadeuropa.hu/a/hatvanpuszta-orban-meszaros-gazdasag-vagyonosodas/33540911.html',
+      },
+      {
+        type: 'text',
+        content: 'Orbán Győző 2025 augusztusában maga is interjút adott a birtokról, a Borsnak: azt mondta, a majorság borzalmas állapotban volt, „lassan tíz éve” dolgozik a helyreállításán, és szerinte a legidősebb fiát rajta keresztül támadják igaztalanul. „Hatvanpuszta egy gazdaság a semmi közepén, mint a neve is mutatja” — mondta, és hozzátette: „Ezt a gazdaságot is tető alá hozom végül, hiába próbálnak gáncsolni.” Hadházy Ákos ezzel szemben évek óta azt állítja, hogy a látott épületek és belső kialakításuk nehezen egyeztethető össze egy mezőgazdasági üzem képével. A vita ezért nem arról szól, van-e ott mezőgazdaság, hanem arról, hogy a gazdasági funkció mellett milyen más funkciókat terveztek és valósítottak meg.',
+      },
+      {
+        type: 'video',
+        id: 'A28rJxScjZk',
+        label: 'Hadházy Ákos · 2025. szept. 23.',
+        title: 'Hatvanpuszta: Luxus vagy mezőgazdasági üzem? Orbán zavaros válaszai medencékre, milliós kádakra',
+        summary: 'Hadházy Ákos megkérdezte Orbán Viktortól, miért van szükség egy mezőgazdasági üzemben két medencére és kétmilliós fürdőkádakra — a videó a kérdést és a választ mutatja be.',
+      },
+      {
+        type: 'text',
+        heading: 'Hadházy Ákos alaprajzokat mutatott be',
+        content: 'A vita 2025 szeptemberében új szintre lépett, amikor Hadházy Ákos több hatvanpusztai épület alaprajzát is nyilvánosságra hozta. A képviselő szerint az alaprajzok többségét a hozzá eljuttatott eredeti tervek alapján egy építész rajzolta át, az eredetieket pedig a források védelme miatt nem tette közzé. A rajzok szerint a „félkész mezőgazdasági üzemben” vendégház áll — Hadházy szerint az egyik lerombolt, műemlék birkaistálló helyén —, benne tíz többszobás, komplett lakással, két lifttel, három lépcsőházzal, kandallós étkezővel, óriási társalgóval, dohányzószobával és klubszobával. Hadházy szerint az épületben éttermi kapacitású konyha, a pinceszinten steakelőkészítő helyiség van, az építőmunkások szerint pedig a séfnek is külön lakása. A képviselő ezután a könyvtárról, a mélygarázsról és a műhelylak alatti pincékről ígért újabb részleteket.',
+      },
+      {
+        type: 'article-card',
+        source: 'Telex',
+        date: '2025. szeptember 1.',
+        headline: 'Hadházy Ákos szerint így néz ki a hatvanpusztai birtok tervrajza',
+        lead: 'A vendégházban tíz többszobás lakás, két lift, három lépcsőház, kandallós étkező, társalgó, dohányzó- és klubszoba szerepel a Hadházy által bemutatott alaprajzokon.',
+        url: 'https://telex.hu/belfold/2025/09/01/hatvanpuszta-birtok-tervrajzok-hadhazy-akos-orban-viktor',
+      },
+      {
+        type: 'article-card',
+        source: 'Válasz Online',
+        date: '2025. szeptember 11.',
+        headline: 'Exkluzív: Hatvanpuszta összes titka egy helyen',
+        lead: 'Építész szakértők közreműködésével készült elemzés alaprajzokkal és fotókkal arról, hogyan alakították át a védett gazdasági majorságot.',
+        url: 'https://www.valaszonline.hu/2025/09/11/hatvanpuszta-majorsag-hadhazy-akos-alaprajzok-fenykepek-epitkezes/',
+      },
+      {
+        type: 'text',
+        heading: 'A HVG megszerezte az eredeti terveket',
+        content: 'A Hadházy-féle alaprajzoknál is részletesebb anyagot közölt a HVG 2025 decemberében: a lap a 2019 és 2022 között készült tervdokumentáció teljes listájához jutott hozzá. Eszerint a komplexum — ha az összes akkori tervet megvalósítanák — egyidejűleg 534 ember befogadására lenne alkalmas, nettó hasznos alapterülete pedig 8900 négyzetméter volna. A tervekben többek között ezek szerepeltek:',
+      },
+      {
+        type: 'facilities',
+        id: 'eredeti-tervek',
+        items: [
+          { icon: '🛏️', label: 'Kilenc apartman' },
+          { icon: '🤵', label: 'Komornyiklakás' },
+          { icon: '🍸', label: 'Klubhelyiség' },
+          { icon: '🎱', label: 'Biliárdszoba' },
+          { icon: '🍽️', label: 'Nagy étkező', detail: '32 fős étkezőasztal' },
+          { icon: '🎉', label: 'Rendezvényterem', detail: 'kétszáz fős' },
+          { icon: '🧖', label: 'Wellnessrészleg' },
+          { icon: '🛁', label: '45 tusoló vagy kád' },
+          { icon: '🚻', label: 'Kereken száz vécé' },
+          { icon: '📚', label: 'Könyvtár', detail: 'rejtekajtóval a pincébe' },
+          { icon: '🖋️', label: 'Főúri dolgozószoba', detail: 'könyvespolcba épített titkos lépcső' },
+          { icon: '👥', label: '534 fő befogadóképesség', detail: '8900 m² nettó alapterület' },
+          { icon: '🔭', label: 'Csillagvizsgáló a víztoronyon', detail: 'a betontornyot elbontották', planned: true },
+          { icon: '⛪', label: 'Kápolna', detail: 'építése nem kezdődött el', planned: true },
+          { icon: '🌿', label: 'Két orangerie', detail: 'helyükön medencék épültek', planned: true },
+        ],
+        note: 'A tervek 2019 és 2022 között készültek. Egy tervrajz nem bizonyítja, hogy a helyiség el is készült; a „csak terv” jelölésűekről a HVG összevetése szerint tudni, hogy nem a tervezett formában valósultak meg.',
+        sourceLabel: 'HVG360, 2025. dec. 18.',
+        sourceUrl: 'https://hvg.hu/360/20251218_orban-csalad-hatvanpuszta-projektleiras-titkos-lepcso',
+      },
+      {
+        type: 'article-card',
+        source: 'HVG',
+        date: '2025. december 18.',
+        headline: 'Hatvanpuszta: könyvespolcba épített titkos lépcső a főúri dolgozószobában, saját lakás a komornyiknak — megszereztük az eredeti tervek teljes listáját',
+        lead: 'A 2019–2022 között készült tervdokumentáció szerint a komplexum 534 ember befogadására lehetne alkalmas.',
+        url: 'https://hvg.hu/360/20251218_orban-csalad-hatvanpuszta-projektleiras-titkos-lepcso',
+      },
+      {
+        type: 'video',
+        id: 'aJwSuQ6jXQU',
+        label: 'Hadházy Ákos · 2026. ápr. 1.',
+        title: 'Mit rejt Hatvanpuszta? — Belső felvételek, amiket látni kell',
+        summary: 'Hadházy Ákos belső képei és videói Hatvanpusztáról; elmondása szerint többségük az építkezés idején készült. A videót eddig több mint 85 ezren nézték meg.',
+      },
+      {
+        type: 'text',
+        heading: 'Lakóépület is szerepelt a dokumentumokban',
+        content: 'Hadházy Ákos 2025 augusztusában energetikai tanúsítványokat is talált a nyilvános adatbázisban: a négy új épületből háromhoz volt elérhető tanúsítvány. Közülük a nagyobb, nyugati, L alakú szárnyat lakóépületként, a keletit — amelyben Hadházy szerint a könyvtár van — „egyéb, be nem sorolható épületként”, egy harmadikat, a nagy konyhával és közösségi terekkel, ipari és raktárépületként sorolták be. Hadházy szerint energetikai tanúsítvány alapvetően lakóépülethez kell, mezőgazdasági üzemhez nem. A dokumentumok értelmezésénél ugyanakkor külön kell választani a jogi besorolást, az épület tényleges használatát és a teljes birtok funkcióját: egy lakóépület megléte önmagában nem bizonyítja, hogy az egész komplexum magánrezidencia, ahogy egy mezőgazdasági épület sem azt, hogy kizárólag gazdasági célt szolgál.',
+      },
+      {
+        type: 'article-card',
+        source: 'Telex',
+        date: '2025. augusztus 7.',
+        headline: 'Lakóépületre is kértek engedélyt Hatvanpusztán egy Hadházy által megtalált energetikai tanúsítvány szerint',
+        lead: 'A négy új épületből háromnak volt nyilvános energetikai tanúsítványa, az egyiket lakóépületként sorolták be.',
+        url: 'https://telex.hu/belfold/2025/08/07/energetikai-tanusitvany-lakoepulet-hatvanpuszta-hadhazy-akos',
+      },
+      {
+        type: 'text',
+        heading: 'A „műhelylak”: főkertészi iroda, lekvárfőző konyha, kocsiszín',
+        content: 'Hadházy később a birtok egy másik épületének, a lerombolt műemlék istálló helyén álló úgynevezett műhelylaknak a terveit is bemutatta. Az épület jelentős része raktár, de a tervek szerint van benne egy 35 négyzetméteres főkertészi iroda saját fürdőszobával, egy ugyanekkora pihenő fürdőszobával, három kisebb, 25–35 négyzetméteres lakás, kocsiszín és egy 80 négyzetméteres lekvárfőző konyha. Ez az épület több ponton közelebb áll ahhoz a gazdasági funkcióhoz, amelyet az Orbán család kommunikációja hangsúlyoz — a nyilvánosságra került tervek alapján Hatvanpusztán gazdasági, kiszolgáló, vendéglátó, lakó- és reprezentatív funkciók egyaránt megjelentek.',
+      },
+      {
+        type: 'article-card',
+        source: 'HVG',
+        date: '2025. szeptember 4.',
+        headline: 'Lekvárfőző konyha, kocsiszín, főkertészi iroda',
+        lead: 'Hadházy Ákos a műhelylak terveit mutatta be: raktárak, főkertészi iroda, három kisebb lakás és egy 80 négyzetméteres lekvárfőző konyha.',
+        url: 'https://hvg.hu/kkv/20250904_hadhazy-akos-hatvanpuszta-tervrajzok-lekvarfozo-kocsiszin-orban-viktor',
+      },
+      {
+        type: 'text',
+        heading: 'Ki finanszírozta az építkezést?',
+        content: 'A Direkt36 2025. október 2-án egy bizalmas dokumentumot ismertetett, amely szerint Mészáros Lőrinc cége, a Talentis Group teljesítési segédként több milliárd forintos pénzügyi fedezetet biztosított Orbán Győzőnek egy „8087 Alcsútdoboz” megjelölésű beruházáshoz — a lap forrása szerint 2023–2024-ben 3,6 milliárd forintnyi munkára. Az építkezést a Mészáros Lőrinc és gyermekei tulajdonában álló Fejér B.Á.L. Zrt. végezte, vagyis a leggazdagabb magyar a saját cége által végzett munka kifizetéséhez nyújtott fedezetet. A Direkt36 helyi és építőipari forrásai szerint Orbán Győzőnek a településen vagy annak közelében nincs más milliárdos beruházása, ezért a dokumentumot Hatvanpusztához kötötték. A finanszírozás minden részlete ugyanakkor nem nyilvános, így a dokumentált céges kapcsolatokból nem következik automatikusan, hogy a teljes beruházást Mészáros Lőrinc fizette.',
+      },
+      {
+        type: 'article-card',
+        source: 'Telex / Direkt36',
+        date: '2025. október 2.',
+        headline: 'Itt egy erős bizonyíték arra, hogy Mészáros Lőrinc áll Orbán apjának milliárdos építkezése mögött',
+        lead: 'A Talentis Group biztosított fedezetet a „8087 Alcsútdoboz” beruházáshoz, amelyet a Mészáros-családé Fejér B.Á.L. Zrt. kivitelezett.',
+        url: 'https://telex.hu/direkt36/2025/10/02/itt-egy-eros-bizonyitek-arra-hogy-meszaros-lorinc-all-orban-apjanak-milliardos-epitkezese-mogott-1',
+      },
+      {
+        type: 'text',
+        heading: 'Műemlékvédelem: 5,7 millió forintos bírság',
+        content: 'A kormányhivatal 2026 augusztusában 5,7 millió forintos bírságot szabott ki Hatvanpuszta miatt. A 24.hu beszámolója szerint védett épületeket bontottak el, más elemeket — köztük szökőkutakat, díszmedencéket és kertkaput — pedig engedély nélkül építettek fel. A kormányhivatal közölte: kizárólag a víztorony bontását engedélyezték, a többi műemlék épületet csak az állagromlott szerkezetig lehetett volna visszabontani, önálló bontási engedélyt egyikre sem adtak.',
+      },
+      {
+        type: 'article-card',
+        source: '24.hu',
+        date: '2026. augusztus 11.',
+        headline: 'Hatvanpuszta: közel hatmilliós bírságot szabtak ki műemlékrombolás miatt',
+        lead: 'Védett épületeket bontottak el, szökőkutakat, díszmedencéket és kertkaput engedély nélkül építettek — a kormányhivatal 5,7 millió forintos bírságot szabott ki.',
+        url: 'https://24.hu/belfold/2026/08/11/birsag-hatvanpuszta-engedely-nelkul-epitkeztek/',
+      },
+      {
+        type: 'text',
+        heading: 'A tervezőt a kamara egy évre eltiltotta',
+        content: 'A Magyar Építész Kamara etikai-fegyelmi testülete 2026 májusában megállapította, hogy Hatvanpuszta tervezője, Taraczky Dániel etikai-fegyelmi vétséget követett el; a határozat szerint „a jogsértés ténye visszafordíthatatlan, amely a fegyelmi felelősség súlyát növeli”. A testület egy évre felfüggesztette a kamarai tagságát — ez idő alatt nem tervezhet —, és 800 ezer forint pénzbírság, valamint 115 ezer forint eljárási költség megfizetésére kötelezte. Taraczky fellebbezett, a döntés tehát nem jogerős.',
+      },
+      {
+        type: 'article-card',
+        source: 'Telex',
+        date: '2026. május 29.',
+        headline: 'Hatvanpuszta építésze fellebbez az őt eltiltó döntés ellen',
+        lead: 'Egy év felfüggesztés, 800 ezer forint pénzbírság és 115 ezer forint eljárási költség — Taraczky Dániel fellebbezett.',
+        url: 'https://telex.hu/belfold/2026/05/29/taraczky-daniel-hatvanpuszta-epitesz-kamara-fellebbezes',
+      },
+      {
+        type: 'video',
+        id: 'GvEyTRl2NTM',
+        label: 'Kalapacs · 2026. ápr. 7.',
+        title: 'Építész reagál a hatvanpusztai birtokra | Ingatlanos 3. rész',
+        summary: 'Egy építész reagál a hatvanpusztai birtokról megjelent felvételekre és információkra — a Kalapacs „Ingatlanos” sorozatának harmadik része.',
+      },
+      {
+        type: 'text',
+        heading: 'Mit mond Hatvanpuszta tervezője?',
+        content: 'Taraczky Dániel 2026 szeptemberében a HVG-nek adott interjúban azt mondta, szeretné, ha Hatvanpuszta egyszer megnyílna a közönség előtt, mert akkor kiderülne, hogy „szó sincs értelmetlen luxusról, és — ahogy mindenki megkérdezi — nincs bunker vagy trezor sem”. Szerinte a projekt száz százalékig Orbán Győzőé, aki azért hozta létre, hogy összejöhessen a család, és legyen egy önellátó, működő majorsága: „Az eredeti ötlet az volt, hogy olyan gazdaságot építünk fel, ami megoldja száz ember zöldség- és gyümölcsellátását.” Ez az álláspont az Orbán család hivatalos magyarázatát erősíti, miközben a nyilvánosságra került alaprajzok és a komplexum mérete miatt továbbra is vita van arról, milyen arányban áll a gazdasági funkció a reprezentatív és lakófunkciókkal.',
+      },
+      {
+        type: 'article-card',
+        source: 'Telex',
+        date: '2026. szeptember 4.',
+        headline: 'Hatvanpuszta tervezője szeretné, ha egyszer megnyílna a közönség előtt a majorság',
+        lead: 'Taraczky Dániel szerint nincs bunker vagy trezor, a projekt száz százalékig Orbán Győzőé, és önellátó gazdaságnak készült.',
+        url: 'https://telex.hu/belfold/2026/09/04/hatvanpuszta-taraczky-daniel-orban-viktor',
+      },
+      {
+        type: 'text',
+        heading: 'Mennyibe kerülhet a fenntartása?',
+        content: 'Nemcsak az építés, hanem egy ekkora komplexum működtetése is jelentős költség. A 24.hu 2026 májusában a 6600 négyzetméteres hasznos alapterületű majorság és a 13 hektáros park fenntartási költségeit vetette össze hasonló kastélyok és birtokok működtetésével, a kastélyokra pályázó cégek és szervezetek által megadott adatok alapján.',
+      },
+      {
+        type: 'article-card',
+        source: '24.hu',
+        date: '2026. május 28.',
+        headline: 'Kiszámoltuk, mennyibe kerülhet évente Hatvanpuszta fenntartása',
+        lead: 'A 6600 négyzetméteres majorság és a 13 hektáros park fenntartása hasonló kastélyok működtetési költségei alapján.',
+        url: 'https://24.hu/belfold/2026/05/28/hatvanpuszta-kastely-orban-csalad-fenntartas/',
+      },
+      {
+        type: 'text',
+        heading: 'És akkor jöttek a zebrák',
+        content: 'Hatvanpuszta történetéhez egy elsőre meglepő szál is társult: a birtok szomszédságában, a Mészáros Lőrinchez köthető Vál-völgye Vadásztársaság területén egzotikus állatok — többek között antilopok, bölények és zebrák — legelésznek. 2026-ban külön ügy lett abból, hogy a vadásztársaságnál zebrák pusztultak el. A negyedik zebra esetében kiderült, hogy nem volt engedély a tartására, az elhullását nem jelentették be időben, a tetemét pedig dögkútba dobták és elásták. A vadásztársaságnak 1,6 millió forint természetvédelmi bírságot kell fizetnie, élelmiszerlánc-felügyeleti eljárásban pedig további 105 ezer forintot szabtak ki; a rendőrség a veszélyes állat tartására vonatkozó kötelezettség megszegése miatt nyomoz.',
+      },
+      {
+        type: 'article-card',
+        source: 'Telex',
+        date: '2026. szeptember 1.',
+        headline: 'Kiderült, miért pusztult el a negyedik zebra Hatvanpusztán',
+        lead: 'Nem volt engedély a tartására, az elhullását nem jelentették be időben — 1,6 millió forint természetvédelmi és 105 ezer forint élelmiszerlánc-felügyeleti bírság.',
+        url: 'https://telex.hu/belfold/2026/09/01/hatvanpuszta-negyedik-zebra-elpusztult-birsag-rendorsegi-eljaras',
+      },
+      {
+        type: 'video',
+        id: '0-bgf65aqGc',
+        label: 'Kontroll · 2026. ápr. 17.',
+        title: 'A hatvanpusztai zebráknak nem volt választásuk // Drónfelvételek Orbán és Mészáros birtokairól',
+        summary: 'Drónfelvételek Hatvanpusztáról és a környező Mészáros-beruházásokról, a zebrákkal együtt. A videót több mint 850 ezren nézték meg.',
+      },
+      {
+        type: 'video',
+        id: 'JHsdnuogC7o',
+        label: 'Kontroll • Gulyáságyú · 2024. nov. 12.',
+        title: 'Zebrák Mészáros Lőrincéknél Hatvanpuszta és Bicske között',
+        summary: 'A Gulyáságyú Média 2024-es riportja az egzotikus állatokról Hatvanpuszta és Bicske között — jóval a 2026-os hatósági eljárások előtt.',
+      },
+      {
+        type: 'text',
+        heading: '„Polgárőrség” feliratú autó a birtoknál',
+        content: '2026 augusztusában a Kontroll hatvanpusztai forgatásán tűnt fel, hogy a birtokhoz vezető magánútnál egy „Polgárőrség – Együtt a közbiztonságért” feliratú Ford Ranger áll. Az Országos Polgárőr Szövetség közölte, hogy feljelentést tesz jogosulatlan címhasználat miatt, mert visszaéltek a nevükkel; a Bicskei Rendőrkapitányság szabálysértési eljárást indított, és az eset körülményeit vizsgálja.',
+      },
+      {
+        type: 'article-card',
+        source: 'Telex',
+        date: '2026. augusztus 29.',
+        headline: 'Kamu polgárőrautó felügyeli a hatvanpusztai birtokot',
+        lead: 'Az Országos Polgárőr Szövetség feljelentést tesz, a Bicskei Rendőrkapitányság szabálysértési eljárást indított.',
+        url: 'https://telex.hu/belfold/2026/08/29/polgarorauto-kamu-masolat-rendorseg-eljaras-hatvanpuszta',
+      },
+      {
+        type: 'text',
+        heading: 'Mi történt Hatvanpusztán? — az idővonal',
+        content: '2011: egy cégen keresztül Orbán Viktor apjáé lesz a történelmi majorság. 2019: Orbán Győző a saját nevére veszi a birtokot, nagyszabású építkezés indul. 2019–2022: elkészülnek a később nyilvánosságra került tervdokumentumok. 2025 augusztusa: Hadházy Ákos energetikai tanúsítványokat mutat be, Orbán Győző interjút ad a Borsnak. 2025 szeptembere: Hadházy alaprajzokat és a műhelylak terveit hozza nyilvánosságra. 2025. október 2.: a Direkt36 ismerteti a Mészáros-cég fedezetvállalásáról szóló dokumentumot. 2025 decembere: a HVG közli az eredeti tervek teljes listáját. 2026 májusa: az Építész Kamara egy évre felfüggeszti a tervező tagságát (nem jogerős), és új légifelvételek mutatják a nagyrészt elkészült Hatvanpusztát. 2026 augusztusa: a kormányhivatal 5,7 millió forintos műemlékvédelmi bírságot szab ki, és feltűnik a „polgárőrautó”. 2026 szeptembere: kiderül a negyedik zebra pusztulásának oka, a tervező pedig a majorság megnyitásáról beszél.',
+      },
+      {
+        type: 'text',
+        heading: 'Mit tudunk biztosan — és mit nem?',
+        content: 'Dokumentált, hogy a birtok Orbán Győző érdekeltségéhez kötődik, hogy nagyszabású építkezés zajlott rajta, és hogy a részletes tervdokumentációkban a gazdasági mellett lakó-, vendég-, reprezentatív és kiszolgáló funkciók is szerepeltek. Dokumentált, hogy Hadházy Ákos alaprajzokat és energetikai tanúsítványokat hozott nyilvánosságra, a HVG pedig megszerezte az eredeti tervek listáját. Dokumentált, hogy a kamara első fokon elmarasztalta a tervezőt, aki fellebbezett, és hogy a kormányhivatal 5,7 millió forintos bírságot szabott ki. Ezekből önmagukban nem következik, hogy Orbán Viktor személyesen tulajdonosa lenne a birtoknak, vagy hogy ő finanszírozta volna az építését — és a tervrajzok sem jelentik, hogy minden tervezett helyiség meg is valósult. A legfontosabb kérdések továbbra is a tulajdonosi, finanszírozási és tényleges használati viszonyok körül forognak.',
+      },
+    ],
   },
 
   {

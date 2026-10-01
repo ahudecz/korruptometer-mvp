@@ -1,4 +1,5 @@
 import type { DescriptionBlock, BreakingGroupArticle } from '../../_home/ugyek-config';
+import { DescImage, FacilitiesGrid } from '../../_home/desc-extra-blocks';
 
 function imgSrc(url: string): string {
   if (url.startsWith('/') || url.includes('wikimedia.org')) return url;
@@ -128,7 +129,7 @@ export function DescBlock({ block, isLatestBreaking = true }: { block: Descripti
     case 'quote':
       return (
         <blockquote className="ugy-block-quote">
-          <p>„{block.text}"</p>
+          <p>„{block.text}”</p>
           {block.author && <cite>{block.author}</cite>}
           {block.note && <span className="ugy-block-quote-note">{block.note}</span>}
           {block.url && (
@@ -158,6 +159,10 @@ export function DescBlock({ block, isLatestBreaking = true }: { block: Descripti
           <span className="ugy-block-audio-cta">Meghallgatás →</span>
         </a>
       );
+    case 'image':
+      return <DescImage block={block} />;
+    case 'facilities':
+      return <FacilitiesGrid block={block} />;
     case 'image-pair':
       return (
         <div className="ugy-block-image-pair">

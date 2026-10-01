@@ -16145,3 +16145,65 @@ code {
    tördelődött a cím és a bevezető). */
 .person-hero-inner--no-photo { grid-template-columns: 1fr; }
 .person-hero-inner--no-photo .person-hero-text { max-width: 880px; }
+
+/* ── 2026-10-01 — „szolgáltatások”-rács (Booking-minta) és egyképes blokk,
+   l. _home/desc-extra-blocks.tsx. */
+.ugy-facilities { margin: 8px 0 28px; }
+.ugy-facilities-intro { margin: 0 0 14px; font-size: 15px; line-height: 1.7; color: var(--ink); }
+.ugy-facilities-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 10px;
+}
+.ugy-facility {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+}
+.ugy-facility-icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #f4f4f4;
+  font-size: 19px;
+  line-height: 1;
+}
+.ugy-facility-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ugy-facility-label { font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.3; overflow-wrap: break-word; hyphens: auto; }
+.ugy-facility-detail { font-size: 12px; color: var(--muted); line-height: 1.4; }
+.ugy-facility-badge {
+  align-self: flex-start;
+  margin-top: 3px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #f4f4f4;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ugy-facility--planned { border-style: dashed; background: #fafafa; }
+.ugy-facility--planned .ugy-facility-icon { filter: grayscale(1); opacity: 0.6; }
+.ugy-facility--planned .ugy-facility-label { color: var(--muted); }
+.ugy-facilities-note { margin: 12px 0 0; font-size: 12px; color: var(--muted); line-height: 1.6; }
+.ugy-facilities-note a { color: var(--accent); font-weight: 600; text-decoration: none; white-space: nowrap; }
+@media (max-width: 480px) {
+  .ugy-facilities-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ugy-facility { flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px; }
+}
+
+.ugy-block-image { margin: 8px 0 28px; }
+.ugy-block-image-img { display: block; width: 100%; max-width: 640px; height: auto; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.ugy-block-image-caption { margin-top: 8px; font-size: 13px; color: var(--muted); line-height: 1.55; }
+.ugy-block-image-credit { display: block; margin-top: 2px; font-size: 11px; }

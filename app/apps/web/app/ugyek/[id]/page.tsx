@@ -12,6 +12,8 @@ import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak, Cros
 import { getRelatedComplaintsForUgy } from '@/lib/related-complaints';
 import { RelatedComplaintCard } from '../../_home/related-complaint-card';
 import { BreakingUpdateBox } from '../../_home/breaking-update-box';
+import { DescImage, FacilitiesGrid } from '../../_home/desc-extra-blocks';
+import { PodcastVideoBox } from '../../_home/podcast-video-box';
 import { fillStatusItems, loadDetentionCounts } from '@/lib/detention-counts';
 import { withAutoLinks } from '../../_home/auto-link-text';
 import { namesInTexts } from '../../_home/person-links';
@@ -126,14 +128,8 @@ function DescBlock({
             {block.title && <span className="ugy-block-video-title">{block.title}</span>}
           </div>
           {block.summary && <p className="ugy-block-video-summary">{block.summary}</p>}
-          <div className="ugy-block-video-wrap">
-            <iframe
-              src={`https://www.youtube.com/embed/${block.id}`}
-              title={block.title ?? block.id}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
+          {/* 2026-10-01: facade (kattintásra tölt), nem nyers iframe — l. project-youtube-embed-perf. */}
+          <PodcastVideoBox videoId={block.id} title={block.title ?? block.id} wrapClassName="ugy-block-video-wrap" />
         </div>
       );
     case 'breaking-box':
@@ -199,7 +195,7 @@ function DescBlock({
     case 'quote':
       return (
         <blockquote className="ugy-block-quote">
-          <p>„{block.text}"</p>
+          <p>„{block.text}”</p>
           {block.author && <cite>{block.author}</cite>}
           {block.note && <span className="ugy-block-quote-note">{block.note}</span>}
           {block.url && (
@@ -234,6 +230,10 @@ function DescBlock({
           <span className="ugy-block-audio-cta">Meghallgatás →</span>
         </a>
       );
+    case 'image':
+      return <DescImage block={block} />;
+    case 'facilities':
+      return <FacilitiesGrid block={block} />;
     case 'image-pair':
       return (
         <div className="ugy-block-image-pair">

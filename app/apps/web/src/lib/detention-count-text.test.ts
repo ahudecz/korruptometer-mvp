@@ -30,3 +30,33 @@ describe('detention-count-text (2026-10-01: automatikus „X személy előzetesb
     }
   });
 });
+
+describe('Hatvanpuszta-ügyoldal (2026-10-01: bővített, forrásolt tartalom)', () => {
+  const hp = UGYEK.find((u) => u.id === 'hatvanpuszta')!;
+  const blocks = hp.descriptionBlocks ?? [];
+
+  it('a tervek helyiséglistája ikonos „szolgáltatások” rács, a meg nem épült elemek jelölve', () => {
+    const fac = blocks.find((b) => b.type === 'facilities');
+    expect(fac && fac.type === 'facilities' && fac.items.length).toBeGreaterThanOrEqual(12);
+    expect(fac && fac.type === 'facilities' && fac.items.filter((i) => i.planned).map((i) => i.label)).toEqual(
+      expect.arrayContaining(['Kápolna', 'Két orangerie']),
+    );
+  });
+
+  it('van kiemelt idézet, kép és szakaszonkénti keretes forrás', () => {
+    expect(blocks.some((b) => b.type === 'quote')).toBe(true);
+    expect(blocks.some((b) => b.type === 'image')).toBe(true);
+    expect(blocks.filter((b) => b.type === 'article-card').length).toBeGreaterThanOrEqual(10);
+  });
+
+  it('egy videó sem szerepel kétszer (blokk és „Kapcsolódó videók”), és nincs követőkódos link', () => {
+    const inBlocks = blocks.flatMap((b) => (b.type === 'video' ? [b.id] : []));
+    const extra = (hp.additionalVideos ?? []).map((v) => v.id);
+    expect(inBlocks.filter((id) => extra.includes(id) || id === hp.videoId)).toEqual([]);
+    expect(JSON.stringify(hp)).not.toContain('utm_source');
+  });
+
+  it('a hibás „Vas megye” helyszín eltűnt', () => {
+    expect(JSON.stringify(hp)).not.toContain('Vas megye');
+  });
+});
