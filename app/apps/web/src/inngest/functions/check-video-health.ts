@@ -26,7 +26,8 @@ import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
  * Forrás: 4 statikus config (UGYEK, GALERIA + personCases rekurzívan,
  * WATCHLIST_DETAIL + keyCases, case-video-registry.ts VIDEOS) + 2 DB tábla
  * (CourtVerdict.videoId, PodcastVideo.videoId — csak reviewStatus='approved'
- * sorok, azok jelennek meg ténylegesen az oldalon).
+ * sorok, podcastnál ráadásul csak viewThresholdMet=true: azok jelennek meg
+ * ténylegesen az oldalon).
  */
 
 type VideoRef = { videoId: string; label: string; linkOnly?: boolean };
@@ -88,7 +89,11 @@ export async function collectDbVideoIds(): Promise<VideoRef[]> {
   const podcasts = await db
     .select({ videoId: schema.podcastVideos.videoId, title: schema.podcastVideos.title, channelName: schema.podcastVideos.channelName })
     .from(schema.podcastVideos)
-    .where(eq(schema.podcastVideos.reviewStatus, 'approved'));
+    // 2026-10-01: csak a nézettségi küszöböt elért (viewThresholdMet) sor
+    // jelenik meg az oldalon (/podcastok, nyitóoldal) — a küszöb alatti
+    // 'approved' sort ellenőrizni téves riasztás (ATV élő adás, LlhcZ8rViuw:
+    // „elérhetetlen videó az oldalon", holott sehol nem volt kint).
+    .where(and(eq(schema.podcastVideos.reviewStatus, 'approved'), eq(schema.podcastVideos.viewThresholdMet, true)));
   for (const p of podcasts) {
     refs.push({ videoId: p.videoId, label: `PODCAST: ${p.channelName} — "${p.title}"` });
   }
