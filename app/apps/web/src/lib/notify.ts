@@ -133,6 +133,41 @@ export async function notifyReviewNeeded(event: ReviewNeededEvent): Promise<void
 }
 
 /**
+ * Küszöb alatti, breaking-nek ítélt, de ÉLŐ ADÁS podcast-videó — ez nem kerül
+ * ki automatikusan (user döntés, 2026-10-01: a csatornák az élő adást gyakran
+ * órákon belül leveszik), hanem a 2026-07-15 óta használt jóváhagyós gombokkal
+ * megy Telegramra. A videó topikailag már 'approved', ezért a webhook
+ * "Várunk a küszöbre" gombja csak nyugtáz — l. telegram/webhook/route.ts 'y' ág.
+ */
+export async function notifyPodcastBreakingBelowThreshold(video: {
+  id: string;
+  videoId: string;
+  title: string;
+  channelName: string;
+}): Promise<void> {
+  try {
+    const url = `https://www.youtube.com/watch?v=${video.videoId}`;
+    const message = [
+      `⚡ BREAKING, DE KÜSZÖB ALATT — élő adás (podcast/videó)`,
+      `${video.channelName}: ${video.title}`,
+      `Élő adás, ezért nem tettük ki automatikusan (gyakran leveszik). Kézzel kitehető, ha elérhető marad.`,
+    ].join('\n');
+    const replyMarkup: InlineKeyboardMarkup = {
+      inline_keyboard: [
+        [{ text: '▶️ Megnézem', url }],
+        [
+          { text: '✅ Publikálom most', callback_data: `a:y:${video.id}` },
+          { text: '👍 Várunk a küszöbre', callback_data: `r:y:${video.id}` },
+        ],
+      ],
+    };
+    await sendTelegramMessage(message, replyMarkup);
+  } catch {
+    // Never let a notification-delivery problem affect the caller.
+  }
+}
+
+/**
  * 2026-10-01 — user döntés: a küszöb alatti, de "breaking"-nek ítélt podcast-
  * videó (l. scrape-youtube.ts isBreaking-ellenőrzés) AUTOMATIKUSAN kikerül az
  * oldalra, nincs többé jóváhagyási kötelezettség. A Telegram-üzenet csak

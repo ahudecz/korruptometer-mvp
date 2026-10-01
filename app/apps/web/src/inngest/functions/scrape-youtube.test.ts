@@ -6,13 +6,15 @@ vi.mock('@/lib/cron-bypass', () => ({ isBypassActive: () => false }));
 vi.mock('@/lib/ai-classify', () => ({ classifyArticle: vi.fn() }));
 vi.mock('@/lib/breaking-monitored', () => ({ getMonitoredNames: vi.fn(async () => ['Lázár János']) }));
 
-const breakingTitles = new Set(['Letartóztatták Lázár Jánost']);
+const breakingTitles = new Set(['Letartóztatták Lázár Jánost', '🔴 Letartóztatták Lázár Jánost | ATV Élő']);
 vi.mock('@korr/scrapers', () => ({ isBreaking: (title: string) => breakingTitles.has(title) }));
 
 const notifyAuto = vi.fn(async () => undefined);
 const notifyReview = vi.fn(async () => undefined);
+const notifyManual = vi.fn(async () => undefined);
 vi.mock('@/lib/notify', () => ({
   notifyPodcastBreakingAutoPublished: (...a: unknown[]) => notifyAuto(...(a as [])),
+  notifyPodcastBreakingBelowThreshold: (...a: unknown[]) => notifyManual(...(a as [])),
   notifyPodcastReviewNeeded: (...a: unknown[]) => notifyReview(...(a as [])),
 }));
 
@@ -25,6 +27,7 @@ vi.mock('@/lib/youtube-podcast-sync', () => ({
   resolveUploadsPlaylistId: vi.fn(async () => 'UU123'),
   fetchChannelVideos: vi.fn(async () => channelVideos),
   fetchViewCounts: vi.fn(async () => new Map()),
+  fetchLiveStreamIds: vi.fn(async (ids: string[]) => new Set(ids.filter((id) => id.startsWith('live')))),
   classifyVideoTier: () => 'in',
 }));
 
@@ -53,6 +56,7 @@ describe('scrape-youtube: küszöb alatti breaking podcast (2026-10-01)', () => 
     inserts.length = 0;
     notifyAuto.mockClear();
     notifyReview.mockClear();
+    notifyManual.mockClear();
   });
 
   it('jóváhagyás nélkül, azonnal kikerül, és a Telegram csak tájékoztat', async () => {
@@ -63,6 +67,7 @@ describe('scrape-youtube: küszöb alatti breaking podcast (2026-10-01)', () => 
     expect(inserts[0]).toMatchObject({ videoId: 'vid1', reviewStatus: 'approved', viewThresholdMet: true });
     expect(notifyAuto).toHaveBeenCalledTimes(1);
     expect(notifyReview).not.toHaveBeenCalled();
+    expect(notifyManual).not.toHaveBeenCalled();
     expect(res).toMatchObject({ breakingNotified: 1 });
   });
 
@@ -72,5 +77,14 @@ describe('scrape-youtube: küszöb alatti breaking podcast (2026-10-01)', () => 
 
     expect(inserts[0]).toMatchObject({ videoId: 'vid2', reviewStatus: 'approved', viewThresholdMet: false });
     expect(notifyAuto).not.toHaveBeenCalled();
+  });
+
+  it('az élő adás NEM kerül ki automatikusan, hanem jóváhagyásra megy', async () => {
+    channelVideos = [{ videoId: 'live1', title: '🔴 Letartóztatták Lázár Jánost | ATV Élő', description: '', publishedAt: new Date() }];
+    await runYoutubeScrapeCore({ step });
+
+    expect(inserts[0]).toMatchObject({ videoId: 'live1', reviewStatus: 'approved', viewThresholdMet: false });
+    expect(notifyAuto).not.toHaveBeenCalled();
+    expect(notifyManual).toHaveBeenCalledTimes(1);
   });
 });

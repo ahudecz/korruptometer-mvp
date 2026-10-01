@@ -5,10 +5,15 @@ import { isBreaking } from '@korr/scrapers';
 import { getDb, schema } from '@/lib/db';
 import { classifyArticle } from '@/lib/ai-classify';
 import { getMonitoredNames } from '@/lib/breaking-monitored';
-import { notifyPodcastBreakingAutoPublished, notifyPodcastReviewNeeded } from '@/lib/notify';
+import {
+  notifyPodcastBreakingAutoPublished,
+  notifyPodcastBreakingBelowThreshold,
+  notifyPodcastReviewNeeded,
+} from '@/lib/notify';
 import {
   classifyVideoTier,
   fetchChannelVideos,
+  fetchLiveStreamIds,
   fetchViewCounts,
   resolveUploadsPlaylistId,
   type DiscoveredVideo,
@@ -104,8 +109,12 @@ export async function runYoutubeScrapeCore({
             const meetsThreshold = channel.viewThreshold <= 0;
             // 2026-10-01 — user döntés: a küszöb alatti, de breaking-nek ítélt
             // videó jóváhagyás nélkül, azonnal kikerül (viewThresholdMet=true);
-            // a Telegram-üzenet csak tájékoztat, Levétel gombbal.
-            const autoBreaking = !meetsThreshold && isBreaking(video.title, video.description, monitoredNames);
+            // a Telegram-üzenet csak tájékoztat, Levétel gombbal. KIVÉVE az élő
+            // adást (fetchLiveStreamIds): azt a csatornák gyakran órákon belül
+            // leveszik, ezért az a régi módon jóváhagyásra megy.
+            const breakingBelowThreshold = !meetsThreshold && isBreaking(video.title, video.description, monitoredNames);
+            const isLive = breakingBelowThreshold && (await fetchLiveStreamIds([video.videoId], apiKey)).has(video.videoId);
+            const autoBreaking = breakingBelowThreshold && !isLive;
             const rows = await db
               .insert(schema.podcastVideos)
               .values({
@@ -125,9 +134,10 @@ export async function runYoutubeScrapeCore({
               // Küszöb alatt van, de a rendszer "breaking"-nek ítéli (l.
               // isBreaking — börtön/eljárás-trigger + figyelt személy a
               // címben) → már kint van, a Telegram csak tájékoztat.
-              if (autoBreaking) {
+              if (breakingBelowThreshold) {
                 breakingNotified++;
-                await notifyPodcastBreakingAutoPublished({
+                const notify = autoBreaking ? notifyPodcastBreakingAutoPublished : notifyPodcastBreakingBelowThreshold;
+                await notify({
                   id: rows[0].id,
                   videoId: video.videoId,
                   title: video.title,
@@ -248,7 +258,7 @@ export async function runYoutubeScrapeCore({
     });
 
     logger?.info?.(
-      `scrape-youtube: ${totalDiscovered} felfedezve, ${totalInserted} beszúrva (${totalPendingNotified} bizonytalan + ${totalBreakingNotified} breaking-küszöb-alatt automatikusan kitéve), ${refresh.checked} nézettség-ellenőrzés (${refresh.promoted} átlépte a küszöböt).`,
+      `scrape-youtube: ${totalDiscovered} felfedezve, ${totalInserted} beszúrva (${totalPendingNotified} bizonytalan + ${totalBreakingNotified} breaking-küszöb-alatt Telegramra küldve), ${refresh.checked} nézettség-ellenőrzés (${refresh.promoted} átlépte a küszöböt).`,
     );
 
     return {

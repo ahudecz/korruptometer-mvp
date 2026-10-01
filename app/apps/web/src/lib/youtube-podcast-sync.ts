@@ -85,6 +85,47 @@ export async function fetchViewCounts(videoIds: string[], apiKey: string): Promi
   return out;
 }
 
+/**
+ * Élő adás-e (most élő, beütemezett, vagy élő adásként indult és azóta
+ * felvétel). User döntés, 2026-10-01: az élő adás NEM kerülhet ki
+ * automatikusan, mert a csatornák gyakran órákon belül leveszik vagy
+ * priváttá teszik (pl. ATV „🔴 … | ATV Élő", LlhcZ8rViuw). A címből nem
+ * lehet megbízhatóan eldönteni („élőben közvetítették" nem élő adás), ezért
+ * a YouTube saját jelzését nézzük: `liveStreamingDetails` minden egykori
+ * élő adásnál megvan, a `liveBroadcastContent` a most élőt/beütemezettet jelzi.
+ *
+ * Fail-closed: ha a lekérdezés nem sikerül, az érintett videót élőnek
+ * tekintjük (inkább kerüljön jóváhagyásra, mint hogy egy levett élő adás
+ * kint maradjon).
+ */
+export async function fetchLiveStreamIds(videoIds: string[], apiKey: string): Promise<Set<string>> {
+  const live = new Set<string>();
+  for (let i = 0; i < videoIds.length; i += 50) {
+    const batch = videoIds.slice(i, i + 50);
+    const res = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${batch.join(',')}&key=${apiKey}`,
+    ).catch(() => null);
+    const data = res?.ok
+      ? ((await res.json().catch(() => null)) as
+          | { items?: Array<{ id: string; snippet?: { liveBroadcastContent?: string }; liveStreamingDetails?: unknown }> }
+          | null)
+      : null;
+    if (!data?.items) {
+      for (const id of batch) live.add(id);
+      continue;
+    }
+    const seen = new Set<string>();
+    for (const item of data.items) {
+      seen.add(item.id);
+      const content = item.snippet?.liveBroadcastContent;
+      if (item.liveStreamingDetails || (content && content !== 'none')) live.add(item.id);
+    }
+    // A válaszból hiányzó videó (törölt/privát) sem mehet ki automatikusan.
+    for (const id of batch) if (!seen.has(id)) live.add(id);
+  }
+  return live;
+}
+
 export type VideoTier = 'in' | 'out' | 'maybe';
 
 /**
