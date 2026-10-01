@@ -16298,3 +16298,14 @@ code {
 @media (max-width: 640px) {
   .ugy-breaking-update-video .ugy-block-video-meta { flex-direction: column; align-items: flex-start; gap: 2px; }
 }
+
+/* ── 2026-10-01 — ügyoldali aloldal-promók közös tárolóban: egymás között
+   12px, a szomszédos szakaszoktól ~36px (a .person-body 56px-es gapje helyett). */
+.ugy-subpage-promos { display: flex; flex-direction: column; gap: 12px; margin: -20px 0; }
+.ugy-subpage-promos .ugy-subpage-promo { margin: 0; }
+.ugy-subpage-promos { margin-top: -32px; }
+/* A breaking-dobozon belüli hírkártyák is szorosabban (a kerettől 16px). */
+.ugy-breaking-update .ugy-block-article-card { margin: 12px 16px; }
+.ugy-breaking-update .ugy-block-article-card + .ugy-block-article-card { margin-top: 8px; }
+.person-body > .ugy-description > .ugy-block-article-card:last-child { margin-bottom: 0; }
+.ugy-subpage-promos { margin-top: -40px; }

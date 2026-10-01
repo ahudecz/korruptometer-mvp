@@ -66,3 +66,20 @@ describe('Hatvanpuszta-ügyoldal (2026-10-01: bővített, forrásolt tartalom)',
     expect(JSON.stringify(hp)).not.toContain('Vas megye');
   });
 });
+
+describe('NKA-ügyoldal: júliusi állapot óta eltelt frissítés (2026-10-01)', () => {
+  const blocks = UGYEK.find((u) => u.id === 'nka-botrany')?.descriptionBlocks ?? [];
+  const texts = blocks.flatMap((b) => (b.type === 'text' ? [b.content] : [])).join(' ');
+
+  it('a lap végén van frissítés Fásynéról, a visszautalásokról és Hankó távozásáról, idővonallal', () => {
+    expect(texts).toContain('Fásyné Gurzó Máriát');
+    expect(texts).toContain('4 milliárd forintra');
+    expect(texts).toContain('a sofőr azonban tévedésből elhajtott');
+    expect(blocks.at(-1)?.type).toBe('timeline');
+  });
+
+  it('a breaking-csoportok sorrendje nem változott: az első breaking-group a tömb elején marad', () => {
+    expect(blocks.findIndex((b) => b.type === 'breaking-group')).toBe(0);
+  });
+});
+

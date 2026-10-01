@@ -1167,7 +1167,7 @@ export default async function HomePage() {
             statusItems: [
               { icon: '🔴', label: 'Kényszerintézkedés', value: '{elozetesben} személy letartóztatva vagy bűnügyi felügyelet alatt — köztük Hankó Balázs volt kulturális miniszter (okt. 1.) és Bús Balázs volt óbudai polgármester' },
               { icon: '⚖️', label: 'Nyomozás', value: 'NAV — hűtlen kezelés bűntett, 17+ milliárd Ft érintett összeg' },
-              { icon: '💰', label: 'Visszaszerzett vagyon', value: '~2,1 milliárd Ft visszaadva + 22 milliárd Ft visszakövetelve (Élvonal)' },
+              { icon: '💰', label: 'Visszaszerzett vagyon', value: '~4 milliárd Ft visszafizetve (2026. aug. 19.) + 22 milliárd Ft visszakövetelve (Élvonal)' },
               { icon: '👤', label: 'Felelős', value: 'Hankó Balázs — volt kulturális miniszter' },
             ],
             articleTag: 'NKA',

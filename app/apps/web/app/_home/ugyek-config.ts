@@ -433,7 +433,7 @@ export const UGYEK: UgyekConfig[] = [
       { icon: '🗓️', label: 'Első hullám', value: '6 személy őrizetben — köztük Bús Balázs volt óbudai polgármester (jún. 23.)' },
       { icon: '🟡', label: 'Kiengedve', value: 'Konczos Nóra, Hankó Balázs egykori kabinetfőnöke — júl. 23-án letartóztatták, aug. 19-én bűnügyi felügyelet alá helyezték' },
       { icon: '⚖️', label: 'Nyomozás', value: 'NAV — hűtlen kezelés bűntett gyanúja, 17+ milliárd Ft érintett összeg' },
-      { icon: '💰', label: 'Visszaszerzett vagyon', value: '~2,56 milliárd Ft — 2,16 Mrd visszautalt + ~400 M visszatartott (Tarr Zoltán)' },
+      { icon: '💰', label: 'Visszaszerzett vagyon', value: '~4 milliárd Ft visszafizetve 170 kedvezményezettől (2026. aug. 19.) + visszavont támogatások (Tarr Zoltán)' },
       { icon: '👤', label: 'Felelős', value: 'Hankó Balázs — volt kulturális miniszter' },
     ],
     sourceRefs: [
@@ -552,6 +552,88 @@ export const UGYEK: UgyekConfig[] = [
       {
         type: 'text',
         content: 'A NAV nyomozása jelenleg is tart. Az eljárás tétje nem csupán Hankó Balázs egyéni felelőssége, hanem az NKA teljes döntéshozatali mechanizmusa: kinek a nevében, kinek a számlájára, milyen kritériumok alapján mentek ki a közpénzek az elmúlt évtizedben. Az NKA-botrány a „legdurvább ügyek" listáján elsősorban azért szerepel, mert ez az egyetlen ügy a sorozatból, ahol a pénz — részben — visszajött.',
+      },
+      // ── 2026-10-01 — FRISSÍTÉS a lap július végi állapota óta (user kérés).
+      // Minden állítás a mellette lévő keretes cikkekből és az AssetRecovery-
+      // sorok forrásaiból ellenőrizve.
+      {
+        type: 'text',
+        heading: 'Frissítés: mi történt július óta?',
+        content: 'A lap júliusi állapota óta az NKA-ügy több irányba is továbbment. A nyomozás elérte a támogatások végső felhasználóit és a politikai vezetést is, a kényszerintézkedések köre közben többször változott, a kifizetett pénzek visszafolyása pedig milliárdos nagyságrendűvé vált.',
+      },
+      {
+        type: 'text',
+        heading: 'Enyhítések nyáron, majd letartóztatták Fásy Ádám feleségét',
+        content: 'A június 23-án őrizetbe vett tisztviselők közül a Kecskeméti Járásbíróság júliusban négy gyanúsított letartóztatását három hónappal meghosszabbította, kettőét bűnügyi felügyeletre enyhítette. Augusztus 19-én Konczos Nóra, Hankó Balázs egykori kabinetfőnöke és egy másik gyanúsított is bűnügyi felügyelet alá került, augusztus végén pedig egy újabb; szeptember elejére a hét gyanúsítottból már csak ketten — köztük Bús Balázs — maradtak letartóztatásban. Szeptember 9-én viszont a bíróság egy hónapra letartóztatta Fásyné Gurzó Máriát, Fásy Ádám feleségét és Szabó Sándort, a Munkácsy Art Kft. tulajdonos-ügyvezetőjét. A gyanú bűnszövetségben elkövetett költségvetési csalás: fiktív számlákkal igazolták volna egy dokumentumfilm elkészültét, amelyre 82,55 millió forint érkezett az NKA 790-es keretéből, további 89,9 millió pedig Hankó Balázs miniszteri keretéből. Fásy Ádám maga nem gyanúsított az ügyben.',
+      },
+      {
+        type: 'article-card',
+        source: 'Telex',
+        date: '2026. szeptember 9.',
+        headline: 'NKA-botrány: letartóztatták Fásy Ádám feleségét',
+        lead: 'A Kecskeméti Járásbíróság egy hónapra letartóztatta Fásyné Gurzó Máriát és Szabó Sándort; a gyanú bűnszövetségben elkövetett költségvetési csalás.',
+        url: 'https://telex.hu/belfold/2026/09/09/nka-botrany-fasy-dokumentumfilm-letartoztatas-birosag',
+      },
+      {
+        type: 'text',
+        heading: 'Visszautalások: már négymilliárd forint jött vissza',
+        content: 'A 17 milliárdos keretből kifizetett pénzek egyre nagyobb része folyik vissza. Tarr Zoltán kulturális miniszter július végén azt közölte, hogy a kedvezményezettek már több mint 3,3 milliárd forintot fizettek vissza; az Index közérdekűadat-igénylése szerint augusztus 19-ig ez 4 milliárd forintra nőtt, és a visszafizetők száma 170-re emelkedett. A legnagyobb összeget, 300 millió forintot az Attraction Performances Kft. utalta vissza. A minisztérium közben támogatásokat is visszavont: július végén Pataky Attila Edda zenekarának százmilliós támogatását, valamint az Edda Művek Aréna 2026 koncertjére megítélt 150 milliót, mert az igénylésekben valótlan adatok szerepeltek. Szeptember végén a Roma Inkubátor Egyesület lemondott a Hankó Balázs által megítélt utolsó, 35 millió forintos támogatásáról.',
+      },
+      {
+        type: 'article-card',
+        source: 'HVG',
+        date: '2026. augusztus 19.',
+        headline: 'Négymilliárd forintot fizettek vissza eddig az NKA-nak a 17 milliárdos támogatásból részesülők',
+        lead: 'Az Index közérdekűadat-igénylése szerint 170 cég, alapítvány és személy fizetett vissza; a legnagyobb tétel 300 millió forint.',
+        url: 'https://hvg.hu/itthon/20260819_nemzeti-kulturalis-alap-tamogatas-visszafizetes-hanko-balazs',
+      },
+      {
+        type: 'article-card',
+        source: 'HVG',
+        date: '2026. július 27.',
+        headline: 'Visszavonta az Eddának közpénzből megítélt százmilliókat Tarr Zoltán',
+        lead: 'Valótlan adatközlés miatt visszavont támogatások: százmillió forint a zenekarnak, 150 millió az Aréna 2026 koncertre.',
+        url: 'https://hvg.hu/kultura/20260727_tarr-zoltan-miniszter-nka-tamogatas-edda-valotlan-adatkozles-penz-visszavonas',
+      },
+      {
+        type: 'text',
+        heading: 'Hankó Balázs távozása a parlamentből',
+        content: 'Szeptember 28-án délelőtt az Országgyűlés felfüggesztette Hankó Balázs mentelmi jogát. A volt miniszter ezután a Fidesz frakcióirodájában maradt, és azt mondta, megvárja, amíg a munkahelyéről viszik el; Forsthoffer Ágnes házelnök felszólította, hogy hagyja el önként az épületet, mert szerinte ahelyett, hogy együttműködne a nyomozó hatóságokkal, „a Parlament épületét tekinti menedéknek”. Hankó este 19 óra 20 perckor kapta meg az idézést, majd frakciótársai és családtagjai kíséretében, a látogatóközponton át vonult ki az Országházból — a jelenetet Orbán Viktor Facebook-oldalán élőben közvetítették. A felvétel szerint Hankó betette a táskáit egy autóba és becsukta a hátsó ajtót, a sofőr azonban tévedésből elhajtott, a volt miniszter pedig az utcasarkon maradt; ezután megszakadt az élő közvetítés. Hankót végül a NAV Huszti úti objektumában vették őrizetbe, és még aznap éjjel Kecskemétre szállították.',
+      },
+      {
+        type: 'article-card',
+        source: '10perc',
+        date: '2026. szeptember 28.',
+        headline: '„Nem szálltam be a kocsiba”, Hankó Balázst a sarkon felejtette a sofőrje',
+        lead: 'A volt minisztert frakciótársai kísérték ki az Országházból; a sofőr tévedésből elhajtott, mielőtt beszállt volna.',
+        url: 'https://10perc.hu/hir/belfold/2026/09/28/nem-szalltam-be-a-kocsiba-hanko-balazst-a-sarkon-felejtette-a-soforje',
+      },
+      {
+        type: 'article-card',
+        source: 'Telex',
+        date: '2026. szeptember 28.',
+        headline: 'Őrizetbe vették és Kecskemétre szállították Hankó Balázst',
+        lead: 'Védője szerint a NAV Huszti úti objektumában vették őrizetbe, ahová idézést kapott, majd éjjel Kecskemétre szállították.',
+        url: 'https://telex.hu/belfold/2026/09/28/nka-botrany-hanko-balazs-orizetbe-vetel',
+      },
+      {
+        type: 'text',
+        content: 'Október 1-jén a Kecskeméti Járásbíróság elrendelte Hankó Balázs letartóztatását, néhány órával később pedig egykori államtitkárát, Varga-Bajusz Veronikát is letartóztatták; a döntés ellen ő és védője fellebbezett. A részleteket a lap tetején lévő friss hír és az NKA-letartóztatásokat összegyűjtő aloldal tartalmazza.',
+      },
+      {
+        type: 'timeline',
+        heading: 'Az NKA-ügy idővonala',
+        items: [
+          { when: '2026. június 23.', text: 'A NAV hat embert vesz őrizetbe, köztük Bús Balázst, az NKA volt alelnökét.' },
+          { when: '2026. július 22–23.', text: 'Letartóztatják a hetedik gyanúsítottat, Konczos Nórát, Hankó Balázs egykori kabinetfőnökét.' },
+          { when: '2026. július', text: 'Négy gyanúsított letartóztatását meghosszabbítják, kettőét bűnügyi felügyeletre enyhítik; Tarr Zoltán visszavonja az Edda támogatásait.' },
+          { when: '2026. július 31.', text: 'Tarr Zoltán: már több mint 3,3 milliárd forint jött vissza.' },
+          { when: '2026. augusztus 19.', text: 'Konczos Nóra és egy másik gyanúsított bűnügyi felügyelet alá kerül; a visszafizetések elérik a 4 milliárd forintot.' },
+          { when: '2026. szeptember eleje', text: 'A hét gyanúsítottból már csak ketten vannak letartóztatásban.' },
+          { when: '2026. szeptember 9.', text: 'Letartóztatják Fásyné Gurzó Máriát és Szabó Sándort a dokumentumfilm-szál miatt.' },
+          { when: '2026. szeptember 28.', text: 'A parlament felfüggeszti Hankó Balázs mentelmi jogát; este őrizetbe veszik.' },
+          { when: '2026. október 1.', text: 'Letartóztatják Hankó Balázst és egykori államtitkárát, Varga-Bajusz Veronikát.' },
+        ],
       },
     ],
   },

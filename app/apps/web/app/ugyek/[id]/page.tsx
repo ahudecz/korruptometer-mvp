@@ -502,18 +502,25 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
         {/* ── Keretes promó a mély háttér-aloldalra (user kérés, 2026-09-15:
             az aloldal ne legyen árva oldal, és az EGÉSZ keret kattintható
             legyen). Az ügyoldali article-card vizuális formáját követi. ── */}
-        {subpages.map(sp => (
-          <Link
-            key={sp.id}
-            href={`/ugyek/${entry.id}/${sp.id}`}
-            className="ugy-subpage-promo"
-          >
-            <span className="ugy-subpage-promo-eyebrow">{sp.promo.eyebrow}</span>
-            <span className="ugy-subpage-promo-title">{sp.promo.title}</span>
-            <span className="ugy-subpage-promo-lead">{sp.promo.lead}</span>
-            <span className="ugy-subpage-promo-cta">{sp.promo.cta} →</span>
-          </Link>
-        ))}
+        {/* 2026-10-01: közös tárolóban — a .person-body flex-gapje (56px) +
+            a promó saját 40px-es margója 96px-es rést adott két promó között
+            (user: „a sorközök még mindig nagyok”). */}
+        {subpages.length > 0 && (
+          <div className="ugy-subpage-promos">
+            {subpages.map(sp => (
+              <Link
+                key={sp.id}
+                href={`/ugyek/${entry.id}/${sp.id}`}
+                className="ugy-subpage-promo"
+              >
+                <span className="ugy-subpage-promo-eyebrow">{sp.promo.eyebrow}</span>
+                <span className="ugy-subpage-promo-title">{sp.promo.title}</span>
+                <span className="ugy-subpage-promo-lead">{sp.promo.lead}</span>
+                <span className="ugy-subpage-promo-cta">{sp.promo.cta} →</span>
+              </Link>
+            ))}
+          </div>
+        )}
 
         {/* ── Breaking frissítés — fizikailag a kapcsolódó feljelentések és
             a fő videó KÖZÖTT (user kérés, 2026-09-03), NEM a lap alján
