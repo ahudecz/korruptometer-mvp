@@ -133,14 +133,17 @@ export async function notifyReviewNeeded(event: ReviewNeededEvent): Promise<void
 }
 
 /**
- * 2026-07-15 — a videó topikailag MÁR jóváhagyott (reviewStatus='approved'),
- * csak a csatorna nézettségi küszöbét nem érte még el, DE a rendszer
- * "breaking"-nek ítéli (l. scrape-youtube.ts isBreaking-ellenőrzés). Ugyanazt
- * az 'y' kódot/gombkészletet használja, mint notifyPodcastReviewNeeded, de a
- * webhook "Elutasítom" gombja itt csak nyugtáz (nem töröl/utasít el egy már
- * legitim jóváhagyást) — l. telegram/webhook/route.ts 'y' ág komment.
+ * 2026-10-01 — user döntés: a küszöb alatti, de "breaking"-nek ítélt podcast-
+ * videó (l. scrape-youtube.ts isBreaking-ellenőrzés) AUTOMATIKUSAN kikerül az
+ * oldalra, nincs többé jóváhagyási kötelezettség. A Telegram-üzenet csak
+ * tájékoztat; a "Levétel" gomb (`u:y:`) a sort 'rejected'-re állítja. Itt
+ * SZÁNDÉKOSAN nem törlés (eltérően a többi auto-publish visszavonástól): a
+ * videoId UNIQUE sora az egyetlen dedup, törlés után a következő scrape újra
+ * felfedezné és újra kitenné (l. telegram/webhook/route.ts 'y' ág).
+ * (2026-07-15 és 2026-10-01 között: "Publikálom most" / "Várunk a küszöbre"
+ * gombokkal jóváhagyásra várt.)
  */
-export async function notifyPodcastBreakingBelowThreshold(video: {
+export async function notifyPodcastBreakingAutoPublished(video: {
   id: string;
   videoId: string;
   title: string;
@@ -149,17 +152,14 @@ export async function notifyPodcastBreakingBelowThreshold(video: {
   try {
     const url = `https://www.youtube.com/watch?v=${video.videoId}`;
     const message = [
-      `⚡ BREAKING, DE KÜSZÖB ALATT — Podcast/videó`,
+      `⚡ BREAKING — automatikusan kikerült (podcast/videó)`,
       `${video.channelName}: ${video.title}`,
-      `Nem érte el a csatorna nézettségi küszöbét, de fontosnak tűnik — kézzel korábban is publikálható.`,
+      `Nem érte el a csatorna nézettségi küszöbét, de breaking-nek ítéltük, ezért jóváhagyás nélkül megjelent az oldalon. Ha nem oda való, vedd le.`,
     ].join('\n');
     const replyMarkup: InlineKeyboardMarkup = {
       inline_keyboard: [
         [{ text: '▶️ Megnézem', url }],
-        [
-          { text: '✅ Publikálom most', callback_data: `a:y:${video.id}` },
-          { text: '👍 Várunk a küszöbre', callback_data: `r:y:${video.id}` },
-        ],
+        [{ text: '🗑️ Levétel', callback_data: `u:y:${video.id}` }],
       ],
     };
     await sendTelegramMessage(message, replyMarkup);

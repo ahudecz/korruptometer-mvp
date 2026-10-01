@@ -1355,8 +1355,9 @@ export async function POST(req: Request) {
   // sor már véglegesen be van szúrva a scrape-youtube.ts jobban belül,
   // KÉTFÉLE állapotban: 'pending' — AI-bizonytalan, tényleges jóváhagyásra
   // vár; vagy MÁR 'approved' — topikailag rendben van, csak a nézettségi
-  // küszöböt nem érte el, de "breaking"-nek tűnik (l. notify.ts
-  // notifyPodcastBreakingBelowThreshold). A két eset "Elutasítom" gombja nem
+  // küszöböt nem érte el, de "breaking"-nek tűnik (2026-10-01 óta ez
+  // automatikusan ki is kerül, l. notify.ts notifyPodcastBreakingAutoPublished,
+  // 'u' = Levétel; a régi üzenetek 'a'/'r' gombjai továbbra is működnek). A két eset "Elutasítom" gombja nem
   // ugyanazt jelenti — ezért a jelenlegi reviewStatus-t előbb ki kell
   // olvasni: ha már 'approved', az elutasítás csak nyugtázás (nem vonja
   // vissza egy már legitim jóváhagyást), csak a 'pending' esetben tényleges
@@ -1366,13 +1367,23 @@ export async function POST(req: Request) {
   // törléskor a csatorna RSS-je minden óránkénti pollnál újra felfedezné és
   // újra Telegramra küldené ugyanazt a videót.
   if (code === 'y') {
-    if ((action !== 'a' && action !== 'r') || !id) {
+    if ((action !== 'a' && action !== 'r' && action !== 'u') || !id) {
       await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
       return NextResponse.json({ ok: true });
     }
     try {
       let resultText: string;
-      if (action === 'a') {
+      if (action === 'u') {
+        // 2026-10-01 — "Levétel" az automatikusan kitett breaking podcastra
+        // (notifyPodcastBreakingAutoPublished). NEM törlés: a sor marad
+        // 'rejected'-ként, különben a következő scrape újra felfedezné és
+        // újra automatikusan kitenné (l. fenti komment a UNIQUE-dedupról).
+        await getDb()
+          .update(schema.podcastVideos)
+          .set({ reviewStatus: 'rejected', viewThresholdMet: false, updatedAt: new Date() })
+          .where(eq(schema.podcastVideos.id, id));
+        resultText = '🗑️ Levéve az oldalról.';
+      } else if (action === 'a') {
         await getDb()
           .update(schema.podcastVideos)
           .set({ reviewStatus: 'approved', viewThresholdMet: true, updatedAt: new Date() })
