@@ -929,3 +929,13 @@ a.card:hover {
     font-size: 18px;
   }
 }
+
+/* 2026-10-07 — nyitóoldali Dicsőségfal-beharangozó: 2×5-ös rács (user). */
+.gridFive {
+  grid-template-columns: repeat(5, 1fr);
+}
+@media (max-width: 900px) {
+  .gridFive {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

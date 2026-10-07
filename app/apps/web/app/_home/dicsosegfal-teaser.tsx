@@ -6,11 +6,15 @@ import styles from '../rendszervaltas/dicsosegfal.module.css';
 // Nyitóoldali beharangozó a /rendszervaltas Dicsőségfalhoz. Szándékosan
 // külön komponens és nem inline blokk a page.tsx-ben: azt a fájlt több
 // munkamenet is szerkeszti párhuzamosan, egy 60 soros beszúrás ott
-// garantált ütközés. Itt a nyitóoldali változat 8 kártyát mutat (2 teli sor
-// desktopon, 4 sor mobilon) — a teljes, 15 fős rács a saját oldalán van.
-// Nem az elso 8 nev, hanem mindharom blokkbol merites - kulonben a
-// nyitooldalon ugy nezne ki, mintha a Dicsőségfal csak kepviselokbol allna.
-const TEASER_PICK: Record<string, number> = { person: 3, media: 3, channel: 2 };
+// garantált ütközés. A teljes rács a saját oldalán van.
+//
+// 2026-10-07, user kérés: fix, kézzel választott 10 név, 2×5-ös rácsban
+// (desktopon 5 oszlop, mobilon 2 oszlop / 5 sor). Első sor személyek,
+// második sor műhelyek és csatornák — ebben a sorrendben.
+const TEASER_IDS = [
+  'hadhazy-akos', 'puzser-robert', 'panyi-szabolcs', 'molnar-aron', 'juhasz-peter',
+  'atlatszo', 'gulyasagyu-media', 'pottyondy-edina', 'videki-prokator', 'direkt36',
+];
 
 function initials(name: string): string {
   return name
@@ -23,9 +27,7 @@ function initials(name: string): string {
 }
 
 export function DicsosegfalTeaser() {
-  const shown = (['person', 'media', 'channel'] as const).flatMap((g) =>
-    FELTAROK.filter((f) => f.group === g).slice(0, TEASER_PICK[g] ?? 0),
-  );
+  const shown = TEASER_IDS.flatMap((id) => FELTAROK.filter((f) => f.id === id));
 
   return (
     <section className="section" id="dicsosegfal">
@@ -38,7 +40,7 @@ export function DicsosegfalTeaser() {
         műhelyek, akiknek a munkájából ez az egész adatbázis összeállt.
       </p>
 
-      <div className={styles.grid}>
+      <div className={`${styles.grid} ${styles.gridFive}`}>
         {shown.map((f) => {
           const inner = (
             <>
