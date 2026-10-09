@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { and, asc, eq, inArray, isNull, lte, or, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, lt, lte, or, sql } from 'drizzle-orm';
 
 import { decryptPii } from '@korr/shared/encryption';
 import { RESEND_BATCH_MAX, sendBatch, unsubscribeHeaders } from '@korr/shared/email';
@@ -172,7 +172,11 @@ export async function runDigestSendCore({
         // A már kiszolgáltakat kihagyjuk: a kurzoruk már a periodEnd-en áll.
         or(
           isNull(schema.subscribers.lastDigestCursorAt),
-          sql`${schema.subscribers.lastDigestCursorAt} < ${digest.periodEnd}`,
+          // 2026-10-09: tipizált lt() a nyers sql helyett — a nyers töredékbe
+          // interpolált Date futásidőben dob a postgres-js-ben (l. review.ts
+          // isDuplicate, ugyanez a hiba). new Date(): a step.run JSON-ja
+          // stringgé alakíthatja a periodEnd-et.
+          lt(schema.subscribers.lastDigestCursorAt, new Date(digest.periodEnd)),
         ),
       ),
     )

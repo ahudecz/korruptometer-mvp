@@ -10,6 +10,7 @@ import {
 } from '@korr/db';
 import type { LlmResult } from '@korr/db/llm';
 import { getDb } from '@/lib/db';
+import { sendTelegramMessage } from '@/lib/telegram';
 import { isBypassActive, type BypassStep, type BypassLogger } from '@/lib/cron-bypass';
 import { inngest } from '../client';
 
@@ -88,6 +89,12 @@ export async function runArticleDetectionBatch<TResult>({
 
   let inserted = 0;
   let approvedInserted = 0;
+  // 2026-10-09 — egy cikk feldolgozási hibája nem szakíthatja meg a köteget,
+  // és SOSE lehet csendes: 2026-09-10 és 10-09 között egy Date-paraméteres
+  // SQL-hiba minden valódi lemondásnál kivételt dobott, a lépés-szintű catch
+  // csak naplózta, és négy hétig senki nem tudott róla. A hibás cikk nem kap
+  // DetectionCheck-sort (újrapróbálható marad), a futás végén Telegram-jelzés megy.
+  const failures: string[] = [];
 
   for (let i = 0; i < candidates.length; i += BATCH_SIZE) {
     const batch = candidates.slice(i, i + BATCH_SIZE);
@@ -96,6 +103,7 @@ export async function runArticleDetectionBatch<TResult>({
     const batchResult = await step.run(`process-batch-${batchNum}`, async () => {
       let count = 0;
       let approvedCount = 0;
+      const batchFailures: string[] = [];
       for (const article of batch) {
         const llmResult = await callLlm(article.headline, article.excerpt, articleDateIso(article.publishedAt));
 
@@ -114,15 +122,30 @@ export async function runArticleDetectionBatch<TResult>({
           }
         }
 
-        const outcome = await processArticle(article, result);
-        if (outcome.inserted) count++;
-        if (outcome.approved) approvedCount++;
+        try {
+          const outcome = await processArticle(article, result);
+          if (outcome.inserted) count++;
+          if (outcome.approved) approvedCount++;
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          logger?.error?.(`${logLabel}: feldolgozási hiba (${article.id})`, err);
+          batchFailures.push(`• ${article.headline.slice(0, 90)} — ${message.slice(0, 160)}`);
+        }
       }
-      return { count, approvedCount };
+      return { count, approvedCount, batchFailures };
     });
 
     inserted += batchResult.count;
     approvedInserted += batchResult.approvedCount;
+    failures.push(...(batchResult.batchFailures ?? []));
+  }
+
+  if (failures.length > 0) {
+    await step.run('notify-processing-failures', () =>
+      sendTelegramMessage(
+        `⚠️ ${logLabel}: ${failures.length} cikk feldolgozása hibával elszállt — ezek NEM kerültek be, a következő futás újrapróbálja.\n\n${failures.slice(0, 8).join('\n')}`,
+      ).catch(() => undefined),
+    );
   }
 
   // Only a publicly-visible (approved) insert can change what's breaking —

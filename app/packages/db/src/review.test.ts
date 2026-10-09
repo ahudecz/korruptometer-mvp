@@ -546,3 +546,31 @@ describe('truncateDescriptionWords — felsorolás-nyitó a végén (2026-09-25)
     );
   });
 });
+
+// 2026-10-09 — regresszió: a nyers sql-töredékbe interpolált Date a
+// postgres-js-ben futásidőben dob, ezért 2026-09-10 óta minden valódi
+// lemondás elszállt a mentés előtt. Az isDuplicate() SQL-paraméterei között
+// SOSE lehet Date — dátum csak 'YYYY-MM-DD' szövegként mehet be.
+describe('isDuplicate — nem ad át Date-et nyers SQL-paraméterként', () => {
+  it('a lemondás napját szövegként küldi', async () => {
+    const { PgDialect } = await import('drizzle-orm/pg-core');
+    const dialect = new PgDialect();
+    let params: unknown[] = [];
+    const fakeDb = {
+      execute: async (q: Parameters<PgDialect['sqlToQuery']>[0]) => {
+        params = dialect.sqlToQuery(q).params;
+        return [];
+      },
+    };
+    await isDuplicate(fakeDb as never, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Teszt Elek', undefined, 'Tolna Vármegyei Közgyűlés', new Date('2026-09-28T10:00:00Z'));
+    expect(params.some((p) => p instanceof Date)).toBe(false);
+    expect(params).toContain('2026-09-28');
+  });
+
+  it('érvénytelen dátumnál a dátum-ágat kihagyja, nem dob', async () => {
+    const fakeDb = { execute: async () => [] };
+    await expect(
+      isDuplicate(fakeDb as never, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Teszt Elek', undefined, 'X', new Date('nem dátum')),
+    ).resolves.toBe(false);
+  });
+});

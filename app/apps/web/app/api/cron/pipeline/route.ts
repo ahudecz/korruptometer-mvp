@@ -1,4 +1,5 @@
 import { NextResponse, after } from 'next/server';
+import { sendTelegramMessage } from '@/lib/telegram';
 import { eq, sql } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
@@ -129,6 +130,9 @@ export async function GET(req: Request) {
         const message = err instanceof Error ? err.message : String(err);
         out[name] = { error: message };
         bypassLogger.error?.(`cron/pipeline: ${name} failed`, err);
+        // 2026-10-09 — egy elszálló lépés sose legyen csak naplóbejegyzés
+        // (l. detector-runner.ts: négy hétig csendben elszálló lemondás-detektor).
+        await sendTelegramMessage(`⚠️ Pipeline-hiba — ${name}: ${message.slice(0, 300)}`).catch(() => undefined);
       }
     }
     return out;

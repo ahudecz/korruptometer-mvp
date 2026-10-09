@@ -217,8 +217,15 @@ export async function isDuplicate(
   // identical day — so that alone also counts as a duplicate. The Lázár
   // János case the institution guard was built for stays fixed: his two
   // resignations are 4 months apart, so the date branch never fires.
-  const sameEventDayClause = eventDate
-    ? sql`OR "resignationDate"::date = ${eventDate}::date`
+  // 2026-10-09 — a Date-et SZÖVEGKÉNT ('YYYY-MM-DD') adjuk át: egy nyers
+  // sql-töredékbe interpolált Date típus-hozzárendelés nélkül megy a
+  // postgres-js felé, és futásidőben dob („The "string" argument must be of
+  // type string … Received an instance of Date"). 2026-09-10 és 10-09 között
+  // emiatt MINDEN valódi lemondás elszállt a mentés előtt, csendben (l.
+  // project-silent-catch-hid-button-bug, ugyanez a gotcha).
+  const eventDay = eventDate && !isNaN(eventDate.getTime()) ? eventDate.toISOString().slice(0, 10) : null;
+  const sameEventDayClause = eventDay
+    ? sql`OR "resignationDate"::date = ${eventDay}::date`
     : sql``;
   const institutionClause = institution
     ? sql`AND (
