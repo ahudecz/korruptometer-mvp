@@ -213,8 +213,8 @@ export async function isDuplicate(
   // the second article inserted a duplicate row (Mike Ferenc, 2026-09-09;
   // same pattern found on Csányi Sándor, 2026-06-30). A same-name match on
   // the SAME resignationDate is the same real-world event regardless of how
-  // the institution is worded — one person does not leave two posts on the
-  // identical day — so that alone also counts as a duplicate. The Lázár
+  // the institution is worded — one person does not leave two posts within
+  // a couple of days — so that alone also counts as a duplicate. The Lázár
   // János case the institution guard was built for stays fixed: his two
   // resignations are 4 months apart, so the date branch never fires.
   // 2026-10-09 — a Date-et SZÖVEGKÉNT ('YYYY-MM-DD') adjuk át: egy nyers
@@ -225,7 +225,9 @@ export async function isDuplicate(
   // project-silent-catch-hid-button-bug, ugyanez a gotcha).
   const eventDay = eventDate && !isNaN(eventDate.getTime()) ? eventDate.toISOString().slice(0, 10) : null;
   const sameEventDayClause = eventDay
-    ? sql`OR "resignationDate"::date = ${eventDay}::date`
+    // ±2 nap: a második cikk gyakran a lemondás MÁSNAPJÁN jelenik meg, és a
+    // modell a cikk dátumát veszi (2026-10-09: Egry Attila 09-09 / 09-10).
+    ? sql`OR abs("resignationDate"::date - ${eventDay}::date) <= 2`
     : sql``;
   const institutionClause = institution
     ? sql`AND (
