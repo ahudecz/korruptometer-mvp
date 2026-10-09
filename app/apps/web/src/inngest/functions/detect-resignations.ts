@@ -104,19 +104,27 @@ export const RESIGNATION_KEYWORDS = [
   'eltanácsol', 'hivatalveszt', 'eltávolít',
 ];
 
-async function processResignationArticle(
+/**
+ * 2026-10-09: exportálva, mert a Magyar Közlöny-figyelő (kozlony-resignations.ts)
+ * is ezt használja. Közlöny-határozatnál nincs NewsArticle-sor: ott az
+ * `article.id` üres, és a hírcikkhez kötött lépések (DetectionCheck, címke)
+ * kimaradnak — a duplikátumszűrés és a jóváhagyás ugyanúgy fut.
+ */
+export async function processResignationArticle(
   article: CandidateArticle,
   result: ResignationExtraction | null,
 ): Promise<ArticleProcessResult> {
   const db = getDb();
 
   if (!result || result.resignations.length === 0) {
-    await markChecked(db, {
-      articleId: article.id,
-      detectorType: DETECTOR_TYPE,
-      outcome: 'discarded',
-      reason: 'not_applicable',
-    });
+    if (article.id) {
+      await markChecked(db, {
+        articleId: article.id,
+        detectorType: DETECTOR_TYPE,
+        outcome: 'discarded',
+        reason: 'not_applicable',
+      });
+    }
     return { inserted: false, approved: false };
   }
 
@@ -153,7 +161,10 @@ async function processResignationArticle(
     let reviewStatus = decideStatus(person.confidence, isWatchlistPerson(person.name) && !calledToResign);
     if (reviewStatus === 'discard') {
       lastDiscardReason = 'low_confidence';
-      if (person.confidence >= NEAR_MISS_MIN) {
+      // Közlöny-határozatnál (nincs article.id) a near-miss gombok nem
+      // működnének (NewsArticle-t keresnek) — ott a kozlony-resignations.ts
+      // „nem került be" összesítője jelzi az elvetett tételt.
+      if (person.confidence >= NEAR_MISS_MIN && article.id) {
         await notifyReviewNeeded({
           type: 'near_miss',
           detectorType: DETECTOR_TYPE,
@@ -299,23 +310,27 @@ async function processResignationArticle(
     // Tag the source article so it appears in /hirek under the 'Lemondás' filter.
     // Watchlist persons (pinned) and auto-approved detections are marked as
     // breaking candidates so the BreakingBanner fires without manual override.
-    await db
-      .update(schema.newsArticles)
-      .set({
-        tag: 'Lemondás',
-        isBreakingCandidate: anyPinnedInserted || anyApproved,
-      })
-      .where(eq(schema.newsArticles.id, article.id));
+    if (article.id) {
+      await db
+        .update(schema.newsArticles)
+        .set({
+          tag: 'Lemondás',
+          isBreakingCandidate: anyPinnedInserted || anyApproved,
+        })
+        .where(eq(schema.newsArticles.id, article.id));
+    }
   }
 
-  await markChecked(db, {
-    articleId: article.id,
-    detectorType: DETECTOR_TYPE,
-    outcome: anyInserted ? 'inserted' : 'discarded',
-    reason: anyInserted ? undefined : lastDiscardReason,
-    extractedName: (insertedNames.length > 0 ? insertedNames.join(', ') : lastName)?.slice(0, 200),
-    confidence: lastConfidence,
-  });
+  if (article.id) {
+    await markChecked(db, {
+      articleId: article.id,
+      detectorType: DETECTOR_TYPE,
+      outcome: anyInserted ? 'inserted' : 'discarded',
+      reason: anyInserted ? undefined : lastDiscardReason,
+      extractedName: (insertedNames.length > 0 ? insertedNames.join(', ') : lastName)?.slice(0, 200),
+      confidence: lastConfidence,
+    });
+  }
 
   return { inserted: anyInserted, approved: anyApproved };
 }

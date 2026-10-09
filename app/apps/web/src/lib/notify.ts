@@ -122,7 +122,8 @@ export async function notifyReviewNeeded(event: ReviewNeededEvent): Promise<void
         // gyakran önmagában is közlésre érdemes — l. Tarr Zoltán-eset,
         // user report. Ez a gomb NEM nyúl a strukturált táblákhoz, csak a
         // NewsArticle címkéjét/breaking-jelzését állítja be.
-        [{ text: '📰 Csak hírbe', callback_data: `n:${code}:${event.articleId}` }],
+        // Magyar Közlöny-határozatnak nincs NewsArticle-sora (üres articleId).
+        ...(event.articleId ? [[{ text: '📰 Csak hírbe', callback_data: `n:${code}:${event.articleId}` }]] : []),
       ],
     };
 

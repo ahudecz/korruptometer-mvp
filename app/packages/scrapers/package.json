@@ -9,6 +9,7 @@
     "./types": "./src/types.ts",
     "./http": "./src/http.ts",
     "./kormanyhu-feljelentes": "./src/kormanyhu-feljelentes.ts",
+    "./magyar-kozlony": "./src/magyar-kozlony.ts",
     "./canonicalize": "./src/canonicalize.ts",
     "./parse": "./src/parse.ts",
     "./adapters": "./src/adapters.ts"
@@ -20,7 +21,8 @@
   },
   "dependencies": {
     "cheerio": "^1.0.0",
-    "fast-xml-parser": "^4.5.0"
+    "fast-xml-parser": "^4.5.0",
+    "unpdf": "^1.8.1"
   },
   "devDependencies": {
     "@types/node": "^20.14.10",

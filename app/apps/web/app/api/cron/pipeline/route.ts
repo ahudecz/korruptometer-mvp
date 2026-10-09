@@ -6,6 +6,7 @@ import { getDb, schema } from '@/lib/db';
 import { bypassLogger, isBypassActive, makeBypassStep, verifyCronRequest } from '@/lib/cron-bypass';
 import { runScrapeNewsCore } from '@/inngest/functions/scrape-news';
 import { runResignationDetectionCore } from '@/inngest/functions/detect-resignations';
+import { runKozlonyResignationsCore } from '@/inngest/functions/kozlony-resignations';
 import { runVerdictDetectionCore } from '@/inngest/functions/detect-verdicts';
 import { runMediaClosureDetectionCore } from '@/inngest/functions/detect-media-closures';
 import { runAssetRecoveryDetectionCore } from '@/inngest/functions/detect-asset-recoveries';
@@ -109,6 +110,8 @@ export async function GET(req: Request) {
   const steps: Array<[string, () => Promise<unknown>]> = [
     ['scrape-news', () => runScrapeNewsCore({ step: makeBypassStep('scrape-news'), logger: bypassLogger })],
     ['detect-resignations', () => runResignationDetectionCore({ step: makeBypassStep('detect-resignations'), logger: bypassLogger })],
+    // 2026-10-09 — Magyar Közlöny személyi döntései ugyanabba a lemondás-táblába.
+    ['kozlony-resignations', () => runKozlonyResignationsCore({ step: makeBypassStep('kozlony-resignations'), logger: bypassLogger })],
     ['detect-verdicts', () => runVerdictDetectionCore({ step: makeBypassStep('detect-verdicts'), logger: bypassLogger })],
     ['detect-media-closures', () => runMediaClosureDetectionCore({ step: makeBypassStep('detect-media-closures'), logger: bypassLogger })],
     ['detect-asset-recoveries', () => runAssetRecoveryDetectionCore({ step: makeBypassStep('detect-asset-recoveries'), logger: bypassLogger })],
