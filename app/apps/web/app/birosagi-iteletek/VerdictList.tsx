@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { ComplaintList, type SerializedComplaint } from './ComplaintList';
-import { isReleased, computeVerdictStats, partitionVerdicts } from './verdict-stats';
+import { isReleased, isCriminalSupervision, computeVerdictStats, partitionVerdicts } from './verdict-stats';
 import { computeComplaintBarMax, computeComplaintTotal, computeTopFilers } from './complaint-stats';
 import { FtValue } from '../_home/ft-value';
 import { fmtFtParts } from '@korr/shared/format';
@@ -101,7 +101,9 @@ function StatusBadge({ r }: { r: SerializedVerdict }) {
   if (r.verdictType === 'előzetesben') {
     return (
       <div className="vrow-badge vrow-badge--pretrial">
-        <span>ELŐZETESBEN</span>
+        {isCriminalSupervision(r.description)
+          ? <span className="vrow-badge-2line">BŰNÜGYI<br />FELÜGYELET</span>
+          : <span>ELŐZETESBEN</span>}
       </div>
     );
   }
@@ -439,15 +441,15 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
             type="button"
             className="megszunt-stat megszunt-stat--clickable"
             onClick={() => scrollToSection('elozetesben-lista')}
-            aria-label="Ugrás az előzetesben lévők listájához"
+            aria-label="Ugrás az előzetesben vagy bűnügyi felügyelet alatt lévők listájához"
           >
             <div className="megszunt-stat-value megszunt-stat-value--red">{pretrialCount}</div>
-            <div className="megszunt-stat-label">Előzetesben van</div>
+            <div className="megszunt-stat-label">Előzetesben / felügyelet alatt</div>
           </button>
         ) : (
           <div className="megszunt-stat">
             <div className="megszunt-stat-value megszunt-stat-value--red">{pretrialCount}</div>
-            <div className="megszunt-stat-label">Előzetesben van</div>
+            <div className="megszunt-stat-label">Előzetesben / felügyelet alatt</div>
           </div>
         )}
         {/* A "Vádemelve vagy elítélve" szám a vádemelést és a kihirdetett
@@ -547,7 +549,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
             <div className="verdict-pills">
               {[
                 { val: 'all',                  label: 'Összes' },
-                { val: 'előzetesben',           label: 'Előzetesben' },
+                { val: 'előzetesben',           label: 'Előzetesben / felügyelet alatt' },
                 { val: 'vádemelés',            label: 'Vádemelés' },
                 { val: 'elsőfokú',             label: 'Elsőfokú' },
                 { val: 'jogerős',              label: 'Jogerős' },
@@ -847,10 +849,10 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
             <div id="elozetesben-lista" className="verdict-scroll-anchor" style={{ marginTop: 20 }}>
               <div style={{ marginBottom: 16 }}>
                 <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
-                  {hasFilter ? `Előzetesben — ${pretrialFiltered.length} db` : 'Előzetesben'}
+                  {hasFilter ? `Előzetesben / bűnügyi felügyelet alatt — ${pretrialFiltered.length} db` : 'Előzetesben / bűnügyi felügyelet alatt'}
                 </h3>
                 <p style={{ fontSize: 13, color: '#888', margin: 0 }}>
-                  Az alábbi személyek jelenleg előzetes letartóztatásban vannak — az ügyükben még nem született ítélet.
+                  Az alábbi személyek jelenleg előzetes letartóztatásban vagy bűnügyi felügyelet alatt vannak — az ügyükben még nem született ítélet.
                 </p>
               </div>
               <div className="vlist">

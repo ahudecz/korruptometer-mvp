@@ -16,6 +16,8 @@ export type CaseDetentionRow = {
   personName: string;
   position: string;
   verdictType: string;
+  /** Rövid leírás — ebből derül ki a bűnügyi felügyelet (l. isCriminalSupervision). */
+  description: string | null;
   verdictDate: Date;
   crimes: string[];
   court: string;
@@ -60,6 +62,7 @@ export async function loadCaseDetentions(opts: {
         personName: v.personName,
         position: v.position,
         verdictType: v.verdictType,
+        description: v.description,
         verdictDate: v.verdictDate,
         crimes: v.crimes,
         court: v.court,
@@ -78,6 +81,7 @@ export async function loadCaseDetentions(opts: {
       personName: r.personName,
       position: r.position,
       verdictType: r.verdictType,
+      description: r.description,
       verdictDate: r.verdictDate,
       crimes: r.crimes,
       court: r.court,

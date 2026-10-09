@@ -26,7 +26,14 @@ export async function loadDetentionCounts(): Promise<DetentionCounts | null> {
     const rows = await getDb()
       .select({ ugyId: v.personUgyId, n: sql<number>`count(distinct ${v.personName})::int` })
       .from(v)
-      .where(and(eq(v.reviewStatus, 'approved'), eq(v.verdictType, 'előzetesben'), isNotNull(v.personUgyId)))
+      // 2026-10-09: a bűnügyi felügyelet alatt lévők is 'előzetesben' típusúak
+      // (user döntés), de a „N személy előzetesben" szövegbe nem számítanak bele.
+      .where(and(
+        eq(v.reviewStatus, 'approved'),
+        eq(v.verdictType, 'előzetesben'),
+        isNotNull(v.personUgyId),
+        sql`coalesce(${v.description}, '') NOT ILIKE '%bűnügyi felügyelet%'`,
+      ))
       .groupBy(v.personUgyId);
     return new Map(rows.flatMap((r) => (r.ugyId ? [[r.ugyId, Number(r.n)] as const] : [])));
   } catch {

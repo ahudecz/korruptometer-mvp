@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  applyCriminalSupervision,
   canTransitionToCharged,
   preserveSpecificStatus,
   CHARGE_TRANSITION_MIN_SOURCES,
@@ -443,5 +444,42 @@ describe('preserveSpecificStatus (2026-09-21, a Jellinek-eset)', () => {
 
   it('új sornál (nincs korábbi típus) nem szól bele', () => {
     expect(preserveSpecificStatus('', 'egyéb')).toBe('egyéb');
+  });
+});
+
+describe('applyCriminalSupervision — bűnügyi felügyelet = előzetesben-tábla (2026-10-09)', () => {
+  it('a „kiengedték, bűnügyi felügyeletre helyezték" esetet előzetesbenre fordítja, egységes leírással', () => {
+    const r = applyCriminalSupervision('szabadlábra helyezve', {
+      personName: 'Fásyné Gurzó Mária',
+      sentenceLabel: 'bűnügyi felügyeletbe helyezve',
+      summary: 'Fásyné Gurzó Mária letartóztatásából kiengedték, bűnügyi felügyeletre helyezték.',
+      description: 'Fásyné Gurzó Mária: kiengedés, bűnügyi felügyelet',
+    });
+    expect(r.verdictType).toBe('előzetesben');
+    expect(r.description).toBe('Fásyné Gurzó Mária: bűnügyi felügyelet alatt');
+  });
+
+  it('a felügyelet megszűnése valódi szabadlábra kerülés — változatlan marad', () => {
+    const r = applyCriminalSupervision('szabadlábra helyezve', {
+      personName: 'Holló István',
+      summary: 'A bíróság megszüntette a bűnügyi felügyeletét.',
+      description: 'Holló István: szabadlábon',
+    });
+    expect(r.verdictType).toBe('szabadlábra helyezve');
+    expect(r.description).toBe('Holló István: szabadlábon');
+  });
+
+  it('előzetesben sornál csak a büntetés-címke számít (elutasított felügyeleti kérelem ne fordítsa át)', () => {
+    const r = applyCriminalSupervision('előzetesben', {
+      personName: 'Bús Balázs',
+      sentenceLabel: 'előzetes letartóztatás',
+      summary: 'A bíróság elutasította a bűnügyi felügyeletre vonatkozó indítványt.',
+      description: 'Bús Balázs: marad letartóztatásban',
+    });
+    expect(r.description).toBe('Bús Balázs: marad letartóztatásban');
+  });
+
+  it('ítélethez nem nyúl', () => {
+    expect(applyCriminalSupervision('jogerős', { personName: 'X Y', summary: 'bűnügyi felügyelet' }).verdictType).toBe('jogerős');
   });
 });

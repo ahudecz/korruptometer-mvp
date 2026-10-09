@@ -51,6 +51,15 @@ export function isReleased(t: string): t is ReleasedType {
  * kupacba. Ugyanaz a tanulság, mint az [[project-verdict-label-conflation]]
  * háromszor kiment hibájánál: a címke sose legyen súlyosabb a ténynél.
  */
+// 2026-10-09, user döntés: a bűnügyi felügyelet NEM szabadlábra helyezés,
+// hanem enyhébb kényszerintézkedés — ezek a sorok 'előzetesben' típussal az
+// „Előzetesben / bűnügyi felügyelet alatt" táblában maradnak, saját
+// jelzéssel. A megkülönböztetés a rövid leírásból / büntetés-címkéből jön
+// (a hosszú összefoglaló említheti egy ELUTASÍTOTT felügyeleti kérelmet is).
+export function isCriminalSupervision(...parts: Array<string | null | undefined>): boolean {
+  return parts.some((p) => !!p && /bűnügyi felügyelet/i.test(p));
+}
+
 export const CHARGED_TYPES = ['vádemelés', 'elsőfokú', 'jogerős'] as const;
 export type ChargedType = (typeof CHARGED_TYPES)[number];
 

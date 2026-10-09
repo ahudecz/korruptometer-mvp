@@ -362,6 +362,42 @@ export function coercePretrialClaim<T extends string>(
 
 
 /**
+ * BŰNÜGYI FELÜGYELET = 'előzetesben' (saját jelzéssel), NEM szabadlábra helyezés.
+ *
+ * 2026-10-09, user döntés (Fásyné Gurzó Mária): a bűnügyi felügyelet enyhébb
+ * kényszerintézkedés, a személy nem szabad — az „Előzetesben / bűnügyi
+ * felügyelet alatt" táblában a helye. A modell ilyenkor jellemzően
+ * 'szabadlábra helyezve'-t ad (a letartóztatásból „kiengedték"). A UI a
+ * rövid leírásból ismeri fel (isCriminalSupervision), ezért a leírást is
+ * egységesre állítjuk.
+ *
+ * 'előzetesben' sornál csak a büntetés-címkét nézzük: az összefoglaló
+ * említhet egy ELUTASÍTOTT felügyeleti kérelmet is („felügyelet helyett
+ * letartóztatás").
+ *
+ * MINDKÉT beszúró útvonalon le kell futnia (cron-detektor + Telegram-beküldés).
+ */
+export function applyCriminalSupervision<T extends string>(
+  verdictType: T,
+  e: { personName: string; sentenceLabel?: string | null; summary?: string | null; description?: string | null },
+): { verdictType: T | 'előzetesben'; description: string | null | undefined } {
+  const re = /bűnügyi felügyelet/i;
+  const hit =
+    verdictType === 'előzetesben'
+      ? re.test(e.sentenceLabel ?? '')
+      : (verdictType === 'szabadlábra helyezve' || verdictType === 'egyéb') &&
+        re.test(`${e.sentenceLabel ?? ''} ${e.summary ?? ''}`);
+  // A felügyelet MEGSZŰNÉSE valódi szabadlábra kerülés — azt nem fordítjuk át.
+  const ended = /felügyelet\S*\s+(?:is\s+)?(?:megszűn|megszüntet|felold|lejárt)|(?:megszűn\S*|megszüntet\S*|felold\S*)\s+(?:a\s+)?(?:\S+\s+)?bűnügyi felügyelet/i.test(
+    `${e.sentenceLabel ?? ''} ${e.summary ?? ''}`,
+  );
+  if (!hit || ended) return { verdictType, description: e.description };
+  const name = e.personName.trim();
+  const description = name && name.split(/\s+/).length <= 3 ? `${name}: bűnügyi felügyelet alatt` : 'Bűnügyi felügyelet alatt';
+  return { verdictType: 'előzetesben', description };
+}
+
+/**
  * BÜNTETÉS CSAK ÍTÉLETHEZ.
  *
  * 2026-09-17, user report: „volánbusz másik 5 gyanúsítottja — milyen 5 év?"

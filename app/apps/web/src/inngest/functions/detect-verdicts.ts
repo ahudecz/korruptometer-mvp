@@ -8,6 +8,7 @@ import {
   canTransitionToCharged,
   CHARGE_TRANSITION_MIN_SOURCES,
   coercePretrialClaim,
+  applyCriminalSupervision,
   coerceSentenceToVerdictType,
   preserveSpecificStatus,
   evidenceQuoteSupported,
@@ -139,12 +140,22 @@ async function processVerdictArticle(
   // különben 'egyéb'-re esik vissza. L. verdict-gate.ts coercePretrialClaim().
   // Közvetlenül a coerceVerdictType() után fut, tehát az INSERT és a
   // lifecycle-UPDATE ágat EGYARÁNT védi.
-  const verdictType = coercePretrialClaim(coerceVerdictType(result.verdictType), {
+  const pretrialType = coercePretrialClaim(coerceVerdictType(result.verdictType), {
     sentenceLabel: result.sentenceLabel,
     summary: result.summary,
     headline: article.headline,
     excerpt: article.excerpt,
   });
+  // 2026-10-09 — bűnügyi felügyelet → 'előzetesben' + egységes leírás
+  // (l. verdict-gate.ts applyCriminalSupervision).
+  const supervision = applyCriminalSupervision(pretrialType, {
+    personName: result.personName,
+    sentenceLabel: result.sentenceLabel,
+    summary: result.summary,
+    description: result.description,
+  });
+  const verdictType = supervision.verdictType;
+  if (supervision.description) result.description = supervision.description;
 
   // 003-review: route by confidence + watchlist; discard below the floor.
   let reviewStatus = decideStatus(result.confidence, isWatchlistPerson(result.personName));

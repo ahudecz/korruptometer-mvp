@@ -14,6 +14,7 @@ import {
   canTransitionToCharged,
   CHARGE_TRANSITION_MIN_SOURCES,
   coercePretrialClaim,
+  applyCriminalSupervision,
   coerceSentenceToVerdictType,
   preserveSpecificStatus,
   decideComplaintTransition,
@@ -325,12 +326,22 @@ export async function processCourtVerdict(article: ArticleForReprocess, todayIso
   // fogvatartás-jel mellett maradhat. Innentől MINDENHOL ezt a `verdictType`
   // változót használjuk a nyers `result.verdictType` helyett, a
   // duplikátum-összehasonlítást is beleértve.
-  const verdictType = coercePretrialClaim(result.verdictType, {
+  const pretrialType = coercePretrialClaim(result.verdictType, {
     sentenceLabel: result.sentenceLabel,
     summary: result.summary,
     headline: article.headline,
     excerpt: article.excerpt,
   });
+  // 2026-10-09 — bűnügyi felügyelet → 'előzetesben' + egységes leírás
+  // (l. verdict-gate.ts applyCriminalSupervision).
+  const supervision = applyCriminalSupervision(pretrialType, {
+    personName: result.personName,
+    sentenceLabel: result.sentenceLabel,
+    summary: result.summary,
+    description: result.description,
+  });
+  const verdictType = supervision.verdictType;
+  if (supervision.description) result.description = supervision.description;
 
   let reviewStatus: 'approved' | 'pending' | 'discard' = 'approved';
   if (!bypassConfidenceGate) {

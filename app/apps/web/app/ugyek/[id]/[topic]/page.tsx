@@ -7,6 +7,7 @@ import { visibleSubpages, getSubpage, getSubpagesForUgy, type InlineLink, type S
 import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak, CrossErdekesUgyek } from '../../../_home/cross-promo';
 import { loadCaseDetentions, isStillDetained, type CaseDetentionRow } from '@/lib/case-detentions';
 import { withAutoLinks } from '../../../_home/auto-link-text';
+import { isCriminalSupervision } from '../../../birosagi-iteletek/verdict-stats';
 import { BreakingUpdateBox } from '../../../_home/breaking-update-box';
 
 // SEO-szempontból a lényeg, hogy a Googlebot azonnal kiszolgált HTML-t
@@ -111,7 +112,7 @@ function DetentionTable({
         <>
           <p className="seo-detention-count">
             <strong>{sorted.length}</strong> nyilvántartott kényszerintézkedés ·{' '}
-            <strong>{detained}</strong> érintett van jelenleg is előzetes letartóztatásban
+            <strong>{detained}</strong> érintett van jelenleg is előzetes letartóztatásban vagy bűnügyi felügyelet alatt
           </p>
           <div className="seo-table-wrap">
             <table className="seo-table seo-detention-table">
@@ -138,7 +139,9 @@ function DetentionTable({
                             : 'seo-status seo-status-out'
                         }
                       >
-                        {isStillDetained(r.verdictType) ? 'Előzetesben' : 'Szabadlábon'}
+                        {isStillDetained(r.verdictType)
+                          ? isCriminalSupervision(r.description) ? 'Bűnügyi felügyelet' : 'Előzetesben'
+                          : 'Szabadlábon'}
                       </span>
                     </td>
                     <td>{huDate(r.verdictDate.toISOString().slice(0, 10))}</td>
