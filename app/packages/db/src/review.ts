@@ -327,18 +327,28 @@ export type ExistingVerdict = { id: string; verdictType: string };
  * true duplicate, discard); different type → a real status change (UPDATE
  * the existing row instead of inserting a new one or discarding).
  */
+// 2026-10-09 — user report: „letartóztatásokról folyamatosan duplikációkat
+// küldesz". A 30 napos ablak egy BÜNTETŐÜGYRE értelmetlen: egy letartóztatás
+// hónapokig tart, és minden új cikk („a letartóztatásban lévő Bús Balázs…")
+// 30 nap után ÚJ sort + Telegram-kérést szült — Bús Balázs 4 sorral szerepelt
+// (06-25 jóváhagyott, 07-29, 09-08, 10-08 függő). Egy személynek egy
+// ügy-sora van; a lifecycle-váltás (eltérő verdictType) azt frissíti.
+export const VERDICT_DEDUP_WINDOW_DAYS = 3650;
+
 export async function findExistingVerdict(
   db: Executable,
   personName: string,
-  withinDays: number = DEDUP_WINDOW_DAYS,
+  withinDays: number = VERDICT_DEDUP_WINDOW_DAYS,
 ): Promise<ExistingVerdict | null> {
   const key = normalizeName(personName);
   if (!key) return null;
+  // A jóváhagyott sor az elsődleges: egy függő (még el nem bírált) sor mellé
+  // érkező újabb cikk a JÓVÁHAGYOTT sort erősítse, ne a függőt.
   const rows = (await db.execute(sql`
     SELECT id, "verdictType" FROM "CourtVerdict"
     WHERE trim(regexp_replace(lower(unaccent(trim("personName"))), '[^a-z0-9]+', ' ', 'g')) = ${key}
       AND "createdAt" >= now() - make_interval(days => ${withinDays})
-    ORDER BY "verdictDate" DESC
+    ORDER BY ("reviewStatus" = 'approved') DESC, "verdictDate" DESC
     LIMIT 1
   `)) as unknown as ExistingVerdict[];
   return rows[0] ?? null;

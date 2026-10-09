@@ -17,6 +17,7 @@ import {
   isPlaceholderName,
   findMisinflectedName,
   gateVerdictInsert,
+  splitPersonNames,
   type VerdictGateResult,
   isSuspiciouslyEarlyDate,
   isWatchlistPerson,
@@ -191,7 +192,10 @@ ${article.excerpt}`;
       extractedName: result.personName,
       confidence: result.confidence,
     });
-    if (result.confidence >= NEAR_MISS_MIN) {
+    // 2026-10-09 — már nyilvántartott személyről nem kérünk „near miss"
+    // átnézést: a sorozatos letartóztatás-cikkek (Hankó, Bús, Seszták) így
+    // tucatszor jöttek vissza Telegramon ugyanarról az emberről.
+    if (result.confidence >= NEAR_MISS_MIN && !(await findExistingVerdict(db, result.personName))) {
       await notifyReviewNeeded({
         type: 'near_miss',
         detectorType: DETECTOR_TYPE,
@@ -270,6 +274,24 @@ ${article.excerpt}`;
   if (!existingVerdict) {
     const gate = await gateVerdictInsert(db, { personName: result.personName, sourceUrl: article.sourceUrl });
     if (gate.verdict === 'flag') verdictGateFlag = gate;
+    // 2026-10-09 — gyűjtőnév („Seszták Miklós és Hankó Balázs"), amelynek
+    // MINDEN tagja már szerepel ugyanebben az állapotban: ez nem új hír,
+    // hanem a meglévő sorok ismétlése → csendes duplikátum, nem Telegram-kérés.
+    if (gate.verdict === 'flag' && gate.reason === 'multi_person_name') {
+      const parts = splitPersonNames(result.personName);
+      const existing = await Promise.all(parts.map((p) => findExistingVerdict(db, p)));
+      if (parts.length >= 2 && existing.every((e) => e && e.verdictType === verdictType)) {
+        await markChecked(db, {
+          articleId: article.id,
+          detectorType: DETECTOR_TYPE,
+          outcome: 'discarded',
+          reason: 'duplicate',
+          extractedName: result.personName,
+          confidence: result.confidence,
+        });
+        return { inserted: false, approved: false };
+      }
+    }
     if (gate.verdict === 'discard') {
       await markChecked(db, {
         articleId: article.id,
