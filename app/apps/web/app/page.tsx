@@ -445,18 +445,20 @@ const getCachedPretrialByUgy = unstable_cache(
     const { getDb, schema } = await import('@/lib/db');
     const { and: andF, eq: eqF, sql: s } = await import('drizzle-orm');
     const db = getDb();
-    return db.select({ ugyId: schema.courtVerdicts.personUgyId, n: s<number>`count(*)::int` })
+    // 2026-10-09: `n` = előzetesben + bűnügyi felügyelet alatt (a KPI-lista,
+    // user döntés); `nPretrial` = csak előzetesben — az ügyek „Aktív · N
+    // személy előzetesben" sorához (l. detention-counts.ts).
+    return db.select({
+      ugyId: schema.courtVerdicts.personUgyId,
+      n: s<number>`count(*)::int`,
+      nPretrial: s<number>`count(*) FILTER (WHERE coalesce(${schema.courtVerdicts.description}, '') NOT ILIKE '%bűnügyi felügyelet%')::int`,
+    })
       .from(schema.courtVerdicts)
-      // 2026-10-09: „N fő előzetesben" — a bűnügyi felügyelet alattiak nélkül (l. detention-counts.ts).
-      .where(andF(
-        eqF(schema.courtVerdicts.reviewStatus, 'approved'),
-        eqF(schema.courtVerdicts.verdictType, 'előzetesben'),
-        s`coalesce(${schema.courtVerdicts.description}, '') NOT ILIKE '%bűnügyi felügyelet%'`,
-      ))
+      .where(andF(eqF(schema.courtVerdicts.reviewStatus, 'approved'), eqF(schema.courtVerdicts.verdictType, 'előzetesben')))
       .groupBy(schema.courtVerdicts.personUgyId)
       .orderBy(s`count(*) desc`);
   },
-  ['pretrial-by-ugy'],
+  ['pretrial-by-ugy-v2'],
   { revalidate: 300 },
 );
 const getCachedLatestVerdict = unstable_cache(
@@ -908,7 +910,7 @@ export default async function HomePage() {
                       <Link href={href} className="stat-case-link">
                         {label}
                       </Link>
-                      {': '}{n} fő előzetesben
+                      {': '}{n} fő előzetesben / felügyelet alatt
                     </div>
                   );
                 })}
@@ -1279,7 +1281,7 @@ export default async function HomePage() {
           },
         ];
         // 2026-10-01: a „{elozetesben}” szám a CourtVerdict táblából (pretrialByUgy).
-        const detentionCounts = new Map(pretrialByUgy.flatMap(({ ugyId, n }) => (ugyId ? [[ugyId, Number(n)] as const] : [])));
+        const detentionCounts = new Map(pretrialByUgy.flatMap(({ ugyId, nPretrial }) => (ugyId ? [[ugyId, Number(nPretrial)] as const] : [])));
         return (
           <BigCasesSection
             cases={bigCases.map((c) => ({
