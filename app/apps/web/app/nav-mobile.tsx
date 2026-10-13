@@ -14,6 +14,7 @@ const NAV_LINKS = [
   { href: '/lemondasok', label: 'Lemondott-e?' },
   { href: '/birosagi-iteletek', label: 'Börtönben van-e?' },
   { href: '/megszunt', label: 'Megszűnt-e?' },
+  { href: '/visszaszerzett-vagyon', label: 'Visszaszerzett vagyon' },
   { href: '/legfontosabb-hangok', label: 'Legfontosabb hangok' },
 ];
 

@@ -52,6 +52,52 @@ export const maxDuration = 60;
 // a tiszta URL-re kanonizálódnak.
 export const metadata = { alternates: { canonical: '/' } };
 
+// 2026-10-13 — a Google-találat alatti sitelinkekhez kívánt fő rovatok, a
+// kívánt sorrendben. A hero alatti szöveges linksor és a JSON-LD is ebből él.
+const HOME_SECTIONS = [
+  { name: 'Lemondott-e már?', href: '/lemondasok', description: 'Lemondott és kirúgott NER-közeli tisztségviselők április 12. óta.' },
+  { name: 'Börtönben van-e?', href: '/birosagi-iteletek', description: 'Előzetes letartóztatás, vádemelés és ítélet a NER-hez köthető ügyekben.' },
+  { name: 'Megszűnt-e már?', href: '/megszunt', description: 'NER-közeli médiumok: melyik szűnt meg, melyik él még.' },
+  { name: 'Visszaszerzett vagyon', href: '/visszaszerzett-vagyon', description: 'Visszaszerzett és visszakövetelt közpénz és vagyon.' },
+  { name: 'Kiemelt ügyek', href: '/ugyek', description: 'A legnagyobb NER-es korrupciós ügyek egy helyen.' },
+] as const;
+
+function homeJsonLd() {
+  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.kegyencjarat.hu').replace(/\/$/, '');
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': `${base}/#website`,
+        url: `${base}/`,
+        name: 'Kegyencjárat',
+        inLanguage: 'hu-HU',
+        publisher: { '@id': `${base}/#organization` },
+      },
+      {
+        '@type': 'Organization',
+        '@id': `${base}/#organization`,
+        name: 'Kegyencjárat',
+        url: `${base}/`,
+        logo: `${base}/icon.png`,
+      },
+      {
+        '@type': 'ItemList',
+        '@id': `${base}/#fo-rovatok`,
+        name: 'Fő rovatok',
+        itemListElement: HOME_SECTIONS.map((sec, i) => ({
+          '@type': 'SiteNavigationElement',
+          position: i + 1,
+          name: sec.name,
+          description: sec.description,
+          url: `${base}${sec.href}`,
+        })),
+      },
+    ],
+  };
+}
+
 // Date-mentes lekérdezések cache-elve — nincs serialization probléma, warm kérésnél 0ms
 type ScandalRow = { id: string; name: string; person: string | null; institution: string | null; article_count: number; investigation_count: number; damage_huf: string; is_open: boolean };
 const getCachedScandalCatalog = unstable_cache(
@@ -809,6 +855,11 @@ export default async function HomePage() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd()) }}
+      />
       {/* ───── BREAKING BANNER ───── */}
       <BreakingBanner />
 
@@ -831,6 +882,18 @@ export default async function HomePage() {
               korrupciós eset nyomon követhető a vádemeléstől az ítéletig —
               adatokra, nem szólamokra alapozva.
             </p>
+            {/* 2026-10-13 — fő rovatok szöveges linkként (user kérés: a Google-
+                találat alatti sitelinkek ezek legyenek, ne Csapat/Hírek/
+                Podcastok). A Google a sitelinkeket maga választja; az erős,
+                beszédes horgonyszövegű belső link és a lenti JSON-LD a két
+                jel, amivel befolyásolni lehet. A sorrend = a kívánt sorrend. */}
+            <nav className="hero-sections" aria-label="Fő rovatok">
+              {HOME_SECTIONS.map((sec) => (
+                <Link key={sec.href} href={sec.href} className="hero-section-link">
+                  {sec.name}
+                </Link>
+              ))}
+            </nav>
           </div>
 
           <div className="hero-stats">
