@@ -70,6 +70,19 @@ describe('parseKormanyHuFeljelentesPage', () => {
     expect(page.skipped).toEqual([{ name: 'Név nélküli minisztérium', reason: 'hiányzik a minisztérium' }]);
   });
 
+  // 2026-10-13: a „Visszafizetések" / „Megtakarítás" grafikon sorai nem feljelentések.
+  it('ignores refund and saving rows (data-vlabel) below the complaint table', () => {
+    const html = `${FIXTURE}
+      <h3 class="r-h">Visszafizetések</h3>
+      <div class="row" data-vlabel="visszafizetve: " data-n="Duna Aszfalt: Zambia–Kongó közötti útépítés (EXIM Bank)" data-m="Gazdasági és Energetikai Minisztérium" data-v="211" data-unit="millió" data-d="" data-s="211 M Ft visszafizetve" data-x=""></div>
+      <h3 class="r-h">Megtakarítás, meg nem valósult kiadás</h3>
+      <div class="row" data-vlabel="meg nem valósult kiadás: " data-n="Rothschild tanácsadói szerződés" data-m="Pénzügyminisztérium" data-v="220" data-unit="millió" data-d="" data-s="kb. 220 M Ft elengedett fizetési igény" data-x=""></div>`;
+    const page = parseKormanyHuFeljelentesPageWithMeta(html);
+    expect(page.items).toHaveLength(5);
+    expect(page.items.some((r) => r.name.startsWith('Rothschild') || r.amountLabel === '211 millió Ft')).toBe(false);
+    expect(page.skipped).toHaveLength(1);
+  });
+
   it('reads the declared total from the page header', () => {
     expect(parseKormanyHuFeljelentesPageWithMeta(FIXTURE).declaredTotal).toBe(37);
   });

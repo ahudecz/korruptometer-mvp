@@ -80,6 +80,13 @@ export function parseKormanyHuFeljelentesPageWithMeta(html: string): KormanyHuFe
 
   $('.row[data-n]').each((_, el) => {
     const $el = $(el);
+    // 2026-10-13: az oldal alján két további, ugyanilyen szerkezetű grafikon
+    // van („Visszafizetések", „Megtakarítás, meg nem valósult kiadás") — ezek
+    // sorai NEM feljelentések (pl. „211 M Ft visszafizetve"), és `data-vlabel`
+    // attribútumuk van, amit a feljelentés-sorok nem viselnek. Eddig ezek is
+    // feljelentésként kerültek be (Zambia-ügy másodszor, 211 millióval, és 7
+    // feljelentésnek beállított megtakarítás/visszafizetés).
+    if ($el.attr('data-vlabel') !== undefined) return;
     const name = $el.attr('data-n')?.trim();
     const ministry = $el.attr('data-m')?.trim();
     const rawValue = $el.attr('data-v')?.trim();
