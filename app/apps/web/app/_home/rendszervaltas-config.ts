@@ -285,6 +285,10 @@ export type FeltaroDetail = {
   seoDescription?: string;
   /** H1 alatti, önmagában is válaszoló bevezető (featured snippet cél). */
   lead?: string;
+  /** Önálló, függőleges idővonal közvetlenül a „Ki ő?" szakasz után, a
+   *  `cases` előtt (user, 2026-10-20 — Fekete-Győr „Időrend egy pillantásban").
+   *  A forrást a szöveg végén zárójelben adjuk meg. */
+  timelineTop?: { heading: string; items: { when: string; text: string }[] };
   /** „Mit tárt fel?" — a lap gerince. */
   cases?: {
     heading: string;
@@ -4255,22 +4259,249 @@ export const FELTAROK: Feltaro[] = [
     photo: '/images/rendszervaltas/fekete-gyor-andras.webp',
     tagline:
       'Egy aláírásgyűjtéssel leállíttatta a budapesti olimpiai pályázatot, 2025-ben pedig ő javasolta elsőként, hogy a saját pártja ne induljon.',
+    // A szöveg a user kánonja (2026-10-20). Eltérések, mind forrás alapján
+    // vagy a „nincs Kegyencjárat-álláspont" szabály miatt (l. a commit
+    // üzenetét): a jogerős ítélet HARMADFOKÚ volt (másodfok: 2024. febr.); a
+    // mandátum-átadás 444-forrása 2024-es; a „kiszolgáltatottak" idézet Cseh
+    // Katalintól származik, nem Kerpel-Fronius Gábortól; a füstgyertya
+    // becsapódási helye nem dokumentált (Telex); az Index-2025-ös szakértői
+    // idézet nem található, kimaradt; a „szerkesztőségi álláspont/nézőpont"
+    // mondatok kimaradtak.
     section: {
       heading: 'Fekete-Győr András — a NOlimpiától a visszalépés javaslatáig',
       paragraphs: [
-        '2017 januárjában indította el a NOlimpia-aláírásgyűjtést a budapesti olimpiai pályázatról szóló népszavazásért. Egy hónap alatt 266 151 aláírás gyűlt össze, a népszavazáshoz szükséges 138 ezer közel kétszerese, és a kormány 2017. február 22-én visszavonta a pályázatot.',
-        'A kampányból nőtt ki a Momentum Mozgalom, amelynek 2021 októberéig elnöke volt, 2022 és 2024 között pedig országgyűlési képviselője.',
-        '2025 májusában, a párt elnökségi ülése előtt nyilvánosan javasolta, hogy a Momentum ne induljon a 2026-os választáson, mert a 2–4 százalékos támogatottsága éppen elég ahhoz, hogy szétforgácsolja a kormányváltó szavazatokat. „Szeretnék a tükörbe nézni ’26 után is” — mondta az ATV-nek. Egy hónappal később a párt küldöttgyűlése így döntött.',
-      ],
-      links: [
-        {
-          text: '„Szeretnék a tükörbe nézni ’26 után is”',
-          href: 'https://www.atv.hu/belfold/20250508/fekete-gyor-andras-momentum-2026/',
-          external: true,
-        },
+        'Fekete-Győr András nem pártapparátusból érkezett a politikába. A Momentum Mozgalom alapítójaként a NOlimpia-kampánnyal vált országosan ismertté, később a párt elnökeként és parlamenti képviselőjeként dolgozott. A Momentum a 2022-es választáson tíz képviselővel jutott be az Országgyűlésbe, és ebben a frakcióban Fekete-Győr listavezetőként szerzett mandátumot.',
+        'Politikai pályája három szakaszra bontható: a mozgalom indulása és a NOlimpia (2017), a parlamenti évek és a füstgyertyás per (2018–2024), végül a Momentum választási visszalépésének kezdeményezése és saját kilépése (2025–2026).',
+        'A Dicsőségfalon szereplő többi névhez hasonlóan itt sem a hibátlanság a mérce. A kérdés az, hogy egy politikus történetében vannak-e olyan tettek és döntések, amelyek a magyar rendszerkritikus nyilvánosság történetében maradandó nyomot hagytak.',
+        'Fekete-Győr András pályája azért érdemel külön figyelmet, mert kevés olyan magyar politikusról lehet elmondani, hogy ugyanazon a néhány éven belül három különböző szerepben is meghatározó volt: aktivistaként és kampányszervezőként, parlamenti képviselőként, majd a párt belső vitáiban a visszalépés legfőbb szószólójaként. Mindhárom szerep más-más kockázattal járt. Az aláírásgyűjtés és a népszavazási kezdeményezés közpénzügyi és politikai vitát indított el. A parlamenti munka a mandátum elvesztésének lehetőségével járt, amikor az ítélet megszületett. A visszalépési javaslat pedig egy saját párt parlamenti jelenlétének feladását jelentette egy olyan időszakban, amikor a magyar ellenzék a Fidesz elleni egységről vitatkozott.',
+        'Fontos különbséget tenni az események és az értékelések között. Az alábbi szöveg igyekszik az események sorrendjét és dokumentumokkal alátámasztható tényeit külön kezelni attól, amit szereplői és kritikusai mondanak róluk.',
       ],
     },
-    updatedAt: '2026-09-25',
+    related: [
+      { label: 'Momentum — a visszalépett párt', href: '/rendszervaltas/momentum' },
+      { label: 'Kiemelt ügyek', href: '/ugyek' },
+    ],
+    updatedAt: '2026-10-20',
+    live: true,
+    detail: {
+      seoTitle: 'Fekete-Győr András – Dicsőségfal',
+      seoDescription:
+        'Fekete-Győr András, a Momentum alapítója és a NOlimpia arca: a 266 ezer aláírásos kampány, a füstgyertyás ügy jogerős ítélete, a 2025-ös visszalépési javaslat és a 2026-os kilépés.',
+      lead:
+        'Fekete-Győr András a Momentum Mozgalom egyik alapítója és korábbi elnöke, a 2017-es NOlimpia-kampány egyik legismertebb arca, 2022-ben pedig a párt listavezetőjeként jutott be az Országgyűlésbe. A Dicsőségfalra nem egyetlen tett miatt került. Ide tartozik a 2017-es olimpiai aláírásgyűjtés, a 2025-ös javaslat, amellyel a Momentum visszalépését kezdeményezte, és a 2018-as füstgyertyás ügy is, amelyben jogerősen elítélték. A jogerős ítélet 2024. október 17-én született. 2026. október 19-én pedig bejelentette, hogy kilép a Momentumból.',
+      timelineTop: {
+        heading: 'Időrend egy pillantásban',
+        items: [
+          { when: '2017. február 17.', text: 'A Momentum 266 151 aláírást ad le a budapesti olimpiáról szóló népszavazás kezdeményezéséhez (138 ezer érvényes aláírás kellett). (RTL)' },
+          { when: '2017. február', text: 'A kormány visszavonja a budapesti olimpiai pályázatot.' },
+          { when: '2018. december 13.', text: 'Füstgyertya a Kossuth téri tüntetésen, a rendőrsorfal felé. (444)' },
+          { when: '2022. április', text: 'A Momentum tíz képviselővel jut be a parlamentbe; Fekete-Győr listavezetőként kap mandátumot. (Momentum)' },
+          { when: '2023. május 26.', text: 'Az elsőfokú bíróság felmentő ítéletet hoz. (Telex)' },
+          { when: '2024. február 12.', text: 'Másodfokon bűnösnek mondják ki. (Infostart)' },
+          { when: '2024. október 17.', text: 'A Fővárosi Ítélőtábla jogerős ítélete: egy év szabadságvesztés, két év próbaidőre felfüggesztve. (Infostart)' },
+          { when: '2025. május 7.', text: 'Fekete-Győr javasolja, hogy a Momentum ne induljon 2026-ban, és 500 millió forintos Rendszerváltó Alapot javasol. (444, Index)' },
+          { when: '2025. május 12.', text: 'A Momentum elnöksége támogatja a visszalépést. (Népszava)' },
+          { when: '2025. június 7.', text: 'A küldöttgyűlés döntése: a Momentum nem indul a 2026-os választáson. (Kontroll)' },
+          { when: '2026. október 17.', text: 'Lejár a kétéves próbaidő (a jogerő napjától számítva).' },
+          { when: '2026. október 19.', text: 'Fekete-Győr kilép a Momentumból. (Telex)' },
+        ],
+      },
+      cases: {
+        heading: 'A legfontosabb állomások',
+        items: [
+          {
+            title: 'NOlimpia: 266 151 aláírás',
+            when: '2017',
+            body: '2017-ben a Momentum népszavazást kezdeményezett arról, hogy Budapest pályázzon-e a 2024-es olimpiai játékokra. A kezdeményezéshez 138 ezer érvényes aláírás kellett. A Momentum ennél jóval többet, 266 151 aláírást gyűjtött, amelyet 2017. február 17-én adott le. Az aláírások átadásakor Fekete-Győr úgy fogalmazott: „Kiütöttük az első téglát a falból.”',
+            more: [
+              'A kampány eredménye az lett, hogy a kormány visszavonta a főváros pályázatát.',
+              'A vita egyik központi eleme a közpénzügyi kockázat volt. A hivatalos Budapest 2024 megvalósíthatósági tanulmány bruttó költsége meghaladta az ezer milliárd forintot, a nettó költség pedig több százmilliárd volt. A Momentum ennél magasabb tényleges költséggel számolt, és arra figyelmeztetett, hogy az olimpiai beruházásoknál a költségtúllépés komoly kockázat. Azt viszont nem lehet bizonyítani, hogy a rendezés szükségszerűen államcsődhöz vezetett volna. Az olimpia nem valósult meg, így nincs összehasonlítható „mi lett volna, ha” helyzet.',
+            ],
+            links: [
+              { text: '„Kiütöttük az első téglát a falból.”', href: 'https://momentum.hu/fekete-gyor-andras-beszede-kiutottuk-az-elso-teglat-alairasok-atadasa/', external: true },
+              { text: 'megvalósíthatósági tanulmány', href: 'https://www.bomalapitvany.hu/uploads/downloads/1vezetoi-osszefoglaloveglegestervezet2015junius.pdf', external: true },
+            ],
+            videos: [
+              {
+                id: 'pigX-suNyAI',
+                label: 'euronews (magyarul) · 2017. február 17.',
+                title: '266 ezer aláírás gyűlt össze a budapesti olimpiáról szóló népszavazásért',
+                summary: 'A leadás napján: a Momentum 266 ezer aláírást gyűjtött, majdnem kétszer annyit, amennyi a népszavazás kiírásához kellett.',
+              },
+              {
+                id: 'uOme0C396jg',
+                label: 'ATV Magyarország · 2017. január 24.',
+                title: 'Nolimpia: már 35 ezer aláírás gyűlt össze',
+                summary: 'A gyűjtés első napjaiból: a NOlimpia-kampány néhány nap alatt 35 ezer aláírásnál járt.',
+              },
+            ],
+            sources: [
+              { source: 'RTL', date: '2017. febr. 17.', headline: '266.151 aláírás gyűlt össze', url: 'https://rtl.hu/hirado/2017/02/17/266-151-alairas-gyult-ossze' },
+              { source: 'Momentum Mozgalom', date: '2017. febr.', headline: 'Fekete-Győr András beszéde: Kiütöttük az első téglát', url: 'https://momentum.hu/fekete-gyor-andras-beszede-kiutottuk-az-elso-teglat-alairasok-atadasa/' },
+              { source: 'Magyar Narancs', headline: 'A biztos bukás – Az olimpia gazdasági hatásai', url: 'https://magyarnarancs.hu/belpol/a-biztos-bukas-96058' },
+            ],
+          },
+          {
+            title: 'A füstgyertyás ügy',
+            when: '2018–2024',
+            body: '2018. december 13-án, a túlóratörvény elleni tüntetésen, a Kossuth téren Fekete-Győr füstgyertyát dobott a rendőrsorfal felé. Saját elmondása szerint a füstgyertyát ejtő mozdulattal juttatta a rendőrsorfal mögé. A Telex beszámolója szerint nincs olyan felvétel, amelyen látszana, pontosan hol értek földet a füstgyertyák.',
+            more: [
+              'Az ügy vádja csoportosan, társtettesként elkövetett hivatalos személy elleni erőszak volt. Az elsőfokú bíróság 2023. május 26-án felmentette. Másodfokon, 2024 februárjában bűnösnek mondták ki, a harmadfokú, jogerős döntést pedig 2024. október 17-én hozta meg a Fővárosi Ítélőtábla: egy év szabadságvesztés, amelynek végrehajtását két év próbaidőre felfüggesztették. Az ítélet jogerős, ellene nincs további jogorvoslat.',
+              'A sajtóban gyakran „két év felfüggesztett börtön” formában szerepel az ítélet. A pontos tartalom az, hogy az egyéves szabadságvesztés két év próbaidő mellett felfüggesztett volt. A jogerős ítélet napjától számolva a próbaidő 2026 októberében járt le.',
+              'Az ítélet következményei a politikai életben is megjelentek. Az ítélet a parlamenti mandátum megszűnésével járt. Fekete-Győr nem kérte a visszadelegálást, mandátumát Cseh Katalinnak adta át. 2025 nyarán arról számolt be, hogy a büntetésre hivatkozva a brit beutazási kérelmét indoklás nélkül elutasították, ezért nem tudott kiutazni a rokonaihoz.',
+              'Fekete-Győr az ügyet koncepciós pernek nevezi, és azt állítja, hogy ő lett az első politikai elítélt a rendszerváltás óta.',
+              'A jogerős ítélet előtt és után Fekete-Győr a közösségi oldalán is többször megszólalt. Az ítélet napján úgy fogalmazott, hogy „bár senkinek nem okoztam sem sérülést, sem anyagi kárt”, a hatalom mégis jogerős felfüggesztett börtönbüntetést szabott ki rá. Egy bejegyzésében azt írta, hogy a hatalom azért akarja elítéltetni, mert „elszántan tüntettem ellenük, és a mai napig az első sorokban küzdök a változásért”. Az ügy tehát nemcsak jogi, hanem politikai kommunikációs kérdés is lett: a védekezés középpontjában az állt, hogy a tüntetési cselekmény politikai motivációjú büntetést kapott.',
+              'Az ügy hosszúsága is része a történetnek. A cselekmény 2018 decemberében történt, a jogerős ítélet pedig 2024 októberében született meg. Ez hat év, amely alatt Fekete-Győr a parlamenti munkáját végezte, választási kampányokban vett részt, majd a Momentum belső vitáiban is központi szereplővé vált. A hosszú eljárás miatt a büntetőügy a közvélemény előtt folyamatosan jelen maradt, és az ítélet megszületése nem egyetlen nap híre, hanem több éves politikai üzenet volt.',
+              'Érdemes azt is rögzíteni, hogy a bíróság és a sajtó is különbséget tett a cselekmény és a politikai háttér között. A bírói döntés a cselekményt minősítette: a füstgyertya dobása a rendőrsorfal felé hivatalos személy elleni erőszak tényállásába került. A politikai háttér – a túlóratörvény elleni tiltakozás, a kormánnyal szembeni ellenzéki fellépés – nem volt a bírói döntés tárgya, de a közvélemény szempontjából ez adta az ügy jelentőségét.',
+            ],
+            links: [
+              { text: 'A Telex beszámolója', href: 'https://telex.hu/belfold/2023/05/26/birosag-per-fekete-gyor-fustgyertya-momentum-rendor', external: true },
+              { text: 'mandátumát Cseh Katalinnak adta át', href: 'https://444.hu/2024/10/17/fekete-gyor-andras-atadja-a-parlamenti-mandatumat-cseh-katalinnak', external: true },
+              { text: 'nem tudott kiutazni a rokonaihoz', href: 'https://telex.hu/belfold/2025/08/18/fekete-gyor-andras-utazas-anglia-felfuggesztett-bortonbuntetes-beutazas', external: true },
+            ],
+            sources: [
+              { source: 'Telex', date: '2023. máj. 26.', headline: 'Fekete-Győrt felmentették, párttársa felfüggesztettet kapott hivatalos személy elleni erőszak miatt', url: 'https://telex.hu/belfold/2023/05/26/birosag-per-fekete-gyor-fustgyertya-momentum-rendor' },
+              { source: 'Infostart', date: '2024. febr. 12.', headline: 'Felfüggesztett börtönre ítélték másodfokon Fekete-Győr Andrást', url: 'https://infostart.hu/belfold/2024/02/12/felfuggesztett-bortonre-iteltek-masodfokon-fekete-gyor-andrast' },
+              { source: 'Infostart', date: '2024. okt. 17.', headline: 'Felfüggesztett börtönbüntetésre ítélték Fekete-Győr Andrást', url: 'https://infostart.hu/belfold/2024/10/17/felfuggesztett-bortonbuntetesre-iteltek-fekete-gyor-andrast' },
+              { source: 'Index', date: '2024. okt. 17.', headline: 'Jogerősen elítélték Fekete-Győr Andrást', url: 'https://index.hu/belfold/2024/10/17/fekete-gyor-andras-bortonbuntetes-borton-targyalas-itelet-momentum/' },
+              { source: '444', date: '2024. okt. 17.', headline: 'Fekete-Győr András átadja a parlamenti mandátumát Cseh Katalinnak', url: 'https://444.hu/2024/10/17/fekete-gyor-andras-atadja-a-parlamenti-mandatumat-cseh-katalinnak' },
+              { source: 'Telex', date: '2025. aug. 18.', headline: 'Fekete-Győr András nem tudott kiutazni Angliába a rokonaihoz a felfüggesztett börtönbüntetése miatt', url: 'https://telex.hu/belfold/2025/08/18/fekete-gyor-andras-utazas-anglia-felfuggesztett-bortonbuntetes-beutazas' },
+              { source: 'RTL', date: '2019. jan. 13.', headline: 'Füstbomba miatt nyomoz az ügyészség (videó)', url: 'https://www.youtube.com/watch?v=hx-BjI9wKlQ' },
+            ],
+          },
+          {
+            title: 'Listavezetőként a parlamentben',
+            when: '2022',
+            body: 'A 2022-es országgyűlési választáson a Momentum tíz képviselővel jutott be a parlamentbe. Fekete-Győr a párt listavezetőjeként kapott mandátumot. Ez azért fontos, mert a későbbi 2025-ös visszalépési döntés nem egy parlamenten kívüli párt döntése volt, hanem egy tízfős frakcióval rendelkező szervezeté.',
+            sources: [
+              { source: 'Index', date: '2021. nov. 8.', headline: 'Fekete-Győr András vezeti a Momentum 2022-es listáját', url: 'https://index.hu/belfold/2021/11/08/momentum-lista-jeloltek-2022-valasztas-ellenzek/' },
+              { source: 'Momentum Mozgalom', date: '2022. máj. 2.', headline: 'Megalakult az első Momentum-frakció', url: 'https://momentum.hu/megalakult-az-elso-momentum-frakcio/' },
+            ],
+          },
+          {
+            title: 'A visszalépés javaslata és a Rendszerváltó Alap',
+            when: '2025',
+            body: '2025. május 7-én Fekete-Győr a közösségi oldalán azt javasolta, hogy a Momentum ne induljon a 2026-os országgyűlési választáson. Helyette egy 500 millió forintos „Rendszerváltó Alapot” javasolt, amelyet a párt állami támogatásából hoznának létre. Ebből tüntetéseket, rendszerkritikus sajtót és az Orbán-rendszer politikai üldözöttjeinek támogatását finanszíroznák.',
+            more: [
+              'Május 12-én a Momentum elnöksége támogatta a visszalépést, és ezt javasolta a küldöttgyűlésnek. A javaslatot a párt nem fogadta egységesen. Tompos Márton, a Momentum akkori elnöke élesen bírálta Fekete-Győrt: szerinte a belső dilemmát lájkokra váltotta, és a vitát a nyilvánosság kizárásával kellett volna lefolytatni. Cseh Katalin nem támogatta a visszalépést. A Rendszerváltó Alap javaslatát a küldöttgyűlés napirendre sem vette.',
+              'Június 7-én a Momentum küldöttgyűlése úgy döntött, hogy a párt nem indul a 2026-os választáson. A Kontroll értesülése szerint a szavazás 57:43 arányban dőlt el. Ugyanebben a cikkben az is szerepel, hogy a tagság fegyelmi eljárást kezdeményezett Fekete-Győr ellen a visszalépést nyilvánosan szorgalmazó megszólalásai miatt.',
+              'Fekete-Győr személyes helyzetének is van egy fontos eleme: a források nem mutatják, hogy egyéni jelöltként indulni készült volna 2026-ban. A visszalépés az ő esetében a párt indulásának elutasítására irányuló javaslatként jelenik meg, nem egyéni lemondásként.',
+              'A visszalépés nem volt egyedi jelenség a 2026-os választás előtt. Hajnal Miklós 2025. március 26-án jelentette be, hogy nem indul újra a budapesti 3. számú választókerületben, Tóth Endre május 12-én jelentette be, hogy nem indul, és Jámbor András is június 19-én jelentette be a saját visszalépését. Fekete-Győr javaslata ezért nem önmagában álló gesztus volt, hanem egy olyan, 2025 tavaszán és nyarán végigfutó sorozat része, amelyben a kormányváltás érdekében több ellenzéki szereplő is háttérbe húzódott.',
+              'A különbség az, hogy a Momentum esetében ez pártszintű döntés volt, nem egyéni. Ebből következett a párt belső vitája, a tagsági szavazás és a fegyelmi eljárás kezdeményezése. Tompos Márton június 7-e után is hangsúlyozta, hogy a párt a Tisza-szavazók nyomását akarja fenntartani: szerinte „a Tisza-szavazók akkor kérik ezt számon Magyar Péteren, ha van egy minta előttük” – vagyis a választójogi és médiatörvényi ígéreteket. Ez a mondat jól mutatja, hogy a visszalépés nem a Momentum politikai szerepének megszűnését jelentette, hanem annak átalakulását.',
+              'Az ellenvélemények is erősek voltak. Kerpel-Fronius Gábor, a Momentum egyik korábbi politikusa a szavazás után azt írta, hogy elfogadja a döntést és marad a pártban, de szerinte nem volt egyértelmű, hogy a Momentum rajtra állása veszélyeztetné a NER leváltását. Cseh Katalin így érvelt az indulás mellett: „Ha most eldobjuk az egyik legerősebb eszközünket, azzal nem rendszerkritikusak leszünk, hanem kiszolgáltatottak.” Ezek a vélemények nem gyengítik a történetet, hanem pontosítják: a döntés nem volt egyértelmű, és a párt tagsága sem volt egységes.',
+            ],
+            links: [
+              { text: 'szerinte a belső dilemmát lájkokra váltotta', href: 'https://telex.hu/belfold/2025/05/07/tompos-marton-fekete-gyor-andras-momentum-valasztas', external: true },
+              { text: 'A Kontroll értesülése szerint', href: 'https://kontroll.hu/cikk/belfold/2025/06/08/nem-indul-a-2026-os-valasztasokon-a-momemtum-fekete-gyor-tavozhat', external: true },
+            ],
+            sources: [
+              { source: '444', date: '2025. máj. 7.', headline: 'Fekete-Győr András: Ne induljon a Momentum a 2026-os választásokon', url: 'https://444.hu/2025/05/07/fekete-gyor-andras-ne-induljon-a-momentum-a-2026-os-valasztasokon' },
+              { source: 'ATV', date: '2025. máj. 8.', headline: 'Fekete-Győr András: Szeretnék a tükörbe nézni 2026 után is', url: 'https://www.atv.hu/belfold/20250508/fekete-gyor-andras-momentum-2026/' },
+              { source: 'Telex', date: '2025. máj. 7.', headline: 'A Momentum elnöke szerint Fekete-Győr lájkokra vált egy belső dilemmát', url: 'https://telex.hu/belfold/2025/05/07/tompos-marton-fekete-gyor-andras-momentum-valasztas' },
+              { source: 'Népszava', date: '2025. máj. 12.', headline: 'A Momentum elnöksége támogatja, hogy a párt ne induljon el a 2026-os választáson', url: 'https://nepszava.hu/3279374_momentum-orszaggyulesi-valasztas-2026-elnokseg-visszalepes-tamogatasa' },
+              { source: 'Kontroll', date: '2025. jún. 8.', headline: 'Nem indul a 2026-os választásokon a Momentum, Fekete-Győr távozhat', url: 'https://kontroll.hu/cikk/belfold/2025/06/08/nem-indul-a-2026-os-valasztasokon-a-momemtum-fekete-gyor-tavozhat' },
+              { source: 'Népszava', date: '2025. jún. 10.', headline: 'Cseh Katalin nem támogatja a Momentum visszalépését, Szabó Szabolcs újraindul', url: 'https://nepszava.hu/3282903_momentum-fekete-gyor-andras-cseh-katalin' },
+              { source: 'Telex', date: '2025. máj. 12.', headline: 'A Momentum újabb képviselője jelentette be: nem indul újra a 2026-os választáson', url: 'https://telex.hu/belfold/2025/05/12/toth-endre-momentum-valasztas-2026-budafok-budateteny' },
+              { source: '444', date: '2025. jún. 19.', headline: 'Jámbor András nem indul a 2026-os választáson', url: 'https://444.hu/2025/06/19/jambor-andras-nem-indul-a-2026-os-valasztason' },
+            ],
+          },
+          {
+            title: 'Kilépés a Momentumból',
+            when: '2026. október 19.',
+            body: '2026. október 19-én Fekete-Győr bejelentette, hogy kilép a Momentumból. Független politikusként novembertől országjárásba kezd, és a progresszív oldal számára hoz létre új politikai teret. Úgy fogalmazott: „A Tisza széles politikai koalíciót képvisel, ezért nem feltétlenül vállal fel minden progresszív álláspontot” – ezeket ezért külön is szeretné képviselni.',
+            more: [
+              'Ez a lépés a Momentum visszalépés utáni történetének egyik fontos pontja. Fekete-Győr nem a kormányváltás pártján belüli támogatójaként, hanem a kormányváltás után is kritikus, független szereplőként jelenik meg.',
+              'A 2025-ös javaslat, a 2026-os kilépés és a független országjárás bejelentése egy folyamatos, következetes politikai pályát mutat: Fekete-Győr mindig a párt előtt álló stratégiai kérdésre, és nem a pártapparátus belső egyensúlyára reagált. Ez egyaránt lehet erény és konfliktusforrás, attól függően, hogy valaki a párt önállóságát vagy a kormányváltás egységét tartja fontosabbnak.',
+              'A kilépés egyben a Momentum és a Tisza közötti viszony egyik jelzése is. Ez a megközelítés párhuzamba állítható a Momentum 2025-ös döntésével: a kormányváltás fontosabb, mint a saját politikai márka, de a kormányváltás után is van szükség független hangokra.',
+            ],
+            sources: [
+              { source: 'Telex', date: '2026. okt. 19.', headline: 'Fekete-Győr András kilépett a Momentumból, független politikusként fog országjárásra indulni', url: 'https://telex.hu/belfold/2026/10/19/fekete-gyor-andras-lezarta-a-momemntumos-korszakat-fuggetlen-politikus-orszagjaras' },
+              { source: '444', date: '2026. okt. 19.', headline: 'Fekete-Győr András lezárja a momentumos korszakát', url: 'https://444.hu/2026/10/19/fekete-gyor-andras-lezarja-a-momentumos-korszakat' },
+              { source: 'Index', date: '2026. okt. 19.', headline: 'Fekete-Győr András kilépett a Momentumból, független politikusként folytatja a munkát', url: 'https://index.hu/belfold/2026/10/19/fekete-gyor-andras-momentum-fuggetlen-politikus/' },
+            ],
+          },
+        ],
+      },
+      extra: [
+        {
+          heading: 'Miért van Fekete-Győr András a Dicsőségfalon?',
+          paragraphs: [
+            'Fekete-Győr András három olyan momentumban játszott kulcsszerepet, amelyek a rendszerkritikus politikai nyilvánosság történetéhez tartoznak.',
+            'Először a NOlimpia: egy újonnan alakuló politikai közösség több mint 266 ezer aláírást gyűjtött, és ezzel a budapesti olimpia közpénzügyi kockázatait a közbeszéd középpontjába emelte. Ez a teljesítmény nem attól függ, hogy a Momentum minden érvét elfogadjuk-e.',
+            'Másodszor a 2025-ös visszalépés: a javaslat Fekete-Győr nevéhez köthető, és a párt tagsága végül elfogadta. A döntés vitatott volt a Momentumon belül is, de nem nevezhető a politikai érdektelenség példájának. A Momentum egy 2022-ben tízfős frakcióval rendelkező párt volt, amely a saját parlamenti jelenlétének megőrzését nem tekintette minden más szempontnál fontosabbnak.',
+            'Harmadszor a füstgyertyás ügy: egy parlamenti képviselő ellen hat éven át folyt büntetőeljárás egy tüntetési cselekmény miatt, és az ítélet a mandátumát is érintette. A bírósági döntés ténye és a politikai vitája együtt része a történetnek.',
+            'Fekete-Győr András neve ezért három olyan kulcsmomentumhoz kötődik, amelyek nélkül a Momentum 2017 utáni története, és a magyar ellenzék 2025–2026-os visszalépési vitái nehezebben érthetők lennének.',
+          ],
+        },
+        {
+          heading: 'Politikai módszer és stílus',
+          paragraphs: [
+            'Fekete-Győr politikai módszere három elemre épül. Az első a szervezett, tömeges aláírás- és kampánymunka: a NOlimpia-kampány azt mutatta meg, hogy egy új politikai közösség képes nagy számú állampolgárt mozgósítani egy konkrét, mérhető célért. A második a nyilvános tiltakozás: a túlóratörvény elleni tüntetés és a későbbi, Kossuth téren zajló demonstrációk azt jelzik, hogy az utcai jelenlét számára a politikai fellépés szerves része volt. A harmadik a közösségi médiában folytatott, gyakran éles hangú kommunikáció, amely a párt belső és külső vitáiban egyaránt kulcsszerepet játszott.',
+            'Ez a stílus egyszerre volt erőssége és konfliktusforrása. Támogatói a következetességet, a kockázatvállalást és a nyílt kiállást értékelik; kritikusai szerint a nyilvános konfrontáció gyakran a belső egyeztetések és a párt stratégiai egységének rovására ment. A 2025-ös vita is ezt a feszültséget mutatta: Tompos Márton szerint a döntést zártkörű fórumon kellett volna megvitatni, Fekete-Győr viszont a nyilvánosságot választotta.',
+            'A politikai stílus és a jogi ügy nem független egymástól. A büntetőeljárás során Fekete-Győr több alkalommal azt hangsúlyozta, hogy az eljárás politikailag motivált. A bíróság a politikai hátteret nem értékelte mentő körülményként. A vitát ezért nem lehet egyetlen dokumentummal eldönteni.',
+          ],
+        },
+        {
+          heading: 'Milyen kritikák érték?',
+          paragraphs: [
+            'Fekete-Győr megítélése sem egységes. Kritikusai szerint a füstgyertya dobása erőszakos cselekmény volt a rendőrök ellen, amelyet a bíróság hivatalos személy elleni erőszakként minősített. Mások a Momentum belső vitájának szempontjából bírálták: Tompos Márton szerint a visszalépés-javaslat a nyilvánosság előtt zajlott, és nem a belső fórumokon. A tagság fegyelmi eljárást kezdeményezett ellene. Cseh Katalin a visszalépést nem támogatta.',
+          ],
+        },
+      ],
+      faq: [
+        {
+          q: 'Miért szerepel Fekete-Győr András a NOlimpia kategóriában?',
+          a: 'Mert a NOlimpia-kampány az ő nevéhez és a Momentum alapításához kötődik. A 2017-es aláírásgyűjtésben 266 151 aláírás gyűlt össze, a népszavazáshoz 138 ezer érvényes aláírás lett volna szükséges.',
+        },
+        {
+          q: 'Miért ítélték el Fekete-Győr Andrást?',
+          a: 'Azért, mert 2018. december 13-án, a túlóratörvény elleni tüntetésen füstgyertyát dobott a rendőrsorfal felé. A bíróság csoportosan, társtettesként elkövetett hivatalos személy elleni erőszak bűntettében találta bűnösnek. Első fokon felmentették, másodfokon elítélték; a jogerős, harmadfokú ítélet 2024. október 17-én született.',
+        },
+        {
+          q: 'Letöltötte-e a büntetését?',
+          a: 'Nem börtönbüntetést kellett letöltenie. Az egy év szabadságvesztés végrehajtását két év próbaidőre felfüggesztették. A próbaidő a jogerős ítélet napjától számítva 2026 októberében járt le.',
+        },
+        {
+          q: 'A Momentum visszalépett a 2026-os választásról?',
+          a: 'Igen. A párt nem indult a 2026-os országgyűlési választáson. A döntést 2025. június 7-én a küldöttgyűlés hozta. Fekete-Győr javasolta, de a döntés a párt tagságának szavazásán született meg.',
+        },
+        {
+          q: 'Kilépett-e Fekete-Győr András a Momentumból?',
+          a: 'Igen, 2026. október 19-én bejelentette, hogy kilép a pártból. Független politikusként országjárásba kezd.',
+        },
+        {
+          q: 'Mit jelentett a Rendszerváltó Alap javaslata?',
+          a: 'Fekete-Győr 2025 májusában azt javasolta, hogy a Momentum az állami támogatásából hozzon létre egy 500 millió forintos alapot. Ennek célja tüntetések, rendezvények és rendszerkritikus sajtó támogatása, valamint az Orbán-rendszer politikai üldözöttjeinek segítése lett volna. A javaslatot a küldöttgyűlés napirendre sem vette, így a párt nem fogadta el.',
+        },
+        {
+          q: 'Miért fontos a 2022-es mandátum a történetben?',
+          a: 'Mert ez az a pont, amely a visszalépési döntést nem egy parlamenten kívüli párt döntésévé teszi. A Momentum 2022-ben tíz képviselővel rendelkezett, és Fekete-Győr listavezetőként jutott mandátumhoz. A 2025-ös döntés tehát egy olyan párt döntése volt, amelynek volt parlamenti jelenléte, és amely ezt a jelenlétet nem tekintette minden más szempontnál fontosabbnak.',
+        },
+        {
+          q: 'Milyen következményei voltak az ítéletnek a politikai pályájára nézve?',
+          a: 'Az ítélet a parlamenti mandátum elvesztésével járt, és Fekete-Győr közölte, hogy a mandátumát Cseh Katalinnak adja át. Ezen túl a büntetésre hivatkozva a brit beutazási kérelmét is elutasították, amit ő a büntetés közvetlen hétköznapi következményének tekint. A politikai pályájára gyakorolt hatása így nem csak a parlamenti pozíció elvesztésében, hanem a mindennapi mozgásszabadság korlátozásában is megjelent.',
+        },
+        {
+          q: 'Miért nem lehet a történetet egyetlen szóval összefoglalni?',
+          a: 'Mert a három fő momentum – a NOlimpia, a füstgyertyás ügy és a 2025-ös visszalépés – különböző kategóriákba tartozik. Az elsőt a közösségi mozgósítás és a közpénzügyi vita, a másodikat a büntetőjog és a tüntetési kultúra, a harmadikat a párt belső demokráciája és a választási stratégia határozza meg. Aki csak az egyiket nézi, a teljes képet nem látja.',
+        },
+        {
+          q: 'Mi a kilépés után várható?',
+          a: 'A bejelentés szerint Fekete-Győr novembertől országjárásba kezd, és a progresszív oldal számára szeretne politikai teret építeni. Hogy ez pártként, mozgalomként vagy más formában valósul meg, a bejelentés alapján még nem látható.',
+        },
+      ],
+      sources: [
+        { source: 'RTL', date: '2017. febr. 17.', headline: '266.151 aláírás gyűlt össze', url: 'https://rtl.hu/hirado/2017/02/17/266-151-alairas-gyult-ossze' },
+        { source: 'Infostart', date: '2024. okt. 17.', headline: 'Felfüggesztett börtönbüntetésre ítélték Fekete-Győr Andrást', url: 'https://infostart.hu/belfold/2024/10/17/felfuggesztett-bortonbuntetesre-iteltek-fekete-gyor-andrast' },
+        { source: 'Magyar Hang', date: '2024. okt. 17.', headline: 'Jogerősen elítélték Fekete-Győr Andrást, felfüggesztett börtönbüntetést kapott', url: 'https://hang.hu/belfold/fekete-gyor-targyalas-168600' },
+        { source: 'Népszava', date: '2024. okt. 17.', headline: 'Jogerősen felfüggesztett börtönre ítélték Fekete-Győr Andrást', url: 'https://nepszava.hu/3254335_fekete-gyor-andras-fovarosi-itelotabla-jogeros-itelet-felfuggesztett-bortonbuntetes' },
+        { source: 'Telex', date: '2025. aug. 18.', headline: 'Fekete-Győr András nem tudott kiutazni Angliába a rokonaihoz a felfüggesztett börtönbüntetése miatt', url: 'https://telex.hu/belfold/2025/08/18/fekete-gyor-andras-utazas-anglia-felfuggesztett-bortonbuntetes-beutazas' },
+        { source: 'Index', date: '2025. máj. 7.', headline: 'Fekete-Győr András azt kéri, hogy a Momentum ne induljon a 2026-os választáson', url: 'https://index.hu/belfold/2025/05/07/fekete-gyor-andras-momentum-nemzeti-egyuttmukodes-rendszere-valasztasok-kormanyvaltas/' },
+        { source: 'Kontroll', date: '2025. jún. 8.', headline: 'Nem indul a 2026-os választásokon a Momentum, Fekete-Győr távozhat', url: 'https://kontroll.hu/cikk/belfold/2025/06/08/nem-indul-a-2026-os-valasztasokon-a-momemtum-fekete-gyor-tavozhat' },
+        { source: 'Telex', date: '2026. okt. 19.', headline: 'Fekete-Győr András kilépett a Momentumból, független politikusként fog országjárásra indulni', url: 'https://telex.hu/belfold/2026/10/19/fekete-gyor-andras-lezarta-a-momemntumos-korszakat-fuggetlen-politikus-orszagjaras' },
+        { source: 'Momentum Mozgalom', headline: 'Fekete-Győr András archívum', url: 'https://momentum.hu/cimke/fekete-gyor-andras/' },
+      ],
+    },
   },
   {
     id: 'tompos-marton',

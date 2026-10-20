@@ -469,6 +469,15 @@ export default async function FeltaroPage({ params }: { params: Promise<{ slug: 
               />
             )}
 
+            {/* 2026-10-20 — önálló idővonal a „Ki ő?" után, a fő állomások
+                előtt (Fekete-Győr: „Időrend egy pillantásban"). */}
+            {d?.timelineTop && d.timelineTop.items.length > 0 && (
+              <div className="ugy-block-text" id="idorend">
+                <h2 className="ugy-block-heading">{d.timelineTop.heading}</h2>
+                <Timeline items={d.timelineTop.items} />
+              </div>
+            )}
+
             {d?.cases && d.cases.items.length > 0 && (
               <div className="ugy-block-text" id="ugyek">
                 <h2 className="ugy-block-heading">{d.cases.heading}</h2>
