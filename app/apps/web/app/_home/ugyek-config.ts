@@ -215,7 +215,8 @@ export const UGYEK: UgyekConfig[] = [
       },
     },
     statusItems: [
-      { icon: '🔴', label: 'Letartóztatás', value: 'Seszták Miklós volt miniszter (2026. szept. 30., 30 napra), Jellinek Dániel és Szivek Norbert (2026. szept. 17.)' },
+      { icon: '🔴', label: 'Letartóztatás', value: 'Seszták Miklós volt miniszter (2026. szept. 30., 30 napra), Szivek Norbert (2026. szept. 17., okt. 16-án három hónappal meghosszabbítva)' },
+      { icon: '🟠', label: 'Bűnügyi felügyelet', value: 'Jellinek Dániel — 2026. okt. 16-án kiengedték a letartóztatásból, a sajtó szerint házi őrizetbe, nyomkövetővel' },
       { icon: '👥', label: 'Gyanúsítottak', value: '8 fő (2026. szept. 11., NNI) — a szóvivő szerint mentelmi joggal rendelkező személy is érintett lehet' },
       { icon: '⚖️', label: 'Eljárás', value: 'Központi Nyomozó Főügyészség — bűnszövetségben, üzletszerűen elkövetett vesztegetés elfogadása; az NNI-ágon hűtlen kezelés és pénzmosás' },
       { icon: '💰', label: 'Becsült vagyoni hátrány', value: '~10 milliárd Ft (2015–2018, Volán-társaságok)' },
@@ -1618,13 +1619,6 @@ Ez az ügy nemcsak a közvetlen anyagi kár miatt kerül a legdurvább ügyek k�
           lead: 'Ügyvédje szerint különösen jelentős vagyoni hátrányt okozó gazdasági csalással és hamis magánokirat felhasználásával gyanúsítják a volt jegybankelnököt. Legalább három további embert is őrizetbe vettek.',
           date: '2026. október 21.',
           url: 'https://telex.hu/gazdasag/2026/10/21/orizetbe-vettek-matolcsy-gyorgyot',
-        },
-        {
-          source: 'Index',
-          headline: 'Őrizetbe vették Matolcsy Györgyöt',
-          lead: 'A Központi Nyomozó Főügyészség több helyszínen tartott eljárási cselekményeket az MNB-ügyben, amelyben 2025 februárja óta folyik nyomozás.',
-          date: '2026. október 21.',
-          url: 'https://index.hu/belfold/2026/10/21/kozponti-nyomozo-ugyeszseg-mnb-eljarasi-cselekmeny-helyszinek/',
         },
       ],
     },

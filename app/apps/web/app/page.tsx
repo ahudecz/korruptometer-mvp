@@ -1233,7 +1233,7 @@ export default async function HomePage() {
             },
             videoId: '3zF9ozF8bzA',
             statusItems: [
-              { icon: '🔴', label: 'Letartóztatás', value: '{elozetesben} személy letartóztatva — Seszták Miklós volt miniszter (szept. 30.), Jellinek Dániel és Szivek Norbert (szept. 17.)' },
+              { icon: '🔴', label: 'Letartóztatás', value: '{elozetesben} személy letartóztatva — Seszták Miklós volt miniszter (szept. 30.), Szivek Norbert (szept. 17., okt. 16-án meghosszabbítva); Jellinek Dániel okt. 16. óta nyomkövetővel, bűnügyi felügyelet alatt' },
               { icon: '👥', label: 'Gyanúsítottak', value: '8 fő (szept. 11., NNI) — a szóvivő szerint mentelmi joggal rendelkező személy is érintett lehet' },
               { icon: '⚖️', label: 'Eljárás', value: 'Központi Nyomozó Főügyészség — bűnszövetségben, üzletszerűen elkövetett vesztegetés elfogadása; az NNI-ágon hűtlen kezelés és pénzmosás' },
               { icon: '💰', label: 'Becsült vagyoni hátrány', value: '~10 milliárd Ft (2015–2018, Volán-társaságok)' },
