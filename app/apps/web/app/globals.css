@@ -16335,3 +16335,46 @@ code {
 .ugy-breaking-update .ugy-block-article-card + .ugy-block-article-card { margin-top: 8px; }
 .person-body > .ugy-description > .ugy-block-article-card:last-child { margin-bottom: 0; }
 .ugy-subpage-promos { margin-top: -40px; }
+
+/* 2026-10-21 — CustodyRibbon (custody-ribbon.tsx): őrizetben / letartóztatva
+   lévő kiemelt személy átlós szalagja, a .watchlist-badge--resigned mintájára. */
+.custody-ribbon-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  container-type: inline-size;
+  pointer-events: none;
+  z-index: 2;
+}
+.custody-ribbon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  text-align: center;
+  transform: translate(-50%, -50%) rotate(-22deg);
+  font-family: 'Archivo', sans-serif;
+  font-size: clamp(9px, 7.5cqw, 22px);
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 6px 0;
+  background: rgba(10, 8, 14, 0.6);
+  color: #ff4d5e;
+  border-top: 3.5px solid #e31937;
+  border-bottom: 3.5px solid #e31937;
+  white-space: nowrap;
+  opacity: 0.96;
+  line-height: 1;
+}
+.rogue--custody .rogue-mug,
+.rogue-mug-sm.is-custody,
+.person-more-mug.is-custody {
+  border: 4px solid #e31937;
+}
+/* A személy-/ügyoldal fejképe alatt címke és fotóhitel is van — a szalag
+   csak a négyzetes fotót fedje (.person-photo-img aspect-ratio: 1). */
+.person-hero-photo > .custody-ribbon-wrap {
+  bottom: auto;
+  aspect-ratio: 1;
+}

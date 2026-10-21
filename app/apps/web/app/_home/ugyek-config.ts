@@ -40,6 +40,11 @@ export type BreakingUpdateCompanyRow = {
 };
 export interface BreakingUpdate {
   dateLabel: string;
+  /** 2026-10-21: a breaking a felelős személy galériaoldalán
+   *  (/galeria/<responsibleGaleriaId>) is megjelenik, a lap tetején. Csak
+   *  akkor kapcsold be, ha a fejlemény magáról a személyről szól (pl.
+   *  Matolcsy őrizetbe vétele), nem az ügy egy másik szereplőjéről. */
+  showOnPersonPage?: boolean;
   headline: string;
   lead: string;
   /** Cégenkénti táblázat. Üres tömb = nincs táblázat, ilyenkor az
@@ -1476,13 +1481,13 @@ Ez az ügy nemcsak a közvetlen anyagi kár miatt kerül a legdurvább ügyek k�
 
   {
     id: 'mnb-botrany',
-    eyebrow: 'Aktív · Nyomozás folyamatban',
+    eyebrow: 'Aktív · Matolcsy György őrizetben',
     title: 'MNB botrány',
     responsible: 'Matolcsy György',
     responsibleGaleriaId: 'matolcsy-gyorgy',
     estimatedDamage: '266+ milliárd Ft — közpénz MNB alapítványokon átfolyva',
     responsiblePersons: ['Matolcsy György — MNB elnöke (2013–2025)'],
-    crimeTypes: ['Hűtlen kezelés', 'Sikkasztás (gyanú)', 'Közbeszerzési visszaélés'],
+    crimeTypes: ['Gazdasági csalás (gyanú)', 'Hamis magánokirat felhasználása (gyanú)', 'Hűtlen kezelés'],
     relatedPersonIds: ['matolcsy-gyorgy', 'windisch-laszlo'],
     articleTag: 'MNB',
     // A régi articleKeywordGroups két szűk AND-párra korlátozódott (mindkét
@@ -1588,7 +1593,7 @@ Ez az ügy nemcsak a közvetlen anyagi kár miatt kerül a legdurvább ügyek k�
       },
     ],
     moreUrl: '/ugyek/mnb-botrany',
-    summary: 'Matolcsy György az MNB elnökeként 266 milliárd forintot csatornázott alapítványokon keresztül. Az ÁSZ kiszivárgott jelentés-tervezete súlyos vagyonvesztést és szabálytalanságokat tárt fel. Az ügyészség 2026-ban nyomozást indított hűtlen kezelés és más bűncselekmények gyanúja miatt.',
+    summary: 'Matolcsy György az MNB elnökeként 266 milliárd forintot csatornázott alapítványokon keresztül. Az ÁSZ kiszivárgott jelentés-tervezete súlyos vagyonvesztést és szabálytalanságokat tárt fel. 2026. október 21-én a Központi Nyomozó Főügyészség őrizetbe vette a volt jegybankelnököt; ügyvédje szerint különösen jelentős vagyoni hátrányt okozó gazdasági csalással és hamis magánokirat felhasználásával gyanúsítják.',
     videoId: 'bgA0PTDFKlY',
     videoChannel: 'Telex.hu',
     videoTitle: 'Az MNB-botrány egy évvel később',
@@ -1600,10 +1605,34 @@ Ez az ügy nemcsak a közvetlen anyagi kár miatt kerül a legdurvább ügyek k�
       { id: 'c-P_pqmnSYQ', label: 'ATV', title: '„Négyszer zsarolták meg a bankot" – Súlyos állítást tett a Matolcsy-korszakról az MNB volt alelnöke' },
       { id: '-JuOo5O_Qeo', label: 'Klubrádió', title: 'A világ legnagyobb bankrablása.... A Matolcsy ügyről...Simor András, az MNB volt elnöke' },
     ],
+    breakingUpdate: {
+      dateLabel: '2026. október 21.',
+      showOnPersonPage: true,
+      headline: 'Őrizetbe vették Matolcsy György volt jegybankelnököt',
+      lead: 'A Központi Nyomozó Főügyészség 2026. október 21-én, szerda kora reggel őrizetbe vette Matolcsy Györgyöt, a Magyar Nemzeti Bank volt elnökét. Ügyvédje, Bátki Pál szerint különösen jelentős vagyoni hátrányt okozó gazdasági csalás bűntettével és hamis magánokirat felhasználásának vétségével gyanúsítják. A főügyészség aznap reggel több helyszínen tartott összehangolt akciót a Nemzeti Nyomozó Iroda, a BRFK, a Nemzetvédelmi Szolgálat és a Készenléti Rendőrség közreműködésével; a Telex értesülése szerint legalább három további embert is őrizetbe vettek, köztük egy ügyvédet és a Matolcsy Ádám mükonoszi villáját papíron birtokló cég egyik vezetőjét. Az őrizet legfeljebb 72 óráig tart, a letartóztatásról bíróság dönt. Vádemelés nem történt.',
+      companies: [],
+      articles: [
+        {
+          source: 'Telex',
+          headline: 'Őrizetbe vették Matolcsy Györgyöt',
+          lead: 'Ügyvédje szerint különösen jelentős vagyoni hátrányt okozó gazdasági csalással és hamis magánokirat felhasználásával gyanúsítják a volt jegybankelnököt. Legalább három további embert is őrizetbe vettek.',
+          date: '2026. október 21.',
+          url: 'https://telex.hu/gazdasag/2026/10/21/orizetbe-vettek-matolcsy-gyorgyot',
+        },
+        {
+          source: 'Index',
+          headline: 'Őrizetbe vették Matolcsy Györgyöt',
+          lead: 'A Központi Nyomozó Főügyészség több helyszínen tartott eljárási cselekményeket az MNB-ügyben, amelyben 2025 februárja óta folyik nyomozás.',
+          date: '2026. október 21.',
+          url: 'https://index.hu/belfold/2026/10/21/kozponti-nyomozo-ugyeszseg-mnb-eljarasi-cselekmeny-helyszinek/',
+        },
+      ],
+    },
     statusItems: [
+      { icon: '🔴', label: 'Őrizet', value: 'Matolcsy György volt MNB-elnök (2026. okt. 21., Központi Nyomozó Főügyészség) — a letartóztatásról bíróság dönt' },
+      { icon: '⚖️', label: 'Gyanú', value: 'Különösen jelentős vagyoni hátrányt okozó gazdasági csalás, hamis magánokirat felhasználása (az ügyvéd közlése szerint)' },
       { icon: '💰', label: 'Érintett közpénz', value: '266+ milliárd Ft — MNB alapítványokon átfolyva' },
       { icon: '📋', label: 'Feltárta', value: 'ÁSZ (Állami Számvevőszék) — kiszivárgott jelentés-tervezet' },
-      { icon: '⚖️', label: 'Nyomozás', value: 'Ügyészség 2026-ban indított nyomozást — hűtlen kezelés gyanúja' },
     ],
     sourceRefs: [
       { label: 'Telex / Direkt36: Panyi Szabolcs és Szőke Dániel — az ÁSZ kiszivárgott jelentés-tervezetének teljes elemzése', url: 'https://telex.hu/direkt36/2025/03/17/hatalmas-vagyonvesztest-es-mas-sulyos-problemakat-talalt-az-asz-matolcsyek-alapitvanyanal-a-kiszivargott-jelentesterv-szerint' },

@@ -7,7 +7,9 @@ import { FtValue } from '../../_home/ft-value';
 import { getDb, schema } from '@/lib/db';
 import { Mugshot } from '@korr/ui/mugshot';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from '../../_home/galeria-config';
+import { CustodyRibbon } from '../../_home/custody-ribbon';
 import { UGYEK } from '../../_home/ugyek-config';
+import { BreakingUpdateBox } from '../../_home/breaking-update-box';
 import { getPersonRollup, rollupHref } from '../../_home/person-rollup-config';
 import { CrossLemondosok, CrossMegszunt, CrossErdekesUgyek } from '../../_home/cross-promo';
 import { getRelatedComplaintsForGaleria } from '@/lib/related-complaints';
@@ -123,6 +125,8 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   // keretes hírként (l. related-complaints.ts).
   const relatedComplaints = await getRelatedComplaintsForGaleria(entry.name, entry.newsKeywords ?? []);
 
+  const linkedBreaking = UGYEK.find((u) => u.responsibleGaleriaId === entry.id && u.breakingUpdate?.showOnPersonPage)?.breakingUpdate;
+
   const detentionColors: Record<string, string> = {
     investig: '#c9a800',
     loose: '#4a6a8a',
@@ -144,6 +148,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                 <span>{entry.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</span>
               </div>
             )}
+            <CustodyRibbon text={entry.custodyStamp} />
             <div
               className="person-status-badge"
               style={{ background: detentionColors[entry.detention] ?? '#5c5e62' }}
@@ -174,6 +179,10 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       </div>
 
       <div className="person-body">
+        {/* 2026-10-21 (Matolcsy György őrizetbe vétele): a személyhez tartozó
+            ügy BREAKING frissítése a személyoldal tetején is — ugyanaz a doboz
+            és ugyanaz az adat, mint az /ugyek/<ügy> oldalon (nincs duplikálva). */}
+        {linkedBreaking && <BreakingUpdateBox update={linkedBreaking} />}
         {/* Kapcsolódó feljelentések — kiemelt keretes hír, LEGFELÜL (user
             kérés, 2026-08-25: friss/breaking hírnek a lap tetején a helye,
             nem a hírfolyam alatt). Óvatos megfogalmazás: egy feljelentés
@@ -448,7 +457,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           <div className="person-more-grid">
             {GALERIA.filter(e => e.id !== entry.id).map(e => (
               <Link key={e.id} href={`/galeria/${e.id}`} className="person-more-card">
-                <div className={`person-more-mug r-${e.detention}`}>
+                <div className={`person-more-mug r-${e.detention}${e.custodyStamp ? ' is-custody' : ''}`}>
                   {e.photoUrl ? (
                     <img
                       src={e.photoUrl.startsWith('/') || e.photoUrl.includes('wikimedia.org') ? e.photoUrl : `/api/img-proxy?url=${encodeURIComponent(e.photoUrl)}`}
@@ -465,6 +474,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                       detention={e.detention as GaleriaDetention}
                     />
                   )}
+                  <CustodyRibbon text={e.custodyStamp} />
                 </div>
                 <div className="person-more-name">{e.name}</div>
                 <div className="person-more-sub">{(e.subtitle.split('·')[0] ?? '').trim()}</div>

@@ -5,6 +5,7 @@ import { getDb, schema } from '@/lib/db';
 import { resolveWatchListPersons } from '@/lib/watchlist-status';
 import { UGYEK } from './ugyek-config';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './galeria-config';
+import { CustodyRibbon } from './custody-ribbon';
 import { getFeaturedPeople, getTotalDamage } from './featured-persons';
 import { rollupHref } from './person-rollup-config';
 import { autoDisplayTitle, getCaseDisplayTitle, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS } from './case-detail-config';
@@ -476,7 +477,7 @@ export function CrossGaleria() {
       <div className="person-more-grid">
         {GALERIA.map(e => (
           <Link key={e.id} href={`/galeria/${e.id}`} className="person-more-card">
-            <div className={`person-more-mug r-${e.detention}`}>
+            <div className={`person-more-mug r-${e.detention}${e.custodyStamp ? ' is-custody' : ''}`}>
               {e.photoUrl ? (
                 <img
                   src={e.photoUrl.startsWith('/') || e.photoUrl.includes('wikimedia.org') ? e.photoUrl : `/api/img-proxy?url=${encodeURIComponent(e.photoUrl)}`}
@@ -495,6 +496,7 @@ export function CrossGaleria() {
                   detention={e.detention as GaleriaDetention}
                 />
               )}
+              <CustodyRibbon text={e.custodyStamp} />
             </div>
             <div className="person-more-name">{e.name}</div>
             <div className="person-more-sub">{(e.subtitle.split('·')[0] ?? '').trim()}</div>

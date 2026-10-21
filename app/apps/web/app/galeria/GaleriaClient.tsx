@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Mugshot } from '@korr/ui/mugshot';
 
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from '../_home/galeria-config';
+import { CustodyRibbon } from '../_home/custody-ribbon';
 
 function photoSrc(url: string) {
   if (url.startsWith('/') || url.includes('wikimedia.org')) return url;
@@ -15,7 +16,7 @@ function GaleriaDetail({ entry }: { entry: typeof GALERIA[number] }) {
   return (
     <>
       <div className="gal-detail-mug">
-        <div className={`rogue-mug-sm r-${entry.detention}`}>
+        <div className={`rogue-mug-sm r-${entry.detention}${entry.custodyStamp ? ' is-custody' : ''}`}>
           {entry.photoUrl ? (
             <img src={photoSrc(entry.photoUrl)} alt={entry.name} className="gal-photo" />
           ) : (
@@ -28,6 +29,7 @@ function GaleriaDetail({ entry }: { entry: typeof GALERIA[number] }) {
               detention={entry.detention as GaleriaDetention}
             />
           )}
+          <CustodyRibbon text={entry.custodyStamp} />
           <div className={`status-strip ${entry.detention}`}>{entry.detentionLabel}</div>
           {entry.photoCredit && (
             <div className="photo-credit">{entry.photoCredit}</div>

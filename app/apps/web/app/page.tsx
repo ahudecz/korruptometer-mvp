@@ -22,6 +22,7 @@ import { CaseRow } from './adatbazis/_components/case-row';
 import { BigCasesSection, type BigCaseConfig } from './_home/big-cases-section';
 import { BreakingBanner } from './_home/breaking-banner';
 import { GALERIA, type GaleriaDetention, type GaleriaHair } from './_home/galeria-config';
+import { CustodyRibbon } from './_home/custody-ribbon';
 import { UGYEK } from './_home/ugyek-config';
 import { autoDisplayTitle, getCaseDisplayTitle, HIDDEN_DAMAGE_IDS, RETIRED_SCANDAL_IDS } from './_home/case-detail-config';
 import { NewsCardImage } from './hirek/news-card-image';
@@ -1187,6 +1188,31 @@ export default async function HomePage() {
       {/* ───── BIGGEST CASES ───── */}
       {(() => {
         const bigCases: BigCaseConfig[] = [
+          // 2026-10-21 — Matolcsy György őrizetbe vétele (breaking): az MNB-ügy
+          // került az ELSŐ helyre (a desktop tab-nézet alapértelmezett ügye),
+          // ugyanúgy, ahogy 09-15-én a Volánbusz-ügy.
+          {
+            id: 'mnb-botrany',
+            eyebrow: 'Aktív · Matolcsy György őrizetben',
+            title: 'MNB botrány',
+            responsible: 'Matolcsy György',
+            videoId: 'bgA0PTDFKlY',
+            summary: 'Matolcsy György az MNB elnökeként 266 milliárd forintot csatornázott alapítványokon keresztül. Az ÁSZ kiszivárgott jelentés-tervezete súlyos vagyonvesztést és szabálytalanságokat tárt fel. 2026. október 21-én a Központi Nyomozó Főügyészség őrizetbe vette a volt jegybankelnököt.',
+            // 2026-10-21: ugyanaz a breaking, mint az ügyoldalon (ugyek-config breakingUpdate).
+            breakingAlert: {
+              source: 'Telex',
+              headline: 'Őrizetbe vették Matolcsy Györgyöt',
+              lead: 'A Központi Nyomozó Főügyészség 2026. október 21-én őrizetbe vette a volt jegybankelnököt. Ügyvédje szerint különösen jelentős vagyoni hátrányt okozó gazdasági csalással és hamis magánokirat felhasználásával gyanúsítják.',
+              url: 'https://telex.hu/gazdasag/2026/10/21/orizetbe-vettek-matolcsy-gyorgyot',
+            },
+            statusItems: [
+              { icon: '🔴', label: 'Őrizet', value: 'Matolcsy György volt MNB-elnök (okt. 21., Központi Nyomozó Főügyészség) — a letartóztatásról bíróság dönt' },
+              { icon: '⚖️', label: 'Gyanú', value: 'Különösen jelentős vagyoni hátrányt okozó gazdasági csalás, hamis magánokirat felhasználása' },
+              { icon: '💰', label: 'Érintett közpénz', value: '266+ milliárd Ft — MNB alapítványokon átfolyva' },
+            ],
+            moreUrl: '/ugyek/mnb-botrany',
+            articles: mnbArticles.map(a => ({ ...a })),
+          },
           // 2026-09-15 — user kérés: a Volánbusz-ügy az ELSŐ helyre, mert így
           // ez a desktop tab-nézet alapértelmezett ügye (BigCasesSection useState(0)).
           // FIGYELEM: ugyanez az ügy a ugyek-config.ts UGYEK tömbjében is él —
@@ -1310,21 +1336,6 @@ export default async function HomePage() {
             ],
             moreUrl: '/ugyek/hatvanpuszta',
             articles: hatvanArticles.map(a => ({ ...a })),
-          },
-          {
-            id: 'mnb-botrany',
-            eyebrow: 'Aktív · Nyomozás folyamatban',
-            title: 'MNB botrány',
-            responsible: 'Matolcsy György',
-            videoId: 'bgA0PTDFKlY',
-            summary: 'Matolcsy György az MNB elnökeként 266 milliárd forintot csatornázott alapítványokon keresztül. Az ÁSZ kiszivárgott jelentés-tervezete súlyos vagyonvesztést és szabálytalanságokat tárt fel. Az ügyészség 2026-ban nyomozást indított hűtlen kezelés és más bűncselekmények gyanúja miatt.',
-            statusItems: [
-              { icon: '💰', label: 'Érintett közpénz', value: '266+ milliárd Ft — MNB alapítványokon átfolyva' },
-              { icon: '📋', label: 'Feltárta', value: 'ÁSZ (Állami Számvevőszék) — kiszivárgott jelentés-tervezet' },
-              { icon: '⚖️', label: 'Nyomozás', value: 'Ügyészség 2026-ban indított nyomozást — hűtlen kezelés gyanúja' },
-            ],
-            moreUrl: '/ugyek/mnb-botrany',
-            articles: mnbArticles.map(a => ({ ...a })),
           },
           {
             id: 'pecsi-volvo-gate',
@@ -1539,7 +1550,7 @@ export default async function HomePage() {
               const isWanted = detention === 'wanted';
               const rank = String(idx + 1).padStart(2, '0');
               return (
-                <Link key={entry.id} href={`/galeria/${entry.id}`} className={`rogue r-${detention}${entry.id === 'lazar-janos' ? ' rogue--lazar-photo-shift' : ''}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                <Link key={entry.id} href={`/galeria/${entry.id}`} className={`rogue r-${detention}${entry.custodyStamp ? ' rogue--custody' : ''}${entry.id === 'lazar-janos' ? ' rogue--lazar-photo-shift' : ''}`} style={{ color: 'inherit', textDecoration: 'none' }}>
                   <div className="rogue-rank">
                     <span>№ {rank}</span>
                     <span className="id">{entry.id}</span>
@@ -1573,6 +1584,7 @@ export default async function HomePage() {
                       </>
                     )}
                     {isWanted && <div className="stamp small">KÖRÖZÖTT</div>}
+                    <CustodyRibbon text={entry.custodyStamp} />
                     <div className={`status-strip ${detention}`}>
                       {entry.detentionLabel}
                     </div>

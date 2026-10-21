@@ -12,6 +12,7 @@ import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak, Cros
 import { getRelatedComplaintsForUgy } from '@/lib/related-complaints';
 import { RelatedComplaintCard } from '../../_home/related-complaint-card';
 import { BreakingUpdateBox } from '../../_home/breaking-update-box';
+import { CustodyRibbon } from '../../_home/custody-ribbon';
 import { DescImage, DescTimeline, FacilitiesGrid } from '../../_home/desc-extra-blocks';
 import { PodcastVideoBox } from '../../_home/podcast-video-box';
 import { fillStatusItems, loadDetentionCounts } from '@/lib/detention-counts';
@@ -425,6 +426,7 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
                 <span>{isZsoltBacsi ? '?' : initials}</span>
               </div>
             )}
+            <CustodyRibbon text={galeriaEntry?.custodyStamp} />
             <div className="person-status-badge" style={{ background: badgeColor }}>
               {(entry.eyebrow.split('·')[0] ?? '').trim()}
             </div>
