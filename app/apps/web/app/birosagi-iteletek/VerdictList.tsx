@@ -415,7 +415,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
   // verdict-stats.ts: tesztelt, egyetlen forrás — l. verdict-stats.test.ts,
   // ami minden CHECK-constraint-listás verdictType értékre garantálja, hogy
   // pontosan egy kártyába/számlálóba esik (2026-08-02, user report).
-  const { pretrialCount, nonPretrialCount, suspectedCount, jogerosCount, totalYears } = computeVerdictStats(filtered);
+  const { pretrialCount, wantedCount, nonPretrialCount, suspectedCount, jogerosCount, totalYears } = computeVerdictStats(filtered);
 
   function clearAll() {
     setSearch(''); setVerdictTypeFilter('all'); setComplaintStatusFilter('all'); setCrimeFilter([]); setYearRange('all'); setCourtFilter('all'); setUgyFilter('all');
@@ -429,7 +429,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
           listát, és egy nem létező horgonyra görgetés némán nem csinálna
           semmit — ami rosszabb, mint ha a doboz eleve nem is tűnik
           kattinthatónak. */}
-      <div className="megszunt-stats megszunt-stats--5">
+      <div className="megszunt-stats megszunt-stats--7">
         {complaints.length > 0 && filteredComplaints.length > 0 ? (
           <button
             type="button"
@@ -460,6 +460,23 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
           <div className="megszunt-stat">
             <div className="megszunt-stat-value megszunt-stat-value--red">{pretrialCount}</div>
             <div className="megszunt-stat-label">Őrizet, előzetes, felügyelet</div>
+          </div>
+        )}
+        {/* 2026-10-23 user kérés: „Körözés alatt” kocka, a #korozes-lista célpontja. */}
+        {wantedFiltered.length > 0 ? (
+          <button
+            type="button"
+            className="megszunt-stat megszunt-stat--clickable"
+            onClick={() => scrollToSection('korozes-lista')}
+            aria-label="Ugrás a körözés alatt állók listájához"
+          >
+            <div className="megszunt-stat-value megszunt-stat-value--red">{wantedCount}</div>
+            <div className="megszunt-stat-label">Körözés alatt</div>
+          </button>
+        ) : (
+          <div className="megszunt-stat">
+            <div className="megszunt-stat-value">{wantedCount}</div>
+            <div className="megszunt-stat-label">Körözés alatt</div>
           </div>
         )}
         {/* A "Vádemelve vagy elítélve" szám a vádemelést és a kihirdetett
@@ -504,7 +521,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
           <div className="megszunt-stat-value">{totalYears}</div>
           <div className="megszunt-stat-label">Kiszabott börtönév</div>
         </div>
-        <div className="megszunt-stat">
+        <div className="megszunt-stat megszunt-stat--span2">
           <div className="megszunt-stat-value">{jogerosCount}</div>
           <div className="megszunt-stat-label">Jogerős ítélet</div>
         </div>

@@ -16378,3 +16378,18 @@ code {
   bottom: auto;
   aspect-ratio: 1;
 }
+
+/* 2026-10-23 — /birosagi-iteletek: 7 kocka („Körözés alatt” is). 4 oszlop,
+   az utolsó kocka két helyet foglal, így egyik nézetben sem marad lyuk
+   (desktop 4+3, mobil 2+2+2+1). */
+.megszunt-stats--7 {
+  grid-template-columns: repeat(4, 1fr);
+}
+.megszunt-stats--7 .megszunt-stat--span2 {
+  grid-column: span 2;
+}
+@media (max-width: 768px) {
+  .megszunt-stats--7 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
