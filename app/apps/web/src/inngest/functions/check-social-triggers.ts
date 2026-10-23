@@ -1,6 +1,7 @@
 import 'server-only';
 import { fillEyebrow, loadDetentionCounts } from '@/lib/detention-counts';
-import { and, desc, eq, gt, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, or, sql } from 'drizzle-orm';
+import { isCharged, isPoliceCustody, isReleased, isWanted } from '../../../app/birosagi-iteletek/verdict-stats';
 
 import { getDb, schema } from '@/lib/db';
 import { renderMilestoneImage, renderBreakingImage, renderSummaryImage } from '@/lib/social-image';
@@ -379,25 +380,46 @@ const VERDICT_VERBS: Record<string, string> = {
 async function buildCourtVerdictTriggers(db: ReturnType<typeof getDb>, counts: ContextCounts): Promise<OutboxInsert[]> {
   const since = new Date(Date.now() - BREAKING_LOOKBACK_HOURS * 60 * 60 * 1000);
   const recent = await db
-    .select({ id: schema.courtVerdicts.id, personName: schema.courtVerdicts.personName, sentenceLabel: schema.courtVerdicts.sentenceLabel, sentenceYears: schema.courtVerdicts.sentenceYears, summary: schema.courtVerdicts.summary, verdictType: schema.courtVerdicts.verdictType, position: schema.courtVerdicts.position, court: schema.courtVerdicts.court, sourceNames: schema.courtVerdicts.sourceNames })
+    .select({ id: schema.courtVerdicts.id, personName: schema.courtVerdicts.personName, sentenceLabel: schema.courtVerdicts.sentenceLabel, sentenceYears: schema.courtVerdicts.sentenceYears, summary: schema.courtVerdicts.summary, verdictType: schema.courtVerdicts.verdictType, position: schema.courtVerdicts.position, court: schema.courtVerdicts.court, sourceNames: schema.courtVerdicts.sourceNames, description: schema.courtVerdicts.description })
     .from(schema.courtVerdicts)
     .where(and(
       eq(schema.courtVerdicts.reviewStatus, 'approved'),
-      gt(schema.courtVerdicts.createdAt, since),
+      // 2026-10-23 (Matolcsy György): egy pending-ként létrejött, KÉSŐBB
+      // jóváhagyott sor createdAt-je már kívül esett az ablakon, így az
+      // ország egyik legfontosabb letartóztatásáról nem lett poszt-jelölt.
+      // A jóváhagyás az updatedAt-et frissíti — de csak friss (7 napon
+      // belül létrejött) sorokra, hogy egy régi sor javítása ne posztoljon.
+      or(
+        gt(schema.courtVerdicts.createdAt, since),
+        and(
+          gt(schema.courtVerdicts.updatedAt, since),
+          gt(schema.courtVerdicts.createdAt, new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)),
+        ),
+      ),
     ))
     .orderBy(desc(schema.courtVerdicts.createdAt));
   if (recent.length === 0) return [];
 
-  const alreadyPostedIds = await alreadyPostedRefIds(db, 'court_verdict');
+  // A kézi korrekciós posztok ('court_verdict_update') is számítanak — egy
+  // sorról ne menjen ki két poszt.
+  const alreadyPostedIds = new Set([
+    ...(await alreadyPostedRefIds(db, 'court_verdict')),
+    ...(await alreadyPostedRefIds(db, 'court_verdict_update')),
+  ]);
   const out: OutboxInsert[] = [];
   for (const v of recent) {
     if (alreadyPostedIds.has(v.id)) continue;
-    const kicker = VERDICT_KICKERS[v.verdictType] ?? 'ÍTÉLET';
+    // 2026-10-23: a leírás jelöli az őrizetet és a körözést (nincs külön
+    // verdictType, l. verdict-stats.ts) — ezek nem kaphatnak ELŐZETESBEN /
+    // ÍTÉLET kickert (Stofa György körözése 'ÍTÉLET'-tel ment jóváhagyásra).
+    const wanted = !isReleased(v.verdictType) && v.verdictType !== 'előzetesben' && !isCharged(v.verdictType) && isWanted(v.description);
+    const custody = v.verdictType === 'előzetesben' && isPoliceCustody(v.description);
+    const kicker = wanted ? 'KÖRÖZÉS' : custody ? 'ŐRIZETBEN' : (VERDICT_KICKERS[v.verdictType] ?? 'ÍTÉLET');
     const sentence = v.sentenceLabel ?? (v.sentenceYears > 0 ? `${v.sentenceYears} év` : null);
     // Kettőspontos forma — sose "Letartóztatták X-et"-féle igés+tárgyeset
     // szerkezet, mert az a név accusative ragozását igényelné (pl. "Kovács
     // János" → "Kovács Jánost"), ami ismeretlen névvégződésen elcsúszik.
-    const verb = VERDICT_VERBS[v.verdictType];
+    const verb = wanted ? 'körözés alatt!' : custody ? 'őrizetben!' : VERDICT_VERBS[v.verdictType];
     const headline = verb ? `${v.personName}: ${verb}` : sentence ? `${v.personName}: ${sentence}` : v.personName;
     const detail = v.summary;
     // Brief 8. — a képre rövid, befejezett gondolat megy, nem a fél summary.

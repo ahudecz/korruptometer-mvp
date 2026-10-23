@@ -1194,21 +1194,21 @@ export default async function HomePage() {
           // ugyanúgy, ahogy 09-15-én a Volánbusz-ügy.
           {
             id: 'mnb-botrany',
-            eyebrow: 'Aktív · Matolcsy György őrizetben',
+            eyebrow: 'Aktív · Matolcsy György letartóztatva',
             title: 'MNB botrány',
             responsible: 'Matolcsy György',
             videoId: 'bgA0PTDFKlY',
-            summary: 'Matolcsy György az MNB elnökeként 266 milliárd forintot csatornázott alapítványokon keresztül. Az ÁSZ kiszivárgott jelentés-tervezete súlyos vagyonvesztést és szabálytalanságokat tárt fel. 2026. október 21-én a Központi Nyomozó Főügyészség őrizetbe vette a volt jegybankelnököt.',
+            summary: 'Matolcsy György az MNB elnökeként 266 milliárd forintot csatornázott alapítványokon keresztül. Az ÁSZ kiszivárgott jelentés-tervezete súlyos vagyonvesztést és szabálytalanságokat tárt fel. 2026. október 23-án a bíróság egy hónapra letartóztatta a volt jegybankelnököt.',
             // 2026-10-21: ugyanaz a breaking, mint az ügyoldalon (ugyek-config breakingUpdate).
             breakingAlert: {
               source: 'Telex',
-              headline: 'Őrizetbe vették Matolcsy Györgyöt',
-              lead: 'A Központi Nyomozó Főügyészség 2026. október 21-én őrizetbe vette a volt jegybankelnököt. Ügyvédje szerint különösen jelentős vagyoni hátrányt okozó gazdasági csalással és hamis magánokirat felhasználásával gyanúsítják.',
-              url: 'https://telex.hu/gazdasag/2026/10/21/orizetbe-vettek-matolcsy-gyorgyot',
+              headline: 'Elrendelték Matolcsy György letartóztatását',
+              lead: 'A nyomozási bíró 2026. október 23-án egy hónapra letartóztatta a volt jegybankelnököt, Sándor Tamás ügyvéddel és Valkó Mihállyal együtt. A bíróság szerint fennáll a szökés és a tanúk befolyásolásának veszélye. A döntés nem jogerős.',
+              url: 'https://telex.hu/gazdasag/2026/10/23/mnb-ugy-matolcsy-gyorgy-letartoztatas-birosag-ules',
             },
             statusItems: [
-              { icon: '🔴', label: 'Őrizet', value: 'Matolcsy György volt MNB-elnök (okt. 21., Központi Nyomozó Főügyészség) — a letartóztatásról bíróság dönt' },
-              { icon: '⚖️', label: 'Gyanú', value: 'Különösen jelentős vagyoni hátrányt okozó gazdasági csalás, hamis magánokirat felhasználása' },
+              { icon: '🔴', label: 'Letartóztatás', value: 'Matolcsy György, Sándor Tamás és Valkó Mihály (okt. 23., egy hónapra, nem jogerős)' },
+              { icon: '🚨', label: 'Körözés', value: 'Matolcsy Ádám és Stofa György — elfogatóparancs alapján keresik őket' },
               { icon: '💰', label: 'Érintett közpénz', value: '266+ milliárd Ft — MNB alapítványokon átfolyva' },
             ],
             moreUrl: '/ugyek/mnb-botrany',

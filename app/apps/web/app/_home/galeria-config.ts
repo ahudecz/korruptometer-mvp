@@ -510,13 +510,11 @@ export const GALERIA: GaleriaEntry[] = [
     id: 'matolcsy-gyorgy',
     name: 'Matolcsy György',
     subtitle: 'Volt MNB-elnök',
-    description: 'Matolcsy György az MNB elnökeként 2013–2025 között 266 milliárd forintnyi közpénzt csatornázott át a jegybank alapítványain keresztül. Az ÁSZ (Állami Számvevőszék) kiszivárgott jelentés-tervezete súlyos vagyonvesztést és szabálytalanságokat tárt fel. 2026. október 21-én a Központi Nyomozó Főügyészség őrizetbe vette; ügyvédje szerint különösen jelentős vagyoni hátrányt okozó gazdasági csalással és hamis magánokirat felhasználásával gyanúsítják.',
-    // 2026-10-21: őrizet — NEM előzetes letartóztatás (arról bíróság dönt),
-    // ezért marad 'investig' (Feljelentés / nyomozás), a kiemelést a
-    // custodyStamp szalag adja. L. feedback-interrogation-not-detention.
-    detention: 'investig',
-    detentionLabel: 'Őrizetben · 2026. okt. 21.',
-    custodyStamp: 'ŐRIZETBEN',
+    description: 'Matolcsy György az MNB elnökeként 2013–2025 között 266 milliárd forintnyi közpénzt csatornázott át a jegybank alapítványain keresztül. Az ÁSZ (Állami Számvevőszék) kiszivárgott jelentés-tervezete súlyos vagyonvesztést és szabálytalanságokat tárt fel. 2026. október 21-én a Központi Nyomozó Főügyészség őrizetbe vette, október 23-án a bíróság egy hónapra elrendelte a letartóztatását (nem jogerős). A gyanú különösen jelentős vagyoni hátrányt okozó gazdasági csalás és hamis magánokirat felhasználása.',
+    // 2026-10-23: egy hónapra letartóztatva (nem jogerős) — 'pretrial'.
+    detention: 'pretrial',
+    detentionLabel: 'Letartóztatva · 2026. okt. 23.',
+    custodyStamp: 'LETARTÓZTATVA',
     crimes: ['Gazdasági csalás (gyanú)', 'Hamis magánokirat felhasználása (gyanú)', 'Hűtlen kezelés'],
     amountLabel: 'ÁSZ által feltárt vagyonvesztés',
     amount: '266+ milliárd Ft',
