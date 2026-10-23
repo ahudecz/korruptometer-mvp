@@ -498,7 +498,8 @@ const getCachedPretrialByUgy = unstable_cache(
     return db.select({
       ugyId: schema.courtVerdicts.personUgyId,
       n: s<number>`count(*)::int`,
-      nPretrial: s<number>`count(*) FILTER (WHERE coalesce(${schema.courtVerdicts.description}, '') NOT ILIKE '%bűnügyi felügyelet%')::int`,
+      // 2026-10-23: az őrizet (72 óra, nem letartóztatás) sem számít bele.
+      nPretrial: s<number>`count(*) FILTER (WHERE coalesce(${schema.courtVerdicts.description}, '') NOT ILIKE '%bűnügyi felügyelet%' AND NOT (coalesce(${schema.courtVerdicts.description}, '') ILIKE '%őrizet%' AND coalesce(${schema.courtVerdicts.description}, '') NOT ILIKE '%házi őrizet%'))::int`,
     })
       .from(schema.courtVerdicts)
       .where(andF(eqF(schema.courtVerdicts.reviewStatus, 'approved'), eqF(schema.courtVerdicts.verdictType, 'előzetesben')))
@@ -955,7 +956,7 @@ export default async function HomePage() {
               <div className="stat-status-grid stat-status-grid--2">
                 <div className="stat-status-item">
                   <div className="stat-value stat-status-value--red" style={{ marginBottom: 4 }}>{pretrialCountDb}</div>
-                  <div className="stat-status-label">Előzetesben / felügyelet alatt</div>
+                  <div className="stat-status-label">Őrizetben, előzetesben / felügyelet alatt</div>
                 </div>
                 <div className="stat-status-item">
                   <div className="stat-value" style={{ marginBottom: 4 }}>{eliteltCountDb}</div>
@@ -974,7 +975,7 @@ export default async function HomePage() {
                       <Link href={href} className="stat-case-link">
                         {label}
                       </Link>
-                      {': '}{n} fő előzetesben / felügyelet alatt
+                      {': '}{n} fő őrizetben, előzetesben / felügyelet alatt
                     </div>
                   );
                 })}

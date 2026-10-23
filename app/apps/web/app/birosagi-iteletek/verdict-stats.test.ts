@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeVerdictStats, countActualVerdicts, isActualVerdict, isReleased, partitionVerdicts, type VerdictStatRow } from './verdict-stats';
+import { computeVerdictStats, countActualVerdicts, isActualVerdict, isPoliceCustody, isReleased, isWanted, partitionVerdicts, type VerdictStatRow } from './verdict-stats';
 
 // Forrás: supabase/migrations/0050_court_verdict_type_check.sql — a
 // verdictType oszlop szabad text, ez a CHECK constraint az egyetlen hely,
@@ -53,8 +53,8 @@ describe('computeVerdictStats', () => {
 
   it('partitionVerdicts puts every row in exactly one bucket and loses none', () => {
     const rows: VerdictStatRow[] = ALL_TYPES.map(t => ({ verdictType: t, sentenceYears: 1 }));
-    const { pretrial, charged, suspected, released } = partitionVerdicts(rows);
-    expect(pretrial.length + charged.length + suspected.length + released.length).toBe(rows.length);
+    const { pretrial, charged, suspected, wanted, released } = partitionVerdicts(rows);
+    expect(pretrial.length + charged.length + suspected.length + wanted.length + released.length).toBe(rows.length);
   });
 
   it('isReleased recognizes exactly the 3 closed-case types', () => {
@@ -124,5 +124,35 @@ describe('a „Vádemelve vagy elítélve" kupac engedélyező lista (2026-09-17
     const rows: VerdictStatRow[] = [{ verdictType: 'valami-uj-tipus', sentenceYears: 0 }];
     expect(partitionVerdicts(rows).charged).toHaveLength(0);
     expect(partitionVerdicts(rows).suspected).toHaveLength(1);
+  });
+});
+
+// 2026-10-23 user kérés (Matolcsy Ádám a „Csak gyanúsítás" táblában):
+// a körözötteknek külön szakasz jár, az őrizetnek külön címke.
+describe('körözés alatt / őrizet', () => {
+  it('a körözött egyéb-sor a wanted kupacba kerül, nem a gyanúsítottak közé', () => {
+    const rows: VerdictStatRow[] = [{ verdictType: 'egyéb', sentenceYears: 0, description: 'Matolcsy Ádám: körözés alatt' }];
+    const p = partitionVerdicts(rows);
+    expect(p.wanted).toHaveLength(1);
+    expect(p.suspected).toHaveLength(0);
+    expect(computeVerdictStats(rows).wantedCount).toBe(1);
+  });
+
+  it('elfogatóparancsos leírás is körözésnek számít', () => {
+    expect(isWanted('X: elfogatóparancsot adtak ki ellene')).toBe(true);
+    expect(isWanted('Simon Miklós: kihallgatás, bozótirtási ügy')).toBe(false);
+  });
+
+  it('kiengedett, előzetes vagy vádemelt sor nem kerül a körözöttek közé, akkor sem, ha a leírás említi', () => {
+    for (const t of ['szabadlábra helyezve', 'előzetesben', 'vádemelés']) {
+      const rows: VerdictStatRow[] = [{ verdictType: t, sentenceYears: 0, description: 'X: elfogták, korábban körözés alatt állt' }];
+      expect(partitionVerdicts(rows).wanted, t).toHaveLength(0);
+    }
+  });
+
+  it('őrizet ≠ házi őrizet (az bűnügyi felügyelet)', () => {
+    expect(isPoliceCustody('Matolcsy György: őrizetben')).toBe(true);
+    expect(isPoliceCustody('Jellinek Dániel: házi őrizetben, nyomkövetővel')).toBe(false);
+    expect(isPoliceCustody('Szivek Norbert: letartóztatás, Volánbusz-ügy')).toBe(false);
   });
 });

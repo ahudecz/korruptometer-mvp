@@ -33,6 +33,8 @@ export async function loadDetentionCounts(): Promise<DetentionCounts | null> {
         eq(v.verdictType, 'előzetesben'),
         isNotNull(v.personUgyId),
         sql`coalesce(${v.description}, '') NOT ILIKE '%bűnügyi felügyelet%'`,
+        // 2026-10-23: az őrizet (72 óra) sem letartóztatás — l. isPoliceCustody.
+        sql`NOT (coalesce(${v.description}, '') ILIKE '%őrizet%' AND coalesce(${v.description}, '') NOT ILIKE '%házi őrizet%')`,
       ))
       .groupBy(v.personUgyId);
     return new Map(rows.flatMap((r) => (r.ugyId ? [[r.ugyId, Number(r.n)] as const] : [])));

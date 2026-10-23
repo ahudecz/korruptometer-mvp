@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { ComplaintList, type SerializedComplaint } from './ComplaintList';
-import { isReleased, isCriminalSupervision, computeVerdictStats, partitionVerdicts } from './verdict-stats';
+import { isReleased, isCriminalSupervision, isPoliceCustody, isWanted, computeVerdictStats, partitionVerdicts } from './verdict-stats';
 import { computeComplaintBarMax, computeComplaintTotal, computeTopFilers } from './complaint-stats';
 import { FtValue } from '../_home/ft-value';
 import { fmtFtParts } from '@korr/shared/format';
@@ -103,7 +103,9 @@ function StatusBadge({ r }: { r: SerializedVerdict }) {
       <div className="vrow-badge vrow-badge--pretrial">
         {isCriminalSupervision(r.description)
           ? <span className="vrow-badge-2line">BŰNÜGYI<br />FELÜGYELET</span>
-          : <span>ELŐZETESBEN</span>}
+          : isPoliceCustody(r.description)
+            ? <span>ŐRIZETBEN</span>
+            : <span>ELŐZETESBEN</span>}
       </div>
     );
   }
@@ -111,6 +113,13 @@ function StatusBadge({ r }: { r: SerializedVerdict }) {
     return (
       <div className="vrow-badge vrow-badge--released">
         <span>{releasedLabel(r.verdictType)}</span>
+      </div>
+    );
+  }
+  if (!isReleased(r.verdictType) && r.verdictType !== 'előzetesben' && isWanted(r.description)) {
+    return (
+      <div className="vrow-badge vrow-badge--pretrial">
+        <span>KÖRÖZÖTT</span>
       </div>
     );
   }
@@ -400,6 +409,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
     pretrial: pretrialFiltered,
     charged: chargedFiltered,
     suspected: suspectedFiltered,
+    wanted: wantedFiltered,
     released: releasedFiltered,
   } = partitionVerdicts(filtered);
   // verdict-stats.ts: tesztelt, egyetlen forrás — l. verdict-stats.test.ts,
@@ -444,12 +454,12 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
             aria-label="Ugrás az előzetesben vagy bűnügyi felügyelet alatt lévők listájához"
           >
             <div className="megszunt-stat-value megszunt-stat-value--red">{pretrialCount}</div>
-            <div className="megszunt-stat-label">Előzetesben / felügyelet alatt</div>
+            <div className="megszunt-stat-label">Őrizet, előzetes, felügyelet</div>
           </button>
         ) : (
           <div className="megszunt-stat">
             <div className="megszunt-stat-value megszunt-stat-value--red">{pretrialCount}</div>
-            <div className="megszunt-stat-label">Előzetesben / felügyelet alatt</div>
+            <div className="megszunt-stat-label">Őrizet, előzetes, felügyelet</div>
           </div>
         )}
         {/* A "Vádemelve vagy elítélve" szám a vádemelést és a kihirdetett
@@ -549,7 +559,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
             <div className="verdict-pills">
               {[
                 { val: 'all',                  label: 'Összes' },
-                { val: 'előzetesben',           label: 'Előzetesben / felügyelet alatt' },
+                { val: 'előzetesben',           label: 'Őrizet / előzetes / felügyelet' },
                 { val: 'vádemelés',            label: 'Vádemelés' },
                 { val: 'elsőfokú',             label: 'Elsőfokú' },
                 { val: 'jogerős',              label: 'Jogerős' },
@@ -828,7 +838,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
           korábban egy pl. "Kiengedve" szűrés itt üresnek tűnt, miközben a
           találat ténylegesen a lenti szekcióban jelent meg, ami megtévesztő
           volt. */}
-      {pretrialFiltered.length === 0 && chargedFiltered.length === 0 && releasedFiltered.length === 0 ? (
+      {pretrialFiltered.length === 0 && wantedFiltered.length === 0 && chargedFiltered.length === 0 && releasedFiltered.length === 0 ? (
         <div className="vlist" style={{ marginTop: 20 }}>
           <div style={{ padding: '40px 24px', textAlign: 'center', color: '#888' }}>
             Nincs a feltételeknek megfelelő bejegyzés.
@@ -849,14 +859,37 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
             <div id="elozetesben-lista" className="verdict-scroll-anchor" style={{ marginTop: 20 }}>
               <div style={{ marginBottom: 16 }}>
                 <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
-                  {hasFilter ? `Előzetesben / bűnügyi felügyelet alatt — ${pretrialFiltered.length} db` : 'Előzetesben / bűnügyi felügyelet alatt'}
+                  {hasFilter ? `Őrizetben, előzetesben vagy bűnügyi felügyelet alatt — ${pretrialFiltered.length} db` : 'Őrizetben, előzetesben vagy bűnügyi felügyelet alatt'}
                 </h3>
                 <p style={{ fontSize: 13, color: '#888', margin: 0 }}>
-                  Az alábbi személyek jelenleg előzetes letartóztatásban vagy bűnügyi felügyelet alatt vannak — az ügyükben még nem született ítélet.
+                  Az alábbi személyek jelenleg őrizetben (legfeljebb 72 óra, a letartóztatásról bíróság dönt), előzetes letartóztatásban vagy bűnügyi felügyelet alatt vannak — az ügyükben még nem született ítélet.
                 </p>
               </div>
               <div className="vlist">
                 {pretrialFiltered.map(r => <VerdictRow key={r.id} r={r} />)}
+              </div>
+            </div>
+          )}
+
+          {/* Körözés alatt — 2026-10-23, user kérés (Matolcsy Ádám): aki ellen
+              elfogatóparancsot adtak ki, az nem „csak gyanúsított”. Szándékosan
+              „körözés alatt”, nem „szökésben”: ez utóbbit hatóság nem mondja ki. */}
+          {wantedFiltered.length > 0 && (
+            <div
+              id="korozes-lista"
+              className="verdict-scroll-anchor"
+              style={{ marginTop: pretrialFiltered.length > 0 ? 48 : 20 }}
+            >
+              <div style={{ marginBottom: 16 }}>
+                <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
+                  {hasFilter ? `Körözés alatt — ${wantedFiltered.length} db` : 'Körözés alatt — elfogatóparancs alapján keresik'}
+                </h3>
+                <p style={{ fontSize: 13, color: '#888', margin: 0 }}>
+                  Az alábbi személyek ellen elfogatóparancsot adtak ki, a hatóságok körözik őket. Vádemelés vagy ítélet még nem történt.
+                </p>
+              </div>
+              <div className="vlist">
+                {wantedFiltered.map(r => <VerdictRow key={r.id} r={r} />)}
               </div>
             </div>
           )}
@@ -866,7 +899,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
             <div
               id="vademelve-lista"
               className="verdict-scroll-anchor"
-              style={{ marginTop: pretrialFiltered.length > 0 ? 48 : 20 }}
+              style={{ marginTop: (pretrialFiltered.length > 0 || wantedFiltered.length > 0) ? 48 : 20 }}
             >
               <div style={{ marginBottom: 16 }}>
                 <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
@@ -889,7 +922,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
             <div
               id="gyanusitas-lista"
               className="verdict-scroll-anchor"
-              style={{ marginTop: (pretrialFiltered.length > 0 || chargedFiltered.length > 0) ? 48 : 20 }}
+              style={{ marginTop: (pretrialFiltered.length > 0 || wantedFiltered.length > 0 || chargedFiltered.length > 0) ? 48 : 20 }}
             >
               <div style={{ marginBottom: 16 }}>
                 <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
@@ -911,7 +944,7 @@ export function VerdictList({ rows, initialUgyFilter = 'all', complaints = [] }:
 
           {/* Lezárt / kiengedett szekció */}
           {releasedFiltered.length > 0 && (
-            <div style={{ marginTop: (pretrialFiltered.length > 0 || chargedFiltered.length > 0 || suspectedFiltered.length > 0) ? 48 : 20 }}>
+            <div style={{ marginTop: (pretrialFiltered.length > 0 || wantedFiltered.length > 0 || chargedFiltered.length > 0 || suspectedFiltered.length > 0) ? 48 : 20 }}>
               <div style={{ borderTop: '2px solid #e0e0e0', paddingTop: 32, marginBottom: 16 }}>
                 <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5c5e62', margin: '0 0 6px' }}>
                   {hasFilter ? `Szabadlábra helyezve / Eljárás megszűnt — ${releasedFiltered.length} db` : 'Szabadlábra helyezve / Eljárás megszűnt'}
