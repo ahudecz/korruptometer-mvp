@@ -1,4 +1,5 @@
 import 'server-only';
+import { resolveResignationDate } from '@/lib/resignation-date';
 import { eq, sql } from 'drizzle-orm';
 
 import { detectResignationFromArticle, type ResignationExtraction } from '@korr/db/ai';
@@ -182,13 +183,8 @@ export async function processResignationArticle(
     // is duplikátum, ha a két cikk máshogy nevezi meg az intézményt.
     // article.publishedAt is serialized as string by Inngest JSON
     const fallbackDate = new Date(article.publishedAt as unknown as string);
-    let resignationDate: Date;
-    try {
-      resignationDate = new Date(person.resignationDate);
-      if (isNaN(resignationDate.getTime())) resignationDate = fallbackDate;
-    } catch {
-      resignationDate = fallbackDate;
-    }
+    // 2026-10-23: a döntés napja, nem a hatálybalépés — l. resignation-date.ts.
+    const resignationDate = resolveResignationDate(person.resignationDate, fallbackDate);
 
     // Dedup by normalized name + institution across ALL statuses, so a
     // rejected detection is not re-created (FR-009, FR-011) — but a second,

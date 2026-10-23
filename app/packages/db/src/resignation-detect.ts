@@ -78,7 +78,7 @@ const TOOL: LlmToolSpec = {
             resignationDate: {
               type: 'string',
               description:
-                "Date of the event as ISO 8601 (YYYY-MM-DD). Use today's date if only 'today' or 'recently' is mentioned.",
+                "Date of the DECISION/announcement (the day the person resigned or was dismissed) as ISO 8601 (YYYY-MM-DD) — NOT the later date when the mandate/employment ends. Use today's date if only 'today' or 'recently' is mentioned.",
             },
             description: {
               type: 'string',

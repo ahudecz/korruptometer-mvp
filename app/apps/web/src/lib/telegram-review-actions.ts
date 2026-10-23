@@ -1,4 +1,5 @@
 import 'server-only';
+import { resolveResignationDate } from './resignation-date';
 import { revalidateTag } from 'next/cache';
 import { eq, sql } from 'drizzle-orm';
 
@@ -171,7 +172,7 @@ export async function processResignation(article: ArticleForReprocess, todayIso:
     // l. review.ts isDuplicate() komment (2026-08-23) — institution-guarded,
     // hogy ugyanaz a személy egy MÁSIK intézményből való lemondása ne
     // számítson duplikátumnak.
-    if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, person.name, undefined, person.institution, resolveDate(person.resignationDate, article.publishedAt))) {
+    if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, person.name, undefined, person.institution, resolveResignationDate(person.resignationDate, article.publishedAt))) {
       lastDiscardReason = 'duplicate';
       continue;
     }
@@ -192,7 +193,7 @@ export async function processResignation(article: ArticleForReprocess, todayIso:
       position: person.position.slice(0, 200),
       institution: person.institution.slice(0, 200),
       resignationType: coerceResignationType(person.resignationType),
-      resignationDate: resolveDate(person.resignationDate, article.publishedAt),
+      resignationDate: resolveResignationDate(person.resignationDate, article.publishedAt),
       description: person.description.slice(0, 1000) || null,
       sector: coerceSector(person.sector),
       pinned,
