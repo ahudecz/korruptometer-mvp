@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanPositionTitle, decideComplaintTransition, decideStatus, findExistingComplaint, isBlacklistedComplaintFiler, isDuplicate, isSameComplainant, isSuspiciouslyEarlyDate, sameApproxComplaintAmount, truncateDescriptionWords } from './review';
+import { cleanPositionTitle, decideComplaintTransition, decideStatus, findExistingComplaint, findPublishedResignationDuplicate, isBlacklistedComplaintFiler, isDuplicate, isSameComplainant, isSuspiciouslyEarlyDate, sameApproxComplaintAmount, truncateDescriptionWords } from './review';
 import { isCalledToResignPerson, isWatchlistPerson, normalizeName } from './watchlist';
 
 // Drizzle's `sql` template tag returns an object tree (StringChunk literals
@@ -237,6 +237,50 @@ describe('isDuplicate', () => {
       const db = { execute: async () => [] };
       expect(await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Lázár János', undefined, 'Országgyűlés')).toBe(false);
     });
+  });
+
+  // 2026-10-27 — Kivés Zoltán: `<UNKNOWN>` intézmény + a Közlöny-sor akkor még
+  // hatálybalépési dátummal → duplikátum került ki.
+  describe('Kivés Zoltán-eset', () => {
+    it('helykitöltő intézménynél nincs intézmény-szűrés (csak a név számít)', async () => {
+      let q: unknown;
+      const db = { execute: async (query: unknown) => { q = query; return []; } };
+      await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Kivés Zoltán', undefined, '<UNKNOWN>', new Date('2026-10-22'));
+      expect(sqlToText(q)).not.toContain('institution');
+    });
+
+    it('ismert intézménynél az utóbbi 3 nap azonos nevű sora is duplikátum (ugyanaz a hírciklus)', async () => {
+      let q: unknown;
+      const db = { execute: async (query: unknown) => { q = query; return []; } };
+      await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Kivés Zoltán', undefined, 'Vidék- és Településfejlesztési Minisztérium');
+      expect(sqlToText(q)).toContain(`"createdAt" >= now() - interval '3 days'`);
+    });
+  });
+});
+
+describe('findPublishedResignationDuplicate', () => {
+  it('nem létező sornál null, és nem kérdez tovább', async () => {
+    let calls = 0;
+    const db = { execute: async () => { calls++; return []; } };
+    expect(await findPublishedResignationDuplicate(db, 'nincs')).toBeNull();
+    expect(calls).toBe(1);
+  });
+
+  it('a kint lévő párt adja vissza, csak approved sorok közül, önmagát kizárva', async () => {
+    const queries: unknown[] = [];
+    const existing = { id: 'kozlony', name: 'Kivés Zoltán', institution: 'VTM', resignationDate: '2026-10-22', sourceUrls: [], sourceNames: [] };
+    const db = {
+      execute: async (query: unknown) => {
+        queries.push(query);
+        return queries.length === 1
+          ? [{ name: 'Kivés Zoltán', institution: '<UNKNOWN>', rd: '2026-10-22', createdAt: '2026-10-22T20:01:02Z' }]
+          : [existing];
+      },
+    };
+    expect(await findPublishedResignationDuplicate(db, 'hvg')).toEqual(existing);
+    const text = sqlToText(queries[1]);
+    expect(text).toContain(`"reviewStatus" = 'approved'`);
+    expect(text).toContain('id <> ');
   });
 });
 

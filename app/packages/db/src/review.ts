@@ -8,6 +8,7 @@ import { sql } from 'drizzle-orm';
 import { normalizeName } from './watchlist';
 import { llmExtract, type LlmToolSpec } from './llm';
 import { textMatchScore } from './kormanyhu-match';
+import { isPlaceholderName } from './detection-check';
 
 export type ReviewDecision = 'approved' | 'pending' | 'discard';
 
@@ -229,6 +230,14 @@ export async function isDuplicate(
     // modell a cikk dátumát veszi (2026-10-09: Egry Attila 09-09 / 09-10).
     ? sql`OR abs("resignationDate"::date - ${eventDay}::date) <= 2`
     : sql``;
+  // 2026-10-27 — Kivés Zoltán duplikátum: a HVG-cikkből `<UNKNOWN>`
+  // intézmény jött, amire se az intézmény-egyezés, se a tartalmazás nem
+  // illeszkedik, a Közlöny-sor dátuma pedig akkor még a hatálybalépés napja
+  // volt (>2 nap eltérés). Ezért (1) helykitöltő intézménynél csak a név
+  // számít, (2) az utóbbi 3 napban létrejött azonos nevű sor intézménytől és
+  // dátumtól függetlenül ugyanaz az esemény (ugyanaz a hírciklus).
+  if (institution && isPlaceholderName(institution)) institution = undefined;
+  const sameNewsCycleClause = sql`OR "createdAt" >= now() - interval '3 days'`;
   const institutionClause = institution
     ? sql`AND (
         trim(regexp_replace(lower(unaccent(trim("institution"))), '[^a-z0-9]+', ' ', 'g'))
@@ -238,6 +247,7 @@ export async function isDuplicate(
         OR trim(regexp_replace(lower(unaccent(${institution})), '[^a-z0-9]+', ' ', 'g'))
           LIKE '%' || trim(regexp_replace(lower(unaccent(trim("institution"))), '[^a-z0-9]+', ' ', 'g')) || '%'
         ${sameEventDayClause}
+        ${sameNewsCycleClause}
       )`
     : sql``;
   const rows = (await db.execute(sql`
@@ -248,6 +258,64 @@ export async function isDuplicate(
     LIMIT 1
   `)) as unknown as { length: number };
   return rows.length > 0;
+}
+
+export type PublishedDuplicate = {
+  id: string;
+  name: string;
+  institution: string;
+  resignationDate: string | null;
+  sourceUrls: string[];
+  sourceNames: string[];
+};
+
+/**
+ * 2026-10-27 — jóváhagyáskori duplikátum-zár (user kérés, Kivés Zoltán).
+ * A beszúráskori isDuplicate() csak AZT nézi, ami a beszúrás pillanatában
+ * már bent volt; ha két cikk közel egy időben jön, vagy az első sor adatai
+ * (dátum, intézmény) később javulnak, a pending sor átcsúszik, és a Telegram
+ * „Jóváhagyás” gomb vakon kiteszi. Ez a függvény a jóváhagyás PILLANATÁBAN
+ * nézi meg, van-e már kint (approved) ugyanerről az eseményről sor.
+ *
+ * Ugyanaz az esemény, ha a normalizált név egyezik ÉS bármelyik teljesül:
+ * azonos/egymást tartalmazó intézmény; ±2 napos lemondás-dátum; a két sor
+ * 3 napon belül jött létre (ugyanaz a hírciklus); valamelyik intézmény
+ * helykitöltő (`<UNKNOWN>` stb.).
+ */
+export async function findPublishedResignationDuplicate(db: Executable, id: string): Promise<PublishedDuplicate | null> {
+  const self = (await db.execute(sql`
+    SELECT name, institution, "resignationDate"::date::text AS rd, "createdAt"
+    FROM "PoliticalResignation" WHERE id = ${id} LIMIT 1
+  `)) as unknown as Array<{ name: string; institution: string | null; rd: string | null; createdAt: Date | string }>;
+  const row = self[0];
+  if (!row) return null;
+  const key = normalizeName(row.name);
+  if (!key) return null;
+  const norm = (col: ReturnType<typeof sql>) => sql`trim(regexp_replace(lower(unaccent(trim(${col}))), '[^a-z0-9]+', ' ', 'g'))`;
+  const instKnown = !!row.institution && !isPlaceholderName(row.institution);
+  const createdIso = new Date(row.createdAt).toISOString();
+  const instClause = instKnown
+    ? sql`OR ${norm(sql`"institution"`)} = ${norm(sql`${row.institution}`)}
+          OR ${norm(sql`"institution"`)} LIKE '%' || ${norm(sql`${row.institution}`)} || '%'
+          OR ${norm(sql`${row.institution}`)} LIKE '%' || ${norm(sql`"institution"`)} || '%'`
+    : sql`OR TRUE`;
+  const dateClause = row.rd ? sql`OR abs("resignationDate"::date - ${row.rd}::date) <= 2` : sql``;
+  const rows = (await db.execute(sql`
+    SELECT id, name, institution, "resignationDate"::date::text AS "resignationDate", "sourceUrls", "sourceNames"
+    FROM "PoliticalResignation"
+    WHERE id <> ${id}
+      AND "reviewStatus" = 'approved'
+      AND ${norm(sql`"name"`)} = ${key}
+      AND (
+        lower("institution") ~ '^[<\\[( ]*(unknown|ismeretlen|n/?a|null|none)?[>\\]) ]*$'
+        ${instClause}
+        ${dateClause}
+        OR abs(extract(epoch from ("createdAt" - ${createdIso}::timestamptz))) <= 3 * 86400
+      )
+    ORDER BY "createdAt" ASC
+    LIMIT 1
+  `)) as unknown as PublishedDuplicate[];
+  return rows[0] ?? null;
 }
 
 // 2026-07-14 — the resignation extractor is instructed to use a collective

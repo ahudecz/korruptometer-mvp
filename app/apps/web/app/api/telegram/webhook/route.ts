@@ -16,7 +16,7 @@ import {
   processAssetRecovery,
   type ArticleForReprocess,
 } from '@/lib/telegram-review-actions';
-import { markChecked, type DetectorType } from '@korr/db';
+import { findPublishedResignationDuplicate, markChecked, type DetectorType } from '@korr/db';
 import { parseAmountReply } from '@/lib/asset-amount-gate';
 import { ALERT_ON_EDITOR_CONFIRM } from '@/lib/notify-auto-publish';
 import { recordAlertsForRecordIds, recordSubscriberAlert, revokeSubscriberAlert } from '@/lib/notify-subscribers';
@@ -1705,6 +1705,36 @@ ${resultText}`.trim());
     const pending = await findPendingRecord(detectorType, id);
     let resultText: string;
     let extraNotes: string[] = [];
+
+    // 2026-10-27 — jóváhagyáskori duplikátum-zár (Kivés Zoltán): ha ugyanez
+    // a felmentés/lemondás már KINT van, a gomb nem tesz ki még egy sort. A
+    // pending sor forrását hozzáfűzzük a kint lévőhöz, a pending sort töröljük
+    // (l. setPendingStatus komment: elutasítás = törlés).
+    if (pending && action === 'a' && detectorType === 'resignation') {
+      const db = getDb();
+      const dup = await findPublishedResignationDuplicate(db, id);
+      if (dup) {
+        const [mine] = await db
+          .select({ sourceUrls: schema.politicalResignations.sourceUrls, sourceNames: schema.politicalResignations.sourceNames })
+          .from(schema.politicalResignations)
+          .where(eq(schema.politicalResignations.id, id));
+        const urls = [...(dup.sourceUrls ?? [])];
+        const names = [...(dup.sourceNames ?? [])];
+        (mine?.sourceUrls ?? []).forEach((u, i) => {
+          if (!urls.includes(u)) {
+            urls.push(u);
+            names.push(mine?.sourceNames?.[i] ?? '');
+          }
+        });
+        await db.update(schema.politicalResignations).set({ sourceUrls: urls, sourceNames: names, updatedAt: new Date() }).where(eq(schema.politicalResignations.id, dup.id));
+        await db.delete(schema.politicalResignations).where(eq(schema.politicalResignations.id, id));
+        revalidatePublicPaths();
+        const note = `⛔ Duplikátum — NEM hagytam jóvá. Már kint van: ${dup.name} — ${dup.institution}${dup.resignationDate ? ` (${dup.resignationDate})` : ''}. A forrását hozzáfűztem a kint lévő sorhoz, ezt a sort töröltem. Ha mégis külön esemény, szólj Claude-nak.`;
+        await answerCallbackQuery(cq.id, '⛔ Duplikátum — már kint van.');
+        await editMessageReplyMarkup(cq.message.chat.id, cq.message.message_id, [cq.message.text ?? '', note].filter(Boolean).join('\n\n'));
+        return NextResponse.json({ ok: true, blocked: 'duplicate', existingId: dup.id });
+      }
+    }
 
     if (pending) {
       // ── pending: already-inserted row, just flip reviewStatus ──
