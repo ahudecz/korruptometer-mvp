@@ -22,7 +22,8 @@ import {
   truncateDescriptionWords,
 } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
-import { notifyReviewNeeded } from '@/lib/notify';
+import { notifyInventedName, notifyReviewNeeded } from '@/lib/notify';
+import { findInventedName } from '@/lib/invented-name';
 import { notifyAutoPublished } from '@/lib/notify-auto-publish';
 import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
 import { createBypassGuardedFunction, runArticleDetectionBatch, type ArticleProcessResult } from '../lib/detector-runner';
@@ -194,6 +195,20 @@ export async function processResignationArticle(
     // mandátumáról szóló, teljesen más lemondását).
     if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, person.name, undefined, person.institution, resignationDate)) {
       lastDiscardReason = 'duplicate';
+      continue;
+    }
+
+    // 2026-11-06 — Ókovács-eset, TILTÓLISTÁS szabály (user döntése): a
+    // modell által kitalált névtag („Ókovács István" a valós Szilveszter
+    // helyett, a cikk csak „Ókovácsot" írt) SOSE kerül be, és jóváhagyásra
+    // sem ajánljuk fel — eldobjuk, gomb nélküli Telegram-tájékoztatással.
+    // A szöveg az, amit a modell ténylegesen látott (a runner a teljes
+    // cikktörzses újrapróbánál azt adja át excerpt-ként).
+    const invented = await findInventedName([person.name], `${article.headline}
+${article.excerpt ?? ''}`, article.sourceUrl);
+    if (invented) {
+      lastDiscardReason = 'missing_fields';
+      await notifyInventedName('Lemondás/felmentés', invented.name, invented.missing, article.sourceUrl ?? '');
       continue;
     }
 

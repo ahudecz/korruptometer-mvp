@@ -46,7 +46,8 @@ import {
 import { getDb, schema } from './db';
 import { isCharged } from '@app/birosagi-iteletek/verdict-stats';
 import { lookupMissingAmountFt, notifyMissingAmount } from './asset-amount-gate';
-import { notifyReviewNeeded } from './notify';
+import { notifyInventedName, notifyReviewNeeded } from './notify';
+import { findInventedName } from './invented-name';
 import { notifyAutoPublished } from './notify-auto-publish';
 import { sendTelegramMessage } from './telegram';
 import { inngest } from '../inngest/client';
@@ -174,6 +175,15 @@ export async function processResignation(article: ArticleForReprocess, todayIso:
     // számítson duplikátumnak.
     if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, person.name, undefined, person.institution, resolveResignationDate(person.resignationDate, article.publishedAt))) {
       lastDiscardReason = 'duplicate';
+      continue;
+    }
+
+    // 2026-11-06 — Ókovács-eset, TILTÓLISTÁS: l. detect-resignations.ts azonos blokkja.
+    const invented = await findInventedName([person.name], `${article.headline}
+${article.excerpt ?? ''}`, article.sourceUrl);
+    if (invented) {
+      lastDiscardReason = 'missing_fields';
+      await notifyInventedName('Lemondás/felmentés', invented.name, invented.missing, article.sourceUrl ?? '');
       continue;
     }
     if (isCollectiveEntityName(person.name) && await hasIndividualResignationForInstitution(db, person.institution)) {
@@ -354,6 +364,16 @@ export async function processCourtVerdict(article: ArticleForReprocess, todayIso
       }
       return { status: 'discarded', reason: 'low_confidence' };
     }
+  }
+
+  // 2026-11-06 — TILTÓLISTÁS szabály (Ókovács-eset): kitalált névtag →
+  // eldobás, a kézi jóváhagyás (bypassConfidenceGate) sem írja felül.
+  const inventedVerdict = await findInventedName([result.personName], `${article.headline}
+${article.excerpt}`, article.sourceUrl);
+  if (inventedVerdict) {
+    await upsertDetectionCheckOverride(db, { articleId: article.id, detectorType: 'court_verdict', outcome: 'discarded', reason: 'missing_fields', extractedName: result.personName, confidence: result.confidence });
+    await notifyInventedName('Bírósági ügy', inventedVerdict.name, inventedVerdict.missing, article.sourceUrl ?? '');
+    return { status: 'discarded', reason: 'invented_name' };
   }
 
   const existingVerdict = await findExistingVerdict(db, result.personName);
@@ -723,6 +743,14 @@ ${article.excerpt}`;
       !evidenceQuoteSupported(complaint.evidenceQuote, complaintArticleText)
       || isRelationalOnlyMention(complaint.targetName, complaintArticleText)
       || namedTargetContradictsUnknownPerpetrator(complaint.targetName, complaintArticleText);
+
+    // 2026-11-06 — TILTÓLISTÁS szabály (Ókovács-eset), l. detect-criminal-complaints.ts.
+    const inventedComplaint = await findInventedName([complaint.targetName, complaint.filerName], complaintArticleText, article.sourceUrl);
+    if (inventedComplaint) {
+      lastDiscardReason = 'missing_fields';
+      await notifyInventedName('Feljelentés', inventedComplaint.name, inventedComplaint.missing, article.sourceUrl ?? '');
+      continue;
+    }
 
     let reviewStatus: 'approved' | 'pending' | 'discard' = 'approved';
     if (!bypassConfidenceGate) {

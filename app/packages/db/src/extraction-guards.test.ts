@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   evidenceQuoteSupported,
   findMisinflectedName,
+  nameTokensMissingFromText,
   hasEvidenceQuote,
   isRelationalOnlyMention,
   looksLikePersonName,
@@ -168,5 +169,28 @@ describe('findMisinflectedName (2026-09-17, „Szivek Norberta")', () => {
   it('nem jelez rövid keresztnévre vagy egyszavas névre', () => {
     expect(findMisinflectedName('Szivek', CIKK)).toBeNull();
     expect(findMisinflectedName('Nagy Ede', 'Nagy Edét idézték be')).toBeNull();
+  });
+});
+
+describe('nameTokensMissingFromText — kitalált név (Ókovács-eset, 2026-11-06)', () => {
+  const okovacs = 'Kiléptették Ókovácsot az Operaházból, Siklósi Beatrix kommentben hiányolta L. Simon kiállását';
+  it('kitalált keresztnév: „Ókovács István", a cikkben csak „Ókovácsot"', () => {
+    expect(nameTokensMissingFromText('Ókovács István', okovacs)).toEqual(['István']);
+  });
+  it('ragozott alak elfogadva: „Ókovácsot" ⊃ „Ókovács"', () => {
+    expect(nameTokensMissingFromText('Ókovács Szilveszter', `${okovacs} — Ókovács Szilvesztert menesztették`)).toEqual([]);
+  });
+  it('tővégi nyúlás: „Palányi Nórát" ⊃ „Palányi Nóra", „Besenyi Orsolyát"', () => {
+    expect(nameTokensMissingFromText('Palányi Nóra', 'a HírTV kirúgta a műsorvezetőt, Palányi Nórát')).toEqual([]);
+    expect(nameTokensMissingFromText('Besenyi Orsolya', 'felmentette tisztségéből Besenyi Orsolyát.')).toEqual([]);
+  });
+  it('szóközepi egyezés nem számít („Kis" nem illeszkedik a „Bakiss"-re)', () => {
+    expect(nameTokensMissingFromText('Kiss Anna', 'Bakiss Annával beszéltünk')).toEqual(['Kiss']);
+  });
+  it('címet és kezdőbetűt kihagy', () => {
+    expect(nameTokensMissingFromText('dr. L. Simon László', 'L. Simon László közölte')).toEqual([]);
+  });
+  it('levezetett feleségnév nem fogadható el („Kanyó Imrének a felesége" ≠ „Kanyó Imréné")', () => {
+    expect(nameTokensMissingFromText('Kanyó Imréné', 'Kanyó Imrének a felesége')).toEqual(['Imréné']);
   });
 });

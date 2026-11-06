@@ -297,3 +297,51 @@ export function namedTargetContradictsUnknownPerpetrator(
 ): boolean {
   return mentionsUnknownPerpetrator(articleText) && looksLikePersonName(targetName);
 }
+
+// ───────────────────────────────────────────────────────────────────────────
+// KITALÁLT NÉV — TILTÓLISTÁS SZABÁLY
+// ───────────────────────────────────────────────────────────────────────────
+
+/**
+ * 2026-11-06, user report („Okovács SZilveszter baszdmeg és nem istván"):
+ * a 444 címe csak a vezetéknevet írta („Kiléptették Ókovácsot az
+ * Operaházból"), a modell keresztnevet talált ki hozzá („Ókovács István" a
+ * valós Szilveszter helyett). A hibás név miatt a név-dedup sem fogott, és
+ * duplikátum ment ki az oldalra ÉS Facebookra.
+ *
+ * A user döntése: a modell által kitalált adat SOSE kerülhet ki, és
+ * jóváhagyásra sem ajánlható fel. Ezért ez az őr — a többivel ellentétben —
+ * nem „pending"-re küld, hanem ELDOBJA a tételt (Telegram-tájékoztatással,
+ * gomb nélkül, l. [[feedback-no-silent-drop]]).
+ *
+ * Szabály: a kinyert név minden érdemi tagja (≥3 betű, nem cím, nem
+ * kezdőbetű) szó elején szerepeljen abban a szövegben, amit a modell
+ * ténylegesen látott — ragozva is („Ókovácsot" ⊃ „Ókovács"). Ami nincs ott,
+ * azt a modell nem a cikkből vette.
+ *
+ * Visszaadja a hiányzó névtagokat (üres tömb = rendben).
+ */
+const NAME_TITLE_TOKENS = new Set(['dr', 'ifj', 'id', 'idős', 'prof', 'özv', 'néhai']);
+
+export function nameTokensMissingFromText(name: string, articleText: string): string[] {
+  const text = norm(articleText);
+  if (!text) return [];
+  const original = name.trim().split(/\s+/);
+  const missing: string[] = [];
+  const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  for (const word of original) {
+    const t = norm(word).replace(/[.,;:()"]/g, '');
+    if (t.length < 3 || NAME_TITLE_TOKENS.has(t)) continue;
+    // Kötőjeles név („Szabó-Nagy"): tagonként.
+    for (const part of t.split('-').filter((x) => x.length >= 3)) {
+      // Magyar tővégi magánhangzó-nyúlás ragozáskor: „Nóra" → „Nórát",
+      // „Imréné" ✓, „Csilla" → „Csillával".
+      const variants = [part];
+      if (part.endsWith('a')) variants.push(`${part.slice(0, -1)}á`);
+      if (part.endsWith('e')) variants.push(`${part.slice(0, -1)}é`);
+      const found = variants.some((v) => new RegExp(`(^|[^\\p{L}])${esc(v)}`, 'u').test(text));
+      if (!found) missing.push(word);
+    }
+  }
+  return [...new Set(missing)];
+}

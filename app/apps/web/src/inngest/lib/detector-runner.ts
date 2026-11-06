@@ -112,18 +112,24 @@ export async function runArticleDetectionBatch<TResult>({
         if (isTransientLlmFailure(llmResult)) continue;
 
         let result = llmResult.data;
+        // 2026-11-06 — a processzor UGYANAZT a szöveget kapja, amit a modell
+        // látott (a kitalált-név őr ehhez méri a nevet, l. extraction-guards
+        // nameTokensMissingFromText). A teljes törzs csak memóriában él,
+        // sosem kerül DB-be (constitution IV).
+        let seenArticle = article;
         if (isIncomplete(result) && article.sourceUrl) {
           const bodyText = await fetchArticleBodyTransient(article.sourceUrl).catch(() => null);
           if (bodyText && bodyText.length > article.excerpt.length) {
             const retryResult = await callLlm(article.headline, bodyText, articleDateIso(article.publishedAt));
             if (!isTransientLlmFailure(retryResult) && retryResult.data) {
               result = retryResult.data;
+              seenArticle = { ...article, excerpt: bodyText };
             }
           }
         }
 
         try {
-          const outcome = await processArticle(article, result);
+          const outcome = await processArticle(seenArticle, result);
           if (outcome.inserted) count++;
           if (outcome.approved) approvedCount++;
         } catch (err) {

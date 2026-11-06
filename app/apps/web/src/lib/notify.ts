@@ -234,3 +234,29 @@ export async function notifyPodcastReviewNeeded(video: {
     // Never let a notification-delivery problem affect the caller.
   }
 }
+
+/**
+ * 2026-11-06 — Ókovács-eset, TILTÓLISTÁS szabály: a modell által kitalált
+ * névtagot tartalmazó tétel SOSE kerül be, és jóváhagyásra sem ajánljuk fel.
+ * Ez csak tájékoztatás (nincs gomb), hogy az eldobás ne legyen csendes
+ * (l. [[feedback-no-silent-drop]]).
+ */
+export async function notifyInventedName(
+  categoryLabel: string,
+  name: string,
+  missingTokens: string[],
+  articleUrl: string,
+): Promise<void> {
+  try {
+    const message = [
+      `🚫 ELDOBVA — kitalált adat (${categoryLabel})`,
+      `A modell ezt a nevet adta: „${name}", de ${missingTokens.map((t) => `„${t}"`).join(', ')} nem szerepel a cikkben.`,
+      `Nem került ki, és jóváhagyásra sem ajánlom fel. Ha a helyes név máshonnan biztosan megvan, szólj Claude-nak.`,
+      ...(articleUrl ? [``, articleUrl] : []),
+    ].join('\n');
+    console.log(`[notify] invented_name: ${name} — missing: ${missingTokens.join(', ')} — ${articleUrl}`);
+    await sendTelegramMessage(message);
+  } catch (err) {
+    console.error('[notify] notifyInventedName failed', err);
+  }
+}

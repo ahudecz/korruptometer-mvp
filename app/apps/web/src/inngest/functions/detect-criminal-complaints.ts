@@ -23,7 +23,8 @@ import {
   type ComplaintStatus,
 } from '@korr/db';
 import { getDb, schema } from '@/lib/db';
-import { notifyReviewNeeded } from '@/lib/notify';
+import { notifyInventedName, notifyReviewNeeded } from '@/lib/notify';
+import { findInventedName } from '@/lib/invented-name';
 import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
 import { createBypassGuardedFunction, runArticleDetectionBatch, type ArticleProcessResult } from '../lib/detector-runner';
 
@@ -84,6 +85,20 @@ async function processComplaintArticle(
     if (isBlacklistedComplaintFiler(complaint.filerName)) {
       lastDiscardReason = 'blacklisted_filer';
       continue;
+    }
+
+    // 2026-11-06 — TILTÓLISTÁS szabály (Ókovács-eset): ha a célpont vagy a
+    // bejelentő SZEMÉLYNÉV, minden tagjának szerepelnie kell a cikkben;
+    // kitalált névtag → eldobás + gomb nélküli tájékoztatás. Ügy-címkére
+    // („X luxusutazásai") és intézménynévre nem fut — azok átfogalmazhatók.
+    {
+      const invented = await findInventedName([complaint.targetName, complaint.filerName], `${article.headline}
+${article.excerpt}`, article.sourceUrl);
+      if (invented) {
+        lastDiscardReason = 'missing_fields';
+        await notifyInventedName('Feljelentés', invented.name, invented.missing, article.sourceUrl ?? '');
+        continue;
+      }
     }
 
     const isWatchlist = isWatchlistPerson(complaint.filerName) || isWatchlistPerson(complaint.targetName);

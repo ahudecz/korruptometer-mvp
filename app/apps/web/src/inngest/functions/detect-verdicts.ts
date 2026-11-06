@@ -29,7 +29,8 @@ import {
 } from '@korr/db';
 import { isCharged } from '@app/birosagi-iteletek/verdict-stats';
 import { getDb, schema } from '@/lib/db';
-import { notifyReviewNeeded } from '@/lib/notify';
+import { notifyInventedName, notifyReviewNeeded } from '@/lib/notify';
+import { findInventedName } from '@/lib/invented-name';
 import { notifyAutoPublished } from '@/lib/notify-auto-publish';
 import type { BypassStep, BypassLogger } from '@/lib/cron-bypass';
 import { createBypassGuardedFunction, runArticleDetectionBatch, type ArticleProcessResult } from '../lib/detector-runner';
@@ -127,6 +128,24 @@ async function processVerdictArticle(
       extractedName: result.personName || undefined,
       confidence: result.confidence,
     });
+    return { inserted: false, approved: false };
+  }
+
+  // 2026-11-06 — TILTÓLISTÁS szabály (Ókovács-eset, l. extraction-guards
+  // nameTokensMissingFromText): kitalált névtag → eldobás, jóváhagyásra sem
+  // ajánljuk fel, csak gomb nélküli Telegram-tájékoztatás megy.
+  const invented = await findInventedName([result.personName], `${article.headline}
+${article.excerpt}`, article.sourceUrl);
+  if (invented) {
+    await markChecked(db, {
+      articleId: article.id,
+      detectorType: DETECTOR_TYPE,
+      outcome: 'discarded',
+      reason: 'missing_fields',
+      extractedName: result.personName,
+      confidence: result.confidence,
+    });
+    await notifyInventedName('Bírósági ügy', invented.name, invented.missing, article.sourceUrl ?? '');
     return { inserted: false, approved: false };
   }
 
