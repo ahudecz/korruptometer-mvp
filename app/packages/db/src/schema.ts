@@ -2172,3 +2172,14 @@ export type Digest = typeof digests.$inferSelect;
 export type NewDigest = typeof digests.$inferInsert;
 export type EmailSendLedgerRow = typeof emailSendLedger.$inferSelect;
 export type SubscriptionHealthAlert = typeof subscriptionHealthAlerts.$inferSelect;
+
+// 0063 — Dicsőségfal-profiltervezetek Telegram-jóváhagyása (2026-11-09).
+// A „🚀 Élesít" gomb írja; a napi felhős futás olvassa ki, átírja a configban
+// `live: true`-ra, majd `publishedAt`-et állít. l. apps/web/src/lib/dicsosegfal-publish.ts
+export const profileDraftApprovals = pgTable('ProfileDraftApproval', {
+  slug: text('slug').primaryKey(),
+  approvedAt: timestamp('approvedAt', { withTimezone: true }).notNull().defaultNow(),
+  publishedAt: timestamp('publishedAt', { withTimezone: true }),
+});
+
+export type ProfileDraftApproval = typeof profileDraftApprovals.$inferSelect;

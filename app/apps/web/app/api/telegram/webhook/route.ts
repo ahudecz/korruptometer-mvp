@@ -28,6 +28,8 @@ import {
 import { inngest } from '@/inngest/client';
 import { canonicalUrl, clipExcerpt, dedupHash, fetchArticleBodyTransient, fetchPrimaryArticle, getAdapter, routeOutletByUrl } from '@korr/scrapers';
 import { WATCH_LIST, type WatchPerson } from '@app/_home/watchlist-config';
+import { getFeltaro } from '@app/_home/rendszervaltas-config';
+import { approveDraft } from '@/lib/dicsosegfal-publish';
 
 // Legvégső fallback-név (csak akkor, ha a beküldött szöveg URL-nek NÉZETT ki
 // a regexben, de a new URL() mégis elhasal rajta — gyakorlatilag sosem fordul
@@ -1095,6 +1097,27 @@ export async function POST(req: Request) {
     }
 
     await answerCallbackQuery(cq.id, 'Ismeretlen gomb.');
+    return NextResponse.json({ ok: true });
+  }
+
+  // ── Dicsőségfal-tervezet „🚀 Élesít" gombja (2026-11-09) ────────────────
+  //
+  // `fal:a:<slug>` — NEM `dg:`, az a hírlevélé. A gomb csak jóváhagyást
+  // rögzít; a configot a következő napi felhős futás írja át `live: true`-ra
+  // (l. lib/dicsosegfal-publish.ts). Ismételt nyomás idempotens.
+  if (action === 'fal') {
+    const f = id ? getFeltaro(id) : undefined;
+    if (code !== 'a' || !f) {
+      await answerCallbackQuery(cq.id, 'Érvénytelen gomb.');
+      return NextResponse.json({ ok: true });
+    }
+    await approveDraft(f.id);
+    await answerCallbackQuery(cq.id, '🚀 Jóváhagyva.');
+    await editMessageReplyMarkup(
+      cq.message.chat.id,
+      cq.message.message_id,
+      [cq.message.text ?? '', '🚀 Jóváhagyva — a következő napi futás élesíti.'].filter(Boolean).join('\n\n'),
+    );
     return NextResponse.json({ ok: true });
   }
 

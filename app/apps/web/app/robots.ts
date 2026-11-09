@@ -21,6 +21,7 @@ export default function robots(): MetadataRoute.Robots {
           '/hamarosan',      // már most is noindex metával
           '/whistleblower',  // bejelentői űrlap — ne gyűjtsön rá találatot
           '/bejelentes',
+          '/elonezet/',      // Dicsőségfal-tervezetek titkos előnézete, noindex
         ],
       },
     ],
