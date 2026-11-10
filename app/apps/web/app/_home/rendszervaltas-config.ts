@@ -1957,15 +1957,15 @@ export const FELTAROK: Feltaro[] = [
     },
     updatedAt: '2026-11-10',
     detail: {
-      seoTitle: 'Mérce: a Kettős Mérce blogból lett, olvasói pénzből működő baloldali hírportál',
+      seoTitle: 'Mérce: a Kettős Mérce blogból lett baloldali hírportál',
       seoDescription:
-        'Mi a Mérce, ki alapította, és miből működik? A 2008-as Kettős Mérce blogtól a 2017-es hírportálig: tüntetések élőben, Helyközi Járat, díjak — és az egyesület beszámolóiból minden intézményi támogatás összeggel.',
+        'Mi a Mérce, és ki alapította? A 2008-as Kettős Mérce blogtól a 2017-es hírportálig: tüntetések élőben, Helyközi Járat, díjak, határon átnyúló tényfeltárás, vezetők.',
       lead:
-        'A Mérce 2017 októbere óta működő, vállaltan baloldali közéleti hírportál, a 2008-ban indult Kettős Mérce blog utódja. Alapítója és első főszerkesztője Jámbor András volt; kiadója a közhasznú Kettős Mérce Blog Egyesület. Saját közlése szerint működését az egyes évektől függően 70–90 százalékban az olvasók adományai fedezik — a többit hazai és külföldi pályázati támogatások, amelyeket az egyesület éves beszámolói tételesen felsorolnak.',
+        'A Mérce 2017 októbere óta működő, vállaltan baloldali közéleti hírportál, a 2008-ban indult Kettős Mérce blog utódja. Alapítója és első főszerkesztője Jámbor András volt; kiadója a közhasznú Kettős Mérce Blog Egyesület.',
       cases: {
         heading: 'A legfontosabb mozzanatok',
         intro:
-          'A Mérce nem egy-egy nagy leleplezéssel lett ismert, hanem folyamatos jelenléttel: tüntetéseken, sztrájkokon, vidéki riportokban, a munka, a lakhatás és a szegénység témáiban. Az alábbi pontok mindegyike forrással igazolható — a számok az egyesület saját, a bíróságon letétbe helyezett beszámolóiból származnak.',
+          'A Mérce nem egy-egy nagy leleplezéssel lett ismert, hanem folyamatos jelenléttel: tüntetéseken, sztrájkokon, vidéki riportokban, a munka, a lakhatás és a szegénység témáiban. Az alábbi pontok mindegyike forrással igazolható — a 2020-as számok az egyesület saját, a bíróságon letétbe helyezett beszámolójából származnak.',
         timeline: true,
         items: [
           {
@@ -2000,7 +2000,7 @@ export const FELTAROK: Feltaro[] = [
             body:
               'A koronavírus-járvány első hónapjaiban a Mérce a válság hétköznapi következményeire koncentrált. A European Journalism Centre esettanulmánya szerint az oldalletöltések száma a januári–februári havi 1,3 millióról márciusban 1,7, áprilisban 2 millióra nőtt.',
             more: [
-              'Ugyanez a 2020. júniusi tanulmány írja, hogy a szerkesztőség 2017 októbere óta 10-ről 17 főre bővült, több mint száz önkéntes segíti, a havi költségvetés nagyjából 3,1 millió forint, a bevételek mintegy 80–90 százaléka olvasói adomány, és körülbelül 1200 rendszeres támogató havi 1000–1400 forintot fizet.',
+              'Ugyanez a 2020. júniusi tanulmány írja, hogy a szerkesztőség 2017 októbere óta 10-ről 17 főre bővült, és több mint száz önkéntes segíti.',
               'Az egyesület 2020-as beszámolója szerint abban az évben 4707 cikk jelent meg a portálon, 28 percről percre tudósítás és videóközvetítés készült, a látogatottság 14,8 millió munkamenet és 4,6 millió egyedi látogató volt.',
             ],
             sources: [
@@ -2023,7 +2023,7 @@ export const FELTAROK: Feltaro[] = [
             body:
               'A Partizán kezdeményezésére hat szerkesztőség — az Átlátszó, a G7, a Magyar Hang, a Mérce, a Partizán és a Szabad Pécs — indította el a Helyközi Járatot, hogy a Budapesten kívüli ügyekről több riport készüljön. A projekt a Telex/G7 decemberi összefoglalója szerint a Partizán korábbi támogatója, Varga Imre vállalkozó végakarata és támogatása révén jöhetett létre.',
             more: [
-              'Az egyesület beszámolója szerint a Mérce három témakörre összpontosított: a kiemelt beruházásokhoz és különleges gazdasági övezetekhez kapcsolódó ügyekre, a roma képviselettel és emancipációval kapcsolatos helyi témákra, valamint a dolgozók helyzetére. A Partizán Alapítvány 2021–2022-ben 7,6 millió forinttal támogatta a Mérce részvételét.',
+              'Az egyesület beszámolója szerint a Mérce három témakörre összpontosított: a kiemelt beruházásokhoz és különleges gazdasági övezetekhez kapcsolódó ügyekre, a roma képviselettel és emancipációval kapcsolatos helyi témákra, valamint a dolgozók helyzetére.',
             ],
             links: [{ text: 'Partizán', href: '/rendszervaltas/partizan' }, { text: 'Átlátszó', href: '/rendszervaltas/atlatszo' }],
             sources: [
@@ -2036,21 +2036,9 @@ export const FELTAROK: Feltaro[] = [
             title: 'Határon átnyúló tényfeltárás és dolgozói műhely',
             when: '2022–2023',
             body:
-              'Az európai IJ4EU-program 5210 eurós támogatásával a Mérce az Átlátszó Erdéllyel közösen dolgozott határon átnyúló tényfeltáró anyagokon; a 2023-as beszámoló szerint a pályázat keretében három tényfeltáró cikk jelent meg a két portálon.',
+              'A Mérce az Átlátszó Erdéllyel közösen dolgozott határon átnyúló tényfeltáró anyagokon; a 2023-as beszámoló szerint a pályázat keretében három tényfeltáró cikk jelent meg a két portálon.',
             more: [
-              'Ugyanebben az évben indult a lap dolgozói műhelye, amely a beszámoló szerint „következetesen" követte a dolgozókkal és a szakszervezeti mozgalommal kapcsolatos folyamatokat, és kilenc mélyinterjút készített dolgozókkal. Elindult a nőjogi műhely és a nőjogi hírlevél is, holland kormányzati támogatással.',
-            ],
-            sources: [
-              { source: 'Kettős Mérce Blog Egyesület', headline: '2023-as közhasznúsági melléklet', url: 'https://drive.google.com/file/d/1pA8nMBY3jQIkaLvp-x3hximmQ01lbZNM/view' },
-            ],
-          },
-          {
-            title: 'Támadások után, a választási év előtt: megerősített infrastruktúra',
-            when: '2023–2024',
-            body:
-              'A Mérce 2023-ban 9450 dolláros támogatást kapott a HIVOS nemzetközi alapítvány vészhelyzeti alapjából „Stabilize Mérce after attacks, before election year" (A Mérce stabilizálása a támadások után, a választási év előtt) címmel. A beszámoló szerint ebből egy informatikussal a honlap biztonságos tartalékváltozatát készítették el, amelyet „bármikor bevethetünk, ha a szerverünk ellen komoly biztonsági támadás történne".',
-            more: [
-              'A beszámoló szerint az eredmény: a lap „sokkal kevésbé" sebezhető a korábbi támadásokkal szemben, ami a szerkesztőségben dolgozókra nehezedő lelki terhet is „drasztikusan" csökkentette. A támadások jellegét és elkövetőit a beszámoló nem részletezi.',
+              'Ugyanebben az évben indult a lap dolgozói műhelye, amely a beszámoló szerint „következetesen" követte a dolgozókkal és a szakszervezeti mozgalommal kapcsolatos folyamatokat, és kilenc mélyinterjút készített dolgozókkal. Elindult a nőjogi műhely és a nőjogi hírlevél is.',
             ],
             sources: [
               { source: 'Kettős Mérce Blog Egyesület', headline: '2023-as közhasznúsági melléklet', url: 'https://drive.google.com/file/d/1pA8nMBY3jQIkaLvp-x3hximmQ01lbZNM/view' },
@@ -2074,22 +2062,6 @@ export const FELTAROK: Feltaro[] = [
           ],
         },
         {
-          heading: 'Miből működik? — a beszámolók számai',
-          paragraphs: [
-            'A Mérce támogatói oldala szerint a lapot „alapítása óta túlnyomórészt, azaz az egyes évektől függően 70-90 százalékban az olvasók támogatásából" tartják fenn, és a jelenlegi működéshez 2500 rendszeres támogatóra lenne szükség. Az egyesület évente közzéteszi az egyszerűsített beszámolóját és közhasznúsági mellékletét — ezekből ellenőrizhető, mekkora a pályázati pénzek aránya.',
-            '2019-ben az összes bevétel 61,0 millió forint volt, ebből a magánszemélyek adományai 41,5 millió forintot tettek ki; a legnagyobb intézményi tétel a European Journalism Centre újságírói támogatása volt (12,4 millió forint, valamint egy 3,9 millió forintos záró részlet).',
-            '2022-ben a közhasznú bevétel 62,2 millió forint volt: ebből 45,9 millió az „adományok, támogatások" sor, 7,1 millió a személyi jövedelemadó 1 százaléka, 5,2 millió az elszámolásköteles pályázati támogatás. 2023-ban 70,0 millió forintból 51,3 millió az adomány, 6,5 millió az szja 1 százaléka és 10,6 millió a pályázati támogatás.',
-            'A pályázati támogatók között külföldi alapítványok, nemzetközi újságírói programok, egy uniós program és a holland kormány mellett a magyar állami Nemzeti Együttműködési Alap és egy magyar szakszervezet is szerepel. Az alábbi táblázat az egyesület beszámolóiban és a támogatói oldalon tételesen feltüntetett intézményi támogatásokat sorolja fel.',
-          ],
-          sources: [
-            { source: 'Mérce', headline: 'Aktuális támogatóink', url: 'https://merce.hu/aktualis-tamogatoink/' },
-            { source: 'Mérce', headline: 'Kettős Mérce Blog Egyesület — beszámolók 2015–2025', url: 'https://merce.hu/egyesulet/' },
-            { source: 'Kettős Mérce Blog Egyesület', headline: '2019-es beszámoló és közhasznúsági melléklet', url: 'https://drive.google.com/file/d/1uRuSyYM9DY4nRq7NCbRpcXv6Fdq0maSu/view' },
-            { source: 'Kettős Mérce Blog Egyesület', headline: '2022-es közhasznúsági melléklet', url: 'https://drive.google.com/file/d/1F0s_cLDyrXPdr1QvkceB8pPsflH4ljsy/view' },
-            { source: 'Kettős Mérce Blog Egyesület', headline: '2023-as közhasznúsági melléklet', url: 'https://drive.google.com/file/d/1pA8nMBY3jQIkaLvp-x3hximmQ01lbZNM/view' },
-          ],
-        },
-        {
           heading: 'Kik vezették?',
           paragraphs: [
             'Az impresszum szerint a szerkesztőséget 2017 októberétől 2019 novemberéig Jámbor András főszerkesztő és Diószegi-Horváth Nóra főszerkesztő-helyettes vezette, 2019 novemberétől 2021 májusáig Diószegi-Horváth Nóra főszerkesztő és Pap Szilárd István főszerkesztő-helyettes. Jelenleg Papp Gáspár a főszerkesztő, Dobsi Viktória a főszerkesztő-helyettes; a kiadó egyesület elnöke szintén Papp Gáspár.',
@@ -2102,30 +2074,6 @@ export const FELTAROK: Feltaro[] = [
           ],
         },
       ],
-      table: {
-        heading: 'Intézményi támogatások tételesen',
-        intro:
-          'Az egyesület éves beszámolóiban és a merce.hu támogatói oldalán összeggel feltüntetett pályázati támogatások. Az olvasói adományok és az szja 1 százaléka nincs benne.',
-        columns: ['Időszak', 'Támogató', 'Mire', 'Összeg', 'Forrás'],
-        rows: [
-          ['2019. jan.–okt.', 'European Journalism Centre', 'Journalism grant (és záró részlet)', '12 381 713 Ft + 3 924 234 Ft', '2019-es beszámoló'],
-          ['2020. jún.–2021. dec.', 'EDGE Funders Alliance', 'FundAction Rethink Grant — kelet-európai baloldali médiahálózat (ELMO)', '5000 EUR', '2021-es melléklet'],
-          ['2021–2022', 'Partizán Rendszerkritikus Tartalomelőállításért Alapítvány', 'Helyközi Járat — vidéki riportok', '7 600 000 Ft', '2021-es, 2022-es melléklet'],
-          ['2022–2024', 'Central European University', 'CEU Journalism Breakthroughs, ELMO Grant', '5000 USD', '2022-es, 2023-as melléklet'],
-          ['2022–2023', 'Journalism.eu vzw (IJ4EU)', 'Határon átnyúló tényfeltárás az Átlátszó Erdéllyel', '5210 EUR', '2022-es, 2023-as melléklet'],
-          ['2022–2023', 'MagNet Magyar Közösségi Bank', 'Közösségi adományozási program — végül a Mérce filmklub', '182 955 Ft', '2022-es melléklet'],
-          ['2023. aug.–2024. okt.', 'Ügykoalíció az Oktatási Egyenlőségért (EU CERV-program)', 'Közös értékeink — médiapartnerség az oktatási szegregáció elleni kampányban', '3 965 000 Ft', '2023-as melléklet'],
-          ['2023–2024', 'Holland kormány (Dutch Human Rights Fund)', 'Nőjogi rovat létrehozása', '16 420 EUR (6 107 255 Ft)', '2023-as melléklet'],
-          ['2023–2024', 'Nemzeti Együttműködési Alap (állami)', 'Foglalkoztatási költségek', '150 000 Ft + 750 000 Ft', '2023-as melléklet'],
-          ['2023–2024', 'HIVOS — Incident Emergency Fund', 'A honlap védelme támadások után', '9450 USD', '2023-as melléklet'],
-          ['2023', 'Polgár Alapítvány az Esélyekért', 'Működés, bérek', '2 500 000 Ft', '2023-as melléklet'],
-          ['2023. dec.', 'Szegedi Gumigyár Szakszervezeti Alapszervezete', 'Működési támogatás', '100 000 Ft', '2023-as melléklet'],
-          ['2024. júl.–2025. aug.', 'Holland Nagykövetség Emberi Jogi Alapja', 'Nőjogi műhely, Mérce Lila hírlevél', '7,2 millió Ft', 'merce.hu támogatói oldal'],
-          ['2024. okt.–2025. ápr.', 'Mérték Médiaelemző Műhely és Ökotárs Alapítvány (Szabad Média pályázat, az USA budapesti nagykövetségének támogatásával)', 'Optimisták podcast, Kult hírlevél', '3 millió Ft', 'merce.hu támogatói oldal'],
-        ],
-        note:
-          'A 2024-es és 2025-ös beszámoló tételes támogatási listája még nem szerepel a táblázatban. A támogatói oldal 2024-re egy 750 000 forintos NEA-támogatást is említ, amely azonos lehet a táblázatban 2023–2024-re szereplővel.',
-      },
       faq: [
         {
           q: 'Mi a Mérce?',
@@ -2134,14 +2082,6 @@ export const FELTAROK: Feltaro[] = [
         {
           q: 'Ki alapította a Mércét?',
           a: 'Az impresszum szerint az alapító Jámbor András, aki 2017 októberétől 2019 novemberéig a főszerkesztő is volt. Ma Papp Gáspár a főszerkesztő.',
-        },
-        {
-          q: 'Miből működik a Mérce?',
-          a: 'Saját közlése szerint évtől függően 70–90 százalékban olvasói adományokból. 2023-ban a 70,0 millió forintos közhasznú bevételből 51,3 millió volt adomány, 6,5 millió szja 1 százalék és 10,6 millió pályázati támogatás.',
-        },
-        {
-          q: 'Kap-e a Mérce külföldi támogatást?',
-          a: 'Igen, pályázati formában. Az egyesület beszámolói szerint többek között a European Journalism Centre, az EDGE Funders Alliance, a CEU, az IJ4EU, a HIVOS és a holland kormány támogatta konkrét projektjeit. A lap hazai forrásból — a Partizán Alapítványtól, a Polgár Alapítványtól és az állami Nemzeti Együttműködési Alaptól — is kapott támogatást.',
         },
         {
           q: 'Vannak-e hirdetések a Mércén?',
