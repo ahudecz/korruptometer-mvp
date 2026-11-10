@@ -33,6 +33,7 @@ import {
   isDuplicate,
   isPermanentBreakingPerson,
   isBlacklistedComplaintFiler,
+  isBlacklistedResignationName,
   isPlaceholderName,
   isRelationalOnlyMention,
   isTransientLlmFailure,
@@ -173,6 +174,12 @@ export async function processResignation(article: ArticleForReprocess, todayIso:
     // l. review.ts isDuplicate() komment (2026-08-23) — institution-guarded,
     // hogy ugyanaz a személy egy MÁSIK intézményből való lemondása ne
     // számítson duplikátumnak.
+    // 2026-11-10 user kérés — név-tiltólista, l. isBlacklistedResignationName() (review.ts).
+    if (isBlacklistedResignationName(person.name)) {
+      lastDiscardReason = 'not_applicable';
+      continue;
+    }
+
     if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, person.name, undefined, person.institution, resolveResignationDate(person.resignationDate, article.publishedAt))) {
       lastDiscardReason = 'duplicate';
       continue;

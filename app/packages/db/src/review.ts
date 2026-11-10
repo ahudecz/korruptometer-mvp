@@ -692,6 +692,20 @@ export function isBlacklistedComplaintFiler(filerName: string): boolean {
   return BLACKLISTED_COMPLAINT_FILERS.some((blocked) => normalized.includes(blocked));
 }
 
+// 2026-11-10 user kérés: Cseh Gergő Bendegúz (ÁBTL-főigazgató) csak
+// FELAJÁNLOTTA a lemondását — a sort töröltük, és a user kérésére többé
+// semmilyen útvonalon (cron-detektor, Telegram-újravizsgálat, „a" gombos
+// jóváhagyás) nem kerülhet be lemondásként. Explicit név-tiltólista, ugyanaz
+// a minta, mint BLACKLISTED_COMPLAINT_FILERS. A kulcs normalizeName()-es
+// (ékezet nélküli, kisbetűs) teljes név; a vezetéknév+első keresztnév is
+// elég, hogy a „Cseh Gergő" rövidítés se csússzon át.
+const BLACKLISTED_RESIGNATION_NAMES = ['cseh gergo'];
+
+export function isBlacklistedResignationName(name: string): boolean {
+  const normalized = normalizeName(name);
+  return BLACKLISTED_RESIGNATION_NAMES.some((blocked) => normalized.includes(blocked));
+}
+
 const SAME_COMPLAINANT_SYSTEM = `Te egy magyar korrupció-figyelő szerkesztő asszisztens vagy. Két megnevezést kapsz, amik egy-egy feljelentés BENYÚJTÓJÁRA utalnak (cikkenként eltérő megfogalmazásban). Döntsd el, hogy UGYANARRA a valós szereplőre utalnak-e — pl. egy minisztérium és az azt A CIKK IDEJÉN vezető miniszter/államtitkár neve ugyanaz a bejelentő, mert a személy a hivatal nevében jár el (pl. "Külügyminisztérium" és "Orbán Anita" ugyanaz, ha ő a külügyminiszter; "a kormány" és egy konkrét minisztérium neve is gyakran ugyanaz). Csak akkor mondj "true"-t, ha ténylegesen ugyanaz a szereplő, ne csak hasonló témában.`;
 
 const SAME_COMPLAINANT_TOOL: LlmToolSpec = {

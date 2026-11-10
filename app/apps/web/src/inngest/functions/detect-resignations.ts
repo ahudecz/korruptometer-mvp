@@ -12,6 +12,7 @@ import {
   hasIndividualResignationForInstitution,
   isCalledToResignPerson,
   isCollectiveEntityName,
+  isBlacklistedResignationName,
   isDuplicate,
   isPlaceholderName,
   isPermanentBreakingPerson,
@@ -193,6 +194,12 @@ export async function processResignationArticle(
     // institution is NOT blocked (l. isDuplicate() komment, 2026-08-23: Lázár
     // János Teniszszövetség-lemondása néma duplikátumnak jelölte az OGY-
     // mandátumáról szóló, teljesen más lemondását).
+    // 2026-11-10 user kérés — név-tiltólista, l. isBlacklistedResignationName() (review.ts).
+    if (isBlacklistedResignationName(person.name)) {
+      lastDiscardReason = 'not_applicable';
+      continue;
+    }
+
     if (await isDuplicate(db, { table: 'PoliticalResignation', nameColumn: 'name' }, person.name, undefined, person.institution, resignationDate)) {
       lastDiscardReason = 'duplicate';
       continue;

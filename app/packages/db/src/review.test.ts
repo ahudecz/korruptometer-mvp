@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanPositionTitle, decideComplaintTransition, decideStatus, findExistingComplaint, findPublishedResignationDuplicate, isBlacklistedComplaintFiler, isDuplicate, isSameComplainant, isSuspiciouslyEarlyDate, sameApproxComplaintAmount, truncateDescriptionWords } from './review';
+import { cleanPositionTitle, decideComplaintTransition, decideStatus, findExistingComplaint, findPublishedResignationDuplicate, isBlacklistedComplaintFiler, isBlacklistedResignationName, isDuplicate, isSameComplainant, isSuspiciouslyEarlyDate, sameApproxComplaintAmount, truncateDescriptionWords } from './review';
 import { isCalledToResignPerson, isWatchlistPerson, normalizeName } from './watchlist';
 
 // Drizzle's `sql` template tag returns an object tree (StringChunk literals
@@ -616,5 +616,19 @@ describe('isDuplicate — nem ad át Date-et nyers SQL-paraméterként', () => {
     await expect(
       isDuplicate(fakeDb as never, { table: 'PoliticalResignation', nameColumn: 'name' }, 'Teszt Elek', undefined, 'X', new Date('nem dátum')),
     ).resolves.toBe(false);
+  });
+});
+
+describe('isBlacklistedResignationName', () => {
+  it('Cseh Gergő Bendegúz minden írásmódban tiltott', () => {
+    expect(isBlacklistedResignationName('Cseh Gergő Bendegúz')).toBe(true);
+    expect(isBlacklistedResignationName('Cseh Gergő')).toBe(true);
+    expect(isBlacklistedResignationName('dr. Cseh Gergő Bendegúz')).toBe(true);
+    expect(isBlacklistedResignationName('CSEH GERGO BENDEGUZ')).toBe(true);
+  });
+  it('más név nem akad fenn', () => {
+    expect(isBlacklistedResignationName('Cseh Katalin')).toBe(false);
+    expect(isBlacklistedResignationName('Kivés Zoltán')).toBe(false);
+    expect(isBlacklistedResignationName('Ókovács Szilveszter')).toBe(false);
   });
 });

@@ -16,7 +16,7 @@ import {
   processAssetRecovery,
   type ArticleForReprocess,
 } from '@/lib/telegram-review-actions';
-import { findPublishedResignationDuplicate, markChecked, type DetectorType } from '@korr/db';
+import { findPublishedResignationDuplicate, isBlacklistedResignationName, markChecked, type DetectorType } from '@korr/db';
 import { parseAmountReply } from '@/lib/asset-amount-gate';
 import { ALERT_ON_EDITOR_CONFIRM } from '@/lib/notify-auto-publish';
 import { recordAlertsForRecordIds, recordSubscriberAlert, revokeSubscriberAlert } from '@/lib/notify-subscribers';
@@ -1735,6 +1735,19 @@ ${resultText}`.trim());
     // (l. setPendingStatus komment: elutasítás = törlés).
     if (pending && action === 'a' && detectorType === 'resignation') {
       const db = getDb();
+      // 2026-11-10 — név-tiltólista (isBlacklistedResignationName, review.ts):
+      // a gomb sem teheti ki; a pending sort töröljük.
+      const [self] = await db
+        .select({ name: schema.politicalResignations.name })
+        .from(schema.politicalResignations)
+        .where(eq(schema.politicalResignations.id, id));
+      if (self && isBlacklistedResignationName(self.name)) {
+        await db.delete(schema.politicalResignations).where(eq(schema.politicalResignations.id, id));
+        revalidatePublicPaths();
+        await answerCallbackQuery(cq.id, '⛔ Tiltólistás név — nem kerül ki.');
+        await editMessageReplyMarkup(cq.message.chat.id, cq.message.message_id, [cq.message.text ?? '', `⛔ ${self.name} tiltólistán van (lemondások) — NEM hagytam jóvá, a sort töröltem.`].filter(Boolean).join('\n\n'));
+        return NextResponse.json({ ok: true, blocked: 'blacklisted' });
+      }
       const dup = await findPublishedResignationDuplicate(db, id);
       if (dup) {
         const [mine] = await db
