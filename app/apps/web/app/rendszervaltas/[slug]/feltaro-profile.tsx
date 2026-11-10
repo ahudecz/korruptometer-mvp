@@ -666,7 +666,7 @@ export async function FeltaroProfile({ f }: { f: Feltaro }) {
                     </thead>
                     <tbody>
                       {d.table.rows.map((row) => (
-                        <tr key={row[0]}>
+                        <tr key={row.join('|')}>
                           {row.map((cell, ci) => (
                             <td key={ci}>{cell}</td>
                           ))}
