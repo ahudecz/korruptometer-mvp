@@ -1976,6 +1976,8 @@ export const FELTAROK: Feltaro[] = [
             more: [
               '> „Hanem magyarázni akarunk, kontextust teremteni, úgy átadni a nap eseményeit, hogy attól kicsit érthetőbb legyen a világ.” | Jámbor András beköszönő cikke · idézi a 444, 2017. október 22.',
               'Az egyesület 2018. január 8-án lett közhasznú szervezet. A lap a bemutatkozó oldalán ma is úgy írja le magát, mint „Magyarország első, 100%-ban olvasói támogatásból létrehozott hírportálja”.',
+              'A bemutatkozó oldal szerint a blog „több átalakulás után" 2014-ben kezdett szerkesztőséggé erősödni, és ez a munka vezetett a 2017-es hírportálhoz. A 444 induláskori beszámolója szerint az új Mércén állandó publicisztikai rovatot kapott hétfőnként Tamás Gáspár Miklós, keddenként Pogátsa Zoltán; a 444 a lap egyszerű, „nem portálos külsejű" dizájnját is kiemelte.',
+              'A lap a saját munkamódszerét így írja le: „Jelen vagyunk, ahol fontos dolgok történnek: élőben, percről-percre közvetítünk a meghatározó eseményekről." Ez a gyakorlat — a tüntetések, sztrájkok és munkahelyi konfliktusok órákon át tartó, helyszíni követése — lett a Mérce legismertebb műfaja a következő években.',
             ],
             links: [{ text: 'Jámbor András', href: '/rendszervaltas/jambor-andras' }],
             sources: [
@@ -1989,9 +1991,42 @@ export const FELTAROK: Feltaro[] = [
             when: '2018. december',
             body:
               'A túlóratörvény (közkeletű nevén „rabszolgatörvény") elleni 2018. decemberi tüntetéseket a Mérce élőben közvetítette. A 444 december 12-i tudósítása szerint a Kossuth téren a rendőrök könnygázt fújtak, és „kapott a Mérce élőben közvetítő stábja is, ki kellett menekülniük a szabadabb levegőre". Más szerkesztőségek a Mérce helyszíni becslésére és tudósítására hivatkoztak.',
+            more: [
+              'A Mérce december 19-i összegzése szerint a gyakornokokkal együtt tizenhárom tagú szerkesztőség napi hét-kilenc emberrel volt a helyszínen és a gép előtt; ha a tömeg több menetre vált szét, önkéntesek segítségével mindegyiket követték. A lap szerint munkatársai összesen nagyjából húsz könnygáztámadást szenvedtek el, egy tudósítójukat pedig fejbe dobták egy üveggel.',
+              'Ugyanez a cikk közölte, hogy a Facebook belső mérése szerint a Mérce egy hét alatt négymillió embert ért el, és az oldalán több mint 500 ezer interakció (lájk, komment, megosztás) történt — ugyanebben az időszakban az ATV oldalán 300 ezer, az Indexén 280 ezer. December 17-én a lap minden mutatóban új havi rekordot ért el.',
+              'A tüntetéssorozat után a szerkesztőség videón összegezte a tíz napot: „60 óra az utcán. 42 élő videós közvetítés. 16 szerkesztő, gyakornok és önkéntes segítő." A videóban megszólal többek között Jámbor András, Papp Gáspár, Diószegi-Horváth Nóra és Pap Szilárd István.',
+            ],
+            videos: [
+              {
+                id: 'USI8iwVmD08',
+                label: 'Mérce · 2018. dec. 23.',
+                title: 'A Mérce újságírói a rabszolgatörvény-ellenes tüntetésekről',
+                summary:
+                  'A szerkesztőség tagjai mesélik el, milyen volt tíz napon át az utcáról közvetíteni: a könnygáz, a szétváló menetek követése, az éjszakába nyúló élő adások.',
+                views: '29 ezer megtekintés',
+              },
+            ],
             sources: [
               { source: '444', date: '2018. dec. 12.', headline: 'A Kossuth téren nyomakodnak a tüntetők, a rendőrök könnygázt fújnak', url: 'https://444.hu/2018/12/12/a-tuloratorveny-elleni-tuntetok-lezartak-a-lanchidat' },
               { source: '444', date: '2018. dec. 13.', headline: 'Könnygázzal válaszoltak a rendőrök a közéjük dobott füstbombára', url: 'https://444.hu/2018/12/13/a-tuloratorveny-ellen-tuntetok-lezartak-a-margit-hidat' },
+              { source: 'Mérce', date: '2018. dec. 19.', headline: 'Az elmúlt napokban minden létező rekordot megdöntött a Mérce', url: 'https://merce.hu/2018/12/19/az-elmult-napokban-minden-letezo-rekordot-megdontott-a-merce/' },
+              { source: 'Mérce', date: '2018. dec. 21.', headline: 'Áder aláírta a rabszolgatörvényt, Budapest immár hatodjára az utcán – percről percre a Mércén', url: 'https://merce.hu/2018/12/21/tuntetes-budapest-rabszolgatorveny-pentek-percrol-percre/' },
+            ],
+          },
+          {
+            title: 'Az Audi-sztrájk — egy hét Győrben, a dolgozók oldaláról',
+            when: '2019. január',
+            body:
+              'Néhány héttel a rabszolgatörvény elfogadása után az Audi Hungária Független Szakszervezet (AHFSZ) sztrájkba vitte a győri gyár dolgozóit. A Mérce a sztrájk mindennapjait, a szakszervezeti vezetők nyilatkozatait, valamint a hazai és nemzetközi szolidaritást követte; a munkabeszüntetés hatodik napján, január 30-án született meg a megállapodás.',
+            more: [
+              'A lap aznap esti interjújában Szimacsek Tibor, az AHFSZ elnökségi tagja értékelte az egyezséget. A Mérce által közölt tartalom szerint: 18 százalékos, de legalább 75 ezer forintos alapbér-emelés 15 hónapra, 400 ezer forintos béren kívüli juttatás 2019-re és 2020-ra, lojalitási és jubileumi bónuszok, valamint havonta egy szabad hétvége.',
+              'Ugyanazon az estén megjelent elemzésében a lap „fordulópontnak" nevezte a sztrájk győzelmét „a tőke és a dolgozók viszonyában", és kiemelte, hogy a győri szakszervezet sok segítséget kapott a német IG Metalltól. Másnap a Mérce arról is beszámolt, hogy Hatvanban több mint hatvan autóval zárták le az utat, és a győrihez hasonló sztrájk jöhet a Boschnál is.',
+            ],
+            sources: [
+              { source: 'Mérce', date: '2019. jan. 29.', headline: 'Hatalmas az Audi sztrájk hazai és nemzetközi támogatóinak tábora', url: 'https://merce.hu/2019/01/29/hatalmas-az-audi-sztrajk-hazai-es-nemzetkozi-tamogatoinak-tabora/' },
+              { source: 'Mérce', date: '2019. jan. 30.', headline: '„Büszkék vagyunk a munkatársainkra!” – Sztrájkértékelő interjú a győri szakszervezeti vezetővel', url: 'https://merce.hu/2019/01/30/buszkek-vagyunk-a-munkatarsainkra-sztrajkertertekelo-interju-a-gyori-szakszervezeti-vezetovel/' },
+              { source: 'Mérce', date: '2019. jan. 30.', headline: 'Fordulópont az Audi-sztrájk győzelme a tőke és a dolgozók viszonyában', url: 'https://merce.hu/2019/01/30/fordulopont-az-audi-sztrajk-gyozelme-a-toke-es-a-dolgozok-viszonyaban/' },
+              { source: 'Mérce', date: '2019. jan. 31.', headline: 'Több mint 60 autóval zárták le az utat Hatvanban, a győrihez hasonló sztrájk jöhet a Boschnál is', url: 'https://merce.hu/2019/01/31/tobb-mint-60-autoval-zartak-le-az-utat-hatvanban-a-gyorihez-hasonlo-sztrajk-johet-a-boschnal-is/' },
             ],
           },
           {
@@ -2030,6 +2065,88 @@ export const FELTAROK: Feltaro[] = [
               { source: 'Telex / G7', date: '2021. szept. 20.', headline: 'Indul a Helyközi Járat, együtt szállítjuk a vidéki híreket', url: 'https://telex.hu/g7/kozelet/2021/09/20/indul-a-helykozi-jarat-egyutt-szallitjuk-a-videki-hireket' },
               { source: 'Telex / G7', date: '2021. dec. 26.', headline: '„Szebben, jobban éljenek, mint ahogy mi itten most”', url: 'https://telex.hu/g7/kozelet/2021/12/26/szebben-jobban-eljenek-mint-ahogy-mi-itten-most' },
               { source: 'Kettős Mérce Blog Egyesület', headline: '2021-es közhasznúsági melléklet', url: 'https://drive.google.com/file/d/1rLsgknrUqLQsVlCL36K74Sb8pRctc8q6/view' },
+            ],
+          },
+          {
+            title: 'Pedagógussztrájk 2022 — a figyelmeztető sztrájktól a határozatlan idejűig',
+            when: '2022. január–március',
+            body:
+              'A Mérce a 2022-es tanármozgalom egyik legkövetkezetesebb krónikása volt. Már 2016-ban, még Kettős Mérce-blogként videón rögzítette a budapesti tanártüntetést; 2022 elején pedig felidézte, hogy hat évvel korábban a miskolci Hermann Ottó Gimnázium nyílt levelére indult országos tüntetéshullám, amelynek követeléseihez akkor 737 intézmény csatlakozott.',
+            more: [
+              'A Pedagógusok Szakszervezete (PSZ) és a Pedagógusok Demokratikus Szakszervezete (PDSZ) 2022. január 31-én kétórás figyelmeztető sztrájkot tartott. A Mérce interjút készített a sztrájkoló kőbányai Széchényi István általános iskola tanárával, Czédly Mariannal, a szolidaritási autós felvonuláson pedig villáminterjút a vegyipari szakszervezet (VDSZ) elnökével, Székely Tamással. A lap márciusi összefoglalója szerint a januári sztrájkhoz becslések szerint 28 ezer pedagógus csatlakozott.',
+              'A kormány ezután rendeletben szabályozta az iskolák sztrájk alatti működését; a szakszervezetek erre határozatlan idejű sztrájkot hirdettek, amely március 16-án kezdődött. A Mérce aznap reggeltől élőben közvetített: hat iskola közös kiállásáról (a tanárok a „Mi vagyunk a Grund!" című dalt énekelték), a pedagógushallgatók tüntetéséről az oktatási minisztérium előtt, és a három budapesti pontról induló diákvonulásról, amely a Szent István-bazilikánál egyesült, majd a Kossuth téren tüntetett. A lap videója szerint a vonuláshoz több mint húsz iskola csatlakozott.',
+            ],
+            videos: [
+              {
+                id: 'WSw0idxpXtE',
+                label: 'Mérce · 2022. jan. 31.',
+                title: 'Sztrájkoló tanár: Ha most sem történik semmi, akkor ennek az országnak itt van vége',
+                summary:
+                  'Interjú a figyelmeztető sztrájk napján Czédly Mariannal, a kőbányai Széchényi István két tanítási nyelvű általános iskola tanárával.',
+                views: '3,4 ezer megtekintés',
+              },
+              {
+                id: 'JH16qD1KrLI',
+                label: 'Mérce · 2022. márc. 16.',
+                title: '„Nincs vesztenivalóm, ennél már nem lehet lejjebb menni” — a határozatlan idejű sztrájk első reggele',
+                summary:
+                  'A Kispesti Deák Ferenc Gimnázium és a Pannónia Általános Iskola sztrájkoló tanárai mondják el, miért szüntették be a munkát — a hat iskola közös éneklésével kezdődő reggelen.',
+                views: '2,4 ezer megtekintés',
+              },
+              {
+                id: 'tbF501pJzrA',
+                label: 'Mérce · 2022. márc. 16.',
+                title: 'Timelapse videón a Kossuth térre érkező diáktüntetők',
+                summary:
+                  'Gyorsított felvétel a tanáraik mellett vonuló diákokról: a három budapesti menet a bazilikánál találkozott, és együtt érkezett a Parlament elé.',
+                views: '5,5 ezer megtekintés',
+              },
+              {
+                id: 'vcLzqE79bHM',
+                label: 'Mérce · 2016. febr. 3.',
+                title: 'Tanárok tüntetése, Budapest, 2016. febr. 3.',
+                summary:
+                  'Előzmény hat évvel korábbról: a Kettős Mérce felvétele a 2016-os budapesti tanártüntetésről, a miskolci nyílt levéllel indult tiltakozáshullám idejéből.',
+              },
+            ],
+            sources: [
+              { source: 'Mérce', date: '2022. jan. 31.', headline: 'Mit követelnek a pedagógusok a hétfői sztrájk során?', url: 'https://merce.hu/2022/01/31/mit-kovetelnek-a-pedagogusok-a-hetfoi-sztrajk-soran/' },
+              { source: 'Mérce', date: '2022. febr. 1.', headline: 'Hat éve, hogy a miskolci Hermann Ottó Gimnázium felhívására országos tüntetés kezdődött', url: 'https://merce.hu/2022/02/01/hat-eve-hogy-a-miskolci-hermann-otto-gimnazium-felhivasara-orszagos-tuntetes-kezdodott-iden-ujra-demonstraciora-keszulnek/' },
+              { source: 'Mérce', date: '2022. márc. 16.', headline: 'Határozatlan idejű sztrájkba kezdtek a tanárok, több ezer diák tüntetett mellettük országszerte – percről percre', url: 'https://merce.hu/2022/03/16/kezdodik-a-pedagogusok-hatarozatlan-ideju-sztrajkja-percrol-percre-a-mercen/' },
+              { source: 'Mérce YouTube', date: '2022. jan. 31.', headline: '„Az ellehetetlenített sztrájkjogot mindenképpen módosítani kell” — villáminterjú Székely Tamással', url: 'https://www.youtube.com/watch?v=0LOMAaU1ARU' },
+            ],
+          },
+          {
+            title: 'Kirúgott tanárok, hídfoglalás, nyolcvanezres tüntetés',
+            when: '2022. szeptember–október',
+            body:
+              'A sztrájkot ellehetetlenítő szabályok miatt a tanárok egy része polgári engedetlenségbe kezdett. 2022. szeptember 30-án a Mérce élőben közvetített a budapesti Kölcsey Ferenc Gimnázium elől, ahol több százan tüntettek a polgári engedetlenség miatt elbocsátott tanárokért. A lapnak a helyszínen Törley Katalin, a Tanítanék mozgalom egyik alapítója nyilatkozott: úgy tudja, őt is elbocsátják.',
+            more: [
+              'A cikk szerint a tankerületi központok szeptember 9-én névre szóló levélben figyelmeztették a polgári engedetlenségben részt vett tanárokat, hogy ismételt részvétel esetén rendkívüli felmentés jár. A lap részletesen ismertette a májusban törvénybe emelt feltételeket is: sztrájk idején a tanórák felét, az érettségizőknek a kötelező érettségi tárgyak minden óráját meg kell tartani — a tanárok szakmai szervezetei szerint ez gyakorlatilag elvette a sztrájkjogot.',
+              'Október 5-én, a pedagógusok világnapján a Mérce reggeltől estig percről percre követte az országos tiltakozást: a Rákóczi úti, több kilométeres élőláncot, a Grund diákcsoport által szervezett Margit hídi hídfoglalást és az esti Kossuth téri tüntetést. A lap a PDSZ-t idézve 13-14 ezer sztrájkolóról írt; a Kossuth téren felszólalt többek között Törley Katalin és Pilz Olivér miskolci tanár.',
+              'Október 23-án a Mérce élőben közvetítette a Kálvin térről a Szabadság hídon át a Műegyetem rakpartig vonuló tüntetést. A lap tudósítása szerint amikor a menet eleje már fél órája a Műegyetemnél várt, a vége még a Kálvin téren volt; a szervezők szerint hozzávetőleg 80 ezren tüntettek a tanárokért.',
+            ],
+            videos: [
+              {
+                id: 'E7XjWQ6fVtc',
+                label: 'Mérce · 2022. okt. 5.',
+                title: 'Videón a több kilométer hosszú élőlánc a tanárokért',
+                summary:
+                  'A pedagógusok világnapjának reggelén diákok, szülők és tanárok sorakoztak fel kézen fogva a budapesti Rákóczi úton.',
+              },
+              {
+                id: 'mcb2HhdHTis',
+                label: 'Mérce · 2022. okt. 6.',
+                title: '„Ha most nem teszünk semmit, a jövőnk semmivé lesz” — több tízezer ember tüntetett a tanárokért',
+                summary:
+                  'Videóriport a Grund diákcsoport Margit hídi hídfoglalásáról: a résztvevők mondják el, miért vonultak ki a tanáraikért.',
+                views: '3,4 ezer megtekintés',
+              },
+            ],
+            sources: [
+              { source: 'Mérce', date: '2022. szept. 30.', headline: 'Több százan tüntetnek a kirúgott tanáraikért a Kölcsey gimnázium előtt Budapesten', url: 'https://merce.hu/2022/09/30/tobb-szazan-tuntetnek-a-kirugott-tanaraikert-a-kolcsey-gimnazium-elott-budapesten/' },
+              { source: 'Mérce', date: '2022. okt. 5.', headline: 'Több tízezres Kossuth téri tüntetéssel zárult a tanárok sztrájknapja – percről percre', url: 'https://merce.hu/2022/10/05/sztrajkkal-es-tuntetesekkel-indul-a-pedagogusok-vilagnapja-magyarorszagon-percrol-percre/' },
+              { source: 'Mérce', date: '2022. okt. 23.', headline: '„Összefogunk, nem félünk, folytatjuk!” – 80 ezren tüntettek a tanárokért Budapesten', url: 'https://merce.hu/2022/10/23/tizezres-tomeg-vonul-a-szabadsag-hidon-a-tanarokert/' },
             ],
           },
           {
@@ -2082,6 +2199,14 @@ export const FELTAROK: Feltaro[] = [
         {
           q: 'Ki alapította a Mércét?',
           a: 'Az impresszum szerint az alapító Jámbor András, aki 2017 októberétől 2019 novemberéig a főszerkesztő is volt. Ma Papp Gáspár a főszerkesztő.',
+        },
+        {
+          q: 'Hogyan tudósított a Mérce a 2022-es tanártüntetésekről?',
+          a: 'Élő közvetítésekkel, percről percre frissülő cikkekkel és helyszíni videóinterjúkkal: a január 31-i figyelmeztető sztrájktól a március 16-i határozatlan idejű sztrájkon és a kölcseys kirúgásokon át az október 5-i hídfoglalásig és az október 23-i, a szervezők szerint 80 ezres budapesti tüntetésig.',
+        },
+        {
+          q: 'Hogyan tudósított a Mérce a rabszolgatörvény elleni tüntetésekről?',
+          a: 'A lap saját összegzése szerint tíz nap alatt 60 órát töltött az utcán és 42 élő videós közvetítést készített; a munkatársakat több könnygáztámadás érte. A Facebook mérése szerint a Mérce egy hét alatt négymillió embert ért el.',
         },
         {
           q: 'Vannak-e hirdetések a Mércén?',
