@@ -41,6 +41,7 @@ export const DICSOSEGFAL_GRAMMAR: Record<string, Grammar> = {
   'carson-coma': { article: 'a', dative: 'a Carson Comának' },
   'majka': { article: '', dative: 'Majkának' },
   'szel-bernadett': { article: '', dative: 'Szél Bernadettnek' },
+  'fekete-gyor-andras': { article: '', dative: 'Fekete-Győr Andrásnak' },
   'momentum': { article: 'a', dative: 'a Momentumnak' },
   'panyi-szabolcs': { article: '', dative: 'Panyi Szabolcsnak' },
   'gulyasagyu-media': { article: 'a', dative: 'a Gulyáságyú Médiának' },

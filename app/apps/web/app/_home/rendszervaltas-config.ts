@@ -1955,6 +1955,81 @@ export const FELTAROK: Feltaro[] = [
         'A szerkesztőség a Kegyencjárat számára elsősorban kontextusforrás: az ügyek mögötti intézményi működés leírásában támaszkodunk rá.',
       ],
     },
+    updatedAt: '2026-11-10',
+    detail: {
+      seoTitle: 'Mérce — az olvasói pénzből működő baloldali hírportál',
+      seoDescription:
+        'Mi a Mérce? A 2008-ban indult Kettős Mérce blogból 2017-ben lett hírportál, 100%-ban olvasói támogatásból. Tüntetések élő közvetítése, munka, lakhatás, szegénység — forrásokkal.',
+      lead:
+        'A Mérce a Kettős Mérce blogból 2017 októberében indult hírportál, amely saját meghatározása szerint Magyarország első, 100%-ban olvasói támogatásból létrehozott hírportálja. Kiadója a Kettős Mérce Blog Egyesület, alapítója Jámbor András.',
+      cases: {
+        heading: 'A legfontosabb mozzanatok',
+        intro:
+          'A Mérce nem egy-egy nagy leleplezéssel, hanem folyamatos jelenléttel lett ismert: tüntetéseken, sztrájkokon, a munka és a lakhatás témáiban. Az alábbi pontok forrással igazolhatók.',
+        timeline: true,
+        items: [
+          {
+            title: 'Blogból hírportál — közösségi finanszírozásból',
+            when: '2017. október 22.',
+            body:
+              'A Kettős Mérce blog 2008 áprilisában indult, és évekig az Index blogszolgáltatóján, a blog.hu-n futott. 2017. október 22-én saját domainen, közösségi finanszírozásból indult el a merce.hu. Jámbor András főszerkesztő beköszönő cikke szerint a lap célja nem csak a hírközlés volt, hanem az összefüggések magyarázata.',
+            more: [
+              '> „Hanem magyarázni akarunk, kontextust teremteni, úgy átadni a nap eseményeit, hogy attól kicsit érthetőbb legyen a világ.” | Jámbor András beköszönő cikke · idézi a 444, 2017. október 22.',
+            ],
+            links: [{ text: 'Jámbor András', href: '/rendszervaltas/jambor-andras' }],
+            sources: [
+              { source: '444', date: '2017. okt. 22.', headline: 'Elindult a Kettős Mérce balos hírportálja, a merce.hu', url: 'https://444.hu/2017/10/22/elindult-a-kettos-merce-balos-hirportalja-a-mercehu' },
+              { source: 'Mérce', headline: 'Mi a Mérce?', url: 'https://merce.hu/mi-a-merce/' },
+            ],
+          },
+          {
+            title: 'Élő közvetítés a túlóratörvény elleni tüntetésekről',
+            when: '2018. december',
+            body:
+              'A túlóratörvény (közkeletű nevén „rabszolgatörvény") elleni 2018. decemberi tüntetéseket a Mérce élőben közvetítette. A 444 december 12-i tudósítása szerint a Kossuth téren a rendőrök könnygázt fújtak, és „kapott a Mérce élőben közvetítő stábja is, ki kellett menekülniük a szabadabb levegőre". Más szerkesztőségek a Mérce helyszíni becslésére és tudósítására hivatkoztak.',
+            sources: [
+              { source: '444', date: '2018. dec. 12.', headline: 'A Kossuth téren nyomakodnak a tüntetők, a rendőrök könnygázt fújnak', url: 'https://444.hu/2018/12/12/a-tuloratorveny-elleni-tuntetok-lezartak-a-lanchidat' },
+              { source: '444', date: '2018. dec. 13.', headline: 'Könnygázzal válaszoltak a rendőrök a közéjük dobott füstbombára', url: 'https://444.hu/2018/12/13/a-tuloratorveny-ellen-tuntetok-lezartak-a-margit-hidat' },
+            ],
+          },
+        ],
+      },
+      extra: [
+        {
+          heading: 'Miről ír a Mérce?',
+          paragraphs: [
+            'A lap saját bemutatkozása szerint baloldali és politikai lap, amely csak politikai, közéleti híreket közöl. Témáit így sorolja fel: „a korán kelők országa, az elhagyatott Magyarország népeinek gondjai, a dolgozók kiszolgáltatottsága, a munkavállalók és a szegénységben élők mindennapi gondjai", valamint „a méltó lakhatásért folytatott harc, a romák kirekesztettség elleni és a nők egyenlőségi küzdelme".',
+            'A finanszírozásról a lap ezt írja: „sok száz olvasónk rendszeresen, több ezer olvasónk alkalmanként pénzzel is támogatja a munkánkat". A bemutatkozó oldal szerint a szerkesztőségben tizenheten dolgoznak.',
+          ],
+          sources: [
+            { source: 'Mérce', headline: 'Mi a Mérce?', url: 'https://merce.hu/mi-a-merce/' },
+          ],
+        },
+        {
+          heading: 'Kik vezették?',
+          paragraphs: [
+            'Az impresszum szerint a szerkesztőséget 2017 októberétől 2019 novemberéig Jámbor András főszerkesztő és Diószegi-Horváth Nóra főszerkesztő-helyettes vezette, 2019 novemberétől 2021 májusáig Diószegi-Horváth Nóra főszerkesztő és Pap Szilárd István főszerkesztő-helyettes. Jelenleg Papp Gáspár a főszerkesztő, Dobsi Viktória a főszerkesztő-helyettes.',
+          ],
+          sources: [
+            { source: 'Mérce', headline: 'Impresszum', url: 'https://merce.hu/impresszum/' },
+          ],
+        },
+      ],
+      faq: [
+        {
+          q: 'Mi a Mérce?',
+          a: 'Baloldali, politikai hírportál, amely 2017 októberében indult a 2008-as Kettős Mérce blogból. Saját meghatározása szerint Magyarország első, 100%-ban olvasói támogatásból létrehozott hírportálja.',
+        },
+        {
+          q: 'Ki alapította a Mércét?',
+          a: 'Az impresszum szerint az alapító Jámbor András, aki 2017 októberétől 2019 novemberéig a főszerkesztő is volt.',
+        },
+        {
+          q: 'Kié a Mérce, és miből működik?',
+          a: 'A kiadó a Kettős Mérce Blog Egyesület. A lap olvasói támogatásból működik: saját közlése szerint sok száz olvasó rendszeresen, több ezer alkalmanként támogatja.',
+        },
+      ],
+    },
   },
   {
     id: 'szikra-mozgalom',
