@@ -1955,7 +1955,8 @@ export const FELTAROK: Feltaro[] = [
         'A szerkesztőség a Kegyencjárat számára elsősorban kontextusforrás: az ügyek mögötti intézményi működés leírásában támaszkodunk rá.',
       ],
     },
-    updatedAt: '2026-11-10',
+    updatedAt: '2026-11-11',
+    live: true,
     detail: {
       seoTitle: 'Mérce: a Kettős Mérce blogból lett baloldali hírportál',
       seoDescription:

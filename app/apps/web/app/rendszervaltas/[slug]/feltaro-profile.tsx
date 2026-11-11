@@ -469,22 +469,26 @@ export async function FeltaroProfile({ f }: { f: Feltaro }) {
                           {sec.paragraphs.map((para, i) =>
                             renderPara(para, i, sec.links, linkedPersons, selfHref, styles.caseBody),
                           )}
-                          {sec.videos?.map((v) => (
-                            <FeltaroVideo
-                              key={v.id}
-                              videoId={v.id}
-                              title={v.title}
-                              label={v.label}
-                              summary={v.summary}
-                              views={v.views}
-                              playlistId={v.list}
-                              note={v.note}
-                              vimeoId={v.vimeoId}
-                              facebookUrl={v.facebookUrl}
-                              poster={v.poster}
-                              variant="wide"
-                            />
-                          ))}
+                          {sec.videos && sec.videos.length > 0 && (
+                            <div className={sec.videos.length > 1 ? 'feltaro-video-pair' : undefined}>
+                              {sec.videos.map((v) => (
+                                <FeltaroVideo
+                                  key={v.id}
+                                  videoId={v.id}
+                                  title={v.title}
+                                  label={v.label}
+                                  summary={v.summary}
+                                  views={v.views}
+                                  playlistId={v.list}
+                                  note={v.note}
+                                  vimeoId={v.vimeoId}
+                                  facebookUrl={v.facebookUrl}
+                                  poster={v.poster}
+                                  variant={sec.videos!.length > 1 ? undefined : 'wide'}
+                                />
+                              ))}
+                            </div>
+                          )}
                           {sec.image && (
                             <figure className={styles.caseFigure}>
                               {/* eslint-disable-next-line @next/next/no-img-element -- saját, /public alól szolgált fotó, nem kell Next Image-optimalizálás */}
@@ -504,22 +508,26 @@ export async function FeltaroProfile({ f }: { f: Feltaro }) {
                           {sec.sources && sec.sources.length > 0 && <Sources sources={sec.sources} />}
                         </div>
                       ))}
-                      {c.videos?.map((v) => (
-                        <FeltaroVideo
-                          key={v.id}
-                          videoId={v.id}
-                          title={v.title}
-                          label={v.label}
-                          summary={v.summary}
-                          views={v.views}
-                          playlistId={v.list}
-                          note={v.note}
-                          vimeoId={v.vimeoId}
-                          facebookUrl={v.facebookUrl}
-                          poster={v.poster}
-                          variant="wide"
-                        />
-                      ))}
+                      {c.videos && c.videos.length > 0 && (
+                        <div className={c.videos.length > 1 ? 'feltaro-video-pair' : undefined}>
+                          {c.videos.map((v) => (
+                            <FeltaroVideo
+                              key={v.id}
+                              videoId={v.id}
+                              title={v.title}
+                              label={v.label}
+                              summary={v.summary}
+                              views={v.views}
+                              playlistId={v.list}
+                              note={v.note}
+                              vimeoId={v.vimeoId}
+                              facebookUrl={v.facebookUrl}
+                              poster={v.poster}
+                              variant={c.videos!.length > 1 ? undefined : 'wide'}
+                            />
+                          ))}
+                        </div>
+                      )}
                       {c.facebookPost && (
                         <FbPostEmbed url={c.facebookPost.url} authorName={c.facebookPost.authorName} />
                       )}
