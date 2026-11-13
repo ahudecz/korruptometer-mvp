@@ -6,6 +6,7 @@ import { UGYEK } from './_home/ugyek-config';
 import { visibleSubpages } from './_home/ugyek-subpages';
 import { liveFeltarok } from './_home/rendszervaltas-config';
 import { GALERIA } from './_home/galeria-config';
+import { LETARTOZTATOTTAK } from './_home/letartoztatottak-config';
 import { WATCH_LIST } from './_home/watchlist-config';
 import { PERSON_ROLLUPS, rollupHref } from './_home/person-rollup-config';
 import { RETIRED_SCANDAL_IDS } from './_home/case-detail-config';
@@ -107,6 +108,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${appUrl}/galeria/${g.id}`,
       lastModified: now,
       changeFrequency: 'weekly',
+      priority: 0.7,
+    });
+  }
+  for (const d of LETARTOZTATOTTAK) {
+    entries.push({
+      url: `${appUrl}/birosagi-iteletek/${d.slug}`,
+      lastModified: now,
+      changeFrequency: 'daily',
       priority: 0.7,
     });
   }

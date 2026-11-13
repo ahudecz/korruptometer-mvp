@@ -25,13 +25,14 @@ describe('BreakingUpdateBox (2026-10-01: Hankó és Seszták letartóztatása)',
     expect(html).not.toContain('<iframe');
   });
 
-  it('a Volánbusz-ügyoldal breaking doboza Seszták letartóztatása, a régi 09-15-i hír lejjebb került', () => {
+  it('a Volánbusz-ügyoldal breaking doboza a megtalált Seszták-készpénz (11-13), a letartóztatás lejjebb került', () => {
     const v = ugy('volanbusz-ugy');
     const html = renderToStaticMarkup(createElement(BreakingUpdateBox, { update: v.breakingUpdate! }));
-    expect(html).toContain('Letartóztatták Seszták Miklós volt minisztert');
-    expect(html).toContain('i.ytimg.com/vi/eyW5JiEtSVM/hqdefault.jpg');
+    expect(html).toContain('BREAKING · 2026. november 13.');
+    expect(html).toContain('Több mint 6 milliárd forint készpénzt találtak meg Seszták Miklóstól');
     const first = v.descriptionBlocks?.[0];
-    expect(first?.type === 'text' && first.heading).toBe('2026. szeptember 15. — Három embert őrizetbe vett az ügyészség');
+    expect(first?.type === 'text' && first.heading).toBe('2026. szeptember 30. — Letartóztatták Seszták Miklós volt minisztert');
+    expect(v.descriptionBlocks?.some((b) => b.type === 'video' && b.id === 'eyW5JiEtSVM')).toBe(true);
     expect(v.descriptionBlocks?.filter((b) => b.type === 'article-card').length).toBeGreaterThanOrEqual(4);
   });
 

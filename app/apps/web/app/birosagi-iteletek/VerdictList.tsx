@@ -51,6 +51,8 @@ export type SerializedVerdict = {
   relatedUgy: { id: string; title: string; eyebrow: string; responsible?: string; summary: string } | null;
   relatedGaleria: { id: string; name: string; subtitle: string } | null;
   reactionQuote?: string | null;
+  /** /birosagi-iteletek/<slug> aloldal, ha a személynek van (letartoztatottak-config). */
+  profileHref?: string | null;
 };
 
 const YEAR_RANGES: Record<string, [number, number | null]> = {
@@ -157,6 +159,12 @@ function VerdictDetail({ r }: { r: SerializedVerdict }) {
           jelennek meg — l. .vrow-position / .vrow-crimes mobil
           display:none szabálya (túlzsúfoltság, user report). Desktopon
           rejtve, ott a fejléc már mutatja mindkettőt. */}
+      {r.profileHref && (
+        <Link href={r.profileHref} className="detainee-profile-link">
+          <span>Miért tartóztatták le? A teljes történet, videókkal és hírekkel</span>
+          <span>Aloldal →</span>
+        </Link>
+      )}
       {r.position && <p className="vrow-detail-position">{r.position}</p>}
       {r.crimes.length > 0 && (
         <div className="vrow-detail-crimes">

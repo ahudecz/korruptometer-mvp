@@ -16393,3 +16393,70 @@ code {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ── Börtönben van-e? személyenkénti aloldal (/birosagi-iteletek/<slug>) — 2026-11-13 ── */
+.detainee-page .person-body { gap: 40px; }
+.detainee-page .ugy-status-summary { margin: 0; }
+.detainee-section { display: flex; flex-direction: column; gap: 20px; }
+.detainee-section .person-section-title { margin-bottom: 0; }
+.detainee-text p {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--ink);
+  margin: 0 0 14px;
+}
+.detainee-text p:last-child { margin-bottom: 0; }
+.detainee-subheading {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--ink);
+  margin: 4px 0 10px;
+}
+.detainee-articles { display: flex; flex-direction: column; gap: 12px; }
+.detainee-articles .ugy-block-article-card { margin: 0; }
+.detainee-quote { margin: 0; }
+.detainee-quote-attr {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+}
+.detainee-quote-attr:hover { color: #E31937; }
+.detainee-related-ugy-summary {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #c9ccd2;
+}
+.detainee-eyebrow-link { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.detainee-back {
+  align-self: flex-start;
+  font-size: 14px;
+  font-weight: 600;
+  color: #E31937;
+  text-decoration: none;
+}
+.detainee-back:hover { text-decoration: underline; }
+.detainee-profile-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 16px;
+  padding: 14px 18px;
+  border: 1px solid #E31937;
+  border-radius: 8px;
+  background: #fef7f7;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+}
+.detainee-profile-link span:last-child { color: #E31937; white-space: nowrap; }
+.detainee-profile-link:hover { background: #fdecef; }
+@media (max-width: 640px) {
+  .detainee-text p { font-size: 15px; }
+  .detainee-profile-link { flex-direction: column; align-items: flex-start; }
+}

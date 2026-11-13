@@ -193,26 +193,22 @@ export const UGYEK: UgyekConfig[] = [
     additionalVideos: [
       { id: 'kyqa2wkH228', label: 'ATV Magyarország', title: '10 milliárdos Volán-mutyi: Nyolc embert gyanúsítottak meg, köztük az MNV korábbi vezetőjét' },
     ],
+    // 2026-11-13: a breaking a Seszták-féle elrejtett készpénz megtalálása; a
+    // szept. 30-i letartóztatás-breaking a descriptionBlocks elejére került.
     breakingUpdate: {
-      dateLabel: '2026. szeptember 30.',
-      headline: 'Letartóztatták Seszták Miklós volt minisztert',
-      lead: 'A Budai Központi Kerületi Bíróság nyomozási bírája 2026. szeptember 30-án 30 napra elrendelte Seszták Miklós volt nemzeti fejlesztési miniszter, KDNP-s országgyűlési képviselő letartóztatását. A gyanú szerint több mint 12 milliárd forintnyi jogtalan előnyt vett át, amit ő tagad. A bíróság szerint fennáll a veszélye, hogy tanúkat befolyásolna, illetve bizonyítékokat rejtene el vagy semmisítene meg; a szökés veszélyét nem látta megalapozottnak. A nyomozás a 2014 és 2018 közötti miniszteri időszakát vizsgálja: tárcája felügyelte az MNV-t, az MNV pedig a Volánbusz tulajdonosi jogait gyakorolta. Védője fellebbezett.',
+      dateLabel: '2026. november 13.',
+      headline: 'Több mint 6 milliárd forint készpénzt találtak meg Seszták Miklóstól',
+      lead: 'A nyomozók 2026. november 12-én és 13-án Budapesten, valamint Pest, Békés és Nógrád megyében tartottak összehangolt kutatásokat: erdőben elásva, mezőgazdasági és raktárépületekben, lakóingatlanokban és egy félreeső helyen lévő széfben összesen 5 071 632 000 forintot, 2 658 350 eurót és 1 257 100 amerikai dollárt találtak — a hatóság közlése szerint több mint 6 milliárd forintot. A teljes összeget befizették a Magyar Államkincstárba. Az NVVH képsorozatot is közzétett a pénz megtalálásáról. Seszták Miklóst a nyomozóhatóság 12,6 milliárd forintnyi kenőpénz elfogadásával gyanúsítja; szeptember 28-a óta van őrizetben, illetve letartóztatásban.',
       companies: [],
       articles: [
         {
-          source: '24.hu',
-          headline: 'Letartóztatták Seszták Miklós volt minisztert a Volánbusz-ügyben',
-          lead: 'A bíróság a letartóztatás három indítványozott okából kettőt elutasított: szerinte a bizonyítás veszélyeztetése indokolja a letartóztatást. Seszták ügyvédje szerint a nyomozók a volt minisztert és őt magát is megfigyelték még a mentelmi jog felfüggesztése előtt.',
-          date: '2026. szeptember 30.',
-          url: 'https://24.hu/belfold/2026/09/30/sesztak-miklos-letartoztatas-korrupcio-volanbusz/',
+          source: '444',
+          headline: 'Itt van az év legerősebb kontentje: az NVVH közzétette a Seszták Miklós eldugott készpénzmilliárdjainak megtalálásáról készült képeket',
+          lead: 'A képeken kiterített pénzkötegek, az erdőben ásó nyomozók és az aljnövényzet alól kiemelt pénzkazetták láthatók. A pénzt a Kincstár 12 munkatársa 8 órán át, 5 gépi számlálóval számolta meg.',
+          date: '2026. november 13.',
+          url: 'https://444.hu/2026/11/13/itt-van-az-ev-legerosebb-kontentje-az-nvvh-kozzetette-a-sesztak-miklos-eldugott-keszpenzmilliardjainak-megtalalasarol-keszult-kepeket',
         },
       ],
-      video: {
-        id: 'eyW5JiEtSVM',
-        label: 'ATV Magyarország · 2026. okt. 1.',
-        title: 'Eldőlt Seszták Miklós sorsa, 30 napra börtönbe került a volt miniszter',
-        summary: 'Az ATV Start beszélgetése Seszták Miklós letartóztatásáról, a stúdió vendége dr. Bátki Pál ügyvéd, büntetőjogász.',
-      },
     },
     statusItems: [
       { icon: '🔴', label: 'Letartóztatás', value: 'Seszták Miklós volt miniszter (2026. szept. 30., 30 napra), Szivek Norbert (2026. szept. 17., okt. 16-án három hónappal meghosszabbítva)' },
@@ -220,10 +216,33 @@ export const UGYEK: UgyekConfig[] = [
       { icon: '👥', label: 'Gyanúsítottak', value: '8 fő (2026. szept. 11., NNI) — a szóvivő szerint mentelmi joggal rendelkező személy is érintett lehet' },
       { icon: '⚖️', label: 'Eljárás', value: 'Központi Nyomozó Főügyészség — bűnszövetségben, üzletszerűen elkövetett vesztegetés elfogadása; az NNI-ágon hűtlen kezelés és pénzmosás' },
       { icon: '💰', label: 'Becsült vagyoni hátrány', value: '~10 milliárd Ft (2015–2018, Volán-társaságok)' },
+      { icon: '💵', label: 'Megtalált készpénz', value: 'Több mint 6 milliárd Ft Seszták Miklóstól (2026. nov. 12–13.) — befizetve a Magyar Államkincstárba' },
     ],
     sourceRefs: [],
     description: `A Volánbusz-ügy öt éve húzódik: a feljelentés 2021 őszén érkezett meg a Nemzeti Nyomozó Irodához, érdemi előrelépés éveken át nem történt. 2026 szeptemberében aztán egy héten belül nyolc embert gyanúsítottak meg, majd hármat őrizetbe vettek.`,
     descriptionBlocks: [
+      // 2026-11-13: a szept. 30-i breaking, lecsúsztatva (a lap tetején azóta
+      // a megtalált készpénz áll).
+      {
+        type: 'text',
+        heading: '2026. szeptember 30. — Letartóztatták Seszták Miklós volt minisztert',
+        content: 'A Budai Központi Kerületi Bíróság nyomozási bírája 2026. szeptember 30-án 30 napra elrendelte Seszták Miklós volt nemzeti fejlesztési miniszter, KDNP-s országgyűlési képviselő letartóztatását. A gyanú szerint több mint 12 milliárd forintnyi jogtalan előnyt vett át, amit ő tagad. A bíróság szerint fennáll a veszélye, hogy tanúkat befolyásolna, illetve bizonyítékokat rejtene el vagy semmisítene meg; a szökés veszélyét nem látta megalapozottnak. A nyomozás a 2014 és 2018 közötti miniszteri időszakát vizsgálja: tárcája felügyelte az MNV-t, az MNV pedig a Volánbusz tulajdonosi jogait gyakorolta. Védője fellebbezett.',
+      },
+      {
+        type: 'article-card',
+        source: '24.hu',
+        headline: 'Letartóztatták Seszták Miklós volt minisztert a Volánbusz-ügyben',
+        lead: 'A bíróság a letartóztatás három indítványozott okából kettőt elutasított: szerinte a bizonyítás veszélyeztetése indokolja a letartóztatást. Seszták ügyvédje szerint a nyomozók a volt minisztert és őt magát is megfigyelték még a mentelmi jog felfüggesztése előtt.',
+        date: '2026. szeptember 30.',
+        url: 'https://24.hu/belfold/2026/09/30/sesztak-miklos-letartoztatas-korrupcio-volanbusz/',
+      },
+      {
+        type: 'video',
+        id: 'eyW5JiEtSVM',
+        label: 'ATV Magyarország · 2026. okt. 1.',
+        title: 'Eldőlt Seszták Miklós sorsa, 30 napra börtönbe került a volt miniszter',
+        summary: 'Az ATV Start beszélgetése Seszták Miklós letartóztatásáról, a stúdió vendége dr. Bátki Pál ügyvéd, büntetőjogász.',
+      },
       // 2026-10-01: a 09-15-i breaking frissítés, sima szürke kártyákként —
       // a lap tetején azóta Seszták letartóztatása áll.
       {

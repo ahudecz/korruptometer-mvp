@@ -1225,12 +1225,12 @@ export default async function HomePage() {
             title: 'Volánbusz-ügy',
             responsible: 'Jellinek Dániel és Szivek Norbert',
             summary: 'A Volán-társaságok 2015 és 2018 között súlyosan túlárazott használt autóbuszokat vásároltak és béreltek — a nyomozás szerint mintegy 10 milliárd forintos vagyoni hátrányt okozva. 2026. szeptember 11-én nyolc embert gyanúsítottak meg, négy nappal később a Központi Nyomozó Főügyészség összehangolt akciójában három személyt őrizetbe vettek.',
-            // 2026-10-01: ugyanaz a breaking, mint az ügyoldalon (ugyek-config breakingUpdate).
+            // 2026-11-13: ugyanaz a breaking, mint az ügyoldalon (ugyek-config breakingUpdate).
             breakingAlert: {
-              source: '24.hu',
-              headline: 'Letartóztatták Seszták Miklós volt minisztert a Volánbusz-ügyben',
-              lead: 'A Budai Központi Kerületi Bíróság nyomozási bírája 30 napra elrendelte Seszták Miklós volt nemzeti fejlesztési miniszter letartóztatását. A gyanú szerint több mint 12 milliárd forintnyi jogtalan előnyt vett át, amit ő tagad.',
-              url: 'https://24.hu/belfold/2026/09/30/sesztak-miklos-letartoztatas-korrupcio-volanbusz/',
+              source: '444',
+              headline: 'Több mint 6 milliárd forint készpénzt találtak meg Seszták Miklóstól',
+              lead: 'A nyomozók november 12–13-án erdőben elásva, raktárakban, lakóingatlanokban és egy széfben 5 071 632 000 forintot, 2 658 350 eurót és 1 257 100 dollárt találtak. A teljes összeget befizették a Magyar Államkincstárba.',
+              url: 'https://444.hu/2026/11/13/itt-van-az-ev-legerosebb-kontentje-az-nvvh-kozzetette-a-sesztak-miklos-eldugott-keszpenzmilliardjainak-megtalalasarol-keszult-kepeket',
             },
             videoId: '3zF9ozF8bzA',
             statusItems: [
@@ -1238,6 +1238,7 @@ export default async function HomePage() {
               { icon: '👥', label: 'Gyanúsítottak', value: '8 fő (szept. 11., NNI) — a szóvivő szerint mentelmi joggal rendelkező személy is érintett lehet' },
               { icon: '⚖️', label: 'Eljárás', value: 'Központi Nyomozó Főügyészség — bűnszövetségben, üzletszerűen elkövetett vesztegetés elfogadása; az NNI-ágon hűtlen kezelés és pénzmosás' },
               { icon: '💰', label: 'Becsült vagyoni hátrány', value: '~10 milliárd Ft (2015–2018, Volán-társaságok)' },
+              { icon: '💵', label: 'Megtalált készpénz', value: 'Több mint 6 milliárd Ft Seszták Miklóstól (nov. 12–13.), befizetve az Államkincstárba' },
             ],
             moreUrl: '/ugyek/volanbusz-ugy',
             articles: volanArticles.map(a => ({ ...a })),

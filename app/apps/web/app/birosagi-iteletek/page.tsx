@@ -12,6 +12,7 @@ import { VerdictList, type SerializedVerdict } from './VerdictList';
 import type { SerializedComplaint } from './ComplaintList';
 import { CrossLemondosok, CrossUgyek, CrossGaleria, CrossMegszunt, CrossErdekesUgyek } from '../_home/cross-promo';
 import { caseHref } from '../_home/case-slugs';
+import { detaineeHrefForPerson } from '../_home/letartoztatottak-config';
 
 export const revalidate = 120;
 
@@ -28,6 +29,7 @@ const VERDICT_PERSON_PHOTOS: Record<string, string> = {
   'Puskás Péter': '/images/persons/puskas-peter.webp',
   'Molnár Zsolt': '/images/persons/molnar-zsolt.webp',
   'Ughy Attila': '/images/persons/ughy-attila.webp',
+  'Seszták Miklós': '/images/persons/sesztak-miklos.webp',
 };
 
 const VERDICT_PERSON_QUOTES: Record<string, string> = {
@@ -104,6 +106,7 @@ export default async function BirosagPage({
       videoSummary:         r.videoSummary ?? null,
       photoUrl,
       reactionQuote: VERDICT_PERSON_QUOTES[r.personName] ?? null,
+      profileHref: detaineeHrefForPerson(r.personName),
       relatedUgy: ugyEntry ? {
         id:          ugyEntry.id,
         title:       ugyEntry.title,
