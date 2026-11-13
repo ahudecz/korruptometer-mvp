@@ -9,6 +9,7 @@ import { loadCaseDetentions, isStillDetained, type CaseDetentionRow } from '@/li
 import { withAutoLinks } from '../../../_home/auto-link-text';
 import { isCriminalSupervision } from '../../../birosagi-iteletek/verdict-stats';
 import { BreakingUpdateBox } from '../../../_home/breaking-update-box';
+import { detaineeHrefForPerson } from '../../../_home/letartoztatottak-config';
 
 // SEO-szempontból a lényeg, hogy a Googlebot azonnal kiszolgált HTML-t
 // kapjon, ezért ISR-rel dolgozunk. 10 perc: a letartóztatás-táblázat élő
@@ -129,7 +130,11 @@ function DetentionTable({
               <tbody>
                 {sorted.map((r) => (
                   <tr key={r.id}>
-                    <th scope="row">{r.personName}</th>
+                    <th scope="row">
+                      {detaineeHrefForPerson(r.personName)
+                        ? <Link href={detaineeHrefForPerson(r.personName)!}>{r.personName}</Link>
+                        : r.personName}
+                    </th>
                     <td>{r.position}</td>
                     <td>
                       <span

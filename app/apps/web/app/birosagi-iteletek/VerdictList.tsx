@@ -281,6 +281,13 @@ function VerdictRow({ r }: { r: SerializedVerdict }) {
         <StatusBadge r={r} />
       </button>
 
+      {/* 2026-11-13: zárt sorban is látható link az aloldalra (a fejléc
+          egy <button>, abba link nem ágyazható, ezért külön sáv alatta). */}
+      {!open && r.profileHref && (
+        <Link href={r.profileHref} className="vrow-profile-strip">
+          Miért tartóztatták le? A teljes történet →
+        </Link>
+      )}
       {open && <VerdictDetail r={r} />}
     </div>
   );

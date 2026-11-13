@@ -12,7 +12,8 @@ import { VerdictList, type SerializedVerdict } from './VerdictList';
 import type { SerializedComplaint } from './ComplaintList';
 import { CrossLemondosok, CrossUgyek, CrossGaleria, CrossMegszunt, CrossErdekesUgyek } from '../_home/cross-promo';
 import { caseHref } from '../_home/case-slugs';
-import { detaineeHrefForPerson } from '../_home/letartoztatottak-config';
+import { detaineeHrefForPerson, LETARTOZTATOTTAK } from '../_home/letartoztatottak-config';
+import { DetaineePromo } from '../_home/detainee-promo';
 
 export const revalidate = 120;
 
@@ -30,6 +31,7 @@ const VERDICT_PERSON_PHOTOS: Record<string, string> = {
   'Molnár Zsolt': '/images/persons/molnar-zsolt.webp',
   'Ughy Attila': '/images/persons/ughy-attila.webp',
   'Seszták Miklós': '/images/persons/sesztak-miklos.webp',
+  'Hankó Balázs': '/images/persons/hanko-balazs.webp',
 };
 
 const VERDICT_PERSON_QUOTES: Record<string, string> = {
@@ -134,6 +136,12 @@ export default async function BirosagPage({
           NER-kapcsolatú és politikai indíttatású eljárások — előzetes letartóztatás, vádemelés,
           első fokú és jogerős ítélet. Tényeket és forrásokat közlünk, nem kommentárt.
         </p>
+
+        <DetaineePromo
+          profiles={LETARTOZTATOTTAK}
+          heading="Letartóztatottak — a teljes történet"
+          note="Miért tartóztatták le őket, mivel gyanúsítják őket, és mi történt azóta — videókkal és hírekkel."
+        />
 
         {rows.length === 0 ? (
           <div style={{ marginTop: 32, padding: '40px 24px', textAlign: 'center', color: '#888', border: '1px dashed #e0e0e0', borderRadius: 12 }}>

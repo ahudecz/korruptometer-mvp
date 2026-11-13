@@ -5,6 +5,7 @@ import { and, desc, eq, gte, ilike, or } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { LETARTOZTATOTTAK, getDetaineeProfile, type DetaineeBlock, type DetaineeVideo } from '../../_home/letartoztatottak-config';
 import { UGYEK } from '../../_home/ugyek-config';
+import { rollupHref } from '../../_home/person-rollup-config';
 import { BreakingUpdateBox } from '../../_home/breaking-update-box';
 import { PodcastVideoBox } from '../../_home/podcast-video-box';
 import { CrossLemondosok, CrossMegszunt, CrossErdekesUgyek } from '../../_home/cross-promo';
@@ -197,6 +198,13 @@ export default async function DetaineePage({ params }: { params: Promise<{ slug:
             {sec.blocks.map((b, i) => <Block key={i} block={b} relatedUgyId={p.relatedUgyId} />)}
           </section>
         ))}
+
+        {p.rollupSlug && (
+          <Link href={rollupHref(p.rollupSlug)} className="detainee-rollup-link">
+            <span>{p.name} összes dokumentált ügye a K-Monitor adatbázisában</span>
+            <span>Adatbázis →</span>
+          </Link>
+        )}
 
         <div className="person-news">
           <h2 className="person-section-title">Hírek azóta</h2>

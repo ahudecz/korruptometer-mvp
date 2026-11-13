@@ -12,6 +12,8 @@ import { CrossLemondosok, CrossMegszunt, CrossGaleria, CrossFelszolitottak, Cros
 import { getRelatedComplaintsForUgy } from '@/lib/related-complaints';
 import { RelatedComplaintCard } from '../../_home/related-complaint-card';
 import { BreakingUpdateBox } from '../../_home/breaking-update-box';
+import { DetaineePromo } from '../../_home/detainee-promo';
+import { detaineesForUgy } from '../../_home/letartoztatottak-config';
 import { CustodyRibbon } from '../../_home/custody-ribbon';
 import { DescImage, DescTimeline, FacilitiesGrid } from '../../_home/desc-extra-blocks';
 import { PodcastVideoBox } from '../../_home/podcast-video-box';
@@ -528,6 +530,10 @@ export default async function UgyPage({ params }: { params: Promise<{ id: string
             a fő videó KÖZÖTT (user kérés, 2026-09-03), NEM a lap alján
             futó descriptionBlocks-ban. */}
         {entry.breakingUpdate && <BreakingUpdateBox update={entry.breakingUpdate} />}
+
+        {/* 2026-11-13: az ügy letartóztatottjainak saját aloldalai
+            (/birosagi-iteletek/<slug>) — hogy ne legyenek árva oldalak. */}
+        <DetaineePromo profiles={detaineesForUgy(entry.id)} />
 
         {/* ── Main video ── */}
         {entry.videoId && (

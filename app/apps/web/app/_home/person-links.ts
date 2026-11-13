@@ -1,5 +1,6 @@
 import { PERSON_ROLLUPS, rollupHref } from './person-rollup-config';
 import { liveFeltarok } from './rendszervaltas-config';
+import { LETARTOZTATOTTAK } from './letartoztatottak-config';
 
 /**
  * AUTOMATIKUS BELSŐ NÉVLINKELÉS.
@@ -94,7 +95,22 @@ const FELTARO_LINKS: PersonLink[] = liveFeltarok().map((f) => ({
  * és a „Szíjj" alakot, a hosszabbra kell illeszteni előbb. (A rollupban ma
  * csak teljes nevek vannak, de a sorrend garancia, nem feltételezés.)
  */
-export const PERSON_LINKS: PersonLink[] = [...ROLLUP_LINKS, ...FELTARO_LINKS].sort(
+/**
+ * LETARTÓZTATOTTAK → a „Börtönben van-e?” aloldaluk (/birosagi-iteletek/<slug>).
+ *
+ * User, 2026-11-13: az aloldalak ne legyenek árvák. Csak azokra a nevekre,
+ * akiknek NINCS már rollup- vagy feltáró-oldaluk (pl. Hankó Balázs neve marad
+ * az /adatbazis/szemely oldalán — onnan és az ügyoldali promó-dobozból is
+ * elérhető az aloldala), hogy egy név ne mutasson két helyre.
+ */
+const TAKEN_NAMES = new Set([...ROLLUP_LINKS, ...FELTARO_LINKS].map((l) => l.name));
+const DETAINEE_LINKS: PersonLink[] = LETARTOZTATOTTAK.filter((p) => !TAKEN_NAMES.has(p.name)).map((p) => ({
+  name: p.name,
+  href: `/birosagi-iteletek/${p.slug}`,
+  pattern: namePattern(p.name),
+}));
+
+export const PERSON_LINKS: PersonLink[] = [...ROLLUP_LINKS, ...FELTARO_LINKS, ...DETAINEE_LINKS].sort(
   (a, b) => b.name.length - a.name.length,
 );
 

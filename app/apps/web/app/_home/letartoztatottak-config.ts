@@ -42,12 +42,16 @@ export interface DetaineeProfile {
   amountLabel: string;
   amount: string;
   intro: string;
+  /** Egymondatos kártya-szöveg a promó-dobozokhoz (ügyoldal, Börtönben van-e? lista). */
+  teaser: string;
   crimes: string[];
   seoDescription: string;
   /** A kapcsolódó kiemelt ügy (UGYEK id) — keretes kártya + az ügy aktuális
    *  BREAKING frissítése a lap tetején, ha `showUgyBreaking`. */
   relatedUgyId?: string;
   showUgyBreaking?: boolean;
+  /** /adatbazis/szemely/<slug> rollup oldal, ha van (person-rollup-config). */
+  rollupSlug?: string;
   featuredVideo?: DetaineeVideo;
   statusItems: { icon: string; label: string; value: string }[];
   sections: DetaineeSection[];
@@ -71,6 +75,7 @@ export const LETARTOZTATOTTAK: DetaineeProfile[] = [
     amount: '12,6 milliárd Ft',
     intro:
       'Az Orbán-kormány volt nemzeti fejlesztési miniszterét 2026. szeptember 28-án vették őrizetbe, miután az Országgyűlés felfüggesztette a mentelmi jogát. A gyanú szerint minisztersége idején összesen 12,6 milliárd forint kenőpénzt vett át, többek között a Volánbusz szerződéseivel és buszbeszerzéseivel összefüggésben. 2026. november 12–13-án a nyomozók több mint 6 milliárd forintnyi elrejtett készpénzt találtak. Seszták Miklós tagadja a bűncselekmények elkövetését; jogerős ítélet nincs, az ártatlanság vélelme megilleti.',
+    teaser: 'A gyanú szerint 12,6 milliárd forint kenőpénzt vett át; a nyomozók több mint 6 milliárd forintnyi elrejtett készpénzt találtak.',
     crimes: ['Hivatali vesztegetés elfogadása', 'Volánbusz-ügy'],
     seoDescription:
       'Miért tartóztatták le Seszták Miklóst? 12,6 milliárd forintos kenőpénz-gyanú, a Volánbusz-ügy, és a megtalált, több mint 6 milliárd forintnyi készpénz.',
@@ -249,7 +254,166 @@ export const LETARTOZTATOTTAK: DetaineeProfile[] = [
     newsExcludeKeywords: ['Kasza Tibi', 'Binance', 'stand-up', 'Borízű hang', 'legfontosabb hírei', 'napindító', 'Hápogó kacsa'],
     newsSince: '2026-09-11',
   },
+  {
+    slug: 'hanko-balazs',
+    name: 'Hankó Balázs',
+    verdictPersonName: 'Hankó Balázs',
+    subtitle: 'Volt kulturális és innovációs miniszter · fideszes országgyűlési képviselő',
+    photo: '/images/persons/hanko-balazs.webp',
+    photoAlt: 'Hankó Balázs',
+    photoCredit: 'Hankó Balázs — eredeti fotó: kultura.hu',
+    statusLabel: 'Letartóztatásban',
+    amountLabel: 'A gyanú szerinti vagyoni hátrány',
+    amount: '17,3 milliárd Ft',
+    intro:
+      'Az Orbán-kormány volt kulturális és innovációs miniszterét 2026. szeptember 28-án este vették őrizetbe, miután az Országgyűlés felfüggesztette a mentelmi jogát; október 1-jén a Kecskeméti Járásbíróság letartóztatta. A gyanú szerint az NKA egyik ideiglenes kollégiumán keresztül 1079 támogatásnál összesen 17,3 milliárd forintot használtak fel az alap törvényi céljaitól eltérően. Hankó Balázs tagadja a bűncselekmény elkövetését; jogerős ítélet nincs, az ártatlanság vélelme megilleti.',
+    teaser: 'Az NKA-ügyben különösen jelentős vagyoni hátrányt okozó hűtlen kezeléssel gyanúsítják; február 1-jéig biztosan letartóztatásban marad.',
+    crimes: ['Hűtlen kezelés (bűnszövetségben)', 'NKA-botrány'],
+    seoDescription:
+      'Miért tartóztatták le Hankó Balázst? 17,3 milliárd forintos hűtlen kezelés gyanúja az NKA-ügyben, a „politikai forrásigények”, és mi történt az őrizetbe vétele óta.',
+    relatedUgyId: 'nka-botrany',
+    showUgyBreaking: true,
+    rollupSlug: 'hanko-balazs',
+    featuredVideo: {
+      id: '57CfLx7IoFQ',
+      label: 'Kontroll · 2026. okt. 2.',
+      title: 'Letartóztatták Hankó Balázst – Ott voltunk',
+      summary: 'A Kontroll riportja a Kecskeméti Járásbíróságról, ahol október 1-jén döntöttek Hankó Balázs letartóztatásáról; a stáb kérdéseket is feltett a volt miniszternek.',
+    },
+    statusItems: [
+      { icon: '🔴', label: 'Őrizetbe vétel', value: '2026. szeptember 28., este — a mentelmi joga felfüggesztésének napján' },
+      { icon: '🔒', label: 'Letartóztatás', value: '2026. október 1-jétől (Kecskeméti Járásbíróság); meghosszabbítva, február 1-jéig biztosan marad' },
+      { icon: '⚖️', label: 'Gyanú', value: 'Különösen jelentős vagyoni hátrányt okozó, bűnszövetségben elkövetett hűtlen kezelés — a gyanú szerint 17,3 milliárd Ft' },
+      { icon: '👥', label: 'Vele együtt', value: 'Varga-Bajusz Veronika volt államtitkár — szintén letartóztatásban' },
+      { icon: '📋', label: 'Eljárási szakasz', value: 'Nyomozás — vádemelés még nem történt' },
+    ],
+    sections: [
+      {
+        id: 'miert',
+        title: 'Miért tartóztatták le?',
+        blocks: [
+          {
+            type: 'text',
+            paragraphs: [
+              'A Legfőbb Ügyészség 2026. szeptember 22-én kezdeményezte Hankó Balázs mentelmi jogának felfüggesztését az NKA-ügyben. Az Országgyűlés szeptember 28-án reggel felfüggesztette a mentelmi jogát. Hankó a nap nagy részét a Fidesz frakcióirodájában töltötte, ahol azt várta, hogy a munkahelyére érkezzenek a rendőrök; este 19 óra 14 perckor kapta meg az idézést, ezután önként hagyta el a Parlamentet.',
+              'Nem sokkal este nyolc után megérkezett a NAV Huszti úti épületébe, ahol őrizetbe vették, majd bilincsben Kecskemétre szállították. Védője szerint a kihallgatás hajnali háromig tartott; Hankó 25 oldalas vallomásában tételesen tagadta, hogy bűncselekményt követett volna el.',
+              'Szeptember 30-án az ügyészség indítványozta a letartóztatását: szerinte a volt minisztert sok év szabadságvesztés fenyegeti, kiterjedt kapcsolatrendszere miatt fennáll a szökés és az elrejtőzés veszélye, a hosszabb időn át szervezett, hierarchizált elkövetés miatt pedig az eljárás befolyásolásától is tartani lehet. Október 1-jén a Kecskeméti Járásbíróság elrendelte a letartóztatását; ugyanaznap egykori államtitkárát, Varga-Bajusz Veronikát is letartóztatták. Miközben Hankó a bíróságon volt, az otthonában házkutatást tartottak — ügyvédje szerint semmit nem foglaltak le.',
+            ],
+          },
+          { type: 'video', video: {
+            id: 'DqqT0Xak8xc',
+            label: 'Kontroll · 2026. szept. 28.',
+            title: 'Hankó Balázs egy nehéz napja az Országházban',
+            summary: 'A Kontroll tudósítása a mentelmi jog felfüggesztésének napjáról: Hankó Balázs a mentelmi bizottság ülésén érvelt maga mellett, az Országgyűlés mégis felfüggesztette a mentelmi jogát.',
+          } },
+          {
+            type: 'text',
+            heading: 'Februárig rács mögött marad',
+            paragraphs: [
+              'Október 28-án a nyomozási bíró — ezúttal Hankó meghallgatása nélkül, az iratok alapján — három hónappal meghosszabbította a letartóztatását. A fellebbezést november 11-én a Kecskeméti Törvényszék elutasította: a bíróság szerint a bűncselekmény megalapozott gyanúja és a kényszerintézkedés törvényi okai közül több is fennáll, ezért Hankó Balázs február 1-jéig biztosan letartóztatásban marad. Varga-Bajusz Veronika ügyében is hasonló döntés született.',
+            ],
+          },
+          {
+            type: 'articles',
+            items: [
+              {
+                source: '444',
+                date: '2026. október 1.',
+                headline: 'Hankó Balázs fideszes országgyűlési képviselőt, korábbi kulturális és innovációs minisztert letartóztatták',
+                lead: 'Hankót reggel rendőri kísérettel, bilincsben vezették be a Kecskeméti Járásbíróságra, ahol órákig várta a döntést.',
+                url: 'https://444.hu/2026/10/01/hanko-balazs-fideszes-orszaggyulesi-kepviselot-korabbi-kulturalis-es-innovacios-minisztert-letartoztattak',
+              },
+              {
+                source: 'Telex',
+                date: '2026. szeptember 29.',
+                headline: 'Hankót bilincsben szállították Kecskemétre, ahol hajnali háromig hallgatták ki',
+                lead: 'Vallomást tett, amiben tételesen tagadta, hogy bűncselekményt követett volna el.',
+                url: 'https://telex.hu/belfold/2026/09/29/hanko-balazs-vedoje-toth-m-gabor-kihallgatas-orizet',
+              },
+              {
+                source: 'Telex',
+                date: '2026. november 11.',
+                headline: 'Hankó Balázs börtönben tölti a karácsonyt és a szilvesztert',
+                lead: 'Február 1-jéig biztosan letartóztatásban marad a volt fideszes miniszter és az államtitkára is, miután elutasították a fellebbezésüket.',
+                url: 'https://telex.hu/belfold/2026/11/11/hanko-balazs-marad-letartoztatasban-bortonben-tolti-karacsonyt-szilvesztert',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'gyanu',
+        title: 'Mivel gyanúsítják?',
+        blocks: [
+          {
+            type: 'text',
+            paragraphs: [
+              'A gyanú különösen jelentős vagyoni hátrányt okozó, bűnszövetségben elkövetett hűtlen kezelés. Az ügyészség szerint az NKA Kiemelt Kulturális Programok Ideiglenes Kollégiumát Hankó irányításával arra használták, hogy a forrásokat az alap törvényi céljaitól eltérően költsék el: 2025. szeptember 3. és 2026. március 30. között 1079 támogatásnál összesen 17,3 milliárd forintot. Papíron a kollégium döntött, a gyanú szerint azonban a tényleges döntéseket Hankó hozta — miközben a törvény szerint a miniszter nem vehetett részt a pályázatok elbírálásában.',
+              'A Molnár Áron által megszerzett és a 444 által ismertetett levelek szerint a kormány 2025. május 7-i ülésén, amikor Hankó az NKA 10 milliárd forintos tartalékának felszabadítását kezdeményezte, a kormány előbb a „politikai forrásigények” áttekintését kérte. Egy május 16-i levélben ez a sor szerepel: „106 VK 50 millió ft/VK”, vagyis választókerületenként 50 millió forint. A tartalék végül a gyanú szerinti kollégium keretéhez került.',
+              'Ha a bíróság bűnösnek mondja ki, öt-tíz év szabadságvesztés fenyegeti. Védője szerint vele szemben eddig csak a hűtlen kezelés gyanúját közölték, tiltott pártfinanszírozást vagy bűnszervezetet nem. Vádemelés még nem történt.',
+            ],
+          },
+          {
+            type: 'articles',
+            items: [
+              {
+                source: '444',
+                date: '2026. szeptember 22.',
+                headline: 'Milliárdos korrupció miatt kérte Seszták mentelmi jogának felfüggesztését a Legfőbb Ügyészség, Hankót is öt és tíz év közötti tételekkel gyanúsítanák meg',
+                lead: 'Az ügyészség szerint 1079 támogatásnál összesen 17,3 milliárd forintot használtak fel az NKA törvényi céljaitól eltérően.',
+                url: 'https://444.hu/2026/09/22/tizmilliardos-korrupcioval-gyanusitottak-meg-sesztakot-hankot-is-ot-es-tiz-ev-kozotti-tetelekkel-gyanusitja-a-legfobb-ugyeszseg',
+              },
+              {
+                source: '444',
+                date: '2026. október 6.',
+                headline: 'A Molnár Áron által megszerzett levelek alapján Hankóék tényleg begyűjtötték előbb a „politikai forrásigényeket”, aztán kaptak engedélyt a kormánytól az NKA 10 milliárdos tartalékának elköltésére',
+                lead: 'Az Orbán-kormány feltételt szabott, hogy a kultúra kapjon még 10 milliárdot: azt, hogy a közpénzek elosztásánál számítsanak a politikai igények.',
+                url: 'https://444.hu/2026/10/06/a-molnar-aron-altal-megszerzett-levelek-alapjan-hankoek-tenyleg-begyujtottek-elobb-a-politikai-forrasigenyeket-aztan-kaptak-engedelyt-a-kormanytol-az-nka-10-milliardos-tartalekanak-elkoltesere',
+              },
+            ],
+          },
+          { type: 'related-ugy' },
+        ],
+      },
+      {
+        id: 'mit-mond',
+        title: 'Mit mond Hankó Balázs?',
+        blocks: [
+          {
+            type: 'text',
+            paragraphs: [
+              'Hankó Balázs tagadja a bűncselekmény elkövetését. Szerinte az NKA-kifizetések rendben voltak és a magyar kultúrát szolgálták, az ellene folyó eljárást pedig politikai indíttatású, koncepciós eljárásnak nevezi. A Fidesz politikai fogolyként beszél róla; mandátumáról nem mondott le, letartóztatása alatt is országgyűlési képviselő.',
+            ],
+          },
+          {
+            type: 'quote',
+            text: 'Bízom abban, hogy a hamis vádakkal szemben győz az igazság.',
+            attribution: 'Hankó Balázs · HVG, 2026. szeptember 22.',
+            url: 'https://hvg.hu/itthon/20260922_hanko-balazs-bizalom-hamis-vad-gyozelem-igazsag',
+          },
+          { type: 'video', video: {
+            id: 'IOqxsX9GH1Y',
+            label: 'ATV Magyarország · 2026. szept. 30.',
+            title: 'Indítványozták Hankó Balázs letartóztatását',
+            summary: 'Az ATV híradása: Hankó Balázs politikai koncepciós eljárásnak tartja az ellene folyó nyomozást és az őrizetbe vételét; az ügyészség aznap indítványozta a letartóztatását.',
+          } },
+        ],
+      },
+    ],
+    newsKeywords: ['Hankó'],
+    newsExcludeKeywords: ['Kasza Tibi', 'legfontosabb hírei', 'napindító', 'Newscast', 'Hanko bélyegző'],
+    newsSince: '2026-09-20',
+  },
 ];
+
+/** Egy kiemelt ügy letartóztatottjainak aloldalai — az ügyoldali promó-dobozhoz. */
+export function detaineesForUgy(ugyId: string): DetaineeProfile[] {
+  return LETARTOZTATOTTAK.filter((p) => p.relatedUgyId === ugyId);
+}
+
+export function detaineeHref(p: DetaineeProfile): string {
+  return `/birosagi-iteletek/${p.slug}`;
+}
 
 export function getDetaineeProfile(slug: string): DetaineeProfile | undefined {
   return LETARTOZTATOTTAK.find((p) => p.slug === slug);
