@@ -65,6 +65,7 @@ export const LETARTOZTATOTTAK: DetaineeProfile[] = [
     subtitle: 'Volt nemzeti fejlesztési miniszter (2014–2018) · KDNP-s országgyűlési képviselő',
     photo: '/images/persons/sesztak-miklos.webp',
     photoAlt: 'Seszták Miklós',
+    photoCredit: 'Seszták Miklós — eredeti fotó: kdnp.hu',
     statusLabel: 'Letartóztatásban',
     amountLabel: 'A gyanú szerint átvett kenőpénz',
     amount: '12,6 milliárd Ft',
