@@ -5117,7 +5117,12 @@ button {
   font-size: 13px;
   font-weight: 800;
   color: var(--ink);
-  white-space: nowrap;
+  /* 2026-11-14: nowrap volt — egy hosszú összegcímke („131,2 millió forint
+     (uniós támogatás), teljes projekt 265,5 millió forint") mobilon kitolta
+     a nyitóoldalt, vízszintesen el lehetett húzni a képernyőt. */
+  white-space: normal;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 .feljelentes-card-arrow {
   font-size: 12px;
