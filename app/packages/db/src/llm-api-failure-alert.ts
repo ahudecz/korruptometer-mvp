@@ -35,17 +35,44 @@ async function sendTelegramAlert(text: string): Promise<void> {
   }
 }
 
+/** Elfogyott Anthropic-kredit — ismert, tudatosan vállalt állapot (2026-11-06 óta). */
+export function isCreditExhaustedError(errorMessage: string): boolean {
+  return /credit balance is too low/i.test(errorMessage);
+}
+
+/** 'YYYY-MM-DD' (budapesti nap) → hétfő-e. */
+export function isMonday(day: string): boolean {
+  return new Date(`${day}T12:00:00Z`).getUTCDay() === 1;
+}
+
 export async function maybeSendApiFailureAlert(
   db: Executable,
   day: string,
   errorMessage: string,
 ): Promise<void> {
+  // 2026-11-21: a kifogyott kreditről a user tud, a detektorokat a napi 8:00-s
+  // felhős átnézés pótolja → erről csak hetente (hétfőn) emlékeztetünk. Minden
+  // más API-hiba (rossz kulcs, kvóta, hálózat) továbbra is naponta riaszt.
+  const creditExhausted = isCreditExhaustedError(errorMessage);
+  if (creditExhausted && !isMonday(day)) return;
+
   const inserted = (await db.execute(sql`
     INSERT INTO "LlmApiFailureAlert" (day, "lastError") VALUES (${day}, ${errorMessage})
     ON CONFLICT (day) DO NOTHING
     RETURNING day
   `)) as unknown as unknown[];
   if (inserted.length === 0) return; // ma már ment riasztás
+
+  if (creditExhausted) {
+    await sendTelegramAlert(
+      'ℹ️ Heti emlékeztető: az Anthropic API-kredit továbbra is üres.\n\n'
+      + 'Az automatikus AI-detektorok állnak, helyettük a napi 8:00-s felhős '
+      + 'átnézés viszi fel a tételeket (külön Telegram-üzenetben jelzi). '
+      + 'Teendő nincs; ha feltöltöd a kreditet (console.anthropic.com), a '
+      + 'detektorok maguktól újraindulnak, és ez az emlékeztető megszűnik.',
+    );
+    return;
+  }
 
   await sendTelegramAlert(
     '🔴 Korruptométer: az Anthropic API hívás HIBÁZIK.\n\n'
