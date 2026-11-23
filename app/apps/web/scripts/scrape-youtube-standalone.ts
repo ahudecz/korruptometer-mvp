@@ -27,6 +27,7 @@ loadEnv({ path: resolve(__dirname, '../.env.local') });
 loadEnv({ path: resolve(__dirname, '../../../.env.local') });
 
 import postgres from 'postgres';
+import { assertWriteTarget } from '@korr/db/guard';
 import { isRelevant, isBreaking, BREAKING_MONITORED_FALLBACK } from '@korr/scrapers';
 import { llmExtract, type LlmToolSpec } from '@korr/db/llm';
 import { PODCAST_CHANNELS, type PodcastChannelConfig } from '../app/_home/podcast-channels-config';
@@ -42,6 +43,8 @@ const VIEW_REFRESH_WINDOW_DAYS = 14;
 
 const DB_URL = process.env.PROD_DATABASE_URL ?? process.env.DATABASE_URL;
 if (!DB_URL) throw new Error('PROD_DATABASE_URL / DATABASE_URL not set');
+// Éles írás csak ALLOW_PROD_WRITE=1 mellett (packages/db/src/guard.ts).
+assertWriteTarget('scrape-youtube-standalone', DB_URL);
 const sql = postgres(DB_URL, { prepare: false, max: 3 });
 
 const YT_API_KEY = process.env.YOUTUBE_API_KEY;

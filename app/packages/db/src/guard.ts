@@ -14,8 +14,10 @@
  *     ...
  *   }
  */
-export function assertWriteTarget(scriptName?: string): void {
-  const url = process.env.DATABASE_URL;
+export function assertWriteTarget(
+  scriptName?: string,
+  url: string | undefined = process.env.DATABASE_URL,
+): void {
   if (!url) throw new Error('DATABASE_URL is not set');
 
   let host = '(unparseable)';

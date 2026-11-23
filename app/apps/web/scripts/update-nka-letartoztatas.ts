@@ -26,6 +26,10 @@ loadEnv({ path: 'C:/Users/bbmar/Documents/korruptometer-mvp/app/.env.local' });
 const PROD_URL = process.env.PROD_DATABASE_URL;
 if (!PROD_URL) throw new Error('PROD_DATABASE_URL not set');
 process.env.DATABASE_URL = PROD_URL;
+// Éles írás csak ALLOW_PROD_WRITE=1 mellett (packages/db/src/guard.ts).
+assertWriteTarget('update-nka-letartoztatas', PROD_URL);
+
+import { assertWriteTarget } from '@korr/db/guard';
 
 import { eq, sql } from 'drizzle-orm';
 import { getDb, schema } from '../src/lib/db';

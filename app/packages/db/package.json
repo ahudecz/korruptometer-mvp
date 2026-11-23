@@ -17,6 +17,7 @@
     "./ai-watchlist": "./src/watchlist-removal-detect.ts",
     "./ai-complaints": "./src/criminal-complaint-detect.ts",
     "./ai-verification": "./src/ai-verification.ts",
+    "./guard": "./src/guard.ts",
     "./llm": "./src/llm.ts",
     "./llm-budget-alert": "./src/llm-budget-alert.ts",
     "./email-send-ledger": "./src/email-send-ledger.ts",
