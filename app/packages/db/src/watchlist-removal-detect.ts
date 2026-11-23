@@ -112,5 +112,7 @@ export async function checkRemoval(
     user: userMsg,
     tool: TOOL,
     maxTokens: 500,
+    // 2026-11-23: user-prioritás #1 — a napi tartalékból is költhet.
+    priority: 'critical',
   });
 }

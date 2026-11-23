@@ -200,6 +200,30 @@ function defaultModel(): string {
   return provider() === 'anthropic' ? 'claude-haiku-4-5-20251001' : 'gpt-5-chat-latest';
 }
 
+// ── 2026-11-23 — napi plafon $0.20 + prioritás (user-döntés) ────────────────
+// A user prioritási sorrendje: 1) figyelt személyek (watchlist), 2) breaking
+// csík, 3) bekerült hírek AI-összefoglalója, 4) bizonytalan cikkek szűrése.
+// Az 1–2 „fixen meglegyen", a többi elmaradhat. Ezért a napi keretből
+// LLM_CRITICAL_RESERVE_USD (alap $0.08) CSAK 'critical' hívásoknak jár: a
+// 'normal' hívások már `plafon − tartalék` elérésekor elutasítva.
+// A plafon kódban is max. $0.20 — a Vercel-env (régen 0.50) csak LEJJEBB
+// viheti, feljebb nem.
+export const MAX_DAILY_CEILING_USD = 0.2;
+
+export type LlmPriority = 'critical' | 'normal';
+
+export function dailyCeilingUsd(): number {
+  const env = Number(process.env.LLM_DAILY_CEILING_USD ?? MAX_DAILY_CEILING_USD);
+  return Math.min(Number.isFinite(env) ? env : MAX_DAILY_CEILING_USD, MAX_DAILY_CEILING_USD);
+}
+
+/** Az adott prioritású hívás eddig a napi költésig mehet. */
+export function priorityCeilingUsd(priority: LlmPriority, ceilingUsd = dailyCeilingUsd()): number {
+  if (priority === 'critical') return ceilingUsd;
+  const reserve = Number(process.env.LLM_CRITICAL_RESERVE_USD ?? '0.08');
+  return Math.max(0, ceilingUsd - (Number.isFinite(reserve) ? reserve : 0.08));
+}
+
 export async function llmExtract<T>(opts: {
   system: string;
   user: string;
@@ -207,10 +231,13 @@ export async function llmExtract<T>(opts: {
   maxTokens?: number;
   /** Per-call model override; otherwise LLM_MODEL / provider default. */
   model?: string;
+  /** 'critical' = watchlist + breaking: a fenntartott tartalékot is elköltheti. */
+  priority?: LlmPriority;
 }): Promise<LlmResult<T>> {
   const maxTokens = opts.maxTokens ?? 512;
   const model = opts.model ?? defaultModel();
-  const ceilingUsd = Number(process.env.LLM_DAILY_CEILING_USD ?? '0.50');
+  const fullCeilingUsd = dailyCeilingUsd();
+  const ceilingUsd = priorityCeilingUsd(opts.priority ?? 'normal', fullCeilingUsd);
 
   if (ceilingUsd <= 0) {
     // Gate disabled — no lock needed, just call straight through.
@@ -240,8 +267,10 @@ export async function llmExtract<T>(opts: {
 
       const spent = await todaySpendUsd(tx);
       if (spent >= ceilingUsd) {
-        console.error(`[llm-budget] daily ceiling reached ($${spent.toFixed(2)} >= $${ceilingUsd.toFixed(2)}) — refusing call, will retry next run.`);
-        await maybeSendBudgetAlert(tx, todayBudapest(), spent, ceilingUsd);
+        console.error(`[llm-budget] ${opts.priority ?? 'normal'} ceiling reached ($${spent.toFixed(3)} >= $${ceilingUsd.toFixed(3)}) — refusing call, will retry next run.`);
+        // Riasztás csak a TELJES plafon elérésekor — a normál hívások napi
+        // leállása a tartaléknál várt, szándékos állapot, nem hiba.
+        if (spent >= fullCeilingUsd) await maybeSendBudgetAlert(tx, todayBudapest(), spent, fullCeilingUsd);
         return { data: null, inputTokens: 0, outputTokens: 0 };
       }
 

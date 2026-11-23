@@ -4,6 +4,7 @@ import { desc, eq, gte, sql } from 'drizzle-orm';
 import { isTransientLlmFailure } from '@korr/db';
 import { pickDailyBreaking } from '@korr/db/ai-breaking';
 import { getDb, schema } from '@/lib/db';
+import { isBypassActive, type BypassStep, type BypassLogger } from '@/lib/cron-bypass';
 import { inngest } from '../client';
 
 const CANDIDATE_WINDOW_HOURS = 36;
@@ -35,6 +36,44 @@ export const refreshDailyBreaking = inngest.createFunction(
   // no-ops now (nothing subscribes to that event anymore).
   { cron: '0 8,20 * * *' },
   async ({ step, logger }) => {
+    if (isBypassActive()) return { skipped: 'inngest_bypass_active' };
+    return runBreakingRefreshCore({ step: step as unknown as BypassStep, logger });
+  },
+);
+
+// 2026-11-23 — az Inngest-cron augusztus óta nem futott (utolsó AI-pick:
+// 08-20), mert a pipeline a Vercel/GitHub-bypassra költözött, ez a függvény
+// viszont kimaradt onnan. Most a cron/pipeline route is hívja, de csak ha az
+// előző próbálkozás óta eltelt BREAKING_MIN_INTERVAL_HOURS — így marad napi
+// ~2 hívás. Az utolsó próbálkozás ideje a WorkerHeartbeat táblában
+// (id='breaking-refresh'), ugyanaz a vízjel-minta, mint kozlony-resignationsnél.
+const BREAKING_HEARTBEAT_ID = 'breaking-refresh';
+const BREAKING_MIN_INTERVAL_HOURS = 11;
+
+export async function runBreakingRefreshIfDue({ step, logger }: { step: BypassStep; logger?: BypassLogger }) {
+  const db = getDb();
+  const rows = await db
+    .select({ at: schema.workerHeartbeats.at })
+    .from(schema.workerHeartbeats)
+    .where(eq(schema.workerHeartbeats.id, BREAKING_HEARTBEAT_ID))
+    .limit(1);
+  const last = rows[0]?.at ? new Date(rows[0].at).getTime() : 0;
+  if (Date.now() - last < BREAKING_MIN_INTERVAL_HOURS * 3600_000) {
+    return { skipped: 'not_due', lastAttemptAt: rows[0]?.at ?? null };
+  }
+  const result = await runBreakingRefreshCore({ step, logger });
+  // Átmeneti AI-hiba (pl. elfogyott keret) után NEM rögzítjük a próbálkozást,
+  // hogy a következő óránkénti futás újra próbálja.
+  if ((result as { reason?: string }).reason !== 'transient') {
+    await db
+      .insert(schema.workerHeartbeats)
+      .values({ id: BREAKING_HEARTBEAT_ID, at: new Date() })
+      .onConflictDoUpdate({ target: schema.workerHeartbeats.id, set: { at: new Date() } });
+  }
+  return result;
+}
+
+export async function runBreakingRefreshCore({ step, logger }: { step: BypassStep; logger?: BypassLogger }) {
     const db = getDb();
 
     // A live pin (breakingPinnedUntil in the future) always outranks a plain
@@ -100,5 +139,4 @@ export const refreshDailyBreaking = inngest.createFunction(
 
     logger?.info?.(`refresh-daily-breaking: picked ${pick.selectedId} — ${pick.reason}`);
     return { candidates: candidates.length, picked: true, selectedId: pick.selectedId, reason: pick.reason };
-  },
-);
+}

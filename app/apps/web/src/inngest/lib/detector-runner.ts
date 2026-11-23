@@ -39,6 +39,10 @@ export function createBypassGuardedFunction(
   );
 }
 
+export function articleDetectorsLlmEnabled(): boolean {
+  return (process.env.ARTICLE_DETECTORS_LLM ?? '').toLowerCase() === 'on';
+}
+
 export type ArticleProcessResult = { inserted: boolean; approved: boolean };
 
 /**
@@ -77,6 +81,16 @@ export async function runArticleDetectionBatch<TResult>({
   logLabel: string;
 }): Promise<{ scanned: number; candidates: number; inserted: number }> {
   const db = getDb();
+
+  // 2026-11-23 — user-döntés: a $0.20-os napi AI-keret a watchlistre, a
+  // breaking csíkra és a hírszűrésre megy; a cikk-alapú detektorok munkáját
+  // (lemondás, ítélet, feljelentés, vagyonvisszaszerzés, médium-megszűnés) a
+  // napi 8:00-s felhős átnézés végzi ingyen. Visszakapcsolás:
+  // ARTICLE_DETECTORS_LLM=on a Vercel-env-ben.
+  if (!articleDetectorsLlmEnabled()) {
+    logger?.info?.(`${logLabel}: kihagyva — ARTICLE_DETECTORS_LLM nincs bekapcsolva (a napi felhős átnézés pótolja)`);
+    return { scanned: 0, candidates: 0, inserted: 0 };
+  }
 
   const articles = await step.run('load-unchecked-articles', () => loadUncheckedArticles(db, detectorType));
   if (articles.length === 0) return { scanned: 0, candidates: 0, inserted: 0 };

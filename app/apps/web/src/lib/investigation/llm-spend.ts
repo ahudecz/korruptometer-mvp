@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm';
 
 import { getDb, schema } from '@/lib/db';
 import { maybeSendBudgetAlert } from '@korr/db/llm-budget-alert';
+import { dailyCeilingUsd, priorityCeilingUsd } from '@korr/db/llm';
 
 // 2026-07-19 — user report: real spend hit $1.21/day despite the (new,
 // 2026-07-18) $1 gate in packages/db/src/llm.ts. Root cause found: THIS
@@ -36,7 +37,9 @@ export async function probeDailySpend(
   tx: Parameters<Parameters<ReturnType<typeof getDb>['transaction']>[0]>[0],
   model: string,
 ): Promise<SpendProbe> {
-  const ceilingUsd = Number(process.env.LLM_DAILY_CEILING_USD ?? '0.50');
+  // 2026-11-23: normál prioritás — a watchlist/breaking tartalékát nem éli fel.
+  const fullCeilingUsd = dailyCeilingUsd();
+  const ceilingUsd = priorityCeilingUsd('normal', fullCeilingUsd);
   const ceiling = (ceilingUsd * HUF_PER_USD).toFixed(2);
   void model; // kept in the signature for the call site / logging; no longer used to scope the query
   // Postgres rejects `FOR UPDATE` directly on an aggregate SELECT ("FOR
@@ -58,12 +61,12 @@ export async function probeDailySpend(
   `)) as Array<{ current: string }>;
   const current = rows[0]?.current ?? '0';
   const paused = Number(current) >= Number(ceiling);
-  if (paused) {
+  if (paused && Number(current) >= fullCeilingUsd * HUF_PER_USD) {
     // Ugyanaz a naponta-egyszeri Telegram-riasztás, mint packages/db/src/
     // llm.ts fő gate-jénél — LlmBudgetAlert(day) PRIMARY KEY-en dedupolva,
     // úgyhogy akármelyik gate veszi észre elsőként a napi limit elérését
     // (ez vagy a fő llmExtract() gate), csak egy üzenet megy ki naponta.
-    await maybeSendBudgetAlert(tx, todayBudapestDate(), Number(current) / HUF_PER_USD, Number(ceiling) / HUF_PER_USD);
+    await maybeSendBudgetAlert(tx, todayBudapestDate(), Number(current) / HUF_PER_USD, fullCeilingUsd);
   }
   return { paused, currentSpendHuf: current, ceilingHuf: ceiling };
 }

@@ -80,5 +80,7 @@ export async function pickDailyBreaking(
     user: userMsg,
     tool: TOOL,
     maxTokens: 300,
+    // 2026-11-23: user-prioritás #2 — a napi tartalékból is költhet.
+    priority: 'critical',
   });
 }
