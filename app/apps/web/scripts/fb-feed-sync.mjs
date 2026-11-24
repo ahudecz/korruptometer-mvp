@@ -26,26 +26,33 @@ const GOOGLEBOT =
   'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
 const FBBOT = 'facebookexternalhit/1.1';
 
+// 2026-11-24: a Supabase REST/Storage 09-17 óta 402-t ad (elfogyott ingyenes
+// adatforgalom) — a job 10-26 óta minden nap elhasalt. Az adatbázist ezért a
+// weboldal /api/cron/fb-feed-sync végpontján át érjük el (az Postgres-en ír).
+// A kép-tükrözés a Supabase Storage-ba csak akkor fut, ha a Supabase-változók
+// meg vannak adva; ha az is hibázik, kép nélküli kártya lesz.
+const SITE_URL = process.env.SITE_URL ?? 'https://www.kegyencjarat.hu';
+const CRON_SECRET = process.env.CRON_SECRET;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const DRY_RUN = process.env.DRY_RUN === '1';
 /** Oldalanként legfeljebb ennyi új posztot veszünk fel egy futásban. */
 const PER_PAGE = Number(process.env.PER_PAGE ?? 8);
 
-if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error('Hiányzik a NEXT_PUBLIC_SUPABASE_URL vagy a SUPABASE_SERVICE_ROLE_KEY.');
+if (!CRON_SECRET) {
+  console.error('Hiányzik a CRON_SECRET.');
   process.exit(1);
 }
 
-const sb = (path, init = {}) =>
-  fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+const api = (init = {}) =>
+  fetch(`${SITE_URL}/api/cron/fb-feed-sync`, {
     ...init,
     headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
+      Authorization: `Bearer ${CRON_SECRET}`,
       'Content-Type': 'application/json',
       ...(init.headers ?? {}),
     },
+    signal: AbortSignal.timeout(90_000),
   });
 
 async function getText(url, ua) {
@@ -89,7 +96,7 @@ const BUCKET = 'social-images';
  * link, ami két hét múlva 404.
  */
 async function mirrorImage(fbUrl, postId) {
-  if (!fbUrl) return null;
+  if (!fbUrl || !SUPABASE_URL || !SUPABASE_KEY) return null;
   try {
     const res = await fetch(fbUrl, {
       headers: { 'User-Agent': FBBOT },
@@ -172,27 +179,29 @@ function discoverPostIds(html, limit = 60) {
 }
 
 async function main() {
-  const pagesRes = await sb('FacebookPage?select=pageId,pageHandle,pageName');
-  if (!pagesRes.ok) {
-    console.error('Nem sikerült beolvasni a FacebookPage táblát:', pagesRes.status);
+  const stateRes = await api();
+  if (!stateRes.ok) {
+    console.error(
+      'Nem sikerült beolvasni az adatbázis-állapotot:',
+      stateRes.status,
+      (await stateRes.text()).slice(0, 200),
+    );
     process.exit(1);
   }
-  const pages = await pagesRes.json();
+  const state = await stateRes.json();
+  const pages = state.pages ?? [];
   console.log(`${pages.length} figyelt oldal.`);
 
   // A már meglévő postUrl-ek — ezekkel nem foglalkozunk újra.
-  const existingRes = await sb('SocialPost?select=postUrl&limit=5000');
-  const existing = new Set(
-    ((await existingRes.json()) ?? []).map((r) => r.postUrl).filter(Boolean),
-  );
+  const existing = new Set((state.existing ?? []).filter(Boolean));
   console.log(`${existing.size} ismert poszt az adatbázisban.`);
 
   // Azok a már ismert posztok, amelyeknél hiányzik a megjelenési idő.
-  const missingRes = await sb('SocialPost?select=postUrl&postedAt=is.null&limit=5000');
-  const missingPostedAt = new Set(
-    ((await missingRes.json()) ?? []).map((r) => r.postUrl).filter(Boolean),
-  );
+  const missingPostedAt = new Set((state.missingPostedAt ?? []).filter(Boolean));
   console.log(`${missingPostedAt.size} sornál hiányzik a megjelenési idő.`);
+
+  const inserts = [];
+  const backfills = [];
 
   let inserted = 0;
   let skipped = 0;
@@ -229,11 +238,7 @@ async function main() {
         // időrendje a régi sorokra is helyes legyen.
         const known = postedAtById.get(pfbid);
         if (known && !DRY_RUN && missingPostedAt.has(postUrl)) {
-          await sb(`SocialPost?postUrl=eq.${encodeURIComponent(postUrl)}`, {
-            method: 'PATCH',
-            headers: { Prefer: 'return=minimal' },
-            body: JSON.stringify({ postedAt: known }),
-          });
+          backfills.push({ postUrl, postedAt: known });
           backfilled += 1;
         }
         continue;
@@ -252,32 +257,34 @@ async function main() {
       const row = {
         authorName: page.pageName,
         authorHandle: page.pageHandle ?? null,
-        platform: 'facebook',
         postUrl,
         content,
-        imageUrl,
+        imageUrl: imageUrl ?? null,
         postedAt: postedAtById.get(pfbid) ?? null,
-        hidden: false,
       };
 
       if (DRY_RUN) {
         console.log(`  [DRY] ${page.pageName}: ${content.slice(0, 60)}…`);
       } else {
-        const ins = await sb('SocialPost', {
-          method: 'POST',
-          headers: { Prefer: 'return=minimal' },
-          body: JSON.stringify(row),
-        });
-        if (!ins.ok) {
-          console.error(`  HIBA (${ins.status}) ${page.pageName}:`, await ins.text());
-          continue;
-        }
+        inserts.push(row);
       }
       existing.add(postUrl);
       inserted += 1;
       taken += 1;
     }
     console.log(`  ${page.pageName}: ${taken} új`);
+  }
+
+  if (!DRY_RUN && (inserts.length > 0 || backfills.length > 0)) {
+    const res = await api({ method: 'POST', body: JSON.stringify({ inserts, backfills }) });
+    const out = await res.text();
+    if (!res.ok) {
+      console.error(`Mentési hiba (${res.status}):`, out.slice(0, 500));
+      process.exit(1);
+    }
+    const saved = JSON.parse(out);
+    inserted = saved.inserted;
+    backfilled = saved.backfilled;
   }
 
   console.log(

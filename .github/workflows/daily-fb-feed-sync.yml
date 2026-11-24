@@ -44,6 +44,9 @@ jobs:
       # ezért nincs pnpm install lépés — így a job néhány másodperc alatt fut.
       - name: Facebook-posztok szinkronizálása
         env:
+          # 2026-11-24: az adatbázist a weboldal /api/cron/fb-feed-sync
+          # végpontján át érjük el (a Supabase REST 402-t ad).
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
